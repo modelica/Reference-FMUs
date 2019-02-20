@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<fmiModelDescription fmiVersion="3.0-alpha" modelName="Resource" instantiationToken="{7b9c2114-2ce5-4076-a138-2cbc69e069e5}" numberOfEventIndicators="0">
+
+  <ModelExchange modelIdentifier="Resource">
+    <SourceFiles>
+      <File name="fmi2.c"/>
+      <File name="euler.c"/>
+      <File name="model.c"/>
+      <File name="slave.c"/>
+    </SourceFiles>
+  </ModelExchange>
+
+  <CoSimulation modelIdentifier="Resource" canHandleVariableCommunicationStepSize="true">
+    <SourceFiles>
+      <File name="fmi2.c"/>
+      <File name="euler.c"/>
+      <File name="model.c"/>
+      <File name="slave.c"/>
+    </SourceFiles>
+  </CoSimulation>
+
+  <LogCategories>
+    <Category name="logAll"/>
+    <Category name="logError"/>
+    <Category name="logFmiCall"/>
+    <Category name="logEvent"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="1"/>
+
+  <ModelVariables>
+    <Float64 name="y" valueReference="0" description="the only state" causality="output" variability="continuous" start="0"/>
+  </ModelVariables>
+
+  <ModelStructure>
+    <Outputs>
+      <Unknown valueReference="0"/>
+    </Outputs>
+  </ModelStructure>
+
+</fmiModelDescription>

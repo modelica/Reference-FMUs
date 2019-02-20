@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<fmiModelDescription fmiVersion="3.0-alpha" modelName="Dahlquist" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f000}" numberOfEventIndicators="0">
+
+  <ModelExchange modelIdentifier="Dahlquist">
+    <SourceFiles>
+      <File name="fmi2.c"/>
+      <File name="euler.c"/>
+      <File name="model.c"/>
+      <File name="slave.c"/>
+    </SourceFiles>
+  </ModelExchange>
+
+  <CoSimulation modelIdentifier="Dahlquist" canHandleVariableCommunicationStepSize="true">
+    <SourceFiles>
+      <File name="fmi2.c"/>
+      <File name="euler.c"/>
+      <File name="model.c"/>
+      <File name="slave.c"/>
+    </SourceFiles>
+  </CoSimulation>
+
+  <LogCategories>
+    <Category name="logAll"/>
+    <Category name="logError"/>
+    <Category name="logFmiCall"/>
+    <Category name="logEvent"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="10"/>
+
+  <ModelVariables>
+    <Float64 name="x" valueReference="0" description="the only state" causality="output" variability="continuous" initial="exact" start="1"/>
+    <Float64 name="der(x)" valueReference="1" causality="local" variability="continuous" initial="calculated" derivative="1"/>
+    <Float64 name="k" valueReference="2" causality="parameter" variability="fixed" initial="exact" start="1"/>
+  </ModelVariables>
+
+  <ModelStructure>
+    <Outputs>
+      <Unknown valueReference="0"/>
+    </Outputs>
+    <Derivatives>
+      <Unknown valueReference="1"/>
+    </Derivatives>
+    <InitialUnknowns>
+      <Unknown valueReference="1"/>
+    </InitialUnknowns>
+  </ModelStructure>
+
+</fmiModelDescription>

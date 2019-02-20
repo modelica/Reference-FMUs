@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<fmiModelDescription fmiVersion="1.0" modelName="Stair" modelIdentifier="Stair" guid="{8c4e810f-3df3-4a00-8276-176fa3c9f008}" numberOfContinuousStates="0" numberOfEventIndicators="0">
+
+  <DefaultExperiment startTime="0" stopTime="10"/>
+
+  <ModelVariables>
+    <ScalarVariable name="counter" valueReference="0" description="counts the seconds" causality="output">
+      <Integer start="1" fixed="true"/>
+    </ScalarVariable>
+  </ModelVariables>
+
+</fmiModelDescription>

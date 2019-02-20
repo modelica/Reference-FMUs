@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<fmiModelDescription fmiVersion="1.0" modelName="van der Pol oscillator" modelIdentifier="VanDerPol" guid="{8c4e810f-3da3-4a00-8276-176fa3c9f000}" numberOfContinuousStates="2" numberOfEventIndicators="0">
+
+  <DefaultExperiment startTime="0" stopTime="20"/>
+
+  <ModelVariables>
+    <ScalarVariable name="x0" valueReference="0" causality="output" description="the first state">
+      <Real start="2" fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable name="der(x0)" valueReference="1">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="x1" valueReference="2" causality="output" description="the second state">
+      <Real start="0" fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable name="der(x1)" valueReference="3">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="mu" valueReference="4" variability="parameter">
+      <Real start="1" fixed="true"/>
+    </ScalarVariable>
+  </ModelVariables>
+
+</fmiModelDescription>

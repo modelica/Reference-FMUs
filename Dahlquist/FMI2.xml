@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<fmiModelDescription fmiVersion="2.0" modelName="Dahlquist" guid="{8c4e810f-3df3-4a00-8276-176fa3c9f000}" numberOfEventIndicators="0">
+
+  <ModelExchange modelIdentifier="Dahlquist">
+    <SourceFiles>
+      <File name="fmi2.c"/>
+      <File name="euler.c"/>
+      <File name="model.c"/>
+      <File name="slave.c"/>
+    </SourceFiles>
+  </ModelExchange>
+
+  <CoSimulation modelIdentifier="Dahlquist" canHandleVariableCommunicationStepSize="true">
+    <SourceFiles>
+      <File name="fmi2.c"/>
+      <File name="euler.c"/>
+      <File name="model.c"/>
+      <File name="slave.c"/>
+    </SourceFiles>
+  </CoSimulation>
+
+  <LogCategories>
+    <Category name="logAll"/>
+    <Category name="logError"/>
+    <Category name="logFmiCall"/>
+    <Category name="logEvent"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="10"/>
+
+  <ModelVariables>
+    <ScalarVariable name="x" valueReference="0" description="the only state" causality="output" variability="continuous" initial="exact">
+      <Real start="1"/>
+    </ScalarVariable>
+    <ScalarVariable name="der(x)" valueReference="1" causality="local" variability="continuous" initial="calculated">
+      <Real derivative="1"/>
+    </ScalarVariable>
+    <ScalarVariable name="k" valueReference="2" causality="parameter" variability="fixed" initial="exact">
+      <Real start="1"/>
+    </ScalarVariable>
+  </ModelVariables>
+
+  <ModelStructure>
+    <Outputs>
+      <Unknown index="1" dependencies=""/>
+    </Outputs>
+    <Derivatives>
+      <Unknown index="2" dependencies="1" dependenciesKind="fixed"/>
+    </Derivatives>
+    <InitialUnknowns>
+      <Unknown index="2" dependencies="1 3" dependenciesKind="dependent dependent"/>
+    </InitialUnknowns>
+  </ModelStructure>
+
+</fmiModelDescription>
