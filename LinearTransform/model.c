@@ -28,14 +28,8 @@ void calculateValues(ModelInstance *comp) {
 
 Status getReal(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
     
-    //calculateValues(comp);
-    
-//    size_t i = *index;
-//    size_t *ii = &i;
-//    *index = 0;
-    
-    logError(comp, "getReal(vr=%d)", vr);
-    
+    calculateValues(comp);
+        
     switch (vr) {
         case vr_m:
             value[(*index)++] = M(m);
@@ -57,9 +51,8 @@ Status getReal(ModelInstance* comp, ValueReference vr, double *value, size_t *in
             value[(*index)++] = M(A)[1][2];
             return OK;
         case vr_y:
-            value[0] = (*index)++;
-            //(*index) += 1; //M(y)[0];
-            value[1] = (*index)++; //M(y)[1];
+            value[(*index)++] = M(y)[0];
+            value[(*index)++] = M(y)[1];
             return OK;
         default:
             return Error;
@@ -68,6 +61,12 @@ Status getReal(ModelInstance* comp, ValueReference vr, double *value, size_t *in
 
 Status setReal(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
     switch (vr) {
+        case vr_u:
+            M(u)[0] = value[(*index)++];
+            M(u)[1] = value[(*index)++];
+            M(u)[2] = value[(*index)++];
+            calculateValues(comp);
+            return OK;
         default:
             return Error;
     }

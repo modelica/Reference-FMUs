@@ -462,13 +462,9 @@ fmi3Status fmi3GetFloat64 (fmi3Component c, const fmi3ValueReference vr[], size_
     
     size_t index = 0;
     
-    logError(comp, "nvr=%d", nvr);
-
     for (i = 0; i < nvr; i++) {
-
-        logError(comp, "i=%d", i);
-
-        status = max(status, getReal(comp, vr[i], value, &index));
+        Status s = getReal(comp, vr[i], value, &index);
+        status = max(status, s);
         FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3GetReal: #r%u# = %.16g", vr[i], value[i])
         if (status > Warning) return status;
     }
@@ -588,7 +584,8 @@ fmi3Status fmi3SetFloat64 (fmi3Component c, const fmi3ValueReference vr[], size_
 
     // no check whether setting the value is allowed in the current state
     for (i = 0; i < nvr; i++) {
-        status = max(status, setReal(comp, vr[i], value, &index));
+        Status s = setReal(comp, vr[i], value, &index);
+        status = max(status, s);
         if (status > Warning) return status;
         FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetReal: #r%d# = %.16g", vr[i], value[i])
     }
