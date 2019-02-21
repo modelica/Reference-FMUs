@@ -11,27 +11,27 @@ void calculateValues(ModelInstance *comp) {
     M(der_x) = -M(k) * M(x);
 }
 
-Status getReal(ModelInstance* comp, ValueReference vr, double *value) {
+Status getReal(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
     calculateValues(comp);
     switch (vr) {
         case vr_x:
-            *value = M(x);
+            value[(*index)++] = M(x);
             return OK;
         case vr_der_x:
-            *value = M(der_x);
+            value[(*index)++] = M(der_x);
             return OK;
         case vr_k:
-            *value = M(k);
+            value[(*index)++] = M(k);
             return OK;
         default:
             return Error;
     }
 }
 
-Status setReal(ModelInstance* comp, ValueReference vr, double value) {
+Status setReal(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
     switch (vr) {
         case vr_x:
-            M(x) = value;
+            M(x) = value[(*index)++];
             return OK;
         case vr_k:
 #if FMI_VERSION > 1
@@ -42,7 +42,7 @@ Status setReal(ModelInstance* comp, ValueReference vr, double value) {
 				return Error;
 			}
 #endif
-            M(k) = value;
+            M(k) = value[(*index)++];
             return OK;
         default:
             return Error;

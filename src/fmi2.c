@@ -456,8 +456,11 @@ fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
         comp->isDirtyValues = fmi2False;
     }
 
+    size_t index = 0;
+    
     for (i = 0; i < nvr; i++) {
-        status = max(status, getReal(comp, vr[i], &value[i]));
+        Status s = getReal(comp, vr[i], value, &index);
+        status = max(status, s);
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2GetReal: #r%u# = %.16g", vr[i], value[i])
         if (status > Warning) return status;
     }
@@ -491,8 +494,11 @@ fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
     }
 
 #ifdef GET_INTEGER
+    size_t index = 0;
+    
     for (i = 0; i < nvr; i++) {
-        status = max(status, getInteger(comp, vr[i], &value[i]));
+        Status s = getInteger(comp, vr[i], value, &index);
+        status = max(status, s);
         if (status > Warning) return status;
     }
 
@@ -523,11 +529,15 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
     }
 
 #ifdef GET_BOOLEAN
+    size_t index = 0;
+    
     for (i = 0; i < nvr; i++) {
-        status = max(status, getBoolean(comp, vr[i], &value[i]));
+        bool v = value[i];
+        Status s = getBoolean(comp, vr[i], &v, &index);
+        status = max(status, s);
         if (status > Warning) return status;
     }
-
+    
     return status;
 #else
     return fmi2Error; // not implemented
@@ -573,9 +583,12 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
         return fmi2Error;
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetReal: nvr = %d", nvr)
 
+    size_t index = 0;
+    
     // no check whether setting the value is allowed in the current state
     for (i = 0; i < nvr; i++) {
-        if (setReal(comp, vr[i], value[i]) > Warning) return fmi2Error;
+        Status s = setReal(comp, vr[i], value, &index);
+        if (s > Warning) return fmi2Error;
         FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetReal: #r%d# = %.16g", vr[i], value[i])
     }
 
@@ -604,8 +617,10 @@ fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetInteger: nvr = %d", nvr)
 
 #ifdef SET_INTEGER
+    size_t index = 0;
     for (i = 0; i < nvr; i++) {
-        status = max(status, setInteger(comp, vr[i], value[i]));
+        Status s = setInteger(comp, vr[i], value, &index);
+        status = max(status, s);
         if (status > Warning) return status;
     }
     if (nvr > 0) comp->isDirtyValues = fmi2True;
@@ -632,8 +647,11 @@ fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetBoolean: nvr = %d", nvr)
 
 #ifdef SET_BOOLEAN
+    
     for (i = 0; i < nvr; i++) {
-        if (setBoolean(comp, vr[i], value[i]) > Warning) return fmi2Error;
+        bool v = value[i];
+        size_t index = 0;
+        if (setBoolean(comp, vr[i], &v, &index) > Warning) return fmi2Error;
     }
 
     if (nvr > 0) comp->isDirtyValues = fmi2True;

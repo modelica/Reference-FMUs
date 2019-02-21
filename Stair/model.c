@@ -14,10 +14,13 @@ void calculateValues(ModelInstance *comp) {
     // do nothing
 }
 
-Status getInteger(ModelInstance* comp, ValueReference vr, int *value) {
+Status getInteger(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
     switch (vr) {
-        case vr_counter: *value = M(counter); return OK;
-        default: return Error;
+        case vr_counter:
+            value[(*index)++] = M(counter);
+            return OK;
+        default:
+            return Error;
     }
 }
 

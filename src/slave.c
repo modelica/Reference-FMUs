@@ -17,19 +17,19 @@ void getEventIndicators(ModelInstance *comp, double z[], size_t nz) {
 #endif
 
 #ifndef GET_REAL
-Status getReal(ModelInstance* comp, ValueReference vr, double *value) {
+Status getReal(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
     return Error;
 }
 #endif
 
 #ifndef GET_INTEGER
-Status getInteger(ModelInstance* comp, ValueReference vr, int *value) {
+Status getInteger(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
     return Error;
 }
 #endif
 
 #ifndef GET_BOOLEAN
-Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value) {
+Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *index) {
     return Error;
 }
 #endif

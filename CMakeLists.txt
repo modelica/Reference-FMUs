@@ -58,7 +58,13 @@ endif ()
 
 MESSAGE("FMI_PLATFORM: " ${FMI_PLATFORM})
 
-foreach (MODEL_NAME LinearTransform) #BouncingBall Dahlquist Stair Feedthrough Resource VanDerPol)
+set (MODEL_NAMES BouncingBall Dahlquist Stair Feedthrough Resource VanDerPol)
+
+if (${FMI_VERSION} GREATER 2)
+  set (MODEL_NAMES ${MODEL_NAMES} LinearTransform)
+endif ()
+
+foreach (MODEL_NAME ${MODEL_NAMES}) # Dahlquist Stair Feedthrough Resource VanDerPol)
 
 set(TARGET_NAME ${MODEL_NAME})
 

@@ -11,7 +11,7 @@ void setStartValues(ModelInstance *comp) {
 
 void calculateValues(ModelInstance *comp) {
     // load the file
-    
+
     FILE *file;
     char *path;
     char c;
@@ -27,7 +27,7 @@ void calculateValues(ModelInstance *comp) {
         // FMI 1.0 for Model Exchange doesn't have a resource location
         return;
     }
-    
+
     if (strncmp(comp->resourceLocation, scheme1, strlen(scheme1)) == 0) {
         path = malloc(strlen(comp->resourceLocation) + strlen(resourcePath) + 1);
         strcpy(path, &comp->resourceLocation[strlen(scheme1)] - 1);
@@ -46,26 +46,26 @@ void calculateValues(ModelInstance *comp) {
 		strcpy(path, &path[1]);
 	}
 #endif
-    
+
     // open the resource file
     file = fopen (path, "r");
-    
+
     if (!file) {
         logError(comp, "Failed to open resource file %s.", path);
         return;
     }
-    
+
     // read the first character
     c = fgetc(file);
-    
+
     // assign it to y
     comp->modelData->y = c;
-    
+
     // clost the file
     fclose(file);
 }
 
-Status getReal(ModelInstance* comp, ValueReference vr, double *value) {
+Status getReal(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
     switch (vr) {
         case vr_y:
             *value = M(y);

@@ -114,12 +114,12 @@ void setStartValues(ModelInstance *comp);
 void calculateValues(ModelInstance *comp);
     
 Status getReal(ModelInstance* comp, ValueReference vr, double *value, size_t *index);
-Status getInteger(ModelInstance* comp, ValueReference vr, int *value);
-Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value);
+Status getInteger(ModelInstance* comp, ValueReference vr, int *value, size_t *index);
+Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *index);
 
 Status setReal(ModelInstance* comp, ValueReference vr, const double *value, size_t *index);
-Status setInteger(ModelInstance* comp, ValueReference vr, int value);
-Status setBoolean(ModelInstance* comp, ValueReference vr, bool value);
+Status setInteger(ModelInstance* comp, ValueReference vr, const int *value, size_t *index);
+Status setBoolean(ModelInstance* comp, ValueReference vr, const bool *value, size_t *index);
 
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx);
 void setContinuousStates(ModelInstance *comp, const double x[], size_t nx);
