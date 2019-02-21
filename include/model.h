@@ -113,11 +113,11 @@ typedef struct {
 void setStartValues(ModelInstance *comp);
 void calculateValues(ModelInstance *comp);
     
-Status getReal(ModelInstance* comp, ValueReference vr, double *value);
+Status getReal(ModelInstance* comp, ValueReference vr, double *value, size_t *index);
 Status getInteger(ModelInstance* comp, ValueReference vr, int *value);
 Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value);
 
-Status setReal(ModelInstance* comp, ValueReference vr, double value);
+Status setReal(ModelInstance* comp, ValueReference vr, const double *value, size_t *index);
 Status setInteger(ModelInstance* comp, ValueReference vr, int value);
 Status setBoolean(ModelInstance* comp, ValueReference vr, bool value);
 
