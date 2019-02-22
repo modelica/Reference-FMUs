@@ -482,7 +482,7 @@ fmi3Status fmi3GetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t n
 
     if (nvr > 0 && comp->isDirtyValues) {
         calculateValues(comp);
-        comp->isDirtyValues = fmi3False;
+        comp->isDirtyValues = false;
     }
 
 #ifdef GET_INT32
@@ -507,7 +507,7 @@ fmi3Status fmi3GetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t
 
     if (nvr > 0 && comp->isDirtyValues) {
         calculateValues(comp);
-        comp->isDirtyValues = fmi3False;
+        comp->isDirtyValues = false;
     }
 
 #ifdef GET_BOOLEAN
@@ -539,7 +539,7 @@ fmi3Status fmi3GetString (fmi3Component c, const fmi3ValueReference vr[], size_t
             return fmi3Error;
     if (nvr > 0 && comp->isDirtyValues) {
         calculateValues(comp);
-        comp->isDirtyValues = fmi3False;
+        comp->isDirtyValues = false;
     }
 
 #ifdef SET_STRING
