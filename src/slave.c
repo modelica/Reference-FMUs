@@ -34,6 +34,12 @@ Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *i
 }
 #endif
 
+#ifndef GET_STRING
+Status getString(ModelInstance* comp, ValueReference vr, const char **value, size_t *index) {
+    return Error;
+}
+#endif
+
 #ifndef SET_FLOAT64
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
     return Error;
@@ -48,6 +54,12 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t
 
 #ifndef SET_BOOLEAN
 Status setBoolean(ModelInstance* comp, ValueReference vr, const bool *value, size_t *index) {
+    return Error;
+}
+#endif
+
+#ifndef SET_STRING
+Status setString(ModelInstance* comp, ValueReference vr, const char *const *value, size_t *index) {
     return Error;
 }
 #endif

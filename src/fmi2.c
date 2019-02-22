@@ -191,15 +191,6 @@ static fmi2Status unsupportedFunction(fmi2Component c, const char *fName, int st
     return fmi2Error;
 }
 
-static void notImplemented(ModelInstance* comp, const char *f) {
-    comp->state = modelError;
-    FILTERED_LOG(comp, fmi2Error, LOG_ERROR, "Function %s is not implemented", f)
-}
-
-fmi2Status setString(fmi2Component comp, fmi2ValueReference vr, fmi2String value) {
-    return fmi2SetString(comp, &vr, 1, &value);
-}
-
 // ---------------------------------------------------------------------------
 // Private helpers logger
 // ---------------------------------------------------------------------------
@@ -287,7 +278,7 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
     comp->nextEventTime = 0;
 
     setStartValues(comp); // to be implemented by the includer of this file
-    comp->isDirtyValues = fmi2True; // because we just called setStartValues
+    comp->isDirtyValues = true; // because we just called setStartValues
 
     comp->solverData = solver_create(comp);
 
@@ -362,7 +353,7 @@ fmi2Status fmi2Reset(fmi2Component c) {
 
     comp->state = modelInstantiated;
     setStartValues(comp); // to be implemented by the includer of this file
-    comp->isDirtyValues = fmi2True; // because we just called setStartValues
+    comp->isDirtyValues = true; // because we just called setStartValues
     return fmi2OK;
 }
 
@@ -444,16 +435,16 @@ fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
 
     if (invalidState(comp, "fmi2GetReal", MASK_fmi2GetReal))
         return fmi2Error;
-    
+
     if (nvr > 0 && nullPointer(comp, "fmi2GetReal", "vr[]", vr))
         return fmi2Error;
-    
+
     if (nvr > 0 && nullPointer(comp, "fmi2GetReal", "value[]", value))
         return fmi2Error;
-    
+
     if (nvr > 0 && comp->isDirtyValues) {
         calculateValues(comp);
-        comp->isDirtyValues = fmi2False;
+        comp->isDirtyValues = false;
     }
 
     GET_VARIABLES(Float64)
@@ -474,7 +465,7 @@ fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
 
     if (nvr > 0 && comp->isDirtyValues) {
         calculateValues(comp);
-        comp->isDirtyValues = fmi2False;
+        comp->isDirtyValues = false;
     }
 
     GET_VARIABLES(Int32)
@@ -495,37 +486,31 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
 
     if (nvr > 0 && comp->isDirtyValues) {
         calculateValues(comp);
-        comp->isDirtyValues = fmi2False;
+        comp->isDirtyValues = false;
     }
-    
+
     GET_BOOLEAN_VARIABLES
 }
 
 fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
-    int i;
+
     ModelInstance *comp = (ModelInstance *)c;
+
     if (invalidState(comp, "fmi2GetString", MASK_fmi2GetString))
         return fmi2Error;
+
     if (nvr>0 && nullPointer(comp, "fmi2GetString", "vr[]", vr))
             return fmi2Error;
+
     if (nvr>0 && nullPointer(comp, "fmi2GetString", "value[]", value))
             return fmi2Error;
+
     if (nvr > 0 && comp->isDirtyValues) {
         calculateValues(comp);
-        comp->isDirtyValues = fmi2False;
+        comp->isDirtyValues = false;
     }
 
-#ifdef SET_STRING
-    for (i=0; i<nvr; i++) {
-        if (vrOutOfRange(comp, "fmi2GetString", vr[i], NUMBER_OF_STRINGS))
-            return fmi2Error;
-        value[i] = comp->s[vr[i]];
-        FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2GetString: #s%u# = '%s'", vr[i], value[i])
-    }
-#else
-    return fmi2Error;
-#endif
-    return fmi2OK;
+    GET_VARIABLES(String)
 }
 
 fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
@@ -597,36 +582,7 @@ fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t
 
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetString: nvr = %d", nvr)
 
-#ifdef SET_STRING
-    for (int i = 0; i < nvr; i++) {
-        char *string = (char *)comp->s[vr[i]];
-        if (vrOutOfRange(comp, "fmi2SetString", vr[i], NUMBER_OF_STRINGS))
-            return fmi2Error;
-        FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetString: #s%d# = '%s'", vr[i], value[i])
-
-        if (value[i] == NULL) {
-            if (string) comp->functions->freeMemory(string);
-            comp->s[vr[i]] = NULL;
-            FILTERED_LOG(comp, fmi2Warning, LOG_ERROR, "fmi2SetString: string argument value[%d] = NULL.", i);
-        } else {
-            if (string == NULL || strlen(string) < strlen(value[i])) {
-                if (string) comp->functions->freeMemory(string);
-                comp->s[vr[i]] = (char *)comp->functions->allocateMemory(1 + strlen(value[i]), sizeof(char));
-                if (!comp->s[vr[i]]) {
-                    comp->state = modelError;
-                    FILTERED_LOG(comp, fmi2Error, LOG_ERROR, "fmi2SetString: Out of memory.")
-                    return fmi2Error;
-                }
-            }
-            strcpy((char *)comp->s[vr[i]], (char *)value[i]);
-        }
-    }
-    if (nvr > 0) comp->isDirtyValues = fmi2True;
-#else
-    return fmi2Error;
-#endif
-
-    return fmi2OK;
+    SET_VARIABLES(String)
 }
 
 fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {
@@ -892,12 +848,15 @@ fmi2Status fmi2SetTime(fmi2Component c, fmi2Real time) {
 }
 
 fmi2Status fmi2SetContinuousStates(fmi2Component c, const fmi2Real x[], size_t nx){
+
     ModelInstance *comp = (ModelInstance *)c;
-    int i;
+
     if (invalidState(comp, "fmi2SetContinuousStates", MASK_fmi2SetContinuousStates))
         return fmi2Error;
+
     if (invalidNumber(comp, "fmi2SetContinuousStates", "nx", nx, NUMBER_OF_STATES))
         return fmi2Error;
+
     if (nullPointer(comp, "fmi2SetContinuousStates", "x[]", x))
         return fmi2Error;
 
@@ -916,7 +875,6 @@ fmi2Status fmi2SetContinuousStates(fmi2Component c, const fmi2Real x[], size_t n
 
 /* Evaluation of the model equations */
 fmi2Status fmi2GetDerivatives(fmi2Component c, fmi2Real derivatives[], size_t nx) {
-    int i;
 
     ModelInstance* comp = (ModelInstance *)c;
 

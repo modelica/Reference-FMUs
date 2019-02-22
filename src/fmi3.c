@@ -130,23 +130,23 @@ static const char *logCategoriesNames[] = {"logAll", "logError", "logFmiCall", "
 // ---------------------------------------------------------------------------
 
 void logError(ModelInstance *comp, const char *message, ...) {
-    
+
     va_list args;
     size_t len = 0;
     char *buf = "";
-    
+
     va_start(args, message);
     len = vsnprintf(buf, len, message, args);
     va_end(args);
-    
+
     buf = malloc(len + 1);
-    
+
     va_start(args, message);
     len = vsnprintf(buf, len + 1, message, args);
     va_end(args);
-    
+
     comp->logger(comp->componentEnvironment, comp->instanceName, fmi3Error, "logError", buf);
-    
+
     free(buf);
 }
 
@@ -188,16 +188,6 @@ static fmi3Status unsupportedFunction(fmi3Component c, const char *fName, int st
         return fmi3Error;
     FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, fName);
     FILTERED_LOG(comp, fmi3Error, LOG_ERROR, "%s: Function not implemented.", fName)
-    return fmi3Error;
-}
-
-static void notImplemented(ModelInstance* comp, const char *f) {
-    comp->state = modelError;
-    FILTERED_LOG(comp, fmi3Error, LOG_ERROR, "Function %s is not implemented", f)
-}
-
-fmi3Status setString(fmi3Component comp, fmi3ValueReference vr, fmi3String value) {
-    //return fmi3SetString(comp, &vr, 1, &value);
     return fmi3Error;
 }
 
@@ -258,7 +248,7 @@ fmi3Component fmi3Instantiate(fmi3String instanceName, fmi3Type fmuType, fmi3Str
         comp->instanceName = (char *)functions->allocateMemory(NULL, 1 + strlen(instanceName), sizeof(char));
         comp->GUID = (char *)functions->allocateMemory(NULL, 1 + strlen(fmuGUID), sizeof(char));
         comp->resourceLocation = (char *)functions->allocateMemory(NULL, 1 + strlen(fmuResourceLocation), sizeof(char));
-        
+
         comp->modelData = (ModelData *)functions->allocateMemory(NULL, 1, sizeof(ModelData));
 
         // set all categories to on or off. fmi3SetDebugLogging should be called to choose specific categories.
@@ -294,8 +284,8 @@ fmi3Component fmi3Instantiate(fmi3String instanceName, fmi3Type fmuType, fmi3Str
     comp->nextEventTimeDefined = fmi3False;
     comp->nextEventTime = 0;
 
-    setStartValues(comp); // to be implemented by the includer of this file
-    comp->isDirtyValues = fmi3True; // because we just called setStartValues
+    setStartValues(comp);
+    comp->isDirtyValues = true;
 
     comp->solverData = solver_create(comp);
 
@@ -341,14 +331,16 @@ fmi3Status fmi3ExitInitializationMode(fmi3Component c) {
     // ensure calculated values are updated now
     if (comp->isDirtyValues) {
         calculateValues(comp);
-        comp->isDirtyValues = fmi3False;
+        comp->isDirtyValues = false;
     }
 
     if (comp->type == fmi3ModelExchange) {
         comp->state = modelEventMode;
         comp->isNewEventIteration = fmi3True;
+    } else {
+        comp->state = modelStepComplete;
     }
-    else comp->state = modelStepComplete;
+
     return fmi3OK;
 }
 
@@ -369,8 +361,8 @@ fmi3Status fmi3Reset(fmi3Component c) {
     FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3Reset")
 
     comp->state = modelInstantiated;
-    setStartValues(comp); // to be implemented by the includer of this file
-    comp->isDirtyValues = fmi3True; // because we just called setStartValues
+    setStartValues(comp);
+    comp->isDirtyValues = true;
     return fmi3OK;
 }
 
@@ -457,9 +449,9 @@ fmi3Status fmi3GetFloat64 (fmi3Component c, const fmi3ValueReference vr[], size_
 
     if (nvr > 0 && comp->isDirtyValues) {
         calculateValues(comp);
-        comp->isDirtyValues = fmi3False;
+        comp->isDirtyValues = false;
     }
-    
+
     GET_VARIABLES(Float64)
 }
 
@@ -506,30 +498,24 @@ fmi3Status fmi3GetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t
 }
 
 fmi3Status fmi3GetString (fmi3Component c, const fmi3ValueReference vr[], size_t nvr, fmi3String value[], size_t nValues) {
-    int i;
+
     ModelInstance *comp = (ModelInstance *)c;
+
     if (invalidState(comp, "fmi3GetString", MASK_fmi3GetString))
         return fmi3Error;
+
     if (nvr>0 && nullPointer(comp, "fmi3GetString", "vr[]", vr))
             return fmi3Error;
+
     if (nvr>0 && nullPointer(comp, "fmi3GetString", "value[]", value))
             return fmi3Error;
+
     if (nvr > 0 && comp->isDirtyValues) {
         calculateValues(comp);
         comp->isDirtyValues = false;
     }
 
-#ifdef SET_STRING
-    for (i=0; i<nvr; i++) {
-        if (vrOutOfRange(comp, "fmi3GetString", vr[i], NUMBER_OF_STRINGS))
-            return fmi3Error;
-        value[i] = comp->s[vr[i]];
-        FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3GetString: #s%u# = '%s'", vr[i], value[i])
-    }
-#else
-    return fmi3Error;
-#endif
-    return fmi3OK;
+    GET_VARIABLES(String)
 }
 
 fmi3Status fmi3SetFloat64 (fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3Float64 value[], size_t nValues) {
@@ -587,46 +573,21 @@ fmi3Status fmi3SetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t
 }
 
 fmi3Status fmi3SetString (fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3String value[], size_t nValues) {
-    int i;
+
     ModelInstance *comp = (ModelInstance *)c;
+
     if (invalidState(comp, "fmi3SetString", MASK_fmi3SetString))
         return fmi3Error;
+
     if (nvr>0 && nullPointer(comp, "fmi3SetString", "vr[]", vr))
         return fmi3Error;
+
     if (nvr>0 && nullPointer(comp, "fmi3SetString", "value[]", value))
         return fmi3Error;
+
     FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetString: nvr = %d", nvr)
 
-#ifdef SET_STRING
-    for (i = 0; i < nvr; i++) {
-        char *string = (char *)comp->s[vr[i]];
-        if (vrOutOfRange(comp, "fmi3SetString", vr[i], NUMBER_OF_STRINGS))
-            return fmi3Error;
-        FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetString: #s%d# = '%s'", vr[i], value[i])
-
-        if (value[i] == NULL) {
-            if (string) comp->functions->freeMemory(string);
-            comp->s[vr[i]] = NULL;
-            FILTERED_LOG(comp, fmi3Warning, LOG_ERROR, "fmi3SetString: string argument value[%d] = NULL.", i);
-        } else {
-            if (string == NULL || strlen(string) < strlen(value[i])) {
-                if (string) comp->functions->freeMemory(string);
-                comp->s[vr[i]] = (char *)comp->functions->allocateMemory(1 + strlen(value[i]), sizeof(char));
-                if (!comp->s[vr[i]]) {
-                    comp->state = modelError;
-                    FILTERED_LOG(comp, fmi3Error, LOG_ERROR, "fmi3SetString: Out of memory.")
-                    return fmi3Error;
-                }
-            }
-            strcpy((char *)comp->s[vr[i]], (char *)value[i]);
-        }
-    }
-    if (nvr > 0) comp->isDirtyValues = fmi3True;
-#else
-    return fmi3Error;
-#endif
-
-    return fmi3OK;
+    SET_VARIABLES(String)
 }
 
 fmi3Status fmi3GetFMUstate (fmi3Component c, fmi3FMUstate* FMUstate) {
@@ -799,31 +760,25 @@ fmi3Status fmi3SetTime(fmi3Component c, fmi3Float64 time) {
 }
 
 fmi3Status fmi3SetContinuousStates(fmi3Component c, const fmi3Float64 x[], size_t nx){
+
     ModelInstance *comp = (ModelInstance *)c;
-    int i;
+
     if (invalidState(comp, "fmi3SetContinuousStates", MASK_fmi3SetContinuousStates))
         return fmi3Error;
+
     if (invalidNumber(comp, "fmi3SetContinuousStates", "nx", nx, NUMBER_OF_STATES))
         return fmi3Error;
+
     if (nullPointer(comp, "fmi3SetContinuousStates", "x[]", x))
         return fmi3Error;
 
     setContinuousStates(comp, x, nx);
 
-//#if NUMBER_OF_STATES>0
-//    for (i = 0; i < nx; i++) {
-//        fmi3ValueReference vr = vrStates[i];
-//        FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetContinuousStates: #r%d#=%.16g", vr, x[i])
-//        assert(vr < NUMBER_OF_REALS);
-//        comp->r[vr] = x[i];
-//    }
-//#endif
     return fmi3OK;
 }
 
 /* Evaluation of the model equations */
 fmi3Status fmi3GetDerivatives(fmi3Component c, fmi3Float64 derivatives[], size_t nx) {
-    int i;
 
     ModelInstance* comp = (ModelInstance *)c;
 

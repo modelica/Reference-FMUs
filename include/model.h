@@ -113,10 +113,12 @@ void calculateValues(ModelInstance *comp);
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index);
 Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index);
 Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *index);
+Status getString(ModelInstance* comp, ValueReference vr, const char **value, size_t *index);
 
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index);
 Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t *index);
 Status setBoolean(ModelInstance* comp, ValueReference vr, const bool *value, size_t *index);
+Status setString(ModelInstance* comp, ValueReference vr, const char *const *value, size_t *index);
 
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx);
 void setContinuousStates(ModelInstance *comp, const double x[], size_t nx);

@@ -95,10 +95,6 @@ static fmiBoolean nullPointer(ModelInstance* comp, const char* f, const char* ar
 // Private helpers used below to implement functions
 // ---------------------------------------------------------------------------
 
-fmiStatus setString(fmiComponent comp, fmiValueReference vr, fmiString value){
-    return fmiSetString(comp, &vr, 1, &value);
-}
-
 // fname is fmiInstantiateModel or fmiInstantiateSlave
 static fmiComponent instantiateModel(char* fname, fmiString instanceName, fmiString GUID,
         fmiString fmuLocation, fmiCallbackFunctions functions, fmiBoolean loggingOn) {
