@@ -150,4 +150,29 @@ for (int i = 0; i < nvr; i++) { \
 if (nvr > 0) comp->isDirtyValues = true; \
 return status;
 
+// TODO: make this work with arrays
+#define GET_BOOLEAN_VARIABLES \
+Status status = OK; \
+for (int i = 0; i < nvr; i++) { \
+    bool v = false; \
+    size_t index = 0; \
+    Status s = getBoolean(comp, vr[i], &v, &index); \
+    value[i] = v; \
+    status = max(status, s); \
+    if (status > Warning) return status; \
+} \
+return status;
+
+// TODO: make this work with arrays
+#define SET_BOOLEAN_VARIABLES \
+Status status = OK; \
+for (int i = 0; i < nvr; i++) { \
+    bool v = value[i]; \
+    size_t index = 0; \
+    Status s = setBoolean(comp, vr[i], &v, &index); \
+    status = max(status, s); \
+    if (status > Warning) return status; \
+} \
+return status;
+
 #endif  /* model_h */

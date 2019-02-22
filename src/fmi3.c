@@ -460,11 +460,7 @@ fmi3Status fmi3GetFloat64 (fmi3Component c, const fmi3ValueReference vr[], size_
         comp->isDirtyValues = fmi3False;
     }
     
-#ifdef GET_FLOAT64
     GET_VARIABLES(Float64)
-#else
-    return fmi3Error;
-#endif
 }
 
 fmi3Status fmi3GetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, fmi3Int32 value[], size_t nValues) {
@@ -485,11 +481,7 @@ fmi3Status fmi3GetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t n
         comp->isDirtyValues = false;
     }
 
-#ifdef GET_INT32
     GET_VARIABLES(Int32)
-#else
-    return fmi3Error; // not implemented
-#endif
 }
 
 fmi3Status fmi3GetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, fmi3Boolean value[], size_t nValues) {
@@ -510,22 +502,7 @@ fmi3Status fmi3GetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t
         comp->isDirtyValues = false;
     }
 
-#ifdef GET_BOOLEAN
-    Status status = OK;
-    
-    for (int i = 0; i < nvr; i++) {
-        size_t index = 0;
-        bool v = false;
-        Status s = getBoolean(comp, vr[i], &v, &index);
-        value[i] = v;
-        status = max(status, s);
-        if (status > Warning) return status;
-    }
-    
-    return status;
-#else
-    return fmi3Error; // not implemented
-#endif
+    GET_BOOLEAN_VARIABLES
 }
 
 fmi3Status fmi3GetString (fmi3Component c, const fmi3ValueReference vr[], size_t nvr, fmi3String value[], size_t nValues) {
@@ -570,11 +547,7 @@ fmi3Status fmi3SetFloat64 (fmi3Component c, const fmi3ValueReference vr[], size_
 
     FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetReal: nvr = %d", nvr)
 
-#ifdef SET_FLOAT64
     SET_VARIABLES(Float64)
-#else
-    return fmi3Error;
-#endif
 }
 
 fmi3Status fmi3SetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3Int32 value[], size_t nValues) {
@@ -592,11 +565,7 @@ fmi3Status fmi3SetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t n
 
     FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetInteger: nvr = %d", nvr)
 
-#ifdef SET_INT32
     SET_VARIABLES(Int32)
-#else
-    return fmi3Error;  // not implemented
-#endif
 }
 
 fmi3Status fmi3SetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3Boolean value[], size_t nValues) {
@@ -614,24 +583,7 @@ fmi3Status fmi3SetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t
 
     FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetBoolean: nvr = %d", nvr)
 
-#ifdef SET_BOOLEAN
-    int i;
-    Status status = OK;
-    
-    for (i = 0; i < nvr; i++) {
-        bool v = value[i];
-        size_t index = 0;
-        Status s = setBoolean(comp, vr[i], &v, &index);
-        status = max(status, s);
-        if (status > Warning) return status;
-    }
-    
-    if (nvr > 0) comp->isDirtyValues = true;
-    
-    return status;
-#else
-    return fmi3Error;  // not implemented
-#endif
+    SET_BOOLEAN_VARIABLES
 }
 
 fmi3Status fmi3SetString (fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3String value[], size_t nValues) {

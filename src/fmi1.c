@@ -278,9 +278,6 @@ fmiStatus fmiSetInteger(fmiComponent c, const fmiValueReference vr[], size_t nvr
 }
 
 fmiStatus fmiSetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiBoolean value[]){
-#ifdef SET_BOOLEAN
-    int i;
-    Status status = OK;
 
     ModelInstance* comp = (ModelInstance *)c;
 
@@ -296,19 +293,7 @@ fmiStatus fmiSetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr
     if (comp->loggingOn)
         comp->logger(c, comp->instanceName, fmiOK, "log", "fmiSetBoolean: nvr = %d",  nvr);
 
-    for (i = 0; i < nvr; i++) {
-        bool v = value[i];
-        size_t index = 0;
-        if (setBoolean(comp, vr[i], &v, &index) > Warning) return fmiError;
-    }
-    
-    if (nvr > 0) comp->isDirtyValues = true;
-    
-    return fmiOK;
-
-#else
-    return fmiError;  // not implemented
-#endif
+    SET_BOOLEAN_VARIABLES
 }
 
 fmiStatus fmiSetString(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiString value[]){
@@ -362,11 +347,7 @@ fmiStatus fmiGetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, f
     if (nvr > 0 && nullPointer(comp, "fmiGetReal", "value[]", value))
          return fmiError;
     
-#ifdef GET_FLOAT64
     GET_VARIABLES(Float64)
-#else
-    return fmiError;  // not implemented
-#endif
 }
 
 fmiStatus fmiGetInteger(fmiComponent c, const fmiValueReference vr[], size_t nvr, fmiInteger value[]) {
@@ -382,11 +363,7 @@ fmiStatus fmiGetInteger(fmiComponent c, const fmiValueReference vr[], size_t nvr
     if (nvr > 0 && nullPointer(comp, "fmiGetInteger", "value[]", value))
          return fmiError;
 
-#ifdef GET_INT32
     GET_VARIABLES(Int32)
-#else
-    return fmiError;  // not implemented
-#endif
 }
 
 fmiStatus fmiGetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr, fmiBoolean value[]) {
@@ -402,21 +379,7 @@ fmiStatus fmiGetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr
     if (nvr>0 && nullPointer(comp, "fmiGetBoolean", "value[]", value))
          return fmiError;
 
-    int i;
-    size_t index = 0;
-    Status status = OK;
-
-    for (i = 0; i < nvr; i++) {
-        bool v = false;
-        Status s = getBoolean(comp, vr[i], &v, &index);
-        value[i] = v;
-        status = max(status, s);
-        if (status > Warning) return status;
-    }
-    
-    return status;
-
-    return fmiOK;
+    GET_BOOLEAN_VARIABLES
 }
 
 fmiStatus fmiGetString(fmiComponent c, const fmiValueReference vr[], size_t nvr, fmiString  value[]) {

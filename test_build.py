@@ -90,7 +90,7 @@ class BuildTest(unittest.TestCase):
         if fmpy_available:
             self.validate(build_dir,
                           fmi_types=['ModelExchange'],
-                          models=['BouncingBall', 'Dahlquist', 'Stair', 'VanDerPol'] #, 'Feedthrough'
+                          models=['BouncingBall', 'Dahlquist', 'Stair', 'VanDerPol']
 )
 
     def test_fmi1_cs(self):
@@ -106,7 +106,7 @@ class BuildTest(unittest.TestCase):
         if fmpy_available:
             self.validate(build_dir,
                           fmi_types=['CoSimulation'],
-                          models=['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol']) # , 'Feedthrough'
+                          models=['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol'])
 
     def test_fmi2(self):
 

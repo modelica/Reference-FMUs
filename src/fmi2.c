@@ -456,12 +456,7 @@ fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
         comp->isDirtyValues = fmi2False;
     }
 
-#ifdef GET_FLOAT64
     GET_VARIABLES(Float64)
-#else
-    notImplemented(comp, "getReal");
-    return fmi2Error; // not implemented
-#endif
 }
 
 fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
@@ -482,11 +477,7 @@ fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
         comp->isDirtyValues = fmi2False;
     }
 
-#ifdef GET_INT32
     GET_VARIABLES(Int32)
-#else
-    return fmi2Error; // not implemented
-#endif
 }
 
 fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
@@ -506,23 +497,8 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
         calculateValues(comp);
         comp->isDirtyValues = fmi2False;
     }
-
-#ifdef GET_BOOLEAN
-    size_t index = 0;
-    Status status = OK;
-
-    for (int i = 0; i < nvr; i++) {
-        bool v = false;
-        Status s = getBoolean(comp, vr[i], &v, &index);
-        value[i] = v;
-        status = max(status, s);
-        if (status > Warning) return status;
-    }
     
-    return status;
-#else
-    return fmi2Error; // not implemented
-#endif
+    GET_BOOLEAN_VARIABLES
 }
 
 fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
@@ -567,11 +543,7 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
 
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetReal: nvr = %d", nvr)
 
-#ifdef SET_FLOAT64
     SET_VARIABLES(Float64)
-#else
-    return fmi2Error;
-#endif
 }
 
 fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
@@ -589,11 +561,7 @@ fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
 
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetInteger: nvr = %d", nvr)
 
-#ifdef SET_INT32
     SET_VARIABLES(Int32)
-#else
-    return fmi2Error;  // not implemented
-#endif
 }
 
 fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
@@ -611,19 +579,7 @@ fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
 
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetBoolean: nvr = %d", nvr)
 
-#ifdef SET_BOOLEAN
-    for (int i = 0; i < nvr; i++) {
-        bool v = value[i];
-        size_t index = 0;
-        if (setBoolean(comp, vr[i], &v, &index) > Warning) return fmi2Error;
-    }
-
-    if (nvr > 0) comp->isDirtyValues = fmi2True;
-
-    return fmi2OK;
-#else
-    return fmi2Error;  // not implemented
-#endif
+    SET_BOOLEAN_VARIABLES
 }
 
 fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {

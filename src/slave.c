@@ -34,6 +34,24 @@ Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *i
 }
 #endif
 
+#ifndef SET_FLOAT64
+Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
+    return Error;
+}
+#endif
+
+#ifndef SET_INT32
+Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t *index) {
+    return Error;
+}
+#endif
+
+#ifndef SET_BOOLEAN
+Status setBoolean(ModelInstance* comp, ValueReference vr, const bool *value, size_t *index) {
+    return Error;
+}
+#endif
+
 #if NUMBER_OF_STATES < 1
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx) {}
 void setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {}
