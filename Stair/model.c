@@ -14,7 +14,7 @@ void calculateValues(ModelInstance *comp) {
     // do nothing
 }
 
-Status getInteger(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
+Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
     switch (vr) {
         case vr_counter:
             value[(*index)++] = M(counter);

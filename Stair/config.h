@@ -9,7 +9,7 @@
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
 
-#define GET_INTEGER
+#define GET_INT32
 #define EVENT_UPDATE
 
 typedef enum {

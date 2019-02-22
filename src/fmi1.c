@@ -232,7 +232,6 @@ fmiStatus fmiSetDebugLogging(fmiComponent c, fmiBoolean loggingOn) {
 }
 
 fmiStatus fmiSetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiReal value[]) {
-#ifdef SET_REAL
 
     ModelInstance* comp = (ModelInstance *)c;
 
@@ -248,24 +247,14 @@ fmiStatus fmiSetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, c
     if (comp->loggingOn) comp->logger(c, comp->instanceName, fmiOK, "log",
             "fmiSetReal: nvr = %d", nvr);
     
-    int i;
-    Status status = OK;
-    size_t index = 0;
-    
-    for (i = 0; i < nvr; i++) {
-        Status s = setReal(comp, vr[i], value, &index);
-        status = max(status, s);
-        if (status > Warning) return status;
-    }
-
-    return status;
+#ifdef SET_FLOAT64
+    SET_VARIABLES(Float64)
 #else
     return fmiError;  // not implemented
 #endif
 }
 
 fmiStatus fmiSetInteger(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiInteger value[]) {
-#ifdef SET_INTEGER
 
     ModelInstance* comp = (ModelInstance *)c;
 
@@ -281,19 +270,8 @@ fmiStatus fmiSetInteger(fmiComponent c, const fmiValueReference vr[], size_t nvr
     if (comp->loggingOn)
         comp->logger(c, comp->instanceName, fmiOK, "log", "fmiSetInteger: nvr = %d",  nvr);
 
-    int i;
-    Status status = OK;
-    size_t index = 0;
-
-    for (i = 0; i < nvr; i++) {
-        Status s = setInteger(comp, vr[i], value, &index);
-        status = max(status, s);
-        if (status > Warning) return status;
-    }
-
-    if (nvr > 0) comp->isDirtyValues = true;
-
-    return status;
+#ifdef SET_INT32
+    SET_VARIABLES(Int32)
 #else
     return fmiError;  // not implemented
 #endif
@@ -372,7 +350,6 @@ fmiStatus fmiSetString(fmiComponent c, const fmiValueReference vr[], size_t nvr,
 }
 
 fmiStatus fmiGetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, fmiReal value[]) {
-    int i;
 
     ModelInstance* comp = (ModelInstance *)c;
 
@@ -384,23 +361,15 @@ fmiStatus fmiGetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, f
 
     if (nvr > 0 && nullPointer(comp, "fmiGetReal", "value[]", value))
          return fmiError;
-
-    size_t index = 0;
-    Status status = OK;
     
-    for (i = 0; i < nvr; i++) {
-        Status s = getReal(comp, vr[i], value, &index);
-        status = max(status, s);
-        if (status > Warning) return status;
-    }
-    
-    return status;
-
-    return fmiOK;
+#ifdef GET_FLOAT64
+    GET_VARIABLES(Float64)
+#else
+    return fmiError;  // not implemented
+#endif
 }
 
 fmiStatus fmiGetInteger(fmiComponent c, const fmiValueReference vr[], size_t nvr, fmiInteger value[]) {
-    int i;
 
     ModelInstance* comp = (ModelInstance *)c;
 
@@ -413,18 +382,11 @@ fmiStatus fmiGetInteger(fmiComponent c, const fmiValueReference vr[], size_t nvr
     if (nvr > 0 && nullPointer(comp, "fmiGetInteger", "value[]", value))
          return fmiError;
 
-    size_t index = 0;
-    Status status = OK;
-
-    for (i = 0; i < nvr; i++) {
-        Status s = getInteger(comp, vr[i], value, &index);
-        status = max(status, s);
-        if (status > Warning) return status;
-    }
-    
-    return status;
-
-    return fmiOK;
+#ifdef GET_INT32
+    GET_VARIABLES(Int32)
+#else
+    return fmiError;  // not implemented
+#endif
 }
 
 fmiStatus fmiGetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr, fmiBoolean value[]) {

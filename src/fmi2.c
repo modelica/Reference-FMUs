@@ -442,30 +442,22 @@ fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
 
     ModelInstance *comp = (ModelInstance *)c;
 
-#ifdef GET_REAL
-    int i;
-    Status status = OK;
     if (invalidState(comp, "fmi2GetReal", MASK_fmi2GetReal))
         return fmi2Error;
+    
     if (nvr > 0 && nullPointer(comp, "fmi2GetReal", "vr[]", vr))
         return fmi2Error;
+    
     if (nvr > 0 && nullPointer(comp, "fmi2GetReal", "value[]", value))
         return fmi2Error;
+    
     if (nvr > 0 && comp->isDirtyValues) {
         calculateValues(comp);
         comp->isDirtyValues = fmi2False;
     }
 
-    size_t index = 0;
-    
-    for (i = 0; i < nvr; i++) {
-        Status s = getReal(comp, vr[i], value, &index);
-        status = max(status, s);
-        FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2GetReal: #r%u# = %.16g", vr[i], value[i])
-        if (status > Warning) return status;
-    }
-
-    return status;
+#ifdef GET_FLOAT64
+    GET_VARIABLES(Float64)
 #else
     notImplemented(comp, "getReal");
     return fmi2Error; // not implemented
@@ -473,9 +465,6 @@ fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
 }
 
 fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
-
-    int i;
-    Status status = OK;
 
     ModelInstance *comp = (ModelInstance *)c;
 
@@ -493,24 +482,14 @@ fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
         comp->isDirtyValues = fmi2False;
     }
 
-#ifdef GET_INTEGER
-    size_t index = 0;
-    
-    for (i = 0; i < nvr; i++) {
-        Status s = getInteger(comp, vr[i], value, &index);
-        status = max(status, s);
-        if (status > Warning) return status;
-    }
-
-    return status;
+#ifdef GET_INT32
+    GET_VARIABLES(Int32)
 #else
     return fmi2Error; // not implemented
 #endif
 }
 
 fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
-    int i;
-    Status status = OK;
 
     ModelInstance *comp = (ModelInstance *)c;
 
@@ -530,8 +509,9 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
 
 #ifdef GET_BOOLEAN
     size_t index = 0;
-    
-    for (i = 0; i < nvr; i++) {
+    Status status = OK;
+
+    for (int i = 0; i < nvr; i++) {
         bool v = false;
         Status s = getBoolean(comp, vr[i], &v, &index);
         value[i] = v;
@@ -573,36 +553,28 @@ fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t
 }
 
 fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
-#ifdef SET_REAL
-    int i;
+
     ModelInstance *comp = (ModelInstance *)c;
+
     if (invalidState(comp, "fmi2SetReal", MASK_fmi2SetReal))
         return fmi2Error;
+
     if (nvr > 0 && nullPointer(comp, "fmi2SetReal", "vr[]", vr))
         return fmi2Error;
+
     if (nvr > 0 && nullPointer(comp, "fmi2SetReal", "value[]", value))
         return fmi2Error;
+
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetReal: nvr = %d", nvr)
 
-    size_t index = 0;
-    
-    // no check whether setting the value is allowed in the current state
-    for (i = 0; i < nvr; i++) {
-        Status s = setReal(comp, vr[i], value, &index);
-        if (s > Warning) return fmi2Error;
-        FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetReal: #r%d# = %.16g", vr[i], value[i])
-    }
-
-    if (nvr > 0) comp->isDirtyValues = fmi2True;
-    return fmi2OK;
+#ifdef SET_FLOAT64
+    SET_VARIABLES(Float64)
 #else
     return fmi2Error;
 #endif
 }
 
 fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
-    int i;
-    Status status = OK;
 
     ModelInstance *comp = (ModelInstance *)c;
 
@@ -617,22 +589,14 @@ fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
 
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetInteger: nvr = %d", nvr)
 
-#ifdef SET_INTEGER
-    size_t index = 0;
-    for (i = 0; i < nvr; i++) {
-        Status s = setInteger(comp, vr[i], value, &index);
-        status = max(status, s);
-        if (status > Warning) return status;
-    }
-    if (nvr > 0) comp->isDirtyValues = fmi2True;
-    return status;
+#ifdef SET_INT32
+    SET_VARIABLES(Int32)
 #else
     return fmi2Error;  // not implemented
 #endif
 }
 
 fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
-    int i;
 
     ModelInstance *comp = (ModelInstance *)c;
 
@@ -648,8 +612,7 @@ fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetBoolean: nvr = %d", nvr)
 
 #ifdef SET_BOOLEAN
-    
-    for (i = 0; i < nvr; i++) {
+    for (int i = 0; i < nvr; i++) {
         bool v = value[i];
         size_t index = 0;
         if (setBoolean(comp, vr[i], &v, &index) > Warning) return fmi2Error;
@@ -664,18 +627,22 @@ fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
 }
 
 fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
-    int i;
+
     ModelInstance *comp = (ModelInstance *)c;
+
     if (invalidState(comp, "fmi2SetString", MASK_fmi2SetString))
         return fmi2Error;
+
     if (nvr>0 && nullPointer(comp, "fmi2SetString", "vr[]", vr))
         return fmi2Error;
+
     if (nvr>0 && nullPointer(comp, "fmi2SetString", "value[]", value))
         return fmi2Error;
+
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2SetString: nvr = %d", nvr)
 
 #ifdef SET_STRING
-    for (i = 0; i < nvr; i++) {
+    for (int i = 0; i < nvr; i++) {
         char *string = (char *)comp->s[vr[i]];
         if (vrOutOfRange(comp, "fmi2SetString", vr[i], NUMBER_OF_STRINGS))
             return fmi2Error;

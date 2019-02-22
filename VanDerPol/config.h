@@ -9,8 +9,8 @@
 #define NUMBER_OF_STATES 2
 #define NUMBER_OF_EVENT_INDICATORS 0
 
-#define GET_REAL
-#define SET_REAL
+#define GET_FLOAT64
+#define SET_FLOAT64
 
 typedef enum {
     vr_x0, vr_der_x0, vr_x1, vr_der_x1, vr_mu

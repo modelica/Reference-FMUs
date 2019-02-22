@@ -107,18 +107,15 @@ typedef struct {
     
 } ModelInstance;
 
-// shorthand to access the variables
-#define M(v) (comp->modelData->v)
-
 void setStartValues(ModelInstance *comp);
 void calculateValues(ModelInstance *comp);
     
-Status getReal(ModelInstance* comp, ValueReference vr, double *value, size_t *index);
-Status getInteger(ModelInstance* comp, ValueReference vr, int *value, size_t *index);
+Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index);
+Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index);
 Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *index);
 
-Status setReal(ModelInstance* comp, ValueReference vr, const double *value, size_t *index);
-Status setInteger(ModelInstance* comp, ValueReference vr, const int *value, size_t *index);
+Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index);
+Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t *index);
 Status setBoolean(ModelInstance* comp, ValueReference vr, const bool *value, size_t *index);
 
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx);
@@ -128,5 +125,29 @@ void getEventIndicators(ModelInstance *comp, double z[], size_t nz);
 void eventUpdate(ModelInstance *comp);
 
 void logError(ModelInstance *comp, const char *message, ...);
+
+// shorthand to access the variables
+#define M(v) (comp->modelData->v)
+
+#define GET_VARIABLES(T) \
+size_t index = 0; \
+Status status = OK; \
+for (int i = 0; i < nvr; i++) { \
+    Status s = get ## T(comp, vr[i], value, &index); \
+    status = max(status, s); \
+    if (status > Warning) return status; \
+} \
+return status;
+
+#define SET_VARIABLES(T) \
+size_t index = 0; \
+Status status = OK; \
+for (int i = 0; i < nvr; i++) { \
+    Status s = set ## T(comp, vr[i], value, &index); \
+    status = max(status, s); \
+    if (status > Warning) return status; \
+} \
+if (nvr > 0) comp->isDirtyValues = true; \
+return status;
 
 #endif  /* model_h */

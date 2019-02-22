@@ -9,7 +9,7 @@
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
 
-#define GET_REAL
+#define GET_FLOAT64
 
 typedef enum {
     vr_y

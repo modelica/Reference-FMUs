@@ -446,33 +446,24 @@ fmi3Status fmi3GetFloat64 (fmi3Component c, const fmi3ValueReference vr[], size_
 
     ModelInstance *comp = (ModelInstance *)c;
 
-#ifdef GET_REAL
-    int i;
-    Status status = OK;
     if (invalidState(comp, "fmi3GetReal", MASK_fmi3GetReal))
         return fmi3Error;
+
     if (nvr > 0 && nullPointer(comp, "fmi3GetReal", "vr[]", vr))
         return fmi3Error;
+
     if (nvr > 0 && nullPointer(comp, "fmi3GetReal", "value[]", value))
         return fmi3Error;
+
     if (nvr > 0 && comp->isDirtyValues) {
         calculateValues(comp);
         comp->isDirtyValues = fmi3False;
     }
     
-    size_t index = 0;
-    
-    for (i = 0; i < nvr; i++) {
-        Status s = getReal(comp, vr[i], value, &index);
-        status = max(status, s);
-        FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3GetReal: #r%u# = %.16g", vr[i], value[i])
-        if (status > Warning) return status;
-    }
-
-    return status;
+#ifdef GET_FLOAT64
+    GET_VARIABLES(Float64)
 #else
-    notImplemented(comp, "getReal");
-    return fmi3Error; // not implemented
+    return fmi3Error;
 #endif
 }
 
@@ -494,16 +485,8 @@ fmi3Status fmi3GetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t n
         comp->isDirtyValues = fmi3False;
     }
 
-#ifdef GET_INTEGER
-    Status status = OK;
-    size_t index = 0;
-    
-    for (int i = 0; i < nvr; i++) {
-        status = max(status, getInteger(comp, vr[i], value, &index));
-        if (status > Warning) return status;
-    }
-
-    return status;
+#ifdef GET_INT32
+    GET_VARIABLES(Int32)
 #else
     return fmi3Error; // not implemented
 #endif
@@ -573,29 +556,22 @@ fmi3Status fmi3GetString (fmi3Component c, const fmi3ValueReference vr[], size_t
 }
 
 fmi3Status fmi3SetFloat64 (fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3Float64 value[], size_t nValues) {
-#ifdef SET_REAL
-    int i;
-    size_t index = 0;
-    fmi3Status status = fmi3OK;
+
     ModelInstance *comp = (ModelInstance *)c;
+
     if (invalidState(comp, "fmi3SetReal", MASK_fmi3SetReal))
         return fmi3Error;
+
     if (nvr > 0 && nullPointer(comp, "fmi3SetReal", "vr[]", vr))
         return fmi3Error;
+
     if (nvr > 0 && nullPointer(comp, "fmi3SetReal", "value[]", value))
         return fmi3Error;
+
     FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetReal: nvr = %d", nvr)
 
-    // no check whether setting the value is allowed in the current state
-    for (i = 0; i < nvr; i++) {
-        Status s = setReal(comp, vr[i], value, &index);
-        status = max(status, s);
-        if (status > Warning) return status;
-        FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetReal: #r%d# = %.16g", vr[i], value[i])
-    }
-
-    if (nvr > 0) comp->isDirtyValues = fmi3True;
-    return fmi3OK;
+#ifdef SET_FLOAT64
+    SET_VARIABLES(Float64)
 #else
     return fmi3Error;
 #endif
@@ -616,20 +592,8 @@ fmi3Status fmi3SetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t n
 
     FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetInteger: nvr = %d", nvr)
 
-#ifdef SET_INTEGER
-    int i;
-    Status status = OK;
-    size_t index = 0;
-    
-    for (i = 0; i < nvr; i++) {
-        Status s = setInteger(comp, vr[i], value, &index);
-        status = max(status, s);
-        if (status > Warning) return status;
-    }
-
-    if (nvr > 0) comp->isDirtyValues = true;
-
-    return status;
+#ifdef SET_INT32
+    SET_VARIABLES(Int32)
 #else
     return fmi3Error;  // not implemented
 #endif

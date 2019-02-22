@@ -9,8 +9,8 @@
 #define NUMBER_OF_STATES 2
 #define NUMBER_OF_EVENT_INDICATORS 1
 
-#define GET_REAL
-#define SET_REAL
+#define GET_FLOAT64
+#define SET_FLOAT64
 #define EVENT_UPDATE
 
 typedef enum {

@@ -16,14 +16,14 @@ void getEventIndicators(ModelInstance *comp, double z[], size_t nz) {
 }
 #endif
 
-#ifndef GET_REAL
-Status getReal(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
+#ifndef GET_FLOAT64
+Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
     return Error;
 }
 #endif
 
-#ifndef GET_INTEGER
-Status getInteger(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
+#ifndef GET_INT32
+Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
     return Error;
 }
 #endif

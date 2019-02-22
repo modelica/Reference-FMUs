@@ -12,12 +12,12 @@
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
 
-#define GET_REAL
-#define GET_INTEGER
+#define GET_FLOAT64
+#define GET_INT32
 #define GET_BOOLEAN
 
-#define SET_REAL
-#define SET_INTEGER
+#define SET_FLOAT64
+#define SET_INT32
 #define SET_BOOLEAN
 
 #define EVENT_UPDATE

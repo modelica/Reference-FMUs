@@ -26,7 +26,7 @@ void calculateValues(ModelInstance *comp) {
 
 }
 
-Status getReal(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
+Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
     
     calculateValues(comp);
         
@@ -59,7 +59,7 @@ Status getReal(ModelInstance* comp, ValueReference vr, double *value, size_t *in
     }
 }
 
-Status setReal(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
+Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
     switch (vr) {
         case vr_u:
             M(u)[0] = value[(*index)++];
