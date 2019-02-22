@@ -233,8 +233,6 @@ fmiStatus fmiSetDebugLogging(fmiComponent c, fmiBoolean loggingOn) {
 
 fmiStatus fmiSetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiReal value[]) {
 #ifdef SET_REAL
-    int i;
-    Status status = OK;
 
     ModelInstance* comp = (ModelInstance *)c;
 
@@ -249,9 +247,14 @@ fmiStatus fmiSetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, c
 
     if (comp->loggingOn) comp->logger(c, comp->instanceName, fmiOK, "log",
             "fmiSetReal: nvr = %d", nvr);
-
+    
+    int i;
+    Status status = OK;
+    size_t index = 0;
+    
     for (i = 0; i < nvr; i++) {
-        status = max(status, setReal(comp, vr[i], value[i]));
+        Status s = setReal(comp, vr[i], value, &index);
+        status = max(status, s);
         if (status > Warning) return status;
     }
 
@@ -263,8 +266,6 @@ fmiStatus fmiSetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, c
 
 fmiStatus fmiSetInteger(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiInteger value[]) {
 #ifdef SET_INTEGER
-    int i;
-    Status status = OK;
 
     ModelInstance* comp = (ModelInstance *)c;
 
@@ -280,10 +281,17 @@ fmiStatus fmiSetInteger(fmiComponent c, const fmiValueReference vr[], size_t nvr
     if (comp->loggingOn)
         comp->logger(c, comp->instanceName, fmiOK, "log", "fmiSetInteger: nvr = %d",  nvr);
 
+    int i;
+    Status status = OK;
+    size_t index = 0;
+
     for (i = 0; i < nvr; i++) {
-        status = max(status, setInteger(comp, vr[i], value[i]));
+        Status s = setInteger(comp, vr[i], value, &index);
+        status = max(status, s);
         if (status > Warning) return status;
     }
+
+    if (nvr > 0) comp->isDirtyValues = true;
 
     return status;
 #else
@@ -311,11 +319,15 @@ fmiStatus fmiSetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr
         comp->logger(c, comp->instanceName, fmiOK, "log", "fmiSetBoolean: nvr = %d",  nvr);
 
     for (i = 0; i < nvr; i++) {
-        status = max(status, setBoolean(comp, vr[i], value[i] != fmiFalse));
-        if (status > Warning) return status;
+        bool v = value[i];
+        size_t index = 0;
+        if (setBoolean(comp, vr[i], &v, &index) > Warning) return fmiError;
     }
+    
+    if (nvr > 0) comp->isDirtyValues = true;
+    
+    return fmiOK;
 
-    return status;
 #else
     return fmiError;  // not implemented
 #endif
@@ -373,9 +385,16 @@ fmiStatus fmiGetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, f
     if (nvr > 0 && nullPointer(comp, "fmiGetReal", "value[]", value))
          return fmiError;
 
-    for (i=0; i<nvr; i++) {
-        getReal(comp, vr[i], &value[i]);
+    size_t index = 0;
+    Status status = OK;
+    
+    for (i = 0; i < nvr; i++) {
+        Status s = getReal(comp, vr[i], value, &index);
+        status = max(status, s);
+        if (status > Warning) return status;
     }
+    
+    return status;
 
     return fmiOK;
 }
@@ -394,17 +413,21 @@ fmiStatus fmiGetInteger(fmiComponent c, const fmiValueReference vr[], size_t nvr
     if (nvr > 0 && nullPointer(comp, "fmiGetInteger", "value[]", value))
          return fmiError;
 
+    size_t index = 0;
+    Status status = OK;
 
     for (i = 0; i < nvr; i++) {
-        getInteger(comp, vr[i], &value[i]);
+        Status s = getInteger(comp, vr[i], value, &index);
+        status = max(status, s);
+        if (status > Warning) return status;
     }
+    
+    return status;
 
     return fmiOK;
 }
 
 fmiStatus fmiGetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr, fmiBoolean value[]) {
-
-    int i;
 
     ModelInstance* comp = (ModelInstance *)c;
 
@@ -417,9 +440,19 @@ fmiStatus fmiGetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr
     if (nvr>0 && nullPointer(comp, "fmiGetBoolean", "value[]", value))
          return fmiError;
 
-    for (i=0; i < nvr; i++) {
-        getBoolean(comp, vr[i], &value[i]);
+    int i;
+    size_t index = 0;
+    Status status = OK;
+
+    for (i = 0; i < nvr; i++) {
+        bool v = false;
+        Status s = getBoolean(comp, vr[i], &v, &index);
+        value[i] = v;
+        status = max(status, s);
+        if (status > Warning) return status;
     }
+    
+    return status;
 
     return fmiOK;
 }

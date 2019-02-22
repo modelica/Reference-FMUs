@@ -532,8 +532,9 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
     size_t index = 0;
     
     for (i = 0; i < nvr; i++) {
-        bool v = value[i];
+        bool v = false;
         Status s = getBoolean(comp, vr[i], &v, &index);
+        value[i] = v;
         status = max(status, s);
         if (status > Warning) return status;
     }

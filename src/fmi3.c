@@ -478,9 +478,6 @@ fmi3Status fmi3GetFloat64 (fmi3Component c, const fmi3ValueReference vr[], size_
 
 fmi3Status fmi3GetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, fmi3Int32 value[], size_t nValues) {
 
-    int i;
-    Status status = OK;
-
     ModelInstance *comp = (ModelInstance *)c;
 
     if (invalidState(comp, "fmi3GetInteger", MASK_fmi3GetInteger))
@@ -498,8 +495,11 @@ fmi3Status fmi3GetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t n
     }
 
 #ifdef GET_INTEGER
-    for (i = 0; i < nvr; i++) {
-        status = max(status, getInteger(comp, vr[i], &value[i]));
+    Status status = OK;
+    size_t index = 0;
+    
+    for (int i = 0; i < nvr; i++) {
+        status = max(status, getInteger(comp, vr[i], value, &index));
         if (status > Warning) return status;
     }
 
@@ -510,8 +510,6 @@ fmi3Status fmi3GetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t n
 }
 
 fmi3Status fmi3GetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, fmi3Boolean value[], size_t nValues) {
-    int i;
-    Status status = OK;
 
     ModelInstance *comp = (ModelInstance *)c;
 
@@ -530,11 +528,17 @@ fmi3Status fmi3GetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t
     }
 
 #ifdef GET_BOOLEAN
-    for (i = 0; i < nvr; i++) {
-        status = max(status, getBoolean(comp, vr[i], &value[i]));
+    Status status = OK;
+    
+    for (int i = 0; i < nvr; i++) {
+        size_t index = 0;
+        bool v = false;
+        Status s = getBoolean(comp, vr[i], &v, &index);
+        value[i] = v;
+        status = max(status, s);
         if (status > Warning) return status;
     }
-
+    
     return status;
 #else
     return fmi3Error; // not implemented
@@ -598,8 +602,6 @@ fmi3Status fmi3SetFloat64 (fmi3Component c, const fmi3ValueReference vr[], size_
 }
 
 fmi3Status fmi3SetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3Int32 value[], size_t nValues) {
-    int i;
-    Status status = OK;
 
     ModelInstance *comp = (ModelInstance *)c;
 
@@ -615,11 +617,18 @@ fmi3Status fmi3SetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t n
     FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetInteger: nvr = %d", nvr)
 
 #ifdef SET_INTEGER
+    int i;
+    Status status = OK;
+    size_t index = 0;
+    
     for (i = 0; i < nvr; i++) {
-        status = max(status, setInteger(comp, vr[i], value[i]));
+        Status s = setInteger(comp, vr[i], value, &index);
+        status = max(status, s);
         if (status > Warning) return status;
     }
-    if (nvr > 0) comp->isDirtyValues = fmi3True;
+
+    if (nvr > 0) comp->isDirtyValues = true;
+
     return status;
 #else
     return fmi3Error;  // not implemented
@@ -627,7 +636,6 @@ fmi3Status fmi3SetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t n
 }
 
 fmi3Status fmi3SetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3Boolean value[], size_t nValues) {
-    int i;
 
     ModelInstance *comp = (ModelInstance *)c;
 
@@ -643,13 +651,20 @@ fmi3Status fmi3SetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t
     FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetBoolean: nvr = %d", nvr)
 
 #ifdef SET_BOOLEAN
+    int i;
+    Status status = OK;
+    
     for (i = 0; i < nvr; i++) {
-        if (setBoolean(comp, vr[i], value[i]) > Warning) return fmi3Error;
+        bool v = value[i];
+        size_t index = 0;
+        Status s = setBoolean(comp, vr[i], &v, &index);
+        status = max(status, s);
+        if (status > Warning) return status;
     }
-
-    if (nvr > 0) comp->isDirtyValues = fmi3True;
-
-    return fmi3OK;
+    
+    if (nvr > 0) comp->isDirtyValues = true;
+    
+    return status;
 #else
     return fmi3Error;  // not implemented
 #endif
