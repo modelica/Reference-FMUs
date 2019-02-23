@@ -58,13 +58,17 @@ endif ()
 
 MESSAGE("FMI_PLATFORM: " ${FMI_PLATFORM})
 
-set (MODEL_NAMES BouncingBall Dahlquist Stair Feedthrough Resource VanDerPol)
+set (MODEL_NAMES BouncingBall Dahlquist Stair Feedthrough VanDerPol)
+
+if (${FMI_VERSION} GREATER 1 OR "${FMI_TYPE}" STREQUAL "CS")
+  set (MODEL_NAMES ${MODEL_NAMES} Resource)
+endif ()
 
 if (${FMI_VERSION} GREATER 2)
   set (MODEL_NAMES ${MODEL_NAMES} LinearTransform)
 endif ()
 
-foreach (MODEL_NAME ${MODEL_NAMES}) # Dahlquist Stair Feedthrough Resource VanDerPol)
+foreach (MODEL_NAME ${MODEL_NAMES})
 
 set(TARGET_NAME ${MODEL_NAME})
 
@@ -92,7 +96,6 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist)
 target_compile_definitions(${TARGET_NAME} PRIVATE DISABLE_PREFIX FMI_VERSION=${FMI_VERSION})
 
 if (${FMI_VERSION} EQUAL 1 AND "${FMI_TYPE}" STREQUAL CS)
-  message("CO_SIMULATION")
   target_compile_definitions(${TARGET_NAME} PRIVATE FMI_COSIMULATION)
 endif()
 
