@@ -130,8 +130,8 @@ class BuildTest(unittest.TestCase):
         if not os.path.exists(build_dir):
             os.makedirs(build_dir)
 
-        subprocess.call(['cmake', '-G', 'Unix Makefiles', '-DFMI_VERSION=3', '..'], cwd=build_dir)
-        subprocess.call(['cmake', '--build', '.'], cwd=build_dir)
+        subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=3', '..'], cwd=build_dir)
+        subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
         if fmi3_available:
             self.validate(build_dir, models=['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol'])
