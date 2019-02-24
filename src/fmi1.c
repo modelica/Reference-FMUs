@@ -59,6 +59,21 @@ void logError(ModelInstance *comp, const char *message, ...) {
     free(buf);
 }
 
+void *allocateMemory(ModelInstance *comp, size_t size) {
+    return comp->allocateMemory(size, 1);
+}
+
+void freeMemory(ModelInstance *comp, void *obj) {
+    comp->freeMemory(obj);
+}
+
+const char *duplicateString(ModelInstance *comp, const char *str1) {
+    size_t len = strlen(str1);
+    char *str2 = allocateMemory(comp, len + 1);
+    strncpy(str2, str1, len + 1);
+    return str2;
+}
+
 static fmiBoolean invalidNumber(ModelInstance* comp, const char* f, const char* arg, int n, int nExpected){
     if (n != nExpected) {
         comp->state = modelError;
@@ -242,7 +257,7 @@ fmiStatus fmiSetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, c
 
     if (comp->loggingOn) comp->logger(c, comp->instanceName, fmiOK, "log",
             "fmiSetReal: nvr = %d", nvr);
-    
+
 #ifdef SET_FLOAT64
     SET_VARIABLES(Float64)
 #else
@@ -342,7 +357,7 @@ fmiStatus fmiGetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, f
 
     if (nvr > 0 && nullPointer(comp, "fmiGetReal", "value[]", value))
          return fmiError;
-    
+
     GET_VARIABLES(Float64)
 }
 

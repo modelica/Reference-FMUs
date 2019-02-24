@@ -59,8 +59,8 @@
     <ScalarVariable name="bool_out" valueReference="9" description="boolean output" causality="output" variability="discrete" initial="calculated">
       <Boolean/>
     </ScalarVariable>
-    <ScalarVariable name="string_in" valueReference="10" description="string input" causality="parameter" variability="fixed">
-      <String start="QTronic"/>
+    <ScalarVariable name="string_param" valueReference="10" description="String parameter" causality="parameter" variability="fixed">
+      <String start="Set me!"/>
     </ScalarVariable>
   </ModelVariables>
 

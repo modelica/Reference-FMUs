@@ -56,7 +56,7 @@ class BuildTest(unittest.TestCase):
             fmu_filename = os.path.join(build_dir, 'dist', model + '.fmu')
 
             if model == 'Feedthrough':
-                start_values = {'real_fixed_param': 1}
+                start_values = {'real_fixed_param': 1, 'string_param': "FMI is awesome!"}
                 in_csv = os.path.join(test_fmus_dir, model, model + '_in.csv')
                 input = read_csv(in_csv)
             else:

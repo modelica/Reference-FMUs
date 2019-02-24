@@ -127,6 +127,9 @@ void getEventIndicators(ModelInstance *comp, double z[], size_t nz);
 void eventUpdate(ModelInstance *comp);
 
 void logError(ModelInstance *comp, const char *message, ...);
+void *allocateMemory(ModelInstance *comp, size_t size);
+void freeMemory(ModelInstance *comp, void *obj);
+const char *duplicateString(ModelInstance *comp, const char *str1);
 
 // shorthand to access the variables
 #define M(v) (comp->modelData->v)

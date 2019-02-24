@@ -1,6 +1,8 @@
 #include "config.h"
 #include "model.h"
+#include <string.h> // for strcmp()
 
+const char *STRING_START = "Set me!";
 
 void setStartValues(ModelInstance *comp) {
     M(real_fixed_parameter)   = 0;
@@ -9,7 +11,7 @@ void setStartValues(ModelInstance *comp) {
     M(real_discrete)          = 0;
     M(integer)                = 0;
     M(boolean)                = false;
-    M(string)                 = "a";
+    M(string)                 = STRING_START;
 }
 
 void calculateValues(ModelInstance *comp) {
@@ -59,7 +61,16 @@ Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *i
             value[(*index)++] = M(boolean);
             return OK;
         case vr_bool_out:
-            value[(*index)++] = M(boolean);
+            value[(*index)++] = M(boolean) && (strcmp(M(string), "FMI is awesome!") == 0);
+            return OK;
+        default: return Error;
+    }
+}
+
+Status getString(ModelInstance* comp, ValueReference vr, const char **value, size_t *index) {
+    switch (vr) {
+        case vr_string:
+            value[(*index)++] = M(string);
             return OK;
         default: return Error;
     }
@@ -116,15 +127,34 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
 
 Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t *index) {
     switch (vr) {
-        case vr_int_in: M(integer) = value[(*index)++]; return OK;
-        default: return Error;
+        case vr_int_in:
+            M(integer) = value[(*index)++];
+            return OK;
+        default:
+            return Error;
     }
 }
 
 Status setBoolean(ModelInstance* comp, ValueReference vr, const bool *value, size_t *index) {
     switch (vr) {
-        case vr_bool_in: M(boolean) = value[(*index)++]; return OK;
-        default: return Error;
+        case vr_bool_in:
+            M(boolean) = value[(*index)++];
+            return OK;
+        default:
+            return Error;
+    }
+}
+
+Status setString(ModelInstance* comp, ValueReference vr, const char *const *value, size_t *index) {
+    switch (vr) {
+        case vr_string:
+            if (M(string) != STRING_START) {
+                freeMemory(comp, (void *)M(string));
+            }
+            M(string) = duplicateString(comp, value[(*index)++]);
+            return OK;
+        default:
+            return Error;
     }
 }
 

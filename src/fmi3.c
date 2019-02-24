@@ -150,6 +150,21 @@ void logError(ModelInstance *comp, const char *message, ...) {
     free(buf);
 }
 
+void *allocateMemory(ModelInstance *comp, size_t size) {
+    return comp->allocateMemory(comp->componentEnvironment, size, 1);
+}
+
+void freeMemory(ModelInstance *comp, void *obj) {
+    comp->freeMemory(comp->componentEnvironment, obj);
+}
+
+const char *duplicateString(ModelInstance *comp, const char *str1) {
+    size_t len = strlen(str1);
+    char *str2 = allocateMemory(comp, len + 1);
+    strncpy(str2, str1, len + 1);
+    return str2;
+}
+
 fmi3Boolean isCategoryLogged(ModelInstance *comp, int categoryIndex);
 
 static bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, int n, int nExpected) {

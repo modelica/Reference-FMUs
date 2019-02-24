@@ -15,10 +15,12 @@
 #define GET_FLOAT64
 #define GET_INT32
 #define GET_BOOLEAN
+#define GET_STRING
 
 #define SET_FLOAT64
 #define SET_INT32
 #define SET_BOOLEAN
+#define SET_STRING
 
 #define EVENT_UPDATE
 
@@ -45,5 +47,7 @@ typedef struct {
     bool        boolean;
     const char *string;
 } ModelData;
+
+extern const char *STRING_START;
 
 #endif /* config_h */

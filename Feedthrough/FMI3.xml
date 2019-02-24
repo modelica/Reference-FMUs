@@ -39,8 +39,8 @@
     <Int32 name="int_out" valueReference="7" description="" causality="output" variability="discrete" initial="calculated"/>
     <Boolean name="bool_in" valueReference="8" description="boolean input" causality="input" variability="discrete" start="false"/>
     <Boolean name="bool_out" valueReference="9" description="boolean output" causality="output" variability="discrete" initial="calculated"/>
-    <String name="string_in" valueReference="10" description="string input" causality="parameter" variability="fixed">
-        <Start value="QTronic"/>
+    <String name="string_param" valueReference="10" description="String parameter" causality="parameter" variability="fixed">
+        <Start value="Set me!"/>
     </String>
   </ModelVariables>
 
