@@ -34,8 +34,8 @@
     <ScalarVariable name="bool_out" valueReference="9" description="boolean output" causality="output">
       <Boolean/>
     </ScalarVariable>
-    <ScalarVariable name="string_in" valueReference="10" description="string input" variability="parameter">
-      <String start="QTronic" fixed="true"/>
+    <ScalarVariable name="string_param" valueReference="10" description="String parameter" variability="parameter">
+      <String start="Set me!"/>
     </ScalarVariable>
   </ModelVariables>
 
