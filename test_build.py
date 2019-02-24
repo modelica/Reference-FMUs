@@ -3,6 +3,9 @@ import subprocess
 import os
 import shutil
 
+
+fmus_dir = None  # /path/to/fmi-cross-check/fmus
+
 try:
     from fmpy import simulate_fmu
     fmpy_available = True
@@ -31,6 +34,21 @@ if os.name == 'nt':
     generator = 'Visual Studio 14 2015 Win64'
 else:
     generator = 'Unix Makefiles'
+
+
+def copy_to_cross_check(build_dir, model_names, fmi_version, fmi_types):
+
+    if fmus_dir is None:
+        return
+
+    for fmi_type in fmi_types:
+        for model in model_names:
+            target_dir = os.path.join(fmus_dir, fmi_version, fmi_type, fmpy.platform, 'Test-FMUs', '0.0.0', model)
+            if not os.path.exists(target_dir):
+                os.makedirs(target_dir)
+            shutil.copy(os.path.join(build_dir, 'dist', model + '.fmu'), target_dir)
+            shutil.copy(os.path.join(test_fmus_dir, model, model + '_ref.csv'), target_dir)
+            shutil.copy(os.path.join(test_fmus_dir, model, model + '_ref.opt'), target_dir)
 
 
 class BuildTest(unittest.TestCase):
@@ -87,11 +105,14 @@ class BuildTest(unittest.TestCase):
         subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=1', '-DFMI_TYPE=ME', '..'], cwd=build_dir)
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
+        model_names = ['BouncingBall', 'Dahlquist', 'Stair', 'VanDerPol']
+
         if fmpy_available:
             self.validate(build_dir,
                           fmi_types=['ModelExchange'],
-                          models=['BouncingBall', 'Dahlquist', 'Stair', 'VanDerPol']
-)
+                          models=model_names)
+
+        copy_to_cross_check(build_dir=build_dir, model_names=model_names, fmi_version='1.0', fmi_types=['me'])
 
     def test_fmi1_cs(self):
 
@@ -103,10 +124,14 @@ class BuildTest(unittest.TestCase):
         subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=1', '-DFMI_TYPE=CS', '..'], cwd=build_dir)
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
+        model_names = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol']
+
         if fmpy_available:
             self.validate(build_dir,
                           fmi_types=['CoSimulation'],
-                          models=['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol'])
+                          models=model_names)
+
+        copy_to_cross_check(build_dir=build_dir, model_names=model_names, fmi_version='1.0', fmi_types=['cs'])
 
     def test_fmi2(self):
 
@@ -120,6 +145,8 @@ class BuildTest(unittest.TestCase):
 
         if fmpy_available:
             self.validate(build_dir)
+
+        copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='2.0', fmi_types=['cs', 'me'])
 
     def test_fmi3(self):
 
