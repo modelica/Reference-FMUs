@@ -5,6 +5,7 @@ import shutil
 
 
 fmus_dir = None  # /path/to/fmi-cross-check/fmus
+test_fmus_version = '0.0.1'
 
 try:
     from fmpy import simulate_fmu
@@ -43,7 +44,7 @@ def copy_to_cross_check(build_dir, model_names, fmi_version, fmi_types):
 
     for fmi_type in fmi_types:
         for model in model_names:
-            target_dir = os.path.join(fmus_dir, fmi_version, fmi_type, fmpy.platform, 'Test-FMUs', '0.0.0', model)
+            target_dir = os.path.join(fmus_dir, fmi_version, fmi_type, fmpy.platform, 'Test-FMUs', test_fmus_version, model)
             if not os.path.exists(target_dir):
                 os.makedirs(target_dir)
             shutil.copy(os.path.join(build_dir, 'dist', model + '.fmu'), target_dir)
