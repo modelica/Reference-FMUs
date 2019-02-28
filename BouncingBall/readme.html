@@ -1,0 +1,116 @@
+
+<html>
+<style>
+body {
+    font-family: Helvetica, Arial, Sans-Serif;
+    margin: 2em;
+}
+
+div.container {
+    max-width: 750px;
+    margin: auto;
+}
+
+
+h1, h2 {
+    border-bottom: 1px solid #eaecef;
+    padding-bottom: .3em;
+}
+
+pre {
+    background-color: #f6f8fa;
+    border-radius: 3px;
+    font-size: 85%;
+    line-height: 1.45;
+    overflow: auto;
+    padding: 16px;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+th, td {
+    font-size: 0.9em;
+    border: 1px solid #dfe2e5;
+    padding: 6px 13px;
+}
+</style>
+<body>
+<div class="container">
+<h1>BouncingBall</h1>
+
+<p>The BouncingBall implements the following equation:</p>
+
+<pre><code>der(h) =  v
+der(v) = -g
+
+when h &lt;= 0    then h := 0 and v := -e * v
+when v &lt; v_min then h := 0 and v := 0
+</code></pre>
+
+<p>whith the variables</p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Variable</th>
+  <th align="right">Start</th>
+  <th align="left">Unit</th>
+  <th>Causality</th>
+  <th>Variability</th>
+  <th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td align="left">h</td>
+  <td align="right">1</td>
+  <td align="left">m</td>
+  <td>output</td>
+  <td>continuous</td>
+  <td align="left">Distance to the ground</td>
+</tr>
+<tr>
+  <td align="left">v</td>
+  <td align="right">0</td>
+  <td align="left">m/s</td>
+  <td>output</td>
+  <td>continuous</td>
+  <td align="left">Velocity</td>
+</tr>
+<tr>
+  <td align="left">g</td>
+  <td align="right">9.81</td>
+  <td align="left">m/s2</td>
+  <td>parameter</td>
+  <td>fixed</td>
+  <td align="left">Gravity</td>
+</tr>
+<tr>
+  <td align="left">e</td>
+  <td align="right">0.7</td>
+  <td align="left"></td>
+  <td>parameter</td>
+  <td>tunable</td>
+  <td align="left">Rebound factor</td>
+</tr>
+<tr>
+  <td align="left">v_min</td>
+  <td align="right">0.1</td>
+  <td align="left">m/s2</td>
+  <td>parameter</td>
+  <td>constant</td>
+  <td align="left">Threshold velocity to stop bouncing</td>
+</tr>
+</tbody>
+</table>
+
+<p>The plot shows the <a href="BouncingBall_ref.csv">reference result</a> computed with <a href="https://github.com/CATIA-Systems/FMPy">FMPy</a>.</p>
+
+<p><img src="BouncingBall_ref.svg" alt="plot" /></p>
+
+</div>
+</body>
+</html>

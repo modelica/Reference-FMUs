@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<fmiModelDescription fmiVersion="3.0-alpha" modelName="BouncingBall" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f003}" numberOfEventIndicators="1">
+
+  <ModelExchange modelIdentifier="BouncingBall">
+    <SourceFiles>
+      <File name="BouncingBall.c"/>
+    </SourceFiles>
+  </ModelExchange>
+
+  <CoSimulation modelIdentifier="BouncingBall" canHandleVariableCommunicationStepSize="true">
+    <SourceFiles>
+      <File name="BouncingBall.c"/>
+    </SourceFiles>
+  </CoSimulation>
+
+  <LogCategories>
+    <Category name="logAll"/>
+    <Category name="logError"/>
+    <Category name="logFmiCall"/>
+    <Category name="logEvent"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="3"/>
+
+  <ModelVariables>
+    <Float64 name="h" valueReference="0" description="height, used as state" causality="output" variability="continuous" initial="exact" start="1"/>
+    <Float64 name="v" valueReference="1" description="velocity of ball, used as state" causality="output" variability="continuous" initial="exact" start="0" reinit="true"/>
+    <Float64 name="g" valueReference="2" description="acceleration of gravity" causality="parameter" variability="fixed" initial="exact" start="-9.81"/>
+    <Float64 name="e" valueReference="3" description="dimensionless parameter" causality="parameter" variability="tunable" initial="exact" start="0.7" min="0.5" max="1"/>
+  </ModelVariables>
+
+  <ModelStructure>
+    <Outputs>
+      <Unknown valueReference="0"/>
+      <Unknown valueReference="1"/>
+    </Outputs>
+    <Derivatives>
+      <Unknown valueReference="1"/>
+      <Unknown valueReference="2"/>
+    </Derivatives>
+    <InitialUnknowns>
+      <Unknown valueReference="1"/>
+      <Unknown valueReference="2"/>
+    </InitialUnknowns>
+  </ModelStructure>
+
+</fmiModelDescription>

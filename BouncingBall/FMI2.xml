@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<fmiModelDescription fmiVersion="2.0" modelName="BouncingBall" guid="{8c4e810f-3df3-4a00-8276-176fa3c9f003}" numberOfEventIndicators="1">
+
+  <ModelExchange modelIdentifier="BouncingBall">
+    <SourceFiles>
+      <File name="fmi2.c"/>
+      <File name="euler.c"/>
+      <File name="model.c"/>
+      <File name="slave.c"/>
+    </SourceFiles>
+  </ModelExchange>
+
+  <CoSimulation modelIdentifier="BouncingBall" canHandleVariableCommunicationStepSize="true">
+    <SourceFiles>
+      <File name="fmi2.c"/>
+      <File name="euler.c"/>
+      <File name="model.c"/>
+      <File name="slave.c"/>
+    </SourceFiles>
+  </CoSimulation>
+
+  <!-- <LogCategories> <Category name="logAll"/> <Category name="logError"/> <Category name="logFmiCall"/> <Category name="logEvent"/> </LogCategories> -->
+
+  <UnitDefinitions>
+    <Unit name="m">
+      <BaseUnit m="1"/>
+    </Unit>
+    <Unit name="m/s">
+      <BaseUnit m="1" s="-1"/>
+    </Unit>
+    <Unit name="m/s2">
+      <BaseUnit m="1" s="-2"/>
+    </Unit>
+  </UnitDefinitions>
+
+  <TypeDefinitions>
+    <SimpleType name="Position">
+      <Real quantity="Position" unit="m"/>
+    </SimpleType>
+    <SimpleType name="Velocity">
+      <Real quantity="Velocity" unit="m/s"/>
+    </SimpleType>
+    <SimpleType name="Acceleration">
+      <Real quantity="Acceleration" unit="m/s2"/>
+    </SimpleType>
+  </TypeDefinitions>
+
+  <DefaultExperiment startTime="0" stopTime="3"/>
+
+  <ModelVariables>
+    <ScalarVariable name="h" valueReference="0" description="Position of the ball" causality="output" variability="continuous" initial="exact">
+      <Real start="1" declaredType="Position"/>
+    </ScalarVariable>
+    <ScalarVariable name="v" valueReference="1" description="Velocity of the ball" causality="output" variability="continuous" initial="exact">
+      <Real start="0" derivative="1" reinit="true" declaredType="Velocity"/>
+    </ScalarVariable>
+    <ScalarVariable name="g" valueReference="2" description="Gravity acting on the ball" causality="parameter" variability="fixed" initial="exact">
+      <Real start="-9.81" derivative="2" declaredType="Acceleration"/>
+    </ScalarVariable>
+    <ScalarVariable name="e" valueReference="3" description="Rebound factor" causality="parameter" variability="tunable" initial="exact">
+      <Real start="0.7" min="0.5" max="1"/>
+    </ScalarVariable>
+    <ScalarVariable name="v_min" valueReference="4" description="Velocity below which the ball stops bouncing" causality="parameter" variability="constant">
+      <Real start="0.1" declaredType="Velocity"/>
+    </ScalarVariable>
+  </ModelVariables>
+
+  <ModelStructure>
+    <Outputs>
+      <Unknown index="1"/>
+      <Unknown index="2"/>
+    </Outputs>
+    <Derivatives>
+      <Unknown index="2"/>
+      <Unknown index="3"/>
+    </Derivatives>
+    <InitialUnknowns>
+      <Unknown index="2"/>
+      <Unknown index="3"/>
+    </InitialUnknowns>
+  </ModelStructure>
+
+</fmiModelDescription>

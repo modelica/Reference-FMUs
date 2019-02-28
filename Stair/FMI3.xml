@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<fmiModelDescription fmiVersion="3.0-alpha" modelName="Stair" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f008}" numberOfEventIndicators="0">
+
+  <ModelExchange modelIdentifier="Stair">
+    <SourceFiles>
+      <File name="fmi2.c"/>
+      <File name="euler.c"/>
+      <File name="model.c"/>
+      <File name="slave.c"/>
+    </SourceFiles>
+  </ModelExchange>
+
+  <CoSimulation modelIdentifier="Stair" canHandleVariableCommunicationStepSize="true">
+    <SourceFiles>
+      <File name="fmi2.c"/>
+      <File name="euler.c"/>
+      <File name="model.c"/>
+      <File name="slave.c"/>
+    </SourceFiles>
+  </CoSimulation>
+
+  <LogCategories>
+    <Category name="logAll"/>
+    <Category name="logError"/>
+    <Category name="logFmiCall"/>
+    <Category name="logEvent"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="10"/>
+
+  <ModelVariables>
+    <Int32 name="counter" valueReference="0" description="counts the seconds" causality="output" variability="discrete" initial="exact" start="1"/>
+  </ModelVariables>
+
+  <ModelStructure>
+    <Outputs>
+      <Unknown valueReference="0"/>
+    </Outputs>
+  </ModelStructure>
+
+</fmiModelDescription>

@@ -1,0 +1,89 @@
+
+<html>
+<style>
+body {
+    font-family: Helvetica, Arial, Sans-Serif;
+    margin: 2em;
+}
+
+div.container {
+    max-width: 750px;
+    margin: auto;
+}
+
+
+h1, h2 {
+    border-bottom: 1px solid #eaecef;
+    padding-bottom: .3em;
+}
+
+pre {
+    background-color: #f6f8fa;
+    border-radius: 3px;
+    font-size: 85%;
+    line-height: 1.45;
+    overflow: auto;
+    padding: 16px;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+th, td {
+    font-size: 0.9em;
+    border: 1px solid #dfe2e5;
+    padding: 6px 13px;
+}
+</style>
+<body>
+<div class="container">
+<h1>Dahlquist</h1>
+
+<p>The model implements the <a href="https://en.wikipedia.org/wiki/Germund_Dahlquist">Dahlquist</a> test equation.</p>
+
+<pre><code>der(x) = -k * x
+</code></pre>
+
+<p>whith</p>
+
+<table>
+<thead>
+<tr>
+  <th align="left">Variable</th>
+  <th align="left">Description</th>
+  <th align="right">Start</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td align="left">x</td>
+  <td align="left">The only state</td>
+  <td align="right">1</td>
+</tr>
+<tr>
+  <td align="left">der(x)</td>
+  <td align="left">The derivative</td>
+  <td align="right">0</td>
+</tr>
+<tr>
+  <td align="left">k</td>
+  <td align="left">Parameter</td>
+  <td align="right">1</td>
+</tr>
+</tbody>
+</table>
+
+<p>The analytical solution of this system is</p>
+
+<pre><code>x(t) = exp(-k * t)
+</code></pre>
+
+<p>The plot shows the <a href="Dahlquist_ref.csv">reference result</a> computed with <a href="https://github.com/CATIA-Systems/FMPy">FMPy</a>.</p>
+
+<p><img src="Dahlquist_ref.svg" alt="plot" /></p>
+
+</div>
+</body>
+</html>

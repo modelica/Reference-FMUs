@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<fmiModelDescription fmiVersion="1.0" modelName="Feedthrough" modelIdentifier="Feedthrough" guid="{8c4e810f-3df3-4a00-8276-176fa3c9f004}" numberOfContinuousStates="0" numberOfEventIndicators="0">
+
+  <DefaultExperiment startTime="0" stopTime="2"/>
+
+  <ModelVariables>
+    <ScalarVariable name="real_fixed_param" valueReference="0" variability="parameter">
+      <Real start="0" fixed="true"/>
+    </ScalarVariable>
+      <ScalarVariable name="real_tunable_param" valueReference="1" variability="parameter">
+    <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable name="real_continuous_in" valueReference="2" description="" causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable name="real_continuous_out" valueReference="3" description="" causality="output">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="real_discrete_in" valueReference="4" description="" causality="input" variability="discrete">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable name="real_discrete_out" valueReference="5" description="" causality="output" variability="discrete">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="int_in" valueReference="6" description="integer input" causality="input">
+      <Integer start="2"/>
+    </ScalarVariable>
+    <ScalarVariable name="int_out" valueReference="7" description="index in string array 'month'" causality="output">
+      <Integer start="0" fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable name="bool_in" valueReference="8" description="boolean input" causality="input">
+      <Boolean start="true"/>
+    </ScalarVariable>
+    <ScalarVariable name="bool_out" valueReference="9" description="boolean output" causality="output">
+      <Boolean/>
+    </ScalarVariable>
+    <ScalarVariable name="string_param" valueReference="10" description="String parameter" variability="parameter">
+      <String start="Set me!"/>
+    </ScalarVariable>
+  </ModelVariables>
+
+</fmiModelDescription>

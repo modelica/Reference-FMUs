@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<fmiModelDescription fmiVersion="1.0" modelName="Resource" modelIdentifier="Resource" guid="{7b9c2114-2ce5-4076-a138-2cbc69e069e5}" numberOfContinuousStates="0" numberOfEventIndicators="0">
+
+  <DefaultExperiment startTime="0" stopTime="1"/>
+
+  <ModelVariables>
+    <ScalarVariable name="y" valueReference="0" description="the only state" causality="output" variability="continuous">
+      <Real start="0"/>
+    </ScalarVariable>
+  </ModelVariables>
+
+  <Implementation>
+    <CoSimulation_StandAlone>
+      <Capabilities canHandleVariableCommunicationStepSize="true" canHandleEvents="true"/>
+    </CoSimulation_StandAlone>
+  </Implementation>
+
+</fmiModelDescription>

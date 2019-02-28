@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<fmiModelDescription fmiVersion="2.0" modelName="van der Pol oscillator" guid="{8c4e810f-3da3-4a00-8276-176fa3c9f000}" numberOfEventIndicators="0">
+
+  <ModelExchange modelIdentifier="VanDerPol">
+    <SourceFiles>
+      <File name="fmi2.c"/>
+      <File name="euler.c"/>
+      <File name="model.c"/>
+      <File name="slave.c"/>
+    </SourceFiles>
+  </ModelExchange>
+
+  <CoSimulation modelIdentifier="VanDerPol" canHandleVariableCommunicationStepSize="true">
+    <SourceFiles>
+      <File name="fmi2.c"/>
+      <File name="euler.c"/>
+      <File name="model.c"/>
+      <File name="slave.c"/>
+    </SourceFiles>
+  </CoSimulation>
+
+  <LogCategories>
+    <Category name="logAll"/>
+    <Category name="logError"/>
+    <Category name="logFmiCall"/>
+    <Category name="logEvent"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="20"/>
+
+  <ModelVariables>
+    <ScalarVariable name="x0" valueReference="0" description="the first state" causality="output" variability="continuous" initial="exact">
+      <Real start="2"/>
+    </ScalarVariable>
+    <ScalarVariable name="der(x0)" valueReference="1" causality="local" variability="continuous" initial="calculated">
+      <Real derivative="1"/>
+    </ScalarVariable>
+    <ScalarVariable name="x1" valueReference="2" description="the second state" causality="output" variability="continuous" initial="exact">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable name="der(x1)" valueReference="3" causality="local" variability="continuous" initial="calculated">
+      <Real derivative="3"/>
+    </ScalarVariable>
+    <ScalarVariable name="mu" valueReference="4" causality="parameter" variability="fixed" initial="exact">
+      <Real start="1"/>
+    </ScalarVariable>
+  </ModelVariables>
+
+  <ModelStructure>
+    <Outputs>
+      <Unknown index="1" dependencies=""/>
+      <Unknown index="3" dependencies=""/>
+    </Outputs>
+    <Derivatives>
+      <Unknown index="2" dependencies="3" dependenciesKind="constant"/>
+      <Unknown index="4" dependencies="1 3" dependenciesKind="dependent dependent"/>
+    </Derivatives>
+    <InitialUnknowns>
+      <Unknown index="2" dependencies="3" dependenciesKind="constant"/>
+      <Unknown index="4" dependencies="1 3 5" dependenciesKind="dependent dependent dependent"/>
+    </InitialUnknowns>
+  </ModelStructure>
+
+</fmiModelDescription>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<fmiModelDescription fmiVersion="3.0-alpha" modelName="Feedthrough" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f004}" numberOfEventIndicators="0">
+
+  <ModelExchange modelIdentifier="Feedthrough">
+    <SourceFiles>
+      <File name="fmi3.c"/>
+      <File name="euler.c"/>
+      <File name="model.c"/>
+      <File name="slave.c"/>
+    </SourceFiles>
+  </ModelExchange>
+
+  <CoSimulation modelIdentifier="Feedthrough" canHandleVariableCommunicationStepSize="true">
+    <SourceFiles>
+      <File name="fmi3.c"/>
+      <File name="euler.c"/>
+      <File name="model.c"/>
+      <File name="slave.c"/>
+    </SourceFiles>
+  </CoSimulation>
+
+  <LogCategories>
+    <Category name="logAll"/>
+    <Category name="logError"/>
+    <Category name="logFmiCall"/>
+    <Category name="logEvent"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="2"/>
+
+  <ModelVariables>
+    <Float64 name="real_fixed_param" valueReference="0" causality="parameter" variability="fixed" start="0"/>
+    <Float64 name="real_tunable_param" valueReference="1" causality="parameter" variability="tunable" start="0"/>
+    <Float64 name="real_continuous_in" valueReference="2" description="" causality="input" start="0"/>
+    <Float64 name="real_continuous_out" valueReference="3" description="" causality="output" initial="calculated"/>
+    <Float64 name="real_discrete_in" valueReference="4" description="" causality="input" variability="discrete" start="0"/>
+    <Float64 name="real_discrete_out" valueReference="5" description="" causality="output" variability="discrete" initial="calculated"/>
+    <Int32 name="int_in" valueReference="6" description="" causality="input" variability="discrete" start="0"/>
+    <Int32 name="int_out" valueReference="7" description="" causality="output" variability="discrete" initial="calculated"/>
+    <Boolean name="bool_in" valueReference="8" description="boolean input" causality="input" variability="discrete" start="false"/>
+    <Boolean name="bool_out" valueReference="9" description="boolean output" causality="output" variability="discrete" initial="calculated"/>
+    <String name="string_param" valueReference="10" description="String parameter" causality="parameter" variability="fixed">
+        <Start value="Set me!"/>
+    </String>
+  </ModelVariables>
+
+  <ModelStructure>
+    <Outputs>
+      <Unknown valueReference="2"/>
+      <Unknown valueReference="4"/>
+      <Unknown valueReference="6"/>
+      <Unknown valueReference="8"/>
+    </Outputs>
+  </ModelStructure>
+
+</fmiModelDescription>
