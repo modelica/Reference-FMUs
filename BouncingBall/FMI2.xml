@@ -60,7 +60,7 @@
     <ScalarVariable name="e" valueReference="3" description="Rebound factor" causality="parameter" variability="tunable" initial="exact">
       <Real start="0.7" min="0.5" max="1"/>
     </ScalarVariable>
-    <ScalarVariable name="v_min" valueReference="4" description="Velocity below which the ball stops bouncing" causality="parameter" variability="constant">
+    <ScalarVariable name="v_min" valueReference="4" description="Velocity below which the ball stops bouncing" variability="constant">
       <Real start="0.1" declaredType="Velocity"/>
     </ScalarVariable>
   </ModelVariables>
