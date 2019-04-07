@@ -17,7 +17,7 @@ if (${FMI_VERSION} GREATER 1)
   set(FMI_TYPE "")
 endif ()
 
-if (WIN32)
+if (MSVC)
   string(REPLACE "/MD"  "/MT"  CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
   string(REPLACE "/MDd" "/MTd" CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}")
 endif ()
