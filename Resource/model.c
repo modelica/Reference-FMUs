@@ -31,14 +31,15 @@ void calculateValues(ModelInstance *comp) {
     if (strncmp(comp->resourceLocation, scheme1, strlen(scheme1)) == 0) {
         path = malloc(strlen(comp->resourceLocation) + strlen(resourcePath) + 1);
         strcpy(path, &comp->resourceLocation[strlen(scheme1)] - 1);
-        strcat(path, resourcePath);
     } else if (strncmp(comp->resourceLocation, scheme2, strlen(scheme2)) == 0) {
         path = malloc(strlen(comp->resourceLocation) + strlen(resourcePath) + 1);
         strcpy(path, &comp->resourceLocation[strlen(scheme2) - 1]);
-    } else {
+	} else {
         logError(comp, "The resourceLocation must start with \"file:/\" or \"file:///\"");
         return;
     }
+
+	strcat(path, resourcePath);
 
 #ifdef _WIN32
 	// strip any leading slashes
