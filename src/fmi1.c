@@ -555,7 +555,16 @@ fmiComponent fmiInstantiateModel(fmiString instanceName, fmiString GUID,  fmiCal
 }
 
 fmiStatus fmiInitialize(fmiComponent c, fmiBoolean toleranceControlled, fmiReal relativeTolerance, fmiEventInfo* eventInfo) {
-    return init(c);
+	ModelInstance *comp = (ModelInstance *)c;
+
+	eventInfo->iterationConverged          = fmiTrue;
+	eventInfo->stateValueReferencesChanged = fmiFalse;
+	eventInfo->stateValuesChanged          = fmiFalse;
+	eventInfo->terminateSimulation         = fmiFalse;
+	eventInfo->upcomingTimeEvent           = comp->nextEventTimeDefined;
+	eventInfo->nextEventTime               = comp->nextEventTime;
+
+	return init(c);
 }
 
 fmiStatus fmiSetTime(fmiComponent c, fmiReal time) {
