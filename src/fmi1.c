@@ -429,8 +429,7 @@ fmiComponent fmiInstantiateSlave(fmiString  instanceName, fmiString GUID,
 }
 
 fmiStatus fmiInitializeSlave(fmiComponent c, fmiReal tStart, fmiBoolean StopTimeDefined, fmiReal tStop) {
-    init(c);
-    return fmiOK;
+    return init(c);
 }
 
 fmiStatus fmiTerminateSlave(fmiComponent c) {
