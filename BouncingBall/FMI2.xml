@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<fmiModelDescription fmiVersion="2.0" modelName="BouncingBall" guid="{8c4e810f-3df3-4a00-8276-176fa3c9f003}" numberOfEventIndicators="1">
+<fmiModelDescription
+  fmiVersion="2.0"
+  modelName="BouncingBall"
+  description="This model calculates the trajectory, over time, of a ball dropped from a height of 1 m."
+  guid="{8c4e810f-3df3-4a00-8276-176fa3c9f003}"
+  numberOfEventIndicators="1">
 
   <ModelExchange modelIdentifier="BouncingBall">
     <SourceFiles>
@@ -18,8 +23,6 @@
       <File name="slave.c"/>
     </SourceFiles>
   </CoSimulation>
-
-  <!-- <LogCategories> <Category name="logAll"/> <Category name="logError"/> <Category name="logFmiCall"/> <Category name="logEvent"/> </LogCategories> -->
 
   <UnitDefinitions>
     <Unit name="m">
@@ -48,19 +51,19 @@
   <DefaultExperiment startTime="0" stopTime="3"/>
 
   <ModelVariables>
-    <ScalarVariable name="h" valueReference="0" description="Position of the ball" causality="output" variability="continuous" initial="exact">
+    <ScalarVariable name="h" valueReference="0" causality="output" variability="continuous" initial="exact" description="Position of the ball">
       <Real start="1" declaredType="Position"/>
     </ScalarVariable>
-    <ScalarVariable name="v" valueReference="1" description="Velocity of the ball" causality="output" variability="continuous" initial="exact">
+    <ScalarVariable name="v" valueReference="1" causality="output" variability="continuous" initial="exact" description="Velocity of the ball">
       <Real start="0" derivative="1" reinit="true" declaredType="Velocity"/>
     </ScalarVariable>
-    <ScalarVariable name="g" valueReference="2" description="Gravity acting on the ball" causality="parameter" variability="fixed" initial="exact">
+    <ScalarVariable name="g" valueReference="2" causality="parameter" variability="fixed" initial="exact" description="Gravity acting on the ball">
       <Real start="-9.81" derivative="2" declaredType="Acceleration"/>
     </ScalarVariable>
-    <ScalarVariable name="e" valueReference="3" description="Rebound factor" causality="parameter" variability="tunable" initial="exact">
+    <ScalarVariable name="e" valueReference="3" causality="parameter" variability="tunable" initial="exact" description="Coefficient of restitution">
       <Real start="0.7" min="0.5" max="1"/>
     </ScalarVariable>
-    <ScalarVariable name="v_min" valueReference="4" description="Velocity below which the ball stops bouncing" variability="constant">
+    <ScalarVariable name="v_min" valueReference="4" variability="constant" description="Velocity below which the ball stops bouncing">
       <Real start="0.1" declaredType="Velocity"/>
     </ScalarVariable>
   </ModelVariables>

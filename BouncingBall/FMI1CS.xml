@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<fmiModelDescription fmiVersion="1.0" modelName="BouncingBall" modelIdentifier="BouncingBall" guid="{8c4e810f-3df3-4a00-8276-176fa3c9f003}" numberOfContinuousStates="2" numberOfEventIndicators="1">
+<fmiModelDescription
+  fmiVersion="1.0"
+  modelName="BouncingBall"
+  modelIdentifier="BouncingBall"
+  description="This model calculates the trajectory, over time, of a ball dropped from a height of 1 m."
+  guid="{8c4e810f-3df3-4a00-8276-176fa3c9f003}"
+  numberOfContinuousStates="2"
+  numberOfEventIndicators="1">
 
   <DefaultExperiment startTime="0" stopTime="3"/>
 

@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<fmiModelDescription fmiVersion="2.0" modelName="Resource" guid="{7b9c2114-2ce5-4076-a138-2cbc69e069e5}" numberOfEventIndicators="0">
+<fmiModelDescription
+  fmiVersion="2.0"
+  modelName="Resource"
+  description="This model loads data from a resource file"
+  guid="{7b9c2114-2ce5-4076-a138-2cbc69e069e5}"
+  numberOfEventIndicators="0">
 
   <ModelExchange modelIdentifier="Resource">
     <SourceFiles>
