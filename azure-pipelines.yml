@@ -1,0 +1,151 @@
+jobs:
+
+- job:
+  displayName: 'Ubuntu 16.04'
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to PATH
+
+  - bash: conda create --yes --quiet --name myEnvironment
+    displayName: Create Anaconda environment
+
+  - bash: |
+      source activate myEnvironment
+      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 fmpy pytest scipy
+    displayName: Install Anaconda packages
+
+  - bash: |
+      source activate myEnvironment
+      pytest --junitxml=junit/test-results.xml
+    displayName: Build and run tests
+
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFiles: '**/test-*.xml'
+      testRunTitle: 'Publish test results'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'fmi1_cs/dist'
+      artifactName: 'linux64-fmi1_cs'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'fmi1_me/dist'
+      artifactName: 'linux64-fmi1_me'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'fmi2/dist'
+      artifactName: 'linux64-fmi2'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'fmi3/dist'
+      artifactName: 'linux64-fmi3'
+
+- job:
+  displayName: 'macOS 10.13'
+  pool:
+    vmImage: 'macos-10.13'
+
+  steps:
+
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to PATH
+
+  # On Hosted macOS, the agent user doesn't have ownership of Miniconda's installation directory/
+  # We need to take ownership if we want to update conda or install packages globally
+  - bash: sudo chown -R $USER $CONDA
+    displayName: Take ownership of conda installation
+
+  - bash: conda create --yes --quiet --name myEnvironment
+    displayName: Create Anaconda environment
+
+  - bash: |
+      source activate myEnvironment
+      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 fmpy pytest scipy
+    displayName: Install Anaconda packages
+
+  - bash: |
+      source activate myEnvironment
+      pytest --junitxml=junit/test-results.xml
+    displayName: Build and run tests
+
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFiles: '**/test-*.xml'
+      testRunTitle: 'Publish test results'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'fmi1_cs/dist'
+      artifactName: 'darwin64-fmi1_cs'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'fmi1_me/dist'
+      artifactName: 'darwin64-fmi1_me'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'fmi2/dist'
+      artifactName: 'darwin64-fmi2'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'fmi3/dist'
+      artifactName: 'darwin64-fmi3'
+
+- job:
+  displayName: 'Windows 2016'
+  pool:
+    vmImage: 'vs2017-win2016'
+
+  steps:
+
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+    displayName: Add conda to PATH
+
+  - script: conda create --yes --quiet --name myEnvironment
+    displayName: Create Anaconda environment
+
+  - script: |
+      call activate myEnvironment
+      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 cmake fmpy pytest scipy
+    displayName: Install Anaconda packages
+
+  - script: |
+      call activate myEnvironment
+      pytest --junitxml=junit/test-results.xml
+    displayName: Build, install and run tests
+
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFiles: '**/test-*.xml'
+      testRunTitle: 'Publish test results'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'fmi1_cs/dist'
+      artifactName: 'win64-fmi1_cs'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'fmi1_me/dist'
+      artifactName: 'win64-fmi1_me'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'fmi2/dist'
+      artifactName: 'win64-fmi2'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: 'fmi3/dist'
+      artifactName: 'win64-fmi3'

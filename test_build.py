@@ -32,7 +32,7 @@ test_fmus_dir = os.path.dirname(__file__)
 models = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
 
 if os.name == 'nt':
-    generator = 'Visual Studio 14 2015 Win64'
+    generator = 'Visual Studio 15 2017 Win64'
 else:
     generator = 'Unix Makefiles'
 

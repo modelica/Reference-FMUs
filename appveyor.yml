@@ -1,9 +1,0 @@
-image: Visual Studio 2015
-
-build: false
-
-install:
-  - pip install fmpy
-
-test_script:
-  - python test_build.py

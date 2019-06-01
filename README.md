@@ -4,6 +4,8 @@
 
 # Test FMUs
 
+[![Build Status](https://dev.azure.com/CATIA-Systems/Test-FMUs/_apis/build/status/CATIA-Systems.Test-FMUs?branchName=develop)](https://dev.azure.com/CATIA-Systems/Test-FMUs/_build/latest?definitionId=2&branchName=develop)
+
 A set of test models for development, testing and debugging of the [Functional Mock-up Interface](https://fmi-standard.org/).
 
 - [BouncingBall](BouncingBall) - a bouncing ball model with state events
