@@ -31,7 +31,7 @@
     <Category name="logEvent"/>
   </LogCategories>
 
-  <DefaultExperiment startTime="0" stopTime="10"/>
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
 
   <ModelVariables>
     <ScalarVariable name="x" valueReference="0" description="the only state" causality="output" variability="continuous" initial="exact">

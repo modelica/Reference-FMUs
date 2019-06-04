@@ -48,7 +48,7 @@
     </SimpleType>
   </TypeDefinitions>
 
-  <DefaultExperiment startTime="0" stopTime="3"/>
+  <DefaultExperiment startTime="0" stopTime="3" stepSize="1e-2"/>
 
   <ModelVariables>
     <ScalarVariable name="h" valueReference="0" causality="output" variability="continuous" initial="exact" description="Position of the ball">

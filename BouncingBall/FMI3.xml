@@ -20,7 +20,7 @@
     <Category name="logEvent"/>
   </LogCategories>
 
-  <DefaultExperiment startTime="0" stopTime="3"/>
+  <DefaultExperiment startTime="0" stopTime="3" stepSize="1e-2"/>
 
   <ModelVariables>
     <Float64 name="h" valueReference="0" description="height, used as state" causality="output" variability="continuous" initial="exact" start="1"/>

@@ -70,25 +70,18 @@ void setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {}
 void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {}
 #endif
 
-
 Status doStep(ModelInstance *comp, double t, double tNext) {
 
     int stateEvent = 0;
     int timeEvent  = 0;
 
-    comp->time = t;
-
-    while (comp->time < tNext) {
-
-        if (comp->nextEventTimeDefined && comp->nextEventTime < tNext) {
-            solver_step(comp, comp->time, comp->nextEventTime, &comp->time, &stateEvent);
-        } else {
-            solver_step(comp, comp->time, tNext, &comp->time, &stateEvent);
-        }
+    while (comp->time + FIXED_SOLVER_STEP < tNext) {
+        
+        solver_step(comp, comp->time, comp->time + FIXED_SOLVER_STEP, &comp->time, &stateEvent);
 
         // check for time event
-        if (comp->nextEventTimeDefined && (comp->time - comp->nextEventTime > -1e-5)) {
-            timeEvent = true;
+        if (comp->nextEventTimeDefined && (comp->time >= comp->nextEventTime)) {
+            timeEvent = 1;
         }
 
         if (stateEvent || timeEvent) {

@@ -31,7 +31,7 @@
     <Category name="logEvent"/>
   </LogCategories>
 
-  <DefaultExperiment startTime="0" stopTime="10"/>
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="0.2"/>
 
   <ModelVariables>
     <ScalarVariable name="counter" valueReference="0" description="counts the seconds" causality="output" initial="exact">

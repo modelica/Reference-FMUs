@@ -12,6 +12,8 @@
 #define GET_INT32
 #define EVENT_UPDATE
 
+#define FIXED_SOLVER_STEP 0.2
+
 typedef enum {
     vr_counter
 } ValueReference;
