@@ -12,15 +12,15 @@ void setStartValues(ModelInstance *comp) {
 void calculateValues(ModelInstance *comp) {
     // load the file
 
-    FILE *file;
-    char *path;
-    char c;
+    FILE *file = NULL;
+    char *path = NULL;
+    char c = '\0';
     const char *scheme1 = "file:///";
     const char *scheme2 = "file:/";
 #if FMI_VERSION < 2
-    char *resourcePath = "/resources/y.txt";
+    const char *resourcePath = "/resources/y.txt";
 #else
-    char *resourcePath = "/y.txt";
+    const char *resourcePath = "/y.txt";
 #endif
 
     if (!comp->resourceLocation) {
@@ -62,8 +62,11 @@ void calculateValues(ModelInstance *comp) {
     // assign it to y
     comp->modelData->y = c;
 
-    // clost the file
+    // close the file
     fclose(file);
+    
+    // clean up
+    free(path);
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
