@@ -103,7 +103,10 @@ typedef struct {
     bool isNewEventIteration;
     
     ModelData *modelData;
-    void *solverData;
+
+	// event indicators
+	double *z;
+	double *prez;
     
 } ModelInstance;
 

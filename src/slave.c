@@ -6,7 +6,6 @@
 
 #include "config.h"
 #include "slave.h"
-#include "solver.h"
 
 
 // default implementations
@@ -74,10 +73,42 @@ Status doStep(ModelInstance *comp, double t, double tNext) {
 
     int stateEvent = 0;
     int timeEvent  = 0;
+	double *temp = NULL;
 
-    while (comp->time + FIXED_SOLVER_STEP < tNext) {
+#if NUMBER_OF_STATES > 0
+	double  x[NUMBER_OF_STATES] = { 0 };
+	double dx[NUMBER_OF_STATES] = { 0 };
+#endif
+
+    while (comp->time + FIXED_SOLVER_STEP < tNext + 0.1 * FIXED_SOLVER_STEP) {
         
-        solver_step(comp, comp->time, comp->time + FIXED_SOLVER_STEP, &comp->time, &stateEvent);
+#if NUMBER_OF_STATES > 0
+		getContinuousStates(comp, x, NUMBER_OF_STATES);
+		getDerivatives(comp, dx, NUMBER_OF_STATES);
+
+		// forward Euler step
+		for (int i = 0; i < NUMBER_OF_STATES; i++) {
+			x[i] += FIXED_SOLVER_STEP * dx[i];
+		}
+
+		setContinuousStates(comp, x, NUMBER_OF_STATES);
+#endif
+
+		stateEvent = 0;
+
+#if NUMBER_OF_EVENT_INDICATORS > 0
+		getEventIndicators(comp, comp->z, NUMBER_OF_EVENT_INDICATORS);
+		
+		// check for zero-crossing
+		for (int i = 0; i < NUMBER_OF_EVENT_INDICATORS; i++) {
+		    stateEvent |= (comp->prez[i] * comp->z[i]) <= 0;
+		}
+		
+		// remember the current event indicators
+		temp = comp->z;
+		comp->z = comp->prez;
+		comp->prez = temp;
+#endif
 
         // check for time event
         if (comp->nextEventTimeDefined && (comp->time >= comp->nextEventTime)) {
@@ -98,6 +129,7 @@ Status doStep(ModelInstance *comp, double t, double tNext) {
             return Discard; // enforce termination of the simulation loop
         }
 
+		comp->time += FIXED_SOLVER_STEP;
     }
 
     return OK;

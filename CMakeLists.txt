@@ -75,13 +75,11 @@ set(TARGET_NAME ${MODEL_NAME})
 SET(HEADERS
   ${MODEL_NAME}/config.h
   include/model.h
-  include/solver.h
 )
 
 SET(SOURCES
   ${MODEL_NAME}/model.c
   src/fmi${FMI_VERSION}.c
-  src/euler.c
   src/slave.c
 )
 
@@ -163,7 +161,7 @@ add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E 
 )
 
 # common headers
-foreach (SOURCE_FILE model.h slave.h solver.h)
+foreach (SOURCE_FILE model.h slave.h)
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/include/${SOURCE_FILE}"
     "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"
@@ -171,7 +169,7 @@ foreach (SOURCE_FILE model.h slave.h solver.h)
 endforeach(SOURCE_FILE)
 
 # common sources
-foreach (SOURCE_FILE fmi${FMI_VERSION}.c euler.c slave.c)
+foreach (SOURCE_FILE fmi${FMI_VERSION}.c slave.c)
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/src/${SOURCE_FILE}"
     "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"

@@ -11,7 +11,6 @@
 
 #include "config.h"
 #include "model.h"
-#include "solver.h"
 #include "slave.h"
 
 
@@ -295,7 +294,13 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
     setStartValues(comp); // to be implemented by the includer of this file
     comp->isDirtyValues = true; // because we just called setStartValues
 
-    comp->solverData = solver_create(comp);
+#if NUMBER_OF_EVENT_INDICATORS > 0
+	comp->z    = functions->allocateMemory(sizeof(double), NUMBER_OF_EVENT_INDICATORS);
+	comp->prez = functions->allocateMemory(sizeof(double), NUMBER_OF_EVENT_INDICATORS);
+#else
+	comp->z    = NULL;
+	comp->prez = NULL;
+#endif
 
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2Instantiate: GUID=%s", fmuGUID)
 
@@ -384,7 +389,10 @@ void fmi2FreeInstance(fmi2Component c) {
     FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2FreeInstance")
 
     if (comp->instanceName) comp->freeMemory((void *)comp->instanceName);
-    if (comp->GUID) comp->freeMemory((void *)comp->GUID);
+	if (comp->GUID)         comp->freeMemory((void *)comp->GUID);
+	if (comp->z)            comp->freeMemory((void *)comp->z);
+	if (comp->prez)         comp->freeMemory((void *)comp->prez);
+
     comp->freeMemory(comp);
 }
 
