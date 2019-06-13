@@ -11,7 +11,6 @@
 
 #include "config.h"
 #include "model.h"
-#include "solver.h"
 #include "slave.h"
 
 
@@ -150,21 +149,6 @@ void logError(ModelInstance *comp, const char *message, ...) {
     free(buf);
 }
 
-void *allocateMemory(ModelInstance *comp, size_t size) {
-    return comp->allocateMemory(comp->componentEnvironment, size, 1);
-}
-
-void freeMemory(ModelInstance *comp, void *obj) {
-    comp->freeMemory(comp->componentEnvironment, obj);
-}
-
-const char *duplicateString(ModelInstance *comp, const char *str1) {
-    size_t len = strlen(str1);
-    char *str2 = allocateMemory(comp, len + 1);
-    strncpy(str2, str1, len + 1);
-    return str2;
-}
-
 fmi3Boolean isCategoryLogged(ModelInstance *comp, int categoryIndex);
 
 static bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, int n, int nExpected) {
@@ -225,88 +209,18 @@ fmi3Boolean isCategoryLogged(ModelInstance *comp, int categoryIndex) {
 fmi3Component fmi3Instantiate(fmi3String instanceName, fmi3Type fmuType, fmi3String fmuGUID,
                             fmi3String fmuResourceLocation, const fmi3CallbackFunctions *functions,
                             fmi3Boolean visible, fmi3Boolean loggingOn) {
-    // ignoring arguments: fmuResourceLocation, visible
-    ModelInstance *comp;
 
-    if (!functions->logger) {
-        return NULL;
-    }
-
-    if (!functions->allocateMemory || !functions->freeMemory) {
-        functions->logger(functions->componentEnvironment, instanceName, fmi3Error, "error",
-                "fmi3Instantiate: Missing callback function.");
-        return NULL;
-    }
-
-    if (!instanceName || strlen(instanceName) == 0) {
-        functions->logger(functions->componentEnvironment, "?", fmi3Error, "error",
-                "fmi3Instantiate: Missing instance name.");
-        return NULL;
-    }
-
-    if (!fmuGUID || strlen(fmuGUID) == 0) {
-        functions->logger(functions->componentEnvironment, instanceName, fmi3Error, "error",
-                "fmi3Instantiate: Missing GUID.");
-        return NULL;
-    }
-
-    if (strcmp(fmuGUID, MODEL_GUID)) {
-//        functions->logger(functions->componentEnvironment, instanceName, fmi3Error, "error",
-//                "fmi3Instantiate: Wrong GUID %s. Expected %s.", fmuGUID, MODEL_GUID);
-        return NULL;
-    }
-
-    comp = (ModelInstance *)functions->allocateMemory(NULL, 1, sizeof(ModelInstance));
-
-    if (comp) {
-        int i;
-        comp->instanceName = (char *)functions->allocateMemory(NULL, 1 + strlen(instanceName), sizeof(char));
-        comp->GUID = (char *)functions->allocateMemory(NULL, 1 + strlen(fmuGUID), sizeof(char));
-        comp->resourceLocation = (char *)functions->allocateMemory(NULL, 1 + strlen(fmuResourceLocation), sizeof(char));
-
-        comp->modelData = (ModelData *)functions->allocateMemory(NULL, 1, sizeof(ModelData));
-
-        // set all categories to on or off. fmi3SetDebugLogging should be called to choose specific categories.
-        for (i = 0; i < NUMBER_OF_CATEGORIES; i++) {
-            comp->logCategories[i] = loggingOn;
-        }
-    }
-
-    if (!comp || !comp->modelData || !comp->instanceName || !comp->GUID) {
-        functions->logger(functions->componentEnvironment, instanceName, fmi3Error, "error",
-            "fmi3Instantiate: Out of memory.");
-        return NULL;
-    }
-
-    comp->time = 0; // overwrite in fmi3SetupExperiment, fmi3SetTime
-    strcpy((char *)comp->instanceName, (char *)instanceName);
-    comp->type = fmuType;
-    strcpy((char *)comp->GUID, (char *)fmuGUID);
-    strcpy((char *)comp->resourceLocation, (char *)fmuResourceLocation);
-    comp->logger = functions->logger;
-    comp->allocateMemory = functions->allocateMemory;
-    comp->freeMemory = functions->freeMemory;
-    comp->stepFinished = functions->stepFinished;
-    comp->componentEnvironment = functions->componentEnvironment;
-    comp->loggingOn = loggingOn;
-    comp->state = modelInstantiated;
-    comp->isNewEventIteration = fmi3False;
-
-    comp->newDiscreteStatesNeeded = fmi3False;
-    comp->terminateSimulation = fmi3False;
-    comp->nominalsOfContinuousStatesChanged = fmi3False;
-    comp->valuesOfContinuousStatesChanged = fmi3False;
-    comp->nextEventTimeDefined = fmi3False;
-    comp->nextEventTime = 0;
-
-    setStartValues(comp);
-    comp->isDirtyValues = true;
-
-    comp->solverData = solver_create(comp);
-
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3Instantiate: GUID=%s", fmuGUID)
-
-    return comp;
+	return createModelInstance(
+		functions->logger,
+		functions->allocateMemory,
+		functions->freeMemory,
+		functions->componentEnvironment,
+		instanceName,
+		fmuGUID,
+		fmuResourceLocation,
+		loggingOn,
+		fmuType
+	);
 }
 
 fmi3Status fmi3SetupExperiment(fmi3Component c, fmi3Boolean toleranceDefined, fmi3Float64 tolerance,
@@ -392,9 +306,7 @@ void fmi3FreeInstance(fmi3Component c) {
 
     FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3FreeInstance")
 
-    if (comp->instanceName) comp->freeMemory(comp, (void *)comp->instanceName);
-    if (comp->GUID) comp->freeMemory(comp, (void *)comp->GUID);
-    comp->freeMemory(comp, comp);
+	freeModelInstance(comp);
 }
 
 // ---------------------------------------------------------------------------
@@ -625,40 +537,9 @@ fmi3Status fmi3DeSerializeFMUstate (fmi3Component c, const fmi3Byte serializedSt
     return unsupportedFunction(c, "fmi3DeSerializeFMUstate", MASK_fmi3DeSerializeFMUstate);
 }
 
-//fmi3Status fmi3GetDirectionalDerivative(fmi3Component c, const fmi3ValueReference vUnknown_ref[], size_t nUnknown,
-//                                        const fmi3ValueReference vKnown_ref[] , size_t nKnown,
-//                                        const fmi3Float64 dvKnown[], fmi3Float64 dvUnknown[]) {
-//    return unsupportedFunction(c, "fmi3GetDirectionalDerivative", MASK_fmi3GetDirectionalDerivative);
-//}
-
 // ---------------------------------------------------------------------------
 // Functions for FMI for Co-Simulation
 // ---------------------------------------------------------------------------
-/* Simulating the slave */
-//fmi3Status fmi3SetRealInputDerivatives(fmi3Component c, const fmi3ValueReference vr[], size_t nvr,
-//                                     const fmi3Integer order[], const fmi3Float64 value[]) {
-//    ModelInstance *comp = (ModelInstance *)c;
-//    if (invalidState(comp, "fmi3SetRealInputDerivatives", MASK_fmi3SetRealInputDerivatives)) {
-//        return fmi3Error;
-//    }
-//    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetRealInputDerivatives: nvr= %d", nvr)
-//    FILTERED_LOG(comp, fmi3Error, LOG_ERROR, "fmi3SetRealInputDerivatives: ignoring function call."
-//        " This model cannot interpolate inputs: canInterpolateInputs=\"fmi3False\"")
-//    return fmi3Error;
-//}
-
-//fmi3Status fmi3GetRealOutputDerivatives(fmi3Component c, const fmi3ValueReference vr[], size_t nvr,
-//                                      const fmi3Integer order[], fmi3Float64 value[]) {
-//    int i;
-//    ModelInstance *comp = (ModelInstance *)c;
-//    if (invalidState(comp, "fmi3GetRealOutputDerivatives", MASK_fmi3GetRealOutputDerivatives))
-//        return fmi3Error;
-//    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3GetRealOutputDerivatives: nvr= %d", nvr)
-//    FILTERED_LOG(comp, fmi3Error, LOG_ERROR,"fmi3GetRealOutputDerivatives: ignoring function call."
-//        " This model cannot compute derivatives of outputs: MaxOutputDerivativeOrder=\"0\"")
-//    for (i = 0; i < nvr; i++) value[i] = 0;
-//    return fmi3Error;
-//}
 
 fmi3Status fmi3CancelStep(fmi3Component c) {
     ModelInstance *comp = (ModelInstance *)c;

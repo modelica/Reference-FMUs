@@ -11,7 +11,6 @@
 
 #include "config.h"
 #include "model.h"
-#include "solver.h"
 #include "slave.h"
 
 
@@ -20,11 +19,6 @@
 #else
 #include "fmiModelFunctions.h"
 #endif
-
-//// array of value references of states
-//#if NUMBER_OF_STATES>0
-//fmiValueReference vrStates[NUMBER_OF_STATES] = STATES;
-//#endif
 
 #ifndef max
 #define max(a,b) ((a)>(b) ? (a) : (b))
@@ -57,21 +51,6 @@ void logError(ModelInstance *comp, const char *message, ...) {
     comp->logger(comp->componentEnvironment, comp->instanceName, fmiError, "logError", buf);
 
     free(buf);
-}
-
-void *allocateMemory(ModelInstance *comp, size_t size) {
-    return comp->allocateMemory(size, 1);
-}
-
-void freeMemory(ModelInstance *comp, void *obj) {
-    comp->freeMemory(obj);
-}
-
-const char *duplicateString(ModelInstance *comp, const char *str1) {
-    size_t len = strlen(str1);
-    char *str2 = allocateMemory(comp, len + 1);
-    strncpy(str2, str1, len + 1);
-    return str2;
 }
 
 static fmiBoolean invalidNumber(ModelInstance* comp, const char* f, const char* arg, int n, int nExpected){
@@ -110,87 +89,6 @@ static fmiBoolean nullPointer(ModelInstance* comp, const char* f, const char* ar
 // Private helpers used below to implement functions
 // ---------------------------------------------------------------------------
 
-// fname is fmiInstantiateModel or fmiInstantiateSlave
-static fmiComponent instantiateModel(char* fname, fmiString instanceName, fmiString GUID,
-        fmiString fmuLocation, fmiCallbackFunctions functions, fmiBoolean loggingOn) {
-
-    ModelInstance* comp;
-
-    if (!functions.logger)
-        return NULL; // we cannot even log this problem
-
-    if (!instanceName || strlen(instanceName) == 0) {
-        functions.logger(NULL, "?", fmiError, "error",
-                "%s: Missing instance name.", fname);
-        return NULL;
-    }
-
-    if (!GUID || strlen(GUID) == 0) {
-        functions.logger(NULL, instanceName, fmiError, "error",
-                "%s: Missing GUID.", fname);
-        return NULL;
-    }
-
-#if CO_SIMULATION
-    if (!fmuLocation || strlen(fmuLocation) == 0) {
-        functions.logger(NULL, instanceName, fmiError, "error",
-                         "%s: Missing fmuLocation.", fname);
-        return NULL;
-    }
-#endif
-
-    if (!functions.allocateMemory || !functions.freeMemory){
-        functions.logger(NULL, instanceName, fmiError, "error",
-                "%s: Missing callback function.", fname);
-        return NULL;
-    }
-
-    if (strcmp(GUID, MODEL_GUID)) {
-        functions.logger(NULL, instanceName, fmiError, "error",
-                "%s: Wrong GUID %s. Expected %s.", fname, GUID, MODEL_GUID);
-        return NULL;
-    }
-
-    comp = (ModelInstance *)functions.allocateMemory(1, sizeof(ModelInstance));
-
-    if (comp) {
-        comp->instanceName = (char *)functions.allocateMemory(1 + strlen(instanceName), sizeof(char));
-        comp->GUID = (char *)functions.allocateMemory(1 + strlen(GUID), sizeof(char));
-#ifdef FMI_COSIMULATION
-        comp->resourceLocation = (char *)functions.allocateMemory(1 + strlen(fmuLocation), sizeof(char));
-#else
-        comp->resourceLocation = NULL;
-#endif
-        comp->modelData = (ModelData *)functions.allocateMemory(1, sizeof(ModelData));
-    }
-
-    if (!comp || !comp->instanceName || !comp->GUID) {
-        functions.logger(NULL, instanceName, fmiError, "error",
-                "%s: Out of memory.", fname);
-        return NULL;
-    }
-
-    if (loggingOn) functions.logger(NULL, instanceName, fmiOK, "log",
-            "%s: GUID=%s", fname, GUID);
-
-    strcpy((char *)comp->instanceName, (char *)instanceName);
-    strcpy((char *)comp->GUID, (char *)GUID);
-#ifdef FMI_COSIMULATION
-    strcpy((char *)comp->resourceLocation, (char *)fmuLocation);
-#endif
-    comp->logger = functions.logger;
-    comp->allocateMemory = functions.allocateMemory;
-    comp->freeMemory = functions.freeMemory;
-    comp->loggingOn = loggingOn;
-    comp->state = modelInstantiated;
-
-    setStartValues(comp); // to be implemented by the includer of this file
-
-    comp->solverData = solver_create(comp);
-
-    return comp;
-}
-
 // fname is fmiInitialize or fmiInitializeSlave
 static fmiStatus init(fmiComponent c) {
     ModelInstance* comp = (ModelInstance *)c;
@@ -207,16 +105,6 @@ static fmiStatus terminate(char* fname, fmiComponent c) {
     if (comp->loggingOn) comp->logger(c, comp->instanceName, fmiOK, "log", fname);
     comp->state = modelTerminated;
     return fmiOK;
-}
-
-// fname is freeModelInstance of freeSlaveInstance
-void freeInstance(char* fname, fmiComponent c) {
-    ModelInstance* comp = (ModelInstance *)c;
-    if (!comp) return;
-    if (comp->loggingOn) comp->logger(c, comp->instanceName, fmiOK, "log", fname);
-    if (comp->instanceName) comp->freeMemory((void *)comp->instanceName);
-    if (comp->GUID) comp->freeMemory((void *)comp->GUID);
-    comp->freeMemory(comp);
 }
 
 // ---------------------------------------------------------------------------
@@ -424,8 +312,18 @@ const char* fmiGetTypesPlatform() {
 fmiComponent fmiInstantiateSlave(fmiString  instanceName, fmiString GUID,
     fmiString fmuLocation, fmiString mimeType, fmiReal timeout, fmiBoolean visible,
     fmiBoolean interactive, fmiCallbackFunctions functions, fmiBoolean loggingOn) {
-    // ignoring arguments: mimeType, timeout, visible, interactive
-    return instantiateModel("fmiInstantiateSlave", instanceName, GUID, fmuLocation, functions, loggingOn);
+
+	// ignoring arguments: mimeType, timeout, visible, interactive
+	return createModelInstance(
+		functions.logger,
+		functions.allocateMemory,
+		functions.freeMemory,
+		NULL,
+		instanceName,
+		GUID,
+		fmuLocation,
+		loggingOn,
+		CoSimulation);
 }
 
 fmiStatus fmiInitializeSlave(fmiComponent c, fmiReal tStart, fmiBoolean StopTimeDefined, fmiReal tStop) {
@@ -447,10 +345,8 @@ fmiStatus fmiResetSlave(fmiComponent c) {
 }
 
 void fmiFreeSlaveInstance(fmiComponent c) {
-//    ModelInstance* comp = (ModelInstance *)c;
-//    if (invalidState(comp, "fmiFreeSlaveInstance", modelTerminated))
-//         return;
-//    freeInstance("fmiFreeSlaveInstance", c);
+	ModelInstance *comp = (ModelInstance *)c;
+	freeModelInstance(comp);
 }
 
 fmiStatus fmiSetRealInputDerivatives(fmiComponent c, const fmiValueReference vr[], size_t nvr,
@@ -550,7 +446,17 @@ const char* fmiGetModelTypesPlatform() {
 }
 
 fmiComponent fmiInstantiateModel(fmiString instanceName, fmiString GUID,  fmiCallbackFunctions functions, fmiBoolean loggingOn) {
-    return instantiateModel("fmiInstantiateModel", instanceName, GUID, NULL, functions, loggingOn);
+    //return instantiateModel("fmiInstantiateModel", instanceName, GUID, NULL, functions, loggingOn);
+	return createModelInstance(
+		functions.logger,
+		functions.allocateMemory,
+		functions.freeMemory,
+		NULL,
+		instanceName,
+		GUID,
+		NULL,
+		loggingOn,
+		ModelExchange);
 }
 
 fmiStatus fmiInitialize(fmiComponent c, fmiBoolean toleranceControlled, fmiReal relativeTolerance, fmiEventInfo* eventInfo) {
@@ -741,7 +647,8 @@ fmiStatus fmiTerminate(fmiComponent c){
 }
 
 void fmiFreeModelInstance(fmiComponent c) {
-    freeInstance("fmiFreeModelInstance", c);
+	ModelInstance *comp = (ModelInstance *)c;
+	freeModelInstance(comp);
 }
 
 #endif // Model Exchange 1.0

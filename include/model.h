@@ -64,27 +64,28 @@ typedef enum {
     Pending
 } Status;
 
+#if FMI_VERSION < 3
+typedef void  (*loggerType)        (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message, ...);
+typedef void* (*allocateMemoryType)(size_t nobj, size_t size);
+typedef void  (*freeMemoryType)    (void *obj);
+#else
+typedef void  (*loggerType)        (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message);
+typedef void* (*allocateMemoryType)(void *componentEnvironment, size_t nobj, size_t size);
+typedef void  (*freeMemoryType)    (void *componentEnvironment, void *obj);
+#endif
 
 typedef struct {
     
     double time;
     const char *instanceName;
     InterfaceType type;
-    const char *GUID;
     const char *resourceLocation;
 
-    // callback functions
-#if FMI_VERSION < 3
-    void  (*logger)(void *, const char *, int, const char *, const char *, ...);
-    void* (*allocateMemory)(size_t, size_t);
-    void  (*freeMemory)(void *);
-    void  (*stepFinished)(void *, int);
-#else
-    void  (*logger)(void *, const char *, int, const char *, const char *, ...);
-    void* (*allocateMemory)(void *, size_t, size_t);
-    void  (*freeMemory)(void *, void *);
-    void  (*stepFinished)(void *, void *, int);
-#endif
+	// callback functions
+	loggerType logger;
+	allocateMemoryType allocateMemory;
+	freeMemoryType freeMemory;
+
     bool loggingOn;
     bool logCategories[NUMBER_OF_CATEGORIES];
 
@@ -110,6 +111,18 @@ typedef struct {
     
 } ModelInstance;
 
+ModelInstance *createModelInstance(
+	loggerType logger,
+	allocateMemoryType allocateMemory,
+	freeMemoryType freeMemory,
+	void *componentEnvironment,
+	const char *instanceName,
+	const char *GUID,
+	const char *resourceLocation,
+	bool loggingOn,
+	InterfaceType interfaceType);
+void freeModelInstance(ModelInstance *comp);
+
 void setStartValues(ModelInstance *comp);
 void calculateValues(ModelInstance *comp);
     
@@ -130,7 +143,7 @@ void getEventIndicators(ModelInstance *comp, double z[], size_t nz);
 void eventUpdate(ModelInstance *comp);
 
 void logError(ModelInstance *comp, const char *message, ...);
-void *allocateMemory(ModelInstance *comp, size_t size);
+void *allocateMemory(ModelInstance *comp, size_t num, size_t size);
 void freeMemory(ModelInstance *comp, void *obj);
 const char *duplicateString(ModelInstance *comp, const char *str1);
 

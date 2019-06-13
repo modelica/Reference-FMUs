@@ -149,21 +149,6 @@ void logError(ModelInstance *comp, const char *message, ...) {
     free(buf);
 }
 
-void *allocateMemory(ModelInstance *comp, size_t size) {
-    return comp->allocateMemory(size, 1);
-}
-
-void freeMemory(ModelInstance *comp, void *obj) {
-    comp->freeMemory(obj);
-}
-
-const char *duplicateString(ModelInstance *comp, const char *str1) {
-    size_t len = strlen(str1);
-    char *str2 = allocateMemory(comp, len + 1);
-    strncpy(str2, str1, len + 1);
-    return str2;
-}
-
 fmi2Boolean isCategoryLogged(ModelInstance *comp, int categoryIndex);
 
 static bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, int n, int nExpected) {
@@ -224,87 +209,18 @@ fmi2Boolean isCategoryLogged(ModelInstance *comp, int categoryIndex) {
 fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2String fmuGUID,
                             fmi2String fmuResourceLocation, const fmi2CallbackFunctions *functions,
                             fmi2Boolean visible, fmi2Boolean loggingOn) {
-    // ignoring arguments: fmuResourceLocation, visible
-    ModelInstance *comp;
-    if (!functions->logger) {
-        return NULL;
-    }
 
-    if (!functions->allocateMemory || !functions->freeMemory) {
-        functions->logger(functions->componentEnvironment, instanceName, fmi2Error, "error",
-                "fmi2Instantiate: Missing callback function.");
-        return NULL;
-    }
-    if (!instanceName || strlen(instanceName) == 0) {
-        functions->logger(functions->componentEnvironment, "?", fmi2Error, "error",
-                "fmi2Instantiate: Missing instance name.");
-        return NULL;
-    }
-    if (!fmuGUID || strlen(fmuGUID) == 0) {
-        functions->logger(functions->componentEnvironment, instanceName, fmi2Error, "error",
-                "fmi2Instantiate: Missing GUID.");
-        return NULL;
-    }
-    if (strcmp(fmuGUID, MODEL_GUID)) {
-        functions->logger(functions->componentEnvironment, instanceName, fmi2Error, "error",
-                "fmi2Instantiate: Wrong GUID %s. Expected %s.", fmuGUID, MODEL_GUID);
-        return NULL;
-    }
-    comp = (ModelInstance *)functions->allocateMemory(1, sizeof(ModelInstance));
-    if (comp) {
-        int i;
-        comp->instanceName = (char *)functions->allocateMemory(1 + strlen(instanceName), sizeof(char));
-        comp->GUID = (char *)functions->allocateMemory(1 + strlen(fmuGUID), sizeof(char));
-        comp->resourceLocation = (char *)functions->allocateMemory(1 + strlen(fmuResourceLocation), sizeof(char));
-
-        comp->modelData = (ModelData *)functions->allocateMemory(1, sizeof(ModelData));
-
-        // set all categories to on or off. fmi2SetDebugLogging should be called to choose specific categories.
-        for (i = 0; i < NUMBER_OF_CATEGORIES; i++) {
-            comp->logCategories[i] = loggingOn;
-        }
-    }
-    if (!comp || !comp->modelData || !comp->instanceName || !comp->GUID) {
-
-        functions->logger(functions->componentEnvironment, instanceName, fmi2Error, "error",
-            "fmi2Instantiate: Out of memory.");
-        return NULL;
-    }
-    comp->time = 0; // overwrite in fmi2SetupExperiment, fmi2SetTime
-    strcpy((char *)comp->instanceName, (char *)instanceName);
-    comp->type = fmuType;
-    strcpy((char *)comp->GUID, (char *)fmuGUID);
-    strcpy((char *)comp->resourceLocation, (char *)fmuResourceLocation);
-    comp->logger = functions->logger;
-    comp->allocateMemory = functions->allocateMemory;
-    comp->freeMemory = functions->freeMemory;
-    comp->stepFinished = functions->stepFinished;
-    comp->componentEnvironment = functions->componentEnvironment;
-    comp->loggingOn = loggingOn;
-    comp->state = modelInstantiated;
-    comp->isNewEventIteration = fmi2False;
-
-    comp->newDiscreteStatesNeeded = fmi2False;
-    comp->terminateSimulation = fmi2False;
-    comp->nominalsOfContinuousStatesChanged = fmi2False;
-    comp->valuesOfContinuousStatesChanged = fmi2False;
-    comp->nextEventTimeDefined = fmi2False;
-    comp->nextEventTime = 0;
-
-    setStartValues(comp); // to be implemented by the includer of this file
-    comp->isDirtyValues = true; // because we just called setStartValues
-
-#if NUMBER_OF_EVENT_INDICATORS > 0
-	comp->z    = functions->allocateMemory(sizeof(double), NUMBER_OF_EVENT_INDICATORS);
-	comp->prez = functions->allocateMemory(sizeof(double), NUMBER_OF_EVENT_INDICATORS);
-#else
-	comp->z    = NULL;
-	comp->prez = NULL;
-#endif
-
-    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2Instantiate: GUID=%s", fmuGUID)
-
-    return comp;
+	return createModelInstance(
+		functions->logger,
+		functions->allocateMemory,
+		functions->freeMemory,
+		functions->componentEnvironment,
+		instanceName,
+		fmuGUID,
+		fmuResourceLocation,
+		loggingOn,
+		fmuType
+	);
 }
 
 fmi2Status fmi2SetupExperiment(fmi2Component c, fmi2Boolean toleranceDefined, fmi2Real tolerance,
@@ -386,14 +302,9 @@ void fmi2FreeInstance(fmi2Component c) {
     if (invalidState(comp, "fmi2FreeInstance", MASK_fmi2FreeInstance))
         return;
 
-    FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2FreeInstance")
+	FILTERED_LOG(comp, fmi2OK, LOG_FMI_CALL, "fmi2FreeInstance")
 
-    if (comp->instanceName) comp->freeMemory((void *)comp->instanceName);
-	if (comp->GUID)         comp->freeMemory((void *)comp->GUID);
-	if (comp->z)            comp->freeMemory((void *)comp->z);
-	if (comp->prez)         comp->freeMemory((void *)comp->prez);
-
-    comp->freeMemory(comp);
+	freeModelInstance(comp);
 }
 
 // ---------------------------------------------------------------------------
