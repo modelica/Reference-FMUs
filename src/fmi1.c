@@ -53,35 +53,6 @@ void logError(ModelInstance *comp, const char *message, ...) {
     free(buf);
 }
 
-static fmiBoolean invalidNumber(ModelInstance* comp, const char* f, const char* arg, int n, int nExpected){
-    if (n != nExpected) {
-        comp->state = modelError;
-        logError(comp, "%s: Invalid argument %s = %d. Expected %d.", f, arg, n, nExpected);
-        return fmiTrue;
-    }
-    return fmiFalse;
-}
-
-static fmiBoolean invalidState(ModelInstance* comp, const char* f, int statesExpected){
-    if (!comp)
-        return fmiTrue;
-    if (!(comp->state & statesExpected)) {
-        comp->state = modelError;
-        logError(comp, "%s: Illegal call sequence.", f);
-        return fmiTrue;
-    }
-    return fmiFalse;
-}
-
-static fmiBoolean nullPointer(ModelInstance* comp, const char* f, const char* arg, const void* p){
-    if (!p) {
-        comp->state = modelError;
-        logError(comp, "%s: Invalid argument %s = NULL.", f, arg);
-        return fmiTrue;
-    }
-    return fmiFalse;
-}
-
 // ---------------------------------------------------------------------------
 // Private helpers used below to implement functions
 // ---------------------------------------------------------------------------

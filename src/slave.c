@@ -142,6 +142,43 @@ const char *duplicateString(ModelInstance *comp, const char *str1) {
 	return str2;
 }
 
+bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, int n, int nExpected) {
+	
+	if (n != nExpected) {
+		comp->state = modelError;
+		logError(comp, "%s: Invalid argument %s = %d. Expected %d.", f, arg, n, nExpected);
+		return true;
+	}
+	
+	return false;
+}
+
+bool invalidState(ModelInstance *comp, const char *f, int statesExpected) {
+	
+	if (!comp) {
+		return true;
+	}
+
+	if (!(comp->state & statesExpected)) {
+		comp->state = modelError;
+		logError(comp, "%s: Illegal call sequence.", f);
+		return true;
+	}
+	
+	return false;
+}
+
+bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void *p) {
+
+	if (!p) {
+		comp->state = modelError;
+		logError(comp, "%s: Invalid argument %s = NULL.", f, arg);
+		return true;
+	}
+	
+	return false;
+}
+
 // default implementations
 #if NUMBER_OF_EVENT_INDICATORS < 1
 void getEventIndicators(ModelInstance *comp, double z[], size_t nz) {

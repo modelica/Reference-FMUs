@@ -144,35 +144,6 @@ void logError(ModelInstance *comp, const char *message, ...) {
 
 fmi3Boolean isCategoryLogged(ModelInstance *comp, int categoryIndex);
 
-static bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, int n, int nExpected) {
-    if (n != nExpected) {
-        comp->state = modelError;
-		logError(comp, "%s: Invalid argument %s = %d. Expected %d.", f, arg, n, nExpected);
-        return fmi3True;
-    }
-    return fmi3False;
-}
-
-static fmi3Boolean invalidState(ModelInstance *comp, const char *f, int statesExpected) {
-    if (!comp)
-        return fmi3True;
-    if (!(comp->state & statesExpected)) {
-        comp->state = modelError;
-		logError(comp, "%s: Illegal call sequence.", f);
-        return fmi3True;
-    }
-    return fmi3False;
-}
-
-static fmi3Boolean nullPointer(ModelInstance* comp, const char *f, const char *arg, const void *p) {
-    if (!p) {
-        comp->state = modelError;
-		logError(comp, "%s: Invalid argument %s = NULL.", f, arg);
-        return fmi3True;
-    }
-    return fmi3False;
-}
-
 static fmi3Status unsupportedFunction(fmi3Component c, const char *fName, int statesExpected) {
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, fName, statesExpected))
