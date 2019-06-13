@@ -23,13 +23,6 @@
 #endif
 #include "fmi3Functions.h"
 
-
-// macro to be used to log messages. The macro check if current
-// log category is valid and, if true, call the logger provided by simulator.
-#define FILTERED_LOG(instance, status, categoryIndex, message, ...) if (status == fmi3Error || status == fmi3Fatal || isCategoryLogged(instance, categoryIndex)) \
-        instance->logger(instance->componentEnvironment, instance->instanceName, status, \
-        logCategoriesNames[categoryIndex], message, ##__VA_ARGS__);
-
 static const char *logCategoriesNames[] = {"logAll", "logError", "logFmiCall", "logEvent"};
 
 #ifndef max
@@ -154,7 +147,7 @@ fmi3Boolean isCategoryLogged(ModelInstance *comp, int categoryIndex);
 static bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, int n, int nExpected) {
     if (n != nExpected) {
         comp->state = modelError;
-        FILTERED_LOG(comp, fmi3Error, LOG_ERROR, "%s: Invalid argument %s = %d. Expected %d.", f, arg, n, nExpected)
+		logError(comp, "%s: Invalid argument %s = %d. Expected %d.", f, arg, n, nExpected);
         return fmi3True;
     }
     return fmi3False;
@@ -165,7 +158,7 @@ static fmi3Boolean invalidState(ModelInstance *comp, const char *f, int statesEx
         return fmi3True;
     if (!(comp->state & statesExpected)) {
         comp->state = modelError;
-        FILTERED_LOG(comp, fmi3Error, LOG_ERROR, "%s: Illegal call sequence.", f)
+		logError(comp, "%s: Illegal call sequence.", f);
         return fmi3True;
     }
     return fmi3False;
@@ -174,7 +167,7 @@ static fmi3Boolean invalidState(ModelInstance *comp, const char *f, int statesEx
 static fmi3Boolean nullPointer(ModelInstance* comp, const char *f, const char *arg, const void *p) {
     if (!p) {
         comp->state = modelError;
-        FILTERED_LOG(comp, fmi3Error, LOG_ERROR, "%s: Invalid argument %s = NULL.", f, arg)
+		logError(comp, "%s: Invalid argument %s = NULL.", f, arg);
         return fmi3True;
     }
     return fmi3False;
@@ -182,11 +175,9 @@ static fmi3Boolean nullPointer(ModelInstance* comp, const char *f, const char *a
 
 static fmi3Status unsupportedFunction(fmi3Component c, const char *fName, int statesExpected) {
     ModelInstance *comp = (ModelInstance *)c;
-    //fmi3CallbackLogger log = comp->functions->logger;
     if (invalidState(comp, fName, statesExpected))
         return fmi3Error;
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, fName);
-    FILTERED_LOG(comp, fmi3Error, LOG_ERROR, "%s: Function not implemented.", fName)
+	logError(comp, "%s: Function not implemented.", fName);
     return fmi3Error;
 }
 
@@ -211,9 +202,9 @@ fmi3Component fmi3Instantiate(fmi3String instanceName, fmi3Type fmuType, fmi3Str
                             fmi3Boolean visible, fmi3Boolean loggingOn) {
 
 	return createModelInstance(
-		functions->logger,
-		functions->allocateMemory,
-		functions->freeMemory,
+		(loggerType)functions->logger,
+		(allocateMemoryType)functions->allocateMemory,
+		(freeMemoryType)functions->freeMemory,
 		functions->componentEnvironment,
 		instanceName,
 		fmuGUID,
@@ -232,9 +223,6 @@ fmi3Status fmi3SetupExperiment(fmi3Component c, fmi3Boolean toleranceDefined, fm
     if (invalidState(comp, "fmi3SetupExperiment", MASK_fmi3SetupExperiment))
         return fmi3Error;
 
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetupExperiment: toleranceDefined=%d tolerance=%g",
-        toleranceDefined, tolerance)
-
     comp->time = startTime;
 
     return fmi3OK;
@@ -244,8 +232,6 @@ fmi3Status fmi3EnterInitializationMode(fmi3Component c) {
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi3EnterInitializationMode", MASK_fmi3EnterInitializationMode))
         return fmi3Error;
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3EnterInitializationMode")
-
     comp->state = modelInitializationMode;
     return fmi3OK;
 }
@@ -254,7 +240,6 @@ fmi3Status fmi3ExitInitializationMode(fmi3Component c) {
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi3ExitInitializationMode", MASK_fmi3ExitInitializationMode))
         return fmi3Error;
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3ExitInitializationMode")
 
     // if values were set and no fmi3GetXXX triggered update before,
     // ensure calculated values are updated now
@@ -277,8 +262,6 @@ fmi3Status fmi3Terminate(fmi3Component c) {
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi3Terminate", MASK_fmi3Terminate))
         return fmi3Error;
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3Terminate")
-
     comp->state = modelTerminated;
     return fmi3OK;
 }
@@ -287,8 +270,6 @@ fmi3Status fmi3Reset(fmi3Component c) {
     ModelInstance* comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi3Reset", MASK_fmi3Reset))
         return fmi3Error;
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3Reset")
-
     comp->state = modelInstantiated;
     setStartValues(comp);
     comp->isDirtyValues = true;
@@ -303,8 +284,6 @@ void fmi3FreeInstance(fmi3Component c) {
 
     if (invalidState(comp, "fmi3FreeInstance", MASK_fmi3FreeInstance))
         return;
-
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3FreeInstance")
 
 	freeModelInstance(comp);
 }
@@ -323,41 +302,40 @@ const char* fmi3GetVersion() {
 // ---------------------------------------------------------------------------
 
 fmi3Status fmi3SetDebugLogging(fmi3Component c, fmi3Boolean loggingOn, size_t nCategories, const fmi3String categories[]) {
-    int i, j;
-    ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmi3SetDebugLogging", MASK_fmi3SetDebugLogging))
-        return fmi3Error;
-    comp->loggingOn = loggingOn;
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetDebugLogging")
+    //int i, j;
+    //ModelInstance *comp = (ModelInstance *)c;
+    //if (invalidState(comp, "fmi3SetDebugLogging", MASK_fmi3SetDebugLogging))
+    //    return fmi3Error;
+    //comp->loggingOn = loggingOn;
 
-    // reset all categories
-    for (j = 0; j < NUMBER_OF_CATEGORIES; j++) {
-        comp->logCategories[j] = fmi3False;
-    }
+    //// reset all categories
+    //for (j = 0; j < NUMBER_OF_CATEGORIES; j++) {
+    //    comp->logCategories[j] = fmi3False;
+    //}
 
-    if (nCategories == 0) {
-        // no category specified, set all categories to have loggingOn value
-        for (j = 0; j < NUMBER_OF_CATEGORIES; j++) {
-            comp->logCategories[j] = loggingOn;
-        }
-    } else {
-        // set specific categories on
-        for (i = 0; i < nCategories; i++) {
-            fmi3Boolean categoryFound = fmi3False;
-            for (j = 0; j < NUMBER_OF_CATEGORIES; j++) {
-                if (strcmp(logCategoriesNames[j], categories[i]) == 0) {
-                    comp->logCategories[j] = loggingOn;
-                    categoryFound = fmi3True;
-                    break;
-                }
-            }
-            if (!categoryFound) {
-                comp->logger(comp->componentEnvironment, comp->instanceName, fmi3Warning,
-                    logCategoriesNames[LOG_ERROR],
-                    "logging category '%s' is not supported by model", categories[i]);
-            }
-        }
-    }
+    //if (nCategories == 0) {
+    //    // no category specified, set all categories to have loggingOn value
+    //    for (j = 0; j < NUMBER_OF_CATEGORIES; j++) {
+    //        comp->logCategories[j] = loggingOn;
+    //    }
+    //} else {
+    //    // set specific categories on
+    //    for (i = 0; i < nCategories; i++) {
+    //        fmi3Boolean categoryFound = fmi3False;
+    //        for (j = 0; j < NUMBER_OF_CATEGORIES; j++) {
+    //            if (strcmp(logCategoriesNames[j], categories[i]) == 0) {
+    //                comp->logCategories[j] = loggingOn;
+    //                categoryFound = fmi3True;
+    //                break;
+    //            }
+    //        }
+    //        if (!categoryFound) {
+    //            comp->logger(comp->componentEnvironment, comp->instanceName, fmi3Warning,
+    //                logCategoriesNames[LOG_ERROR],
+    //                "logging category '%s' is not supported by model", categories[i]);
+    //        }
+    //    }
+    //}
     return fmi3OK;
 }
 
@@ -458,8 +436,6 @@ fmi3Status fmi3SetFloat64 (fmi3Component c, const fmi3ValueReference vr[], size_
     if (nvr > 0 && nullPointer(comp, "fmi3SetReal", "value[]", value))
         return fmi3Error;
 
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetReal: nvr = %d", nvr)
-
     SET_VARIABLES(Float64)
 }
 
@@ -475,8 +451,6 @@ fmi3Status fmi3SetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t n
 
     if (nvr > 0 && nullPointer(comp, "fmi3SetInteger", "value[]", value))
         return fmi3Error;
-
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetInteger: nvr = %d", nvr)
 
     SET_VARIABLES(Int32)
 }
@@ -494,8 +468,6 @@ fmi3Status fmi3SetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t
     if (nvr>0 && nullPointer(comp, "fmi3SetBoolean", "value[]", value))
         return fmi3Error;
 
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetBoolean: nvr = %d", nvr)
-
     SET_BOOLEAN_VARIABLES
 }
 
@@ -511,8 +483,6 @@ fmi3Status fmi3SetString (fmi3Component c, const fmi3ValueReference vr[], size_t
 
     if (nvr>0 && nullPointer(comp, "fmi3SetString", "value[]", value))
         return fmi3Error;
-
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetString: nvr = %d", nvr)
 
     SET_VARIABLES(String)
 }
@@ -542,31 +512,27 @@ fmi3Status fmi3DeSerializeFMUstate (fmi3Component c, const fmi3Byte serializedSt
 // ---------------------------------------------------------------------------
 
 fmi3Status fmi3CancelStep(fmi3Component c) {
+
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmi3CancelStep", MASK_fmi3CancelStep)) {
+    
+	if (invalidState(comp, "fmi3CancelStep", MASK_fmi3CancelStep)) {
         // always fmi3CancelStep is invalid, because model is never in modelStepInProgress state.
         return fmi3Error;
     }
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3CancelStep")
-    FILTERED_LOG(comp, fmi3Error, LOG_ERROR,"fmi3CancelStep: Can be called when fmi3DoStep returned fmi3Pending."
+	
+	logError(comp, "fmi3CancelStep: Can be called when fmi3DoStep returned fmi3Pending."
         " This is not the case.");
-    // comp->state = modelStepCanceled;
-    return fmi3Error;
+
+	return fmi3Error;
 }
 
 fmi3Status fmi3DoStep(fmi3Component c, fmi3Float64 currentCommunicationPoint,
                     fmi3Float64 communicationStepSize, fmi3Boolean noSetFMUStatePriorToCurrentPoint) {
+
     ModelInstance *comp = (ModelInstance *)c;
 
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3DoStep: "
-        "currentCommunicationPoint = %g, "
-        "communicationStepSize = %g, "
-        "noSetFMUStatePriorToCurrentPoint = fmi3%s",
-        currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint ? "True" : "False")
-
     if (communicationStepSize <= 0) {
-        FILTERED_LOG(comp, fmi3Error, LOG_ERROR,
-            "fmi3DoStep: communication step size must be > 0. Fount %g.", communicationStepSize)
+		logError(comp, "fmi3DoStep: communication step size must be > 0 but was %g.", communicationStepSize);
         comp->state = modelError;
         return fmi3Error;
     }
@@ -582,8 +548,6 @@ fmi3Status fmi3EnterEventMode(fmi3Component c) {
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi3EnterEventMode", MASK_fmi3EnterEventMode))
         return fmi3Error;
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3EnterEventMode")
-
     comp->state = modelEventMode;
     comp->isNewEventIteration = fmi3True;
     return fmi3OK;
@@ -594,7 +558,6 @@ fmi3Status fmi3NewDiscreteStates(fmi3Component c, fmi3EventInfo *eventInfo) {
     int timeEvent = 0;
     if (invalidState(comp, "fmi3NewDiscreteStates", MASK_fmi3NewDiscreteStates))
         return fmi3Error;
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3NewDiscreteStates")
 
     comp->newDiscreteStatesNeeded = fmi3False;
     comp->terminateSimulation = fmi3False;
@@ -624,8 +587,6 @@ fmi3Status fmi3EnterContinuousTimeMode(fmi3Component c) {
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi3EnterContinuousTimeMode", MASK_fmi3EnterContinuousTimeMode))
         return fmi3Error;
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL,"fmi3EnterContinuousTimeMode")
-
     comp->state = modelContinuousTimeMode;
     return fmi3OK;
 }
@@ -639,7 +600,6 @@ fmi3Status fmi3CompletedIntegratorStep(fmi3Component c, fmi3Boolean noSetFMUStat
         return fmi3Error;
     if (nullPointer(comp, "fmi3CompletedIntegratorStep", "terminateSimulation", terminateSimulation))
         return fmi3Error;
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL,"fmi3CompletedIntegratorStep")
     *enterEventMode = fmi3False;
     *terminateSimulation = fmi3False;
     return fmi3OK;
@@ -650,7 +610,6 @@ fmi3Status fmi3SetTime(fmi3Component c, fmi3Float64 time) {
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, "fmi3SetTime", MASK_fmi3SetTime))
         return fmi3Error;
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3SetTime: time=%.16g", time)
     comp->time = time;
     return fmi3OK;
 }
@@ -737,7 +696,6 @@ fmi3Status fmi3GetNominalsOfContinuousStates(fmi3Component c, fmi3Float64 x_nomi
         return fmi3Error;
     if (nullPointer(comp, "fmi3GetNominalContinuousStates", "x_nominal[]", x_nominal))
         return fmi3Error;
-    FILTERED_LOG(comp, fmi3OK, LOG_FMI_CALL, "fmi3GetNominalContinuousStates: x_nominal[0..%d] = 1.0", nx-1)
     for (i = 0; i < nx; i++)
         x_nominal[i] = 1;
     return fmi3OK;

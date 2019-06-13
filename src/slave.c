@@ -4,6 +4,7 @@
  *  project root for license information.                       *
  ****************************************************************/
 
+#include <string.h>
 #include "config.h"
 #include "slave.h"
 

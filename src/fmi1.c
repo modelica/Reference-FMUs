@@ -56,8 +56,7 @@ void logError(ModelInstance *comp, const char *message, ...) {
 static fmiBoolean invalidNumber(ModelInstance* comp, const char* f, const char* arg, int n, int nExpected){
     if (n != nExpected) {
         comp->state = modelError;
-        comp->logger(comp, comp->instanceName, fmiError, "error",
-                "%s: Invalid argument %s = %d. Expected %d.", f, arg, n, nExpected);
+        logError(comp, "%s: Invalid argument %s = %d. Expected %d.", f, arg, n, nExpected);
         return fmiTrue;
     }
     return fmiFalse;
@@ -68,8 +67,7 @@ static fmiBoolean invalidState(ModelInstance* comp, const char* f, int statesExp
         return fmiTrue;
     if (!(comp->state & statesExpected)) {
         comp->state = modelError;
-        comp->logger(comp, comp->instanceName, fmiError, "error",
-                "%s: Illegal call sequence.", f);
+        logError(comp, "%s: Illegal call sequence.", f);
         return fmiTrue;
     }
     return fmiFalse;
@@ -78,8 +76,7 @@ static fmiBoolean invalidState(ModelInstance* comp, const char* f, int statesExp
 static fmiBoolean nullPointer(ModelInstance* comp, const char* f, const char* arg, const void* p){
     if (!p) {
         comp->state = modelError;
-        comp->logger(comp, comp->instanceName, fmiError, "error",
-                "%s: Invalid argument %s = NULL.", f, arg);
+        logError(comp, "%s: Invalid argument %s = NULL.", f, arg);
         return fmiTrue;
     }
     return fmiFalse;
@@ -102,7 +99,6 @@ static fmiStatus terminate(char* fname, fmiComponent c) {
     ModelInstance* comp = (ModelInstance *)c;
     if (invalidState(comp, fname, modelInitialized))
          return fmiError;
-    if (comp->loggingOn) comp->logger(c, comp->instanceName, fmiOK, "log", fname);
     comp->state = modelTerminated;
     return fmiOK;
 }
@@ -124,8 +120,6 @@ fmiStatus fmiSetDebugLogging(fmiComponent c, fmiBoolean loggingOn) {
     ModelInstance* comp = (ModelInstance *)c;
     if (invalidState(comp, "fmiSetDebugLogging", not_modelError))
          return fmiError;
-    if (comp->loggingOn) comp->logger(c, comp->instanceName, fmiOK, "log",
-            "fmiSetDebugLogging: loggingOn=%d", loggingOn);
     comp->loggingOn = loggingOn;
     return fmiOK;
 }
@@ -142,9 +136,6 @@ fmiStatus fmiSetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, c
 
     if (nvr>0 && nullPointer(comp, "fmiSetReal", "value[]", value))
          return fmiError;
-
-    if (comp->loggingOn) comp->logger(c, comp->instanceName, fmiOK, "log",
-            "fmiSetReal: nvr = %d", nvr);
 
 #ifdef SET_FLOAT64
     SET_VARIABLES(Float64)
@@ -166,9 +157,6 @@ fmiStatus fmiSetInteger(fmiComponent c, const fmiValueReference vr[], size_t nvr
     if (nvr>0 && nullPointer(comp, "fmiSetInteger", "value[]", value))
          return fmiError;
 
-    if (comp->loggingOn)
-        comp->logger(c, comp->instanceName, fmiOK, "log", "fmiSetInteger: nvr = %d",  nvr);
-
 #ifdef SET_INT32
     SET_VARIABLES(Int32)
 #else
@@ -188,9 +176,6 @@ fmiStatus fmiSetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr
 
     if (nvr>0 && nullPointer(comp, "fmiSetBoolean", "value[]", value))
          return fmiError;
-
-    if (comp->loggingOn)
-        comp->logger(c, comp->instanceName, fmiOK, "log", "fmiSetBoolean: nvr = %d",  nvr);
 
     SET_BOOLEAN_VARIABLES
 }
@@ -338,7 +323,6 @@ fmiStatus fmiResetSlave(fmiComponent c) {
     ModelInstance* comp = (ModelInstance *)c;
     if (invalidState(comp, "fmiResetSlave", modelInitialized))
          return fmiError;
-    if (comp->loggingOn) comp->logger(c, comp->instanceName, fmiOK, "log", "fmiResetSlave");
     comp->state = modelInstantiated;
     setStartValues(comp); // to be implemented by the includer of this file
     return fmiOK;
@@ -355,7 +339,6 @@ fmiStatus fmiSetRealInputDerivatives(fmiComponent c, const fmiValueReference vr[
     fmiCallbackLogger log = comp->logger;
     if (invalidState(comp, "fmiSetRealInputDerivatives", modelInitialized))
          return fmiError;
-    if (comp->loggingOn) log(c, comp->instanceName, fmiOK, "log", "fmiSetRealInputDerivatives: nvr= %d", nvr);
     log(c, comp->instanceName, fmiError, "warning", "fmiSetRealInputDerivatives: ignoring function call."
       " This model cannot interpolate inputs: canInterpolateInputs=\"fmiFalse\"");
     return fmiWarning;
@@ -479,8 +462,6 @@ fmiStatus fmiSetTime(fmiComponent c, fmiReal time) {
     if (invalidState(comp, "fmiSetTime", modelInstantiated|modelInitialized))
          return fmiError;
 
-    if (comp->loggingOn) comp->logger(c, comp->instanceName, fmiOK, "log", "fmiSetTime: time=%.16g", time);
-
     comp->time = time;
 
     return fmiOK;
@@ -516,9 +497,6 @@ fmiStatus fmiEventUpdate(fmiComponent c, fmiBoolean intermediateResults, fmiEven
     if (nullPointer(comp, "fmiEventUpdate", "eventInfo", eventInfo))
          return fmiError;
 
-    if (comp->loggingOn) comp->logger(c, comp->instanceName, fmiOK, "log",
-        "fmiEventUpdate: intermediateResults = %d", intermediateResults);
-
     comp->newDiscreteStatesNeeded           = false;
     comp->terminateSimulation               = false;
     comp->nominalsOfContinuousStatesChanged = false;
@@ -550,8 +528,6 @@ fmiStatus fmiCompletedIntegratorStep(fmiComponent c, fmiBoolean* callEventUpdate
 
     if (nullPointer(comp, "fmiCompletedIntegratorStep", "callEventUpdate", callEventUpdate))
          return fmiError;
-
-    if (comp->loggingOn) comp->logger(c, comp->instanceName, fmiOK, "log", "fmiCompletedIntegratorStep");
 
     return fmiOK;
 }
