@@ -142,11 +142,11 @@ const char *duplicateString(ModelInstance *comp, const char *str1) {
 	return str2;
 }
 
-bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, int n, int nExpected) {
+bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected) {
 	
-	if (n != nExpected) {
+	if (actual != expected) {
 		comp->state = modelError;
-		logError(comp, "%s: Invalid argument %s = %d. Expected %d.", f, arg, n, nExpected);
+		logError(comp, "%s: Invalid argument %s = %d. Expected %d.", f, arg, actual, expected);
 		return true;
 	}
 	
