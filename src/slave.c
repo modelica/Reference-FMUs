@@ -4,6 +4,8 @@
  *  project root for license information.                       *
  ****************************************************************/
 
+#include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
 #include "config.h"
 #include "slave.h"
@@ -177,6 +179,28 @@ bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void
 	}
 	
 	return false;
+}
+
+void logError(ModelInstance *comp, const char *message, ...) {
+
+	va_list args;
+	size_t len = 0;
+	char *buf = "";
+
+	va_start(args, message);
+	len = vsnprintf(buf, len, message, args);
+	va_end(args);
+
+	buf = allocateMemory(comp, len + 1, sizeof(char));
+
+	va_start(args, message);
+	len = vsnprintf(buf, len + 1, message, args);
+	va_end(args);
+
+	// no need to distinguish between FMI versions since we're not using variadic arguments
+	comp->logger(comp->componentEnvironment, comp->instanceName, Error, "error", buf);
+
+	freeMemory(comp, buf);
 }
 
 // default implementations

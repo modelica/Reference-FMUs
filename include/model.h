@@ -142,13 +142,13 @@ void getDerivatives(ModelInstance *comp, double dx[], size_t nx);
 void getEventIndicators(ModelInstance *comp, double z[], size_t nz);
 void eventUpdate(ModelInstance *comp);
 
-void logError(ModelInstance *comp, const char *message, ...);
 void *allocateMemory(ModelInstance *comp, size_t num, size_t size);
 void freeMemory(ModelInstance *comp, void *obj);
 const char *duplicateString(ModelInstance *comp, const char *str1);
 bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected);
 bool invalidState(ModelInstance *comp, const char *f, int statesExpected);
 bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void *p);
+void logError(ModelInstance *comp, const char *message, ...);
 
 // shorthand to access the variables
 #define M(v) (comp->modelData->v)

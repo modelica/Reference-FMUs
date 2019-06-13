@@ -29,31 +29,6 @@
 #endif
 
 // ---------------------------------------------------------------------------
-// Private helpers used below to validate function arguments
-// ---------------------------------------------------------------------------
-
-void logError(ModelInstance *comp, const char *message, ...) {
-
-    va_list args;
-    size_t len = 0;
-    char *buf = "";
-
-    va_start(args, message);
-    len = vsnprintf(buf, len, message, args);
-    va_end(args);
-
-    buf = malloc(len + 1);
-
-    va_start(args, message);
-    len = vsnprintf(buf, len + 1, message, args);
-    va_end(args);
-
-    comp->logger(comp->componentEnvironment, comp->instanceName, fmiError, "logError", buf);
-
-    free(buf);
-}
-
-// ---------------------------------------------------------------------------
 // Private helpers used below to implement functions
 // ---------------------------------------------------------------------------
 
