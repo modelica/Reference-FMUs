@@ -20,7 +20,7 @@ typedef enum {
 
 typedef struct {
 
-    double counter;
+    int counter;
 
 } ModelData;
 
