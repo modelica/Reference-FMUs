@@ -9,6 +9,8 @@ test_fmus_version = '0.0.1'
 
 try:
     from fmpy import simulate_fmu
+    from fmpy.util import compile_platform_binary
+
     fmpy_available = True
 except:
     print("FMPy not available. Skipping simulation.")
@@ -19,6 +21,7 @@ fmi3_available = False
 
 try:
     import fmpy
+
     fmi3_available = 'fmi3' in dir(fmpy)
 except:
     pass
@@ -38,7 +41,6 @@ else:
 
 
 def copy_to_cross_check(build_dir, model_names, fmi_version, fmi_types):
-
     if fmus_dir is None:
         return
 
@@ -64,7 +66,7 @@ class BuildTest(unittest.TestCase):
                 print("Removing " + build_dir)
                 shutil.rmtree(build_dir)
 
-    def validate(self, build_dir, fmi_types=['ModelExchange', 'CoSimulation'], models=models):
+    def validate(self, build_dir, fmi_types=['ModelExchange', 'CoSimulation'], models=models, compile=False):
 
         from fmpy.util import read_csv, validate_result
 
@@ -85,7 +87,11 @@ class BuildTest(unittest.TestCase):
             ref_csv = os.path.join(test_fmus_dir, model, model + '_ref.csv')
 
             for fmi_type in fmi_types:
+
                 ref = read_csv(ref_csv)
+
+                if compile:
+                    compile_platform_binary(fmu_filename)
 
                 result = simulate_fmu(fmu_filename,
                                       fmi_type=fmi_type,
@@ -146,6 +152,7 @@ class BuildTest(unittest.TestCase):
 
         if fmpy_available:
             self.validate(build_dir)
+            self.validate(build_dir, compile=True)
 
         copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='2.0', fmi_types=['cs', 'me'])
 
