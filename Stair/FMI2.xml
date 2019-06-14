@@ -8,8 +8,7 @@
 
   <ModelExchange modelIdentifier="Stair">
     <SourceFiles>
-      <File name="fmi2.c"/>
-      <File name="euler.c"/>
+      <File name="fmi2Functions.c"/>
       <File name="model.c"/>
       <File name="slave.c"/>
     </SourceFiles>
@@ -17,8 +16,7 @@
 
   <CoSimulation modelIdentifier="Stair" canHandleVariableCommunicationStepSize="true">
     <SourceFiles>
-      <File name="fmi2.c"/>
-      <File name="euler.c"/>
+      <File name="fmi2Functions.c"/>
       <File name="model.c"/>
       <File name="slave.c"/>
     </SourceFiles>

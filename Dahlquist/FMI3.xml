@@ -3,8 +3,7 @@
 
   <ModelExchange modelIdentifier="Dahlquist">
     <SourceFiles>
-      <File name="fmi2.c"/>
-      <File name="euler.c"/>
+      <File name="fmi3Functions.c"/>
       <File name="model.c"/>
       <File name="slave.c"/>
     </SourceFiles>
@@ -12,8 +11,7 @@
 
   <CoSimulation modelIdentifier="Dahlquist" canHandleVariableCommunicationStepSize="true">
     <SourceFiles>
-      <File name="fmi2.c"/>
-      <File name="euler.c"/>
+      <File name="fmi3Functions.c"/>
       <File name="model.c"/>
       <File name="slave.c"/>
     </SourceFiles>

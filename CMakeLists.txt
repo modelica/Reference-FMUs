@@ -79,7 +79,7 @@ SET(HEADERS
 
 SET(SOURCES
   ${MODEL_NAME}/model.c
-  src/fmi${FMI_VERSION}.c
+  src/fmi${FMI_VERSION}Functions.c
   src/slave.c
 )
 
@@ -173,7 +173,7 @@ foreach (SOURCE_FILE model.h slave.h)
 endforeach(SOURCE_FILE)
 
 # common sources
-foreach (SOURCE_FILE fmi${FMI_VERSION}.c slave.c)
+foreach (SOURCE_FILE fmi${FMI_VERSION}Functions.c slave.c)
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/src/${SOURCE_FILE}"
     "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"

@@ -8,8 +8,7 @@
 
   <ModelExchange modelIdentifier="BouncingBall">
     <SourceFiles>
-      <File name="fmi2.c"/>
-      <File name="euler.c"/>
+      <File name="fmi2Functions.c"/>
       <File name="model.c"/>
       <File name="slave.c"/>
     </SourceFiles>
@@ -17,8 +16,7 @@
 
   <CoSimulation modelIdentifier="BouncingBall" canHandleVariableCommunicationStepSize="true">
     <SourceFiles>
-      <File name="fmi2.c"/>
-      <File name="euler.c"/>
+      <File name="fmi2Functions.c"/>
       <File name="model.c"/>
       <File name="slave.c"/>
     </SourceFiles>
