@@ -3,17 +3,13 @@
 
   <ModelExchange modelIdentifier="BouncingBall">
     <SourceFiles>
-      <File name="BouncingBall.c"/>
-      <File name="model.c"/>
-      <File name="slave.c"/>
+      <File name="all.c"/>
     </SourceFiles>
   </ModelExchange>
 
   <CoSimulation modelIdentifier="BouncingBall" canHandleVariableCommunicationStepSize="true">
     <SourceFiles>
-      <File name="BouncingBall.c"/>
-      <File name="model.c"/>
-      <File name="slave.c"/>
+      <File name="all.c"/>
     </SourceFiles>
   </CoSimulation>
 

@@ -8,17 +8,13 @@
 
   <ModelExchange modelIdentifier="Resource">
     <SourceFiles>
-      <File name="fmi2Functions.c"/>
-      <File name="model.c"/>
-      <File name="slave.c"/>
+      <File name="all.c"/>
     </SourceFiles>
   </ModelExchange>
 
   <CoSimulation modelIdentifier="Resource" canHandleVariableCommunicationStepSize="true">
     <SourceFiles>
-      <File name="fmi2Functions.c"/>
-      <File name="model.c"/>
-      <File name="slave.c"/>
+      <File name="all.c"/>
     </SourceFiles>
   </CoSimulation>
 

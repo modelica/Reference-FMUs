@@ -8,17 +8,13 @@
 
   <ModelExchange modelIdentifier="VanDerPol">
     <SourceFiles>
-      <File name="fmi2Functions.c"/>
-      <File name="model.c"/>
-      <File name="slave.c"/>
+      <File name="all.c"/>
     </SourceFiles>
   </ModelExchange>
 
   <CoSimulation modelIdentifier="VanDerPol" canHandleVariableCommunicationStepSize="true">
     <SourceFiles>
-      <File name="fmi2Functions.c"/>
-      <File name="model.c"/>
-      <File name="slave.c"/>
+      <File name="all.c"/>
     </SourceFiles>
   </CoSimulation>
 

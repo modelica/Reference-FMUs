@@ -58,6 +58,13 @@ endif ()
 
 MESSAGE("FMI_PLATFORM: " ${FMI_PLATFORM})
 
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/all.c" "#define FMI_VERSION ${FMI_VERSION}
+
+#include \"fmi${FMI_VERSION}Functions.c\"
+#include \"model.c\"
+#include \"slave.c\"
+")
+
 set (MODEL_NAMES BouncingBall Dahlquist Stair Feedthrough VanDerPol)
 
 if (${FMI_VERSION} GREATER 1 OR "${FMI_TYPE}" STREQUAL "CS")
@@ -179,6 +186,12 @@ foreach (SOURCE_FILE fmi${FMI_VERSION}Functions.c slave.c)
     "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"
   )
 endforeach(SOURCE_FILE)
+
+# all.c
+add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+  "${CMAKE_CURRENT_BINARY_DIR}/all.c"
+  "${FMU_BUILD_DIR}/sources/all.c"
+)
 
 set(ARCHIVE_FILES "modelDescription.xml" "binaries" "documentation" "sources")
 
