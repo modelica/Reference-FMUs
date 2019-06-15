@@ -14,10 +14,8 @@
   </CoSimulation>
 
   <LogCategories>
-    <Category name="logAll"/>
-    <Category name="logError"/>
-    <Category name="logFmiCall"/>
-    <Category name="logEvent"/>
+    <Category name="logEvents" description="Log events"/>
+    <Category name="logStatusError" description="Log error messages"/>
   </LogCategories>
 
   <DefaultExperiment startTime="0" stopTime="10"/>

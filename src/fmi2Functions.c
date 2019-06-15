@@ -23,8 +23,6 @@
 #endif
 #include "fmi2Functions.h"
 
-static const char *logCategoriesNames[] = {"logAll", "logError", "logFmiCall", "logEvent"};
-
 #ifndef max
 #define max(a,b) ((a)>(b) ? (a) : (b))
 #endif
@@ -121,8 +119,6 @@ static const char *logCategoriesNames[] = {"logAll", "logError", "logFmiCall", "
 // Private helpers used below to validate function arguments
 // ---------------------------------------------------------------------------
 
-fmi2Boolean isCategoryLogged(ModelInstance *comp, int categoryIndex);
-
 static fmi2Status unsupportedFunction(fmi2Component c, const char *fName, int statesExpected) {
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, fName, statesExpected))
@@ -132,21 +128,9 @@ static fmi2Status unsupportedFunction(fmi2Component c, const char *fName, int st
 }
 
 // ---------------------------------------------------------------------------
-// Private helpers logger
-// ---------------------------------------------------------------------------
-
-// return fmi2True if logging category is on. Else return fmi2False.
-fmi2Boolean isCategoryLogged(ModelInstance *comp, int categoryIndex) {
-    if (categoryIndex < NUMBER_OF_CATEGORIES
-        && (comp->logCategories[categoryIndex] || comp->logCategories[LOG_ALL])) {
-        return fmi2True;
-    }
-    return fmi2False;
-}
-
-// ---------------------------------------------------------------------------
 // FMI functions
 // ---------------------------------------------------------------------------
+
 fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2String fmuGUID,
                             fmi2String fmuResourceLocation, const fmi2CallbackFunctions *functions,
                             fmi2Boolean visible, fmi2Boolean loggingOn) {
@@ -254,41 +238,12 @@ const char* fmi2GetTypesPlatform() {
 // ---------------------------------------------------------------------------
 
 fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean loggingOn, size_t nCategories, const fmi2String categories[]) {
-    int i, j;
+    
     ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, "fmi2SetDebugLogging", MASK_fmi2SetDebugLogging))
-        return fmi2Error;
-    comp->loggingOn = loggingOn;
 
-    // reset all categories
-    for (j = 0; j < NUMBER_OF_CATEGORIES; j++) {
-        comp->logCategories[j] = fmi2False;
-    }
+    if (invalidState(comp, "fmi2SetDebugLogging", MASK_fmi2SetDebugLogging)) return fmi2Error;
 
-    if (nCategories == 0) {
-        // no category specified, set all categories to have loggingOn value
-        for (j = 0; j < NUMBER_OF_CATEGORIES; j++) {
-            comp->logCategories[j] = loggingOn;
-        }
-    } else {
-        // set specific categories on
-        for (i = 0; i < nCategories; i++) {
-            fmi2Boolean categoryFound = fmi2False;
-            for (j = 0; j < NUMBER_OF_CATEGORIES; j++) {
-                if (strcmp(logCategoriesNames[j], categories[i]) == 0) {
-                    comp->logCategories[j] = loggingOn;
-                    categoryFound = fmi2True;
-                    break;
-                }
-            }
-            if (!categoryFound) {
-                comp->logger(comp->componentEnvironment, comp->instanceName, fmi2Warning,
-                    logCategoriesNames[LOG_ERROR],
-                    "logging category '%s' is not supported by model", categories[i]);
-            }
-        }
-    }
-    return fmi2OK;
+    return setDebugLogging(comp, loggingOn, nCategories, categories);
 }
 
 fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
@@ -548,10 +503,11 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
 
 /* Inquire slave status */
 static fmi2Status getStatus(char* fname, fmi2Component c, const fmi2StatusKind s) {
-    const char *statusKind[3] = {"fmi2DoStepStatus","fmi2PendingStatus","fmi2LastSuccessfulTime"};
+    
     ModelInstance *comp = (ModelInstance *)c;
+    
     if (invalidState(comp, fname, MASK_fmi2GetStatus)) // all get status have the same MASK_fmi2GetStatus
-            return fmi2Error;
+        return fmi2Error;
 
     switch(s) {
 	case fmi2DoStepStatus: logError(comp,
@@ -571,6 +527,7 @@ static fmi2Status getStatus(char* fname, fmi2Component c, const fmi2StatusKind s
 		" This is not the case.", fname);
 		break;
     }
+    
     return fmi2Discard;
 }
 

@@ -42,6 +42,11 @@
     </SimpleType>
   </TypeDefinitions>
 
+  <LogCategories>
+    <Category name="logEvents" description="Log events"/>
+    <Category name="logStatusError" description="Log error messages"/>
+  </LogCategories>
+
   <DefaultExperiment startTime="0" stopTime="3" stepSize="1e-3"/>
 
   <ModelVariables>

@@ -6,15 +6,6 @@
 
 #include "config.h"
 
-// categories of logging supported by model.
-// Value is the index in logCategories of a ModelInstance.
-#define LOG_ALL       0
-#define LOG_ERROR     1
-#define LOG_FMI_CALL  2
-#define LOG_EVENT     3
-
-#define NUMBER_OF_CATEGORIES 4
-
 #if FMI_VERSION == 1
 
 #define not_modelError (modelInstantiated|modelInitialized|modelTerminated)
@@ -86,8 +77,8 @@ typedef struct {
 	allocateMemoryType allocateMemory;
 	freeMemoryType freeMemory;
 
-    bool loggingOn;
-    bool logCategories[NUMBER_OF_CATEGORIES];
+    bool logEvents;
+    bool logErrors;
 
     void *componentEnvironment;
     ModelState state;
@@ -148,6 +139,9 @@ const char *duplicateString(ModelInstance *comp, const char *str1);
 bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected);
 bool invalidState(ModelInstance *comp, const char *f, int statesExpected);
 bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void *p);
+void logError(ModelInstance *comp, const char *message, ...);
+Status setDebugLogging(ModelInstance *comp, bool loggingOn, size_t nCategories, const char * const categories[]);
+void logEvent(ModelInstance *comp, const char *message, ...);
 void logError(ModelInstance *comp, const char *message, ...);
 
 // shorthand to access the variables

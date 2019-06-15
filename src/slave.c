@@ -61,7 +61,6 @@ ModelInstance *createModelInstance(
 		comp->allocateMemory = cbAllocateMemory;
 		comp->freeMemory = cbFreeMemory;
 
-		int i;
 		comp->instanceName = (char *)allocateMemory(comp, 1 + strlen(instanceName), sizeof(char));
 
 		// resourceLocation is NULL for FMI 1.0 ME
@@ -73,11 +72,9 @@ ModelInstance *createModelInstance(
 		}
 
 		comp->modelData = (ModelData *)allocateMemory(comp, 1, sizeof(ModelData));
-
-		// set all categories to on or off. fmi2SetDebugLogging should be called to choose specific categories.
-		for (i = 0; i < NUMBER_OF_CATEGORIES; i++) {
-			comp->logCategories[i] = loggingOn;
-		}
+        
+        comp->logEvents = loggingOn;
+        comp->logErrors = true; // always log errors
 	}
 
 	if (!comp || !comp->modelData || !comp->instanceName) {
@@ -89,7 +86,6 @@ ModelInstance *createModelInstance(
 	strcpy((char *)comp->instanceName, (char *)instanceName);
 	comp->type = interfaceType;
 
-	comp->loggingOn = loggingOn;
 	comp->state = modelInstantiated;
 	comp->isNewEventIteration = false;
 
@@ -181,26 +177,70 @@ bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void
 	return false;
 }
 
+Status setDebugLogging(ModelInstance *comp, bool loggingOn, size_t nCategories, const char * const categories[]) {
+    
+    if (loggingOn) {
+        for (size_t i = 0; i < nCategories; i++) {
+            if (categories[i] == NULL) {
+                logError(comp, "Log category[%d] must not be NULL", i);
+                return Error;
+            } else if (strcmp(categories[i], "logEvents") == 0) {
+                comp->logEvents = true;
+            } else if (strcmp(categories[i], "logStatusError") == 0) {
+                comp->logErrors = true;
+            } else {
+                logError(comp, "Log category[%d] must be one of logEvents or logStatusError but was %s", i, categories[i]);
+                return Error;
+            }
+        }
+    } else {
+        // disable logging
+        comp->logEvents = false;
+        comp->logErrors = false;
+    }
+    
+    return OK;
+}
+
+static void logMessage(ModelInstance *comp, int status, const char *category, const char *message, va_list args) {
+    
+    va_list args1;
+    size_t len = 0;
+    char *buf = "";
+    
+    va_copy(args1, args);
+    len = vsnprintf(buf, len, message, args1);
+    va_end(args1);
+    
+    va_copy(args1, args);
+    buf = allocateMemory(comp, len + 1, sizeof(char));
+    vsnprintf(buf, len + 1, message, args);
+    va_end(args1);
+    
+    // no need to distinguish between FMI versions since we're not using variadic arguments
+    comp->logger(comp->componentEnvironment, comp->instanceName, status, category, buf);
+    
+    freeMemory(comp, buf);
+}
+
+void logEvent(ModelInstance *comp, const char *message, ...) {
+    
+    if (!comp->logEvents) return;
+    
+    va_list args;
+    va_start(args, message);
+    logMessage(comp, OK, "logEvents", message, args);
+    va_end(args);
+}
+
 void logError(ModelInstance *comp, const char *message, ...) {
+    
+    if (!comp->logErrors) return;
 
-	va_list args;
-	size_t len = 0;
-	char *buf = "";
-
-	va_start(args, message);
-	len = vsnprintf(buf, len, message, args);
-	va_end(args);
-
-	buf = allocateMemory(comp, len + 1, sizeof(char));
-
-	va_start(args, message);
-	vsnprintf(buf, len + 1, message, args);
-	va_end(args);
-
-	// no need to distinguish between FMI versions since we're not using variadic arguments
-	comp->logger(comp->componentEnvironment, comp->instanceName, Error, "error", buf);
-
-	freeMemory(comp, buf);
+    va_list args;
+    va_start(args, message);
+    logMessage(comp, Error, "logStatusError", message, args);
+    va_end(args);
 }
 
 // default implementations
@@ -308,7 +348,11 @@ Status doStep(ModelInstance *comp, double t, double tNext) {
 #endif
         
         // check for time event
-        timeEvent = comp->nextEventTimeDefined && (comp->time >= comp->nextEventTime);
+        timeEvent = comp->nextEventTimeDefined && comp->time >= comp->nextEventTime;
+        
+        // log events
+        if (timeEvent) logEvent(comp, "Time event detected at t=%g s.", comp->time);
+        if (stateEvent) logEvent(comp, "State event detected at t=%g s.", comp->time);
 
         if (stateEvent || timeEvent) {
             eventUpdate(comp);

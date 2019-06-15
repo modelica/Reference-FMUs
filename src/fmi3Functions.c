@@ -23,8 +23,6 @@
 #endif
 #include "fmi3Functions.h"
 
-static const char *logCategoriesNames[] = {"logAll", "logError", "logFmiCall", "logEvent"};
-
 #ifndef max
 #define max(a,b) ((a)>(b) ? (a) : (b))
 #endif
@@ -121,8 +119,6 @@ static const char *logCategoriesNames[] = {"logAll", "logError", "logFmiCall", "
 // Private helpers used below to validate function arguments
 // ---------------------------------------------------------------------------
 
-fmi3Boolean isCategoryLogged(ModelInstance *comp, int categoryIndex);
-
 static fmi3Status unsupportedFunction(fmi3Component c, const char *fName, int statesExpected) {
     ModelInstance *comp = (ModelInstance *)c;
     if (invalidState(comp, fName, statesExpected))
@@ -132,21 +128,9 @@ static fmi3Status unsupportedFunction(fmi3Component c, const char *fName, int st
 }
 
 // ---------------------------------------------------------------------------
-// Private helpers logger
-// ---------------------------------------------------------------------------
-
-// return fmi3True if logging category is on. Else return fmi3False.
-fmi3Boolean isCategoryLogged(ModelInstance *comp, int categoryIndex) {
-    if (categoryIndex < NUMBER_OF_CATEGORIES
-        && (comp->logCategories[categoryIndex] || comp->logCategories[LOG_ALL])) {
-        return fmi3True;
-    }
-    return fmi3False;
-}
-
-// ---------------------------------------------------------------------------
 // FMI functions
 // ---------------------------------------------------------------------------
+
 fmi3Component fmi3Instantiate(fmi3String instanceName, fmi3Type fmuType, fmi3String fmuGUID,
                             fmi3String fmuResourceLocation, const fmi3CallbackFunctions *functions,
                             fmi3Boolean visible, fmi3Boolean loggingOn) {
@@ -252,44 +236,16 @@ const char* fmi3GetVersion() {
 // ---------------------------------------------------------------------------
 
 fmi3Status fmi3SetDebugLogging(fmi3Component c, fmi3Boolean loggingOn, size_t nCategories, const fmi3String categories[]) {
-    //int i, j;
-    //ModelInstance *comp = (ModelInstance *)c;
-    //if (invalidState(comp, "fmi3SetDebugLogging", MASK_fmi3SetDebugLogging))
-    //    return fmi3Error;
-    //comp->loggingOn = loggingOn;
 
-    //// reset all categories
-    //for (j = 0; j < NUMBER_OF_CATEGORIES; j++) {
-    //    comp->logCategories[j] = fmi3False;
-    //}
+    ModelInstance *comp = (ModelInstance *)c;
 
-    //if (nCategories == 0) {
-    //    // no category specified, set all categories to have loggingOn value
-    //    for (j = 0; j < NUMBER_OF_CATEGORIES; j++) {
-    //        comp->logCategories[j] = loggingOn;
-    //    }
-    //} else {
-    //    // set specific categories on
-    //    for (i = 0; i < nCategories; i++) {
-    //        fmi3Boolean categoryFound = fmi3False;
-    //        for (j = 0; j < NUMBER_OF_CATEGORIES; j++) {
-    //            if (strcmp(logCategoriesNames[j], categories[i]) == 0) {
-    //                comp->logCategories[j] = loggingOn;
-    //                categoryFound = fmi3True;
-    //                break;
-    //            }
-    //        }
-    //        if (!categoryFound) {
-    //            comp->logger(comp->componentEnvironment, comp->instanceName, fmi3Warning,
-    //                logCategoriesNames[LOG_ERROR],
-    //                "logging category '%s' is not supported by model", categories[i]);
-    //        }
-    //    }
-    //}
-    return fmi3OK;
+    if (invalidState(comp, "fmi3SetDebugLogging", MASK_fmi3SetDebugLogging))
+        return fmi3Error;
+
+    return setDebugLogging(comp, loggingOn, nCategories, categories);
 }
 
-fmi3Status fmi3GetFloat64 (fmi3Component c, const fmi3ValueReference vr[], size_t nvr, fmi3Float64 value[], size_t nValues) {
+fmi3Status fmi3GetFloat64(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, fmi3Float64 value[], size_t nValues) {
 
     ModelInstance *comp = (ModelInstance *)c;
 
@@ -352,7 +308,7 @@ fmi3Status fmi3GetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t
     GET_BOOLEAN_VARIABLES
 }
 
-fmi3Status fmi3GetString (fmi3Component c, const fmi3ValueReference vr[], size_t nvr, fmi3String value[], size_t nValues) {
+fmi3Status fmi3GetString(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, fmi3String value[], size_t nValues) {
 
     ModelInstance *comp = (ModelInstance *)c;
 
@@ -373,7 +329,7 @@ fmi3Status fmi3GetString (fmi3Component c, const fmi3ValueReference vr[], size_t
     GET_VARIABLES(String)
 }
 
-fmi3Status fmi3SetFloat64 (fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3Float64 value[], size_t nValues) {
+fmi3Status fmi3SetFloat64(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3Float64 value[], size_t nValues) {
 
     ModelInstance *comp = (ModelInstance *)c;
 
@@ -421,7 +377,7 @@ fmi3Status fmi3SetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t
     SET_BOOLEAN_VARIABLES
 }
 
-fmi3Status fmi3SetString (fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3String value[], size_t nValues) {
+fmi3Status fmi3SetString(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3String value[], size_t nValues) {
 
     ModelInstance *comp = (ModelInstance *)c;
 
@@ -437,10 +393,10 @@ fmi3Status fmi3SetString (fmi3Component c, const fmi3ValueReference vr[], size_t
     SET_VARIABLES(String)
 }
 
-fmi3Status fmi3GetFMUstate (fmi3Component c, fmi3FMUstate* FMUstate) {
+fmi3Status fmi3GetFMUstate(fmi3Component c, fmi3FMUstate* FMUstate) {
     return unsupportedFunction(c, "fmi3GetFMUstate", MASK_fmi3GetFMUstate);
 }
-fmi3Status fmi3SetFMUstate (fmi3Component c, fmi3FMUstate FMUstate) {
+fmi3Status fmi3SetFMUstate(fmi3Component c, fmi3FMUstate FMUstate) {
     return unsupportedFunction(c, "fmi3SetFMUstate", MASK_fmi3SetFMUstate);
 }
 fmi3Status fmi3FreeFMUstate(fmi3Component c, fmi3FMUstate* FMUstate) {
@@ -449,7 +405,7 @@ fmi3Status fmi3FreeFMUstate(fmi3Component c, fmi3FMUstate* FMUstate) {
 fmi3Status fmi3SerializedFMUstateSize(fmi3Component c, fmi3FMUstate FMUstate, size_t *size) {
     return unsupportedFunction(c, "fmi3SerializedFMUstateSize", MASK_fmi3SerializedFMUstateSize);
 }
-fmi3Status fmi3SerializeFMUstate (fmi3Component c, fmi3FMUstate FMUstate, fmi3Byte serializedState[], size_t size) {
+fmi3Status fmi3SerializeFMUstate(fmi3Component c, fmi3FMUstate FMUstate, fmi3Byte serializedState[], size_t size) {
     return unsupportedFunction(c, "fmi3SerializeFMUstate", MASK_fmi3SerializeFMUstate);
 }
 fmi3Status fmi3DeSerializeFMUstate (fmi3Component c, const fmi3Byte serializedState[], size_t size,

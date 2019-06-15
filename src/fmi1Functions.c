@@ -63,11 +63,13 @@ const char* fmiGetVersion() {
 // ---------------------------------------------------------------------------
 
 fmiStatus fmiSetDebugLogging(fmiComponent c, fmiBoolean loggingOn) {
+    
     ModelInstance* comp = (ModelInstance *)c;
+    
     if (invalidState(comp, "fmiSetDebugLogging", not_modelError))
          return fmiError;
-    comp->loggingOn = loggingOn;
-    return fmiOK;
+    
+    return setDebugLogging(comp, loggingOn, 0, NULL);
 }
 
 fmiStatus fmiSetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiReal value[]) {
@@ -281,38 +283,39 @@ void fmiFreeSlaveInstance(fmiComponent c) {
 
 fmiStatus fmiSetRealInputDerivatives(fmiComponent c, const fmiValueReference vr[], size_t nvr,
     const fmiInteger order[], const fmiReal value[]) {
+    
     ModelInstance* comp = (ModelInstance *)c;
-    fmiCallbackLogger log = comp->logger;
+    
     if (invalidState(comp, "fmiSetRealInputDerivatives", modelInitialized))
          return fmiError;
-    log(c, comp->instanceName, fmiError, "warning", "fmiSetRealInputDerivatives: ignoring function call."
-      " This model cannot interpolate inputs: canInterpolateInputs=\"fmiFalse\"");
-    return fmiWarning;
+    
+    logError(comp, "fmiSetRealInputDerivatives: This model cannot interpolate inputs: canInterpolateInputs=\"fmiFalse\"");
+    
+    return fmiError;
 }
 
-fmiStatus fmiGetRealOutputDerivatives(fmiComponent c, const fmiValueReference vr[], size_t nvr,
-    const fmiInteger order[], fmiReal value[]) {
-    int i;
+fmiStatus fmiGetRealOutputDerivatives(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiInteger order[], fmiReal value[]) {
+
     ModelInstance* comp = (ModelInstance *)c;
-    fmiCallbackLogger log = comp->logger;
+
     if (invalidState(comp, "fmiGetRealOutputDerivatives", modelInitialized))
          return fmiError;
-    if (comp->loggingOn) log(c, comp->instanceName, fmiOK, "log", "fmiGetRealOutputDerivatives: nvr= %d", nvr);
-    log(c, comp->instanceName, fmiError, "warning", "fmiGetRealOutputDerivatives: ignoring function call."
-      " This model cannot compute derivatives of outputs: MaxOutputDerivativeOrder=\"0\"");
-    for (i=0; i<nvr; i++) value[i] = 0;
-    return fmiWarning;
+
+    logError(comp, "fmiGetRealOutputDerivatives: This model cannot compute derivatives of outputs: MaxOutputDerivativeOrder=\"0\"");
+    
+    return fmiError;
 }
 
 fmiStatus fmiCancelStep(fmiComponent c) {
+
     ModelInstance* comp = (ModelInstance *)c;
-    fmiCallbackLogger log = comp->logger;
+
     if (invalidState(comp, "fmiCancelStep", modelInitialized))
          return fmiError;
-    if (comp->loggingOn) log(c, comp->instanceName, fmiOK, "log", "fmiCancelStep");
-    log(c, comp->instanceName, fmiError, "error",
-        "fmiCancelStep: Can be called when fmiDoStep returned fmiPending."
+
+    logError(comp, "fmiCancelStep: Can be called when fmiDoStep returned fmiPending."
         " This is not the case.");
+
     return fmiError;
 }
 
