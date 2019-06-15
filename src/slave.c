@@ -194,7 +194,7 @@ void logError(ModelInstance *comp, const char *message, ...) {
 	buf = allocateMemory(comp, len + 1, sizeof(char));
 
 	va_start(args, message);
-	len = vsnprintf(buf, len + 1, message, args);
+	vsnprintf(buf, len + 1, message, args);
 	va_end(args);
 
 	// no need to distinguish between FMI versions since we're not using variadic arguments
@@ -266,10 +266,12 @@ void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {}
 
 Status doStep(ModelInstance *comp, double t, double tNext) {
 
-    int stateEvent = 0;
-    int timeEvent  = 0;
+    bool stateEvent, timeEvent;
+    
+#if NUMBER_OF_EVENT_INDICATORS > 0
 	double *temp = NULL;
-
+#endif
+    
 #if NUMBER_OF_STATES > 0
 	double  x[NUMBER_OF_STATES] = { 0 };
 	double dx[NUMBER_OF_STATES] = { 0 };
@@ -289,12 +291,12 @@ Status doStep(ModelInstance *comp, double t, double tNext) {
 		setContinuousStates(comp, x, NUMBER_OF_STATES);
 #endif
 
-		stateEvent = 0;
+        stateEvent = false;
 
 #if NUMBER_OF_EVENT_INDICATORS > 0
 		getEventIndicators(comp, comp->z, NUMBER_OF_EVENT_INDICATORS);
 		
-		// check for zero-crossing
+        // check for zero-crossing
 		for (int i = 0; i < NUMBER_OF_EVENT_INDICATORS; i++) {
 		    stateEvent |= (comp->prez[i] * comp->z[i]) <= 0;
 		}
@@ -304,16 +306,12 @@ Status doStep(ModelInstance *comp, double t, double tNext) {
 		comp->z = comp->prez;
 		comp->prez = temp;
 #endif
-
+        
         // check for time event
-        if (comp->nextEventTimeDefined && (comp->time >= comp->nextEventTime)) {
-            timeEvent = 1;
-        }
+        timeEvent = comp->nextEventTimeDefined && (comp->time >= comp->nextEventTime);
 
         if (stateEvent || timeEvent) {
             eventUpdate(comp);
-            timeEvent  = 0;
-            stateEvent = 0;
         }
 
         // terminate simulation, if requested by the model in the previous step
