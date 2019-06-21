@@ -1,10 +1,12 @@
 jobs:
 
-- job:
+- job: linux64
   displayName: 'Ubuntu 16.04'
   pool:
     vmImage: 'ubuntu-16.04'
+
   steps:
+
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
     displayName: Add conda to PATH
 
@@ -27,27 +29,12 @@ jobs:
       testResultsFiles: '**/test-*.xml'
       testRunTitle: 'Publish test results'
 
-  - task: PublishBuildArtifacts@1
+  - task: PublishPipelineArtifact@1
     inputs:
-      pathtoPublish: 'fmi1_cs/dist'
-      artifactName: 'linux64-fmi1_cs'
+      path: fmus
+      artifact: linux64
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: 'fmi1_me/dist'
-      artifactName: 'linux64-fmi1_me'
-
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: 'fmi2/dist'
-      artifactName: 'linux64-fmi2'
-
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: 'fmi3/dist'
-      artifactName: 'linux64-fmi3'
-
-- job:
+- job: darwin64
   displayName: 'macOS 10.13'
   pool:
     vmImage: 'macos-10.13'
@@ -81,27 +68,12 @@ jobs:
       testResultsFiles: '**/test-*.xml'
       testRunTitle: 'Publish test results'
 
-  - task: PublishBuildArtifacts@1
+  - task: PublishPipelineArtifact@1
     inputs:
-      pathtoPublish: 'fmi1_cs/dist'
-      artifactName: 'darwin64-fmi1_cs'
+      path: fmus
+      artifact: darwin64
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: 'fmi1_me/dist'
-      artifactName: 'darwin64-fmi1_me'
-
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: 'fmi2/dist'
-      artifactName: 'darwin64-fmi2'
-
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: 'fmi3/dist'
-      artifactName: 'darwin64-fmi3'
-
-- job:
+- job: win64
   displayName: 'Windows 2016'
   pool:
     vmImage: 'vs2017-win2016'
@@ -130,22 +102,44 @@ jobs:
       testResultsFiles: '**/test-*.xml'
       testRunTitle: 'Publish test results'
 
-  - task: PublishBuildArtifacts@1
+  - task: PublishPipelineArtifact@1
     inputs:
-      pathtoPublish: 'fmi1_cs/dist'
-      artifactName: 'win64-fmi1_cs'
+      path: fmus
+      artifact: win64
+
+- job: merge
+  dependsOn:
+  - linux64
+  - darwin64
+  - win64
+  displayName: 'Merge platform binaries'
+  pool:
+    vmImage: 'ubuntu-16.04'
+    
+  steps:
+
+  - bash: mkdir fmus
+    displayName: Create fmus directory
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifact: linux64
+      downloadPath: fmus
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifact: darwin64
+      downloadPath: fmus
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifact: win64
+      downloadPath: fmus
+
+  - bash: python3 merge_platform_binaries.py
+    displayName: Merge FMUs
 
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: 'fmi1_me/dist'
-      artifactName: 'win64-fmi1_me'
-
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: 'fmi2/dist'
-      artifactName: 'win64-fmi2'
-
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: 'fmi3/dist'
-      artifactName: 'win64-fmi3'
+      pathtoPublish: merged_fmus.zip
+      artifactName: merged_fmus

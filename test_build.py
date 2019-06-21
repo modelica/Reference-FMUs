@@ -4,7 +4,7 @@ import os
 import shutil
 
 
-fmus_dir = None  # /path/to/fmi-cross-check/fmus
+fmus_dir = os.path.join(os.path.dirname(__file__), 'fmus')  # /path/to/fmi-cross-check/fmus
 test_fmus_version = '0.0.1'
 
 try:
@@ -171,6 +171,7 @@ class BuildTest(unittest.TestCase):
         if fmi3_available:
             self.validate(build_dir, models=['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol'])
 
+        copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='3.0', fmi_types=['cs', 'me'])
 
 if __name__ == '__main__':
     unittest.main()

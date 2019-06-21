@@ -5,3 +5,6 @@ fmi1_cs/
 fmi1_me/
 fmi2/
 fmi3/
+fmus/
+*.fmu
+*.zip
