@@ -19,18 +19,16 @@ A set of test models for development, testing and debugging of the [Functional M
 
 `<model>`
 - `config.h` - model specific types and definitions
-- `FMI*.xml` - model descriptions
+- `FMI{1CS|1ME|2|3}.xml` - model descriptions
 - `model.c` - implementation of the model
 
 `include`
-- `fmi*.h` - FMI header files
+- `fmi{|2|3}Functions.h` - FMI header files
 - `model.h` - generic model interface
 - `slave.h` - generic co-simulation interface
-- `solver.h` - solver interface
 
 `src`
-- `euler.c` - forward Euler solver
-- `fmi[1,2,3].c` - FMI implementation
+- `fmi{1|2|3}Functions.c` - FMI implementations
 - `slave.c` - generic co-simulation
 
 ## Build the FMUs
