@@ -5,7 +5,7 @@ import shutil
 
 
 fmus_dir = os.path.join(os.path.dirname(__file__), 'fmus')  # /path/to/fmi-cross-check/fmus
-test_fmus_version = '0.0.1'
+test_fmus_version = '0.0.2'
 
 try:
     from fmpy import simulate_fmu
