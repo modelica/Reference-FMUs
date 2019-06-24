@@ -12,15 +12,15 @@ void setStartValues(ModelInstance *comp) {
 void calculateValues(ModelInstance *comp) {
     // load the file
 
-    FILE *file;
-    char *path;
-    char c;
+    FILE *file = NULL;
+    char *path = NULL;
+    char c = '\0';
     const char *scheme1 = "file:///";
     const char *scheme2 = "file:/";
 #if FMI_VERSION < 2
-    char *resourcePath = "/resources/y.txt";
+    const char *resourcePath = "/resources/y.txt";
 #else
-    char *resourcePath = "/y.txt";
+    const char *resourcePath = "/y.txt";
 #endif
 
     if (!comp->resourceLocation) {
@@ -31,14 +31,15 @@ void calculateValues(ModelInstance *comp) {
     if (strncmp(comp->resourceLocation, scheme1, strlen(scheme1)) == 0) {
         path = malloc(strlen(comp->resourceLocation) + strlen(resourcePath) + 1);
         strcpy(path, &comp->resourceLocation[strlen(scheme1)] - 1);
-        strcat(path, resourcePath);
     } else if (strncmp(comp->resourceLocation, scheme2, strlen(scheme2)) == 0) {
         path = malloc(strlen(comp->resourceLocation) + strlen(resourcePath) + 1);
         strcpy(path, &comp->resourceLocation[strlen(scheme2) - 1]);
-    } else {
+	} else {
         logError(comp, "The resourceLocation must start with \"file:/\" or \"file:///\"");
         return;
     }
+
+	strcat(path, resourcePath);
 
 #ifdef _WIN32
 	// strip any leading slashes
@@ -61,8 +62,11 @@ void calculateValues(ModelInstance *comp) {
     // assign it to y
     comp->modelData->y = c;
 
-    // clost the file
+    // close the file
     fclose(file);
+    
+    // clean up
+    free(path);
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {

@@ -1,35 +1,32 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<fmiModelDescription fmiVersion="2.0" modelName="Resource" guid="{7b9c2114-2ce5-4076-a138-2cbc69e069e5}" numberOfEventIndicators="0">
+<fmiModelDescription
+  fmiVersion="2.0"
+  modelName="Resource"
+  description="This model loads data from a resource file"
+  guid="{7b9c2114-2ce5-4076-a138-2cbc69e069e5}"
+  numberOfEventIndicators="0">
 
   <ModelExchange modelIdentifier="Resource">
     <SourceFiles>
-      <File name="fmi2.c"/>
-      <File name="euler.c"/>
-      <File name="model.c"/>
-      <File name="slave.c"/>
+      <File name="all.c"/>
     </SourceFiles>
   </ModelExchange>
 
   <CoSimulation modelIdentifier="Resource" canHandleVariableCommunicationStepSize="true">
     <SourceFiles>
-      <File name="fmi2.c"/>
-      <File name="euler.c"/>
-      <File name="model.c"/>
-      <File name="slave.c"/>
+      <File name="all.c"/>
     </SourceFiles>
   </CoSimulation>
 
   <LogCategories>
-    <Category name="logAll"/>
-    <Category name="logError"/>
-    <Category name="logFmiCall"/>
-    <Category name="logEvent"/>
+    <Category name="logEvents" description="Log events"/>
+    <Category name="logStatusError" description="Log error messages"/>
   </LogCategories>
 
   <DefaultExperiment startTime="0" stopTime="1"/>
 
   <ModelVariables>
-    <ScalarVariable name="y" valueReference="0" description="the only state" causality="output" variability="continuous">
+    <ScalarVariable name="y" valueReference="0" description="Value of the first character in resources/y.txt" causality="output" variability="continuous">
       <Real start="0"/>
     </ScalarVariable>
   </ModelVariables>

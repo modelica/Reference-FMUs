@@ -6,15 +6,6 @@
 
 #include "config.h"
 
-// categories of logging supported by model.
-// Value is the index in logCategories of a ModelInstance.
-#define LOG_ALL       0
-#define LOG_ERROR     1
-#define LOG_FMI_CALL  2
-#define LOG_EVENT     3
-
-#define NUMBER_OF_CATEGORIES 4
-
 #if FMI_VERSION == 1
 
 #define not_modelError (modelInstantiated|modelInitialized|modelTerminated)
@@ -64,29 +55,30 @@ typedef enum {
     Pending
 } Status;
 
+#if FMI_VERSION < 3
+typedef void  (*loggerType)        (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message, ...);
+typedef void* (*allocateMemoryType)(size_t nobj, size_t size);
+typedef void  (*freeMemoryType)    (void *obj);
+#else
+typedef void  (*loggerType)        (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message);
+typedef void* (*allocateMemoryType)(void *componentEnvironment, size_t nobj, size_t size);
+typedef void  (*freeMemoryType)    (void *componentEnvironment, void *obj);
+#endif
 
 typedef struct {
     
     double time;
     const char *instanceName;
     InterfaceType type;
-    const char *GUID;
     const char *resourceLocation;
 
-    // callback functions
-#if FMI_VERSION < 3
-    void  (*logger)(void *, const char *, int, const char *, const char *, ...);
-    void* (*allocateMemory)(size_t, size_t);
-    void  (*freeMemory)(void *);
-    void  (*stepFinished)(void *, int);
-#else
-    void  (*logger)(void *, const char *, int, const char *, const char *, ...);
-    void* (*allocateMemory)(void *, size_t, size_t);
-    void  (*freeMemory)(void *, void *);
-    void  (*stepFinished)(void *, void *, int);
-#endif
-    bool loggingOn;
-    bool logCategories[NUMBER_OF_CATEGORIES];
+	// callback functions
+	loggerType logger;
+	allocateMemoryType allocateMemory;
+	freeMemoryType freeMemory;
+
+    bool logEvents;
+    bool logErrors;
 
     void *componentEnvironment;
     ModelState state;
@@ -103,9 +95,24 @@ typedef struct {
     bool isNewEventIteration;
     
     ModelData *modelData;
-    void *solverData;
+
+	// event indicators
+	double *z;
+	double *prez;
     
 } ModelInstance;
+
+ModelInstance *createModelInstance(
+	loggerType logger,
+	allocateMemoryType allocateMemory,
+	freeMemoryType freeMemory,
+	void *componentEnvironment,
+	const char *instanceName,
+	const char *GUID,
+	const char *resourceLocation,
+	bool loggingOn,
+	InterfaceType interfaceType);
+void freeModelInstance(ModelInstance *comp);
 
 void setStartValues(ModelInstance *comp);
 void calculateValues(ModelInstance *comp);
@@ -126,10 +133,16 @@ void getDerivatives(ModelInstance *comp, double dx[], size_t nx);
 void getEventIndicators(ModelInstance *comp, double z[], size_t nz);
 void eventUpdate(ModelInstance *comp);
 
-void logError(ModelInstance *comp, const char *message, ...);
-void *allocateMemory(ModelInstance *comp, size_t size);
+void *allocateMemory(ModelInstance *comp, size_t num, size_t size);
 void freeMemory(ModelInstance *comp, void *obj);
 const char *duplicateString(ModelInstance *comp, const char *str1);
+bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected);
+bool invalidState(ModelInstance *comp, const char *f, int statesExpected);
+bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void *p);
+void logError(ModelInstance *comp, const char *message, ...);
+Status setDebugLogging(ModelInstance *comp, bool loggingOn, size_t nCategories, const char * const categories[]);
+void logEvent(ModelInstance *comp, const char *message, ...);
+void logError(ModelInstance *comp, const char *message, ...);
 
 // shorthand to access the variables
 #define M(v) (comp->modelData->v)

@@ -26,7 +26,7 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *inde
 
 void eventUpdate(ModelInstance *comp) {
     
-    if (comp->nextEventTimeDefined && comp->nextEventTime == comp->time) {
+    if (comp->nextEventTimeDefined && comp->time >= comp->nextEventTime) {
         M(counter)++;
         comp->nextEventTime += 1;
     }

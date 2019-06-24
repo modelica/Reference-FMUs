@@ -3,24 +3,22 @@
 
   <ModelExchange modelIdentifier="BouncingBall">
     <SourceFiles>
-      <File name="BouncingBall.c"/>
+      <File name="all.c"/>
     </SourceFiles>
   </ModelExchange>
 
   <CoSimulation modelIdentifier="BouncingBall" canHandleVariableCommunicationStepSize="true">
     <SourceFiles>
-      <File name="BouncingBall.c"/>
+      <File name="all.c"/>
     </SourceFiles>
   </CoSimulation>
 
   <LogCategories>
-    <Category name="logAll"/>
-    <Category name="logError"/>
-    <Category name="logFmiCall"/>
-    <Category name="logEvent"/>
+    <Category name="logEvents" description="Log events"/>
+    <Category name="logStatusError" description="Log error messages"/>
   </LogCategories>
 
-  <DefaultExperiment startTime="0" stopTime="3"/>
+  <DefaultExperiment startTime="0" stopTime="3" stepSize="1e-3"/>
 
   <ModelVariables>
     <Float64 name="h" valueReference="0" description="height, used as state" causality="output" variability="continuous" initial="exact" start="1"/>

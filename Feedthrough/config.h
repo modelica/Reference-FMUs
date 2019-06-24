@@ -24,6 +24,8 @@
 
 #define EVENT_UPDATE
 
+#define FIXED_SOLVER_STEP 1
+
 typedef enum {
     vr_fixed_real_parameter,
     vr_tunable_real_parameter,

@@ -3,30 +3,22 @@
 
   <ModelExchange modelIdentifier="Dahlquist">
     <SourceFiles>
-      <File name="fmi2.c"/>
-      <File name="euler.c"/>
-      <File name="model.c"/>
-      <File name="slave.c"/>
+      <File name="all.c"/>
     </SourceFiles>
   </ModelExchange>
 
   <CoSimulation modelIdentifier="Dahlquist" canHandleVariableCommunicationStepSize="true">
     <SourceFiles>
-      <File name="fmi2.c"/>
-      <File name="euler.c"/>
-      <File name="model.c"/>
-      <File name="slave.c"/>
+      <File name="all.c"/>
     </SourceFiles>
   </CoSimulation>
 
   <LogCategories>
-    <Category name="logAll"/>
-    <Category name="logError"/>
-    <Category name="logFmiCall"/>
-    <Category name="logEvent"/>
+    <Category name="logEvents" description="Log events"/>
+    <Category name="logStatusError" description="Log error messages"/>
   </LogCategories>
 
-  <DefaultExperiment startTime="0" stopTime="10"/>
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
 
   <ModelVariables>
     <Float64 name="x" valueReference="0" description="the only state" causality="output" variability="continuous" initial="exact" start="1"/>

@@ -17,7 +17,7 @@ if (${FMI_VERSION} GREATER 1)
   set(FMI_TYPE "")
 endif ()
 
-if (WIN32)
+if (MSVC)
   string(REPLACE "/MD"  "/MT"  CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
   string(REPLACE "/MDd" "/MTd" CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}")
 endif ()
@@ -58,6 +58,13 @@ endif ()
 
 MESSAGE("FMI_PLATFORM: " ${FMI_PLATFORM})
 
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/all.c" "#define FMI_VERSION ${FMI_VERSION}
+
+#include \"fmi${FMI_VERSION}Functions.c\"
+#include \"model.c\"
+#include \"slave.c\"
+")
+
 set (MODEL_NAMES BouncingBall Dahlquist Stair Feedthrough VanDerPol)
 
 if (${FMI_VERSION} GREATER 1 OR "${FMI_TYPE}" STREQUAL "CS")
@@ -75,13 +82,11 @@ set(TARGET_NAME ${MODEL_NAME})
 SET(HEADERS
   ${MODEL_NAME}/config.h
   include/model.h
-  include/solver.h
 )
 
 SET(SOURCES
   ${MODEL_NAME}/model.c
-  src/fmi${FMI_VERSION}.c
-  src/euler.c
+  src/fmi${FMI_VERSION}Functions.c
   src/slave.c
 )
 
@@ -93,7 +98,11 @@ add_library(${TARGET_NAME} SHARED
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist)
 
-target_compile_definitions(${TARGET_NAME} PRIVATE DISABLE_PREFIX FMI_VERSION=${FMI_VERSION})
+target_compile_definitions(${TARGET_NAME} PRIVATE
+  _CRT_SECURE_NO_WARNINGS
+  DISABLE_PREFIX
+  FMI_VERSION=${FMI_VERSION}
+)
 
 if (${FMI_VERSION} EQUAL 1 AND "${FMI_TYPE}" STREQUAL CS)
   target_compile_definitions(${TARGET_NAME} PRIVATE FMI_COSIMULATION)
@@ -163,7 +172,7 @@ add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E 
 )
 
 # common headers
-foreach (SOURCE_FILE model.h slave.h solver.h)
+foreach (SOURCE_FILE model.h slave.h)
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/include/${SOURCE_FILE}"
     "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"
@@ -171,12 +180,18 @@ foreach (SOURCE_FILE model.h slave.h solver.h)
 endforeach(SOURCE_FILE)
 
 # common sources
-foreach (SOURCE_FILE fmi${FMI_VERSION}.c euler.c slave.c)
+foreach (SOURCE_FILE fmi${FMI_VERSION}Functions.c slave.c)
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/src/${SOURCE_FILE}"
     "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"
   )
 endforeach(SOURCE_FILE)
+
+# all.c
+add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+  "${CMAKE_CURRENT_BINARY_DIR}/all.c"
+  "${FMU_BUILD_DIR}/sources/all.c"
+)
 
 set(ARCHIVE_FILES "modelDescription.xml" "binaries" "documentation" "sources")
 

@@ -11,6 +11,8 @@
 
 #define GET_FLOAT64
 
+#define FIXED_SOLVER_STEP 1
+
 typedef enum {
     vr_y
 } ValueReference;

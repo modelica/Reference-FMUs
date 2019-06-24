@@ -1,32 +1,29 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<fmiModelDescription fmiVersion="2.0" modelName="van der Pol oscillator" guid="{8c4e810f-3da3-4a00-8276-176fa3c9f000}" numberOfEventIndicators="0">
+<fmiModelDescription
+  fmiVersion="2.0"
+  modelName="Van der Pol oscillator"
+  description="This model implements the van der Pol oscillator"
+  guid="{8c4e810f-3da3-4a00-8276-176fa3c9f000}"
+  numberOfEventIndicators="0">
 
   <ModelExchange modelIdentifier="VanDerPol">
     <SourceFiles>
-      <File name="fmi2.c"/>
-      <File name="euler.c"/>
-      <File name="model.c"/>
-      <File name="slave.c"/>
+      <File name="all.c"/>
     </SourceFiles>
   </ModelExchange>
 
   <CoSimulation modelIdentifier="VanDerPol" canHandleVariableCommunicationStepSize="true">
     <SourceFiles>
-      <File name="fmi2.c"/>
-      <File name="euler.c"/>
-      <File name="model.c"/>
-      <File name="slave.c"/>
+      <File name="all.c"/>
     </SourceFiles>
   </CoSimulation>
 
   <LogCategories>
-    <Category name="logAll"/>
-    <Category name="logError"/>
-    <Category name="logFmiCall"/>
-    <Category name="logEvent"/>
+    <Category name="logEvents" description="Log events"/>
+    <Category name="logStatusError" description="Log error messages"/>
   </LogCategories>
 
-  <DefaultExperiment startTime="0" stopTime="20"/>
+  <DefaultExperiment startTime="0" stopTime="20" stepSize="1e-2"/>
 
   <ModelVariables>
     <ScalarVariable name="x0" valueReference="0" description="the first state" causality="output" variability="continuous" initial="exact">

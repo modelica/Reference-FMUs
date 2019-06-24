@@ -42,15 +42,15 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
 
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
     switch (vr) {
-            
+
         case vr_h:
             M(h) = value[(*index)++];
             return OK;
-            
+
         case vr_v:
             M(v) = value[(*index)++];
             return OK;
-            
+
         case vr_g:
 #if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
@@ -62,7 +62,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
 #endif
             M(g) = value[(*index)++];
             return OK;
-            
+
         case vr_e:
 #if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
@@ -75,8 +75,13 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
 #endif
             M(e) = value[(*index)++];
             return OK;
-            
+
+        case vr_v_min:
+            logError(comp, "Variable v_min (value reference %d) is constant and cannot be set.", vr_v_min);
+            return Error;
+
         default:
+            logError(comp, "Unexpected value reference: %.", vr);
             return Error;
     }
 }

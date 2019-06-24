@@ -13,6 +13,8 @@
 #define SET_FLOAT64
 #define EVENT_UPDATE
 
+#define FIXED_SOLVER_STEP 1
+
 typedef enum {
     vr_m, vr_n, vr_u, vr_A, vr_y
 } ValueReference;

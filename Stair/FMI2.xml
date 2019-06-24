@@ -1,32 +1,29 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<fmiModelDescription fmiVersion="2.0" modelName="Stair" guid="{8c4e810f-3df3-4a00-8276-176fa3c9f008}" numberOfEventIndicators="0">
+<fmiModelDescription
+  fmiVersion="2.0"
+  modelName="Stair"
+  description="This model generates a stair signal using time events"
+  guid="{8c4e810f-3df3-4a00-8276-176fa3c9f008}"
+  numberOfEventIndicators="0">
 
   <ModelExchange modelIdentifier="Stair">
     <SourceFiles>
-      <File name="fmi2.c"/>
-      <File name="euler.c"/>
-      <File name="model.c"/>
-      <File name="slave.c"/>
+      <File name="all.c"/>
     </SourceFiles>
   </ModelExchange>
 
   <CoSimulation modelIdentifier="Stair" canHandleVariableCommunicationStepSize="true">
     <SourceFiles>
-      <File name="fmi2.c"/>
-      <File name="euler.c"/>
-      <File name="model.c"/>
-      <File name="slave.c"/>
+      <File name="all.c"/>
     </SourceFiles>
   </CoSimulation>
 
   <LogCategories>
-    <Category name="logAll"/>
-    <Category name="logError"/>
-    <Category name="logFmiCall"/>
-    <Category name="logEvent"/>
+    <Category name="logEvents" description="Log events"/>
+    <Category name="logStatusError" description="Log error messages"/>
   </LogCategories>
 
-  <DefaultExperiment startTime="0" stopTime="10"/>
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="0.2"/>
 
   <ModelVariables>
     <ScalarVariable name="counter" valueReference="0" description="counts the seconds" causality="output" initial="exact">

@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<fmiModelDescription fmiVersion="1.0" modelName="Stair" modelIdentifier="Stair" guid="{8c4e810f-3df3-4a00-8276-176fa3c9f008}" numberOfContinuousStates="0" numberOfEventIndicators="0">
+<fmiModelDescription
+  fmiVersion="1.0"
+  modelName="Stair"
+  modelIdentifier="Stair"
+  description="This model generates a stair signal using time events"
+  guid="{8c4e810f-3df3-4a00-8276-176fa3c9f008}"
+  numberOfContinuousStates="0"
+  numberOfEventIndicators="0">
 
   <DefaultExperiment startTime="0" stopTime="10"/>
 

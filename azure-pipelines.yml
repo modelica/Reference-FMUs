@@ -1,0 +1,145 @@
+jobs:
+
+- job: linux64
+  displayName: 'Ubuntu 16.04'
+  pool:
+    vmImage: 'ubuntu-16.04'
+
+  steps:
+
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to PATH
+
+  - bash: conda create --yes --quiet --name myEnvironment
+    displayName: Create Anaconda environment
+
+  - bash: |
+      source activate myEnvironment
+      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 fmpy pytest scipy
+    displayName: Install Anaconda packages
+
+  - bash: |
+      source activate myEnvironment
+      pytest --junitxml=junit/test-results.xml
+    displayName: Build and run tests
+
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFiles: '**/test-*.xml'
+      testRunTitle: 'Publish test results'
+
+  - task: PublishPipelineArtifact@1
+    inputs:
+      path: fmus
+      artifact: linux64
+
+- job: darwin64
+  displayName: 'macOS 10.13'
+  pool:
+    vmImage: 'macos-10.13'
+
+  steps:
+
+  - bash: echo "##vso[task.prependpath]$CONDA/bin"
+    displayName: Add conda to PATH
+
+  # On Hosted macOS, the agent user doesn't have ownership of Miniconda's installation directory/
+  # We need to take ownership if we want to update conda or install packages globally
+  - bash: sudo chown -R $USER $CONDA
+    displayName: Take ownership of conda installation
+
+  - bash: conda create --yes --quiet --name myEnvironment
+    displayName: Create Anaconda environment
+
+  - bash: |
+      source activate myEnvironment
+      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 fmpy pytest scipy
+    displayName: Install Anaconda packages
+
+  - bash: |
+      source activate myEnvironment
+      pytest --junitxml=junit/test-results.xml
+    displayName: Build and run tests
+
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFiles: '**/test-*.xml'
+      testRunTitle: 'Publish test results'
+
+  - task: PublishPipelineArtifact@1
+    inputs:
+      path: fmus
+      artifact: darwin64
+
+- job: win64
+  displayName: 'Windows 2016'
+  pool:
+    vmImage: 'vs2017-win2016'
+
+  steps:
+
+  - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+    displayName: Add conda to PATH
+
+  - script: conda create --yes --quiet --name myEnvironment
+    displayName: Create Anaconda environment
+
+  - script: |
+      call activate myEnvironment
+      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 cmake fmpy pytest scipy
+    displayName: Install Anaconda packages
+
+  - script: |
+      call activate myEnvironment
+      pytest --junitxml=junit/test-results.xml
+    displayName: Build, install and run tests
+
+  - task: PublishTestResults@2
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFiles: '**/test-*.xml'
+      testRunTitle: 'Publish test results'
+
+  - task: PublishPipelineArtifact@1
+    inputs:
+      path: fmus
+      artifact: win64
+
+- job: merge
+  dependsOn:
+  - linux64
+  - darwin64
+  - win64
+  displayName: 'Merge platform binaries'
+  pool:
+    vmImage: 'ubuntu-16.04'
+    
+  steps:
+
+  - bash: mkdir fmus
+    displayName: Create fmus directory
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifact: linux64
+      downloadPath: fmus
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifact: darwin64
+      downloadPath: fmus
+
+  - task: DownloadPipelineArtifact@2
+    inputs:
+      artifact: win64
+      downloadPath: fmus
+
+  - bash: python3 merge_platform_binaries.py
+    displayName: Merge FMUs
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: merged_fmus.zip
+      artifactName: merged_fmus
