@@ -49,9 +49,9 @@
   <DefaultExperiment startTime="0" stopTime="3" stepSize="1e-3"/>
 
   <ModelVariables>
-    <Float64 name="h" valueReference="0" causality="output" variability="continuous" initial="exact" start="1" description="Position of the ball"/>
-    <Float64 name="v" valueReference="1" causality="output" variability="continuous" initial="exact" start="0" reinit="true" description="Velocity of the ball"/>
-    <Float64 name="g" valueReference="2" causality="parameter" variability="fixed" initial="exact" start="-9.81" description="Gravity acting on the ball"/>
+    <Float64 name="h" valueReference="0" causality="output" variability="continuous" initial="exact" declaredType="Position" start="1" description="Position of the ball"/>
+    <Float64 name="v" valueReference="1" causality="output" variability="continuous" initial="exact" declaredType="Velocity" start="0" derivative="0" reinit="true" description="Velocity of the ball"/>
+    <Float64 name="g" valueReference="2" causality="parameter" variability="fixed" initial="exact" declaredType="Acceleration" start="-9.81" derivative="1" description="Gravity acting on the ball"/>
     <Float64 name="e" valueReference="3" causality="parameter" variability="tunable" initial="exact" start="0.7" min="0.5" max="1" description="Coefficient of restitution"/>
   </ModelVariables>
 
