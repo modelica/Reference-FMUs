@@ -14,11 +14,11 @@ whith the variables
 
 | Variable | Start | Unit | Causality | Variability | Description    
 |:---------| -----:|:-----|-----------|-------------|:---------------
-| h        |     1 | m    | output    | continuous  | Distance to the ground
-| v        |     0 | m/s  | output    | continuous  | Velocity
-| g        |  9.81 | m/s2 | parameter | fixed       | Gravity        
-| e        |   0.7 |      | parameter | tunable     | Rebound factor
-| v_min    |   0.1 | m/s2 | parameter | constant    | Threshold velocity to stop bouncing
+| h        |     1 | m    | output    | continuous  | Position of the ball
+| v        |     0 | m/s  | output    | continuous  | Velocity of the ball
+| g        |  9.81 | m/s2 | parameter | fixed       | Gravity acting on the ball
+| e        |   0.7 |      | parameter | tunable     | Coefficient of restitution
+| v_min    |   0.1 | m/s2 | parameter | constant    | Velocity below which the ball stops bouncing
 
 The plot shows the [reference result](BouncingBall_ref.csv) computed with [FMPy](https://github.com/CATIA-Systems/FMPy).
 

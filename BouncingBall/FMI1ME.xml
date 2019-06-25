@@ -11,13 +11,13 @@
   <DefaultExperiment startTime="0" stopTime="3"/>
 
   <ModelVariables>
-    <ScalarVariable name="h" valueReference="0" causality="output" description="Height">
+    <ScalarVariable name="h" valueReference="0" causality="output" description="Position of the ball">
       <Real start="1"/>
     </ScalarVariable>
-    <ScalarVariable name="v" valueReference="1" causality="output" description="Velocity">
+    <ScalarVariable name="v" valueReference="1" causality="output" description="Velocity of the ball">
       <Real start="0"/>
     </ScalarVariable>
-    <ScalarVariable name="g" valueReference="2" variability="parameter" description="Gravity">
+    <ScalarVariable name="g" valueReference="2" variability="parameter" description="Gravity acting on the ball">
       <Real start="-9.81" fixed="true"/>
     </ScalarVariable>
     <ScalarVariable name="e" valueReference="3" variability="parameter" description="Coefficient of restitution">
