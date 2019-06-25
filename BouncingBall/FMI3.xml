@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<fmiModelDescription fmiVersion="3.0-alpha" modelName="BouncingBall" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f003}" numberOfEventIndicators="1">
+<fmiModelDescription
+  fmiVersion="3.0-alpha"
+  modelName="BouncingBall"
+  description="This model calculates the trajectory, over time, of a ball dropped from a height of 1 m."
+  instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f003}" numberOfEventIndicators="1">
 
   <ModelExchange modelIdentifier="BouncingBall">
     <SourceFiles>
@@ -12,6 +16,30 @@
       <File name="all.c"/>
     </SourceFiles>
   </CoSimulation>
+
+  <UnitDefinitions>
+    <Unit name="m">
+      <BaseUnit m="1"/>
+    </Unit>
+    <Unit name="m/s">
+      <BaseUnit m="1" s="-1"/>
+    </Unit>
+    <Unit name="m/s2">
+      <BaseUnit m="1" s="-2"/>
+    </Unit>
+  </UnitDefinitions>
+
+  <TypeDefinitions>
+    <SimpleType name="Position">
+      <Float64 quantity="Position" unit="m"/>
+    </SimpleType>
+    <SimpleType name="Velocity">
+      <Float64 quantity="Velocity" unit="m/s"/>
+    </SimpleType>
+    <SimpleType name="Acceleration">
+      <Float64 quantity="Acceleration" unit="m/s2"/>
+    </SimpleType>
+  </TypeDefinitions>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>
