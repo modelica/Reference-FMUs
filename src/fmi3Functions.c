@@ -4,6 +4,10 @@
  *  project root for license information.                       *
  ****************************************************************/
 
+#if FMI_VERSION != 3
+#error FMI_VERSION must be 3
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>

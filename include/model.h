@@ -1,6 +1,10 @@
 #ifndef model_h
 #define model_h
 
+#if FMI_VERSION != 1 && FMI_VERSION != 2 && FMI_VERSION != 3
+#error FMI_VERSION must be one of 1, 2 or 3
+#endif
+
 #include <stddef.h>  // for size_t
 #include <stdbool.h> // for bool
 
