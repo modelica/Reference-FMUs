@@ -1,20 +1,30 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <fmiModelDescription
-  fmiVersion="3.0-alpha"
+  fmiVersion="3.0-alpha.2"
   modelName="BouncingBall"
   description="This model calculates the trajectory, over time, of a ball dropped from a height of 1 m."
   instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f003}" numberOfEventIndicators="1">
 
   <ModelExchange modelIdentifier="BouncingBall">
-    <SourceFiles>
-      <File name="all.c"/>
-    </SourceFiles>
+    <BuildConfiguration>
+      <SourceFileSet language="C99">
+        <SourceFile name="fmi3Functions.c"/>
+        <SourceFile name="model.c"/>
+        <SourceFile name="slave.c"/>
+        <PreprocessorDefinition name="FMI_VERSION" value="3"/>
+      </SourceFileSet>
+    </BuildConfiguration>
   </ModelExchange>
 
   <CoSimulation modelIdentifier="BouncingBall" canHandleVariableCommunicationStepSize="true">
-    <SourceFiles>
-      <File name="all.c"/>
-    </SourceFiles>
+    <BuildConfiguration>
+      <SourceFileSet language="C99">
+        <SourceFile name="fmi3Functions.c"/>
+        <SourceFile name="model.c"/>
+        <SourceFile name="slave.c"/>
+        <PreprocessorDefinition name="FMI_VERSION" value="3"/>
+      </SourceFileSet>
+    </BuildConfiguration>
   </CoSimulation>
 
   <UnitDefinitions>
@@ -30,15 +40,9 @@
   </UnitDefinitions>
 
   <TypeDefinitions>
-    <SimpleType name="Position">
-      <Float64 quantity="Position" unit="m"/>
-    </SimpleType>
-    <SimpleType name="Velocity">
-      <Float64 quantity="Velocity" unit="m/s"/>
-    </SimpleType>
-    <SimpleType name="Acceleration">
-      <Float64 quantity="Acceleration" unit="m/s2"/>
-    </SimpleType>
+    <Float64 name="Position" quantity="Position" unit="m"/>
+    <Float64 name="Velocity" quantity="Velocity" unit="m/s"/>
+    <Float64 name="Acceleration" quantity="Acceleration" unit="m/s2"/>
   </TypeDefinitions>
 
   <LogCategories>
@@ -56,18 +60,12 @@
   </ModelVariables>
 
   <ModelStructure>
-    <Outputs>
-      <Unknown valueReference="0"/>
-      <Unknown valueReference="1"/>
-    </Outputs>
-    <Derivatives>
-      <Unknown valueReference="1"/>
-      <Unknown valueReference="2"/>
-    </Derivatives>
-    <InitialUnknowns>
-      <Unknown valueReference="1"/>
-      <Unknown valueReference="2"/>
-    </InitialUnknowns>
+    <Output valueReference="0"/>
+    <Output valueReference="1"/>
+    <Derivative valueReference="1"/>
+    <Derivative valueReference="2"/>
+    <InitialUnknown valueReference="1"/>
+    <InitialUnknown valueReference="2"/>
   </ModelStructure>
 
 </fmiModelDescription>

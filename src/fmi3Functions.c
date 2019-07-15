@@ -73,12 +73,12 @@
 | modelStepComplete)
 #define MASK_fmi3SetBoolean              MASK_fmi3SetInteger
 #define MASK_fmi3SetString               MASK_fmi3SetInteger
-#define MASK_fmi3GetFMUstate             MASK_fmi3FreeInstance
-#define MASK_fmi3SetFMUstate             MASK_fmi3FreeInstance
-#define MASK_fmi3FreeFMUstate            MASK_fmi3FreeInstance
-#define MASK_fmi3SerializedFMUstateSize  MASK_fmi3FreeInstance
-#define MASK_fmi3SerializeFMUstate       MASK_fmi3FreeInstance
-#define MASK_fmi3DeSerializeFMUstate     MASK_fmi3FreeInstance
+#define MASK_fmi3GetFMUState             MASK_fmi3FreeInstance
+#define MASK_fmi3SetFMUState             MASK_fmi3FreeInstance
+#define MASK_fmi3FreeFMUState            MASK_fmi3FreeInstance
+#define MASK_fmi3SerializedFMUStateSize  MASK_fmi3FreeInstance
+#define MASK_fmi3SerializeFMUState       MASK_fmi3FreeInstance
+#define MASK_fmi3DeSerializeFMUState     MASK_fmi3FreeInstance
 #define MASK_fmi3GetDirectionalDerivative (modelInitializationMode \
 | modelEventMode | modelContinuousTimeMode \
 | modelStepComplete | modelStepFailed | modelStepCanceled \
@@ -123,8 +123,8 @@
 // Private helpers used below to validate function arguments
 // ---------------------------------------------------------------------------
 
-static fmi3Status unsupportedFunction(fmi3Component c, const char *fName, int statesExpected) {
-    ModelInstance *comp = (ModelInstance *)c;
+static fmi3Status unsupportedFunction(fmi3Instance instance, const char *fName, int statesExpected) {
+    ModelInstance *comp = (ModelInstance *)instance;
     if (invalidState(comp, fName, statesExpected))
         return fmi3Error;
 	logError(comp, "%s: Function not implemented.", fName);
@@ -135,15 +135,15 @@ static fmi3Status unsupportedFunction(fmi3Component c, const char *fName, int st
 // FMI functions
 // ---------------------------------------------------------------------------
 
-fmi3Component fmi3Instantiate(fmi3String instanceName, fmi3Type fmuType, fmi3String fmuGUID,
+fmi3Instance fmi3Instantiate(fmi3String instanceName, fmi3InterfaceType fmuType, fmi3String fmuGUID,
                             fmi3String fmuResourceLocation, const fmi3CallbackFunctions *functions,
                             fmi3Boolean visible, fmi3Boolean loggingOn) {
 
 	return createModelInstance(
-		(loggerType)functions->logger,
+		(loggerType)functions->logMessage,
 		(allocateMemoryType)functions->allocateMemory,
 		(freeMemoryType)functions->freeMemory,
-		functions->componentEnvironment,
+		functions->instanceEnvironment,
 		instanceName,
 		fmuGUID,
 		fmuResourceLocation,
@@ -152,11 +152,11 @@ fmi3Component fmi3Instantiate(fmi3String instanceName, fmi3Type fmuType, fmi3Str
 	);
 }
 
-fmi3Status fmi3SetupExperiment(fmi3Component c, fmi3Boolean toleranceDefined, fmi3Float64 tolerance,
+fmi3Status fmi3SetupExperiment(fmi3Instance instance, fmi3Boolean toleranceDefined, fmi3Float64 tolerance,
                             fmi3Float64 startTime, fmi3Boolean stopTimeDefined, fmi3Float64 stopTime) {
 
     // ignore arguments: stopTimeDefined, stopTime
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
 
     if (invalidState(comp, "fmi3SetupExperiment", MASK_fmi3SetupExperiment))
         return fmi3Error;
@@ -166,16 +166,16 @@ fmi3Status fmi3SetupExperiment(fmi3Component c, fmi3Boolean toleranceDefined, fm
     return fmi3OK;
 }
 
-fmi3Status fmi3EnterInitializationMode(fmi3Component c) {
-    ModelInstance *comp = (ModelInstance *)c;
+fmi3Status fmi3EnterInitializationMode(fmi3Instance instance) {
+    ModelInstance *comp = (ModelInstance *)instance;
     if (invalidState(comp, "fmi3EnterInitializationMode", MASK_fmi3EnterInitializationMode))
         return fmi3Error;
     comp->state = modelInitializationMode;
     return fmi3OK;
 }
 
-fmi3Status fmi3ExitInitializationMode(fmi3Component c) {
-    ModelInstance *comp = (ModelInstance *)c;
+fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
+    ModelInstance *comp = (ModelInstance *)instance;
     if (invalidState(comp, "fmi3ExitInitializationMode", MASK_fmi3ExitInitializationMode))
         return fmi3Error;
 
@@ -196,16 +196,16 @@ fmi3Status fmi3ExitInitializationMode(fmi3Component c) {
     return fmi3OK;
 }
 
-fmi3Status fmi3Terminate(fmi3Component c) {
-    ModelInstance *comp = (ModelInstance *)c;
+fmi3Status fmi3Terminate(fmi3Instance instance) {
+    ModelInstance *comp = (ModelInstance *)instance;
     if (invalidState(comp, "fmi3Terminate", MASK_fmi3Terminate))
         return fmi3Error;
     comp->state = modelTerminated;
     return fmi3OK;
 }
 
-fmi3Status fmi3Reset(fmi3Component c) {
-    ModelInstance* comp = (ModelInstance *)c;
+fmi3Status fmi3Reset(fmi3Instance instance) {
+    ModelInstance* comp = (ModelInstance *)instance;
     if (invalidState(comp, "fmi3Reset", MASK_fmi3Reset))
         return fmi3Error;
     comp->state = modelInstantiated;
@@ -214,9 +214,9 @@ fmi3Status fmi3Reset(fmi3Component c) {
     return fmi3OK;
 }
 
-void fmi3FreeInstance(fmi3Component c) {
+void fmi3FreeInstance(fmi3Instance instance) {
 
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
 
     if (!comp) return;
 
@@ -239,9 +239,9 @@ const char* fmi3GetVersion() {
 // Boolean, String
 // ---------------------------------------------------------------------------
 
-fmi3Status fmi3SetDebugLogging(fmi3Component c, fmi3Boolean loggingOn, size_t nCategories, const fmi3String categories[]) {
+fmi3Status fmi3SetDebugLogging(fmi3Instance instance, fmi3Boolean loggingOn, size_t nCategories, const fmi3String categories[]) {
 
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
 
     if (invalidState(comp, "fmi3SetDebugLogging", MASK_fmi3SetDebugLogging))
         return fmi3Error;
@@ -249,9 +249,9 @@ fmi3Status fmi3SetDebugLogging(fmi3Component c, fmi3Boolean loggingOn, size_t nC
     return setDebugLogging(comp, loggingOn, nCategories, categories);
 }
 
-fmi3Status fmi3GetFloat64(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, fmi3Float64 value[], size_t nValues) {
+fmi3Status fmi3GetFloat64(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, fmi3Float64 value[], size_t nValues) {
 
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
 
     if (invalidState(comp, "fmi3GetReal", MASK_fmi3GetReal))
         return fmi3Error;
@@ -270,9 +270,9 @@ fmi3Status fmi3GetFloat64(fmi3Component c, const fmi3ValueReference vr[], size_t
     GET_VARIABLES(Float64)
 }
 
-fmi3Status fmi3GetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, fmi3Int32 value[], size_t nValues) {
+fmi3Status fmi3GetInt32(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, fmi3Int32 value[], size_t nValues) {
 
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
 
     if (invalidState(comp, "fmi3GetInteger", MASK_fmi3GetInteger))
         return fmi3Error;
@@ -291,9 +291,9 @@ fmi3Status fmi3GetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t n
     GET_VARIABLES(Int32)
 }
 
-fmi3Status fmi3GetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, fmi3Boolean value[], size_t nValues) {
+fmi3Status fmi3GetBoolean(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, fmi3Boolean value[], size_t nValues) {
 
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
 
     if (invalidState(comp, "fmi3GetBoolean", MASK_fmi3GetBoolean))
         return fmi3Error;
@@ -312,9 +312,9 @@ fmi3Status fmi3GetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t
     GET_BOOLEAN_VARIABLES
 }
 
-fmi3Status fmi3GetString(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, fmi3String value[], size_t nValues) {
+fmi3Status fmi3GetString(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, fmi3String value[], size_t nValues) {
 
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
 
     if (invalidState(comp, "fmi3GetString", MASK_fmi3GetString))
         return fmi3Error;
@@ -333,25 +333,25 @@ fmi3Status fmi3GetString(fmi3Component c, const fmi3ValueReference vr[], size_t 
     GET_VARIABLES(String)
 }
 
-fmi3Status fmi3GetBinary(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, size_t size[], fmi3Binary value[], size_t nValues) {
-    
-    ModelInstance *comp = (ModelInstance *)c;
-    
+fmi3Status fmi3GetBinary(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, size_t size[], fmi3Binary value[], size_t nValues) {
+
+    ModelInstance *comp = (ModelInstance *)instance;
+
     Status status = OK;
-    
+
     for (int i = 0; i < nvr; i++) {
         size_t index = 0;
         Status s = getBinary(comp, vr[i], size, value, &index);
         status = max(status, s);
         if (status > Warning) return status;
     }
-    
+
     return status;
 }
 
-fmi3Status fmi3SetFloat64(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3Float64 value[], size_t nValues) {
+fmi3Status fmi3SetFloat64(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, const fmi3Float64 value[], size_t nValues) {
 
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
 
     if (invalidState(comp, "fmi3SetReal", MASK_fmi3SetReal))
         return fmi3Error;
@@ -365,9 +365,9 @@ fmi3Status fmi3SetFloat64(fmi3Component c, const fmi3ValueReference vr[], size_t
     SET_VARIABLES(Float64)
 }
 
-fmi3Status fmi3SetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3Int32 value[], size_t nValues) {
+fmi3Status fmi3SetInt32(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, const fmi3Int32 value[], size_t nValues) {
 
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
 
     if (invalidState(comp, "fmi3SetInteger", MASK_fmi3SetInteger))
         return fmi3Error;
@@ -381,9 +381,9 @@ fmi3Status fmi3SetInt32(fmi3Component c, const fmi3ValueReference vr[], size_t n
     SET_VARIABLES(Int32)
 }
 
-fmi3Status fmi3SetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3Boolean value[], size_t nValues) {
+fmi3Status fmi3SetBoolean(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, const fmi3Boolean value[], size_t nValues) {
 
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
 
     if (invalidState(comp, "fmi3SetBoolean", MASK_fmi3SetBoolean))
         return fmi3Error;
@@ -397,9 +397,9 @@ fmi3Status fmi3SetBoolean(fmi3Component c, const fmi3ValueReference vr[], size_t
     SET_BOOLEAN_VARIABLES
 }
 
-fmi3Status fmi3SetString(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3String value[], size_t nValues) {
+fmi3Status fmi3SetString(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, const fmi3String value[], size_t nValues) {
 
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
 
     if (invalidState(comp, "fmi3SetString", MASK_fmi3SetString))
         return fmi3Error;
@@ -413,65 +413,65 @@ fmi3Status fmi3SetString(fmi3Component c, const fmi3ValueReference vr[], size_t 
     SET_VARIABLES(String)
 }
 
-fmi3Status fmi3SetBinary(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const size_t size[], const fmi3Binary value[], size_t nValues) {
-    
-    ModelInstance *comp = (ModelInstance *)c;
-    
+fmi3Status fmi3SetBinary(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, const size_t size[], const fmi3Binary value[], size_t nValues) {
+
+    ModelInstance *comp = (ModelInstance *)instance;
+
     Status status = OK;
-    
+
     for (int i = 0; i < nvr; i++) {
         size_t index = 0;
         Status s = setBinary(comp, vr[i], size, value, &index);
         status = max(status, s);
         if (status > Warning) return status;
     }
-    
+
     return status;
 }
 
-fmi3Status fmi3GetFMUstate(fmi3Component c, fmi3FMUstate* FMUstate) {
-    return unsupportedFunction(c, "fmi3GetFMUstate", MASK_fmi3GetFMUstate);
+fmi3Status fmi3GetFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
+    return unsupportedFunction(instance, "fmi3GetFMUState", MASK_fmi3GetFMUState);
 }
-fmi3Status fmi3SetFMUstate(fmi3Component c, fmi3FMUstate FMUstate) {
-    return unsupportedFunction(c, "fmi3SetFMUstate", MASK_fmi3SetFMUstate);
+fmi3Status fmi3SetFMUState(fmi3Instance instance, fmi3FMUState FMUState) {
+    return unsupportedFunction(instance, "fmi3SetFMUState", MASK_fmi3SetFMUState);
 }
-fmi3Status fmi3FreeFMUstate(fmi3Component c, fmi3FMUstate* FMUstate) {
-    return unsupportedFunction(c, "fmi3FreeFMUstate", MASK_fmi3FreeFMUstate);
+fmi3Status fmi3FreeFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
+    return unsupportedFunction(instance, "fmi3FreeFMUState", MASK_fmi3FreeFMUState);
 }
-fmi3Status fmi3SerializedFMUstateSize(fmi3Component c, fmi3FMUstate FMUstate, size_t *size) {
-    return unsupportedFunction(c, "fmi3SerializedFMUstateSize", MASK_fmi3SerializedFMUstateSize);
+fmi3Status fmi3SerializedFMUStateSize(fmi3Instance instance, fmi3FMUState FMUState, size_t *size) {
+    return unsupportedFunction(instance, "fmi3SerializedFMUStateSize", MASK_fmi3SerializedFMUStateSize);
 }
-fmi3Status fmi3SerializeFMUstate(fmi3Component c, fmi3FMUstate FMUstate, fmi3Byte serializedState[], size_t size) {
-    return unsupportedFunction(c, "fmi3SerializeFMUstate", MASK_fmi3SerializeFMUstate);
+fmi3Status fmi3SerializeFMUState(fmi3Instance instance, fmi3FMUState FMUState, fmi3Byte serializedState[], size_t size) {
+    return unsupportedFunction(instance, "fmi3SerializeFMUState", MASK_fmi3SerializeFMUState);
 }
-fmi3Status fmi3DeSerializeFMUstate (fmi3Component c, const fmi3Byte serializedState[], size_t size,
-                                    fmi3FMUstate* FMUstate) {
-    return unsupportedFunction(c, "fmi3DeSerializeFMUstate", MASK_fmi3DeSerializeFMUstate);
+fmi3Status fmi3DeSerializeFMUState (fmi3Instance instance, const fmi3Byte serializedState[], size_t size,
+                                    fmi3FMUState* FMUState) {
+    return unsupportedFunction(instance, "fmi3DeSerializeFMUState", MASK_fmi3DeSerializeFMUState);
 }
 
 // ---------------------------------------------------------------------------
 // Functions for FMI for Co-Simulation
 // ---------------------------------------------------------------------------
 
-fmi3Status fmi3CancelStep(fmi3Component c) {
+fmi3Status fmi3CancelStep(fmi3Instance instance) {
 
-    ModelInstance *comp = (ModelInstance *)c;
-    
+    ModelInstance *comp = (ModelInstance *)instance;
+
 	if (invalidState(comp, "fmi3CancelStep", MASK_fmi3CancelStep)) {
         // always fmi3CancelStep is invalid, because model is never in modelStepInProgress state.
         return fmi3Error;
     }
-	
+
 	logError(comp, "fmi3CancelStep: Can be called when fmi3DoStep returned fmi3Pending."
         " This is not the case.");
 
 	return fmi3Error;
 }
 
-fmi3Status fmi3DoStep(fmi3Component c, fmi3Float64 currentCommunicationPoint,
+fmi3Status fmi3DoStep(fmi3Instance instance, fmi3Float64 currentCommunicationPoint,
                     fmi3Float64 communicationStepSize, fmi3Boolean noSetFMUStatePriorToCurrentPoint) {
 
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
 
     if (communicationStepSize <= 0) {
 		logError(comp, "fmi3DoStep: communication step size must be > 0 but was %g.", communicationStepSize);
@@ -486,8 +486,8 @@ fmi3Status fmi3DoStep(fmi3Component c, fmi3Float64 currentCommunicationPoint,
 // Functions for fmi3 for Model Exchange
 // ---------------------------------------------------------------------------
 /* Enter and exit the different modes */
-fmi3Status fmi3EnterEventMode(fmi3Component c) {
-    ModelInstance *comp = (ModelInstance *)c;
+fmi3Status fmi3EnterEventMode(fmi3Instance instance) {
+    ModelInstance *comp = (ModelInstance *)instance;
     if (invalidState(comp, "fmi3EnterEventMode", MASK_fmi3EnterEventMode))
         return fmi3Error;
     comp->state = modelEventMode;
@@ -495,8 +495,8 @@ fmi3Status fmi3EnterEventMode(fmi3Component c) {
     return fmi3OK;
 }
 
-fmi3Status fmi3NewDiscreteStates(fmi3Component c, fmi3EventInfo *eventInfo) {
-    ModelInstance *comp = (ModelInstance *)c;
+fmi3Status fmi3NewDiscreteStates(fmi3Instance instance, fmi3EventInfo *eventInfo) {
+    ModelInstance *comp = (ModelInstance *)instance;
     int timeEvent = 0;
     if (invalidState(comp, "fmi3NewDiscreteStates", MASK_fmi3NewDiscreteStates))
         return fmi3Error;
@@ -525,17 +525,17 @@ fmi3Status fmi3NewDiscreteStates(fmi3Component c, fmi3EventInfo *eventInfo) {
     return fmi3OK;
 }
 
-fmi3Status fmi3EnterContinuousTimeMode(fmi3Component c) {
-    ModelInstance *comp = (ModelInstance *)c;
+fmi3Status fmi3EnterContinuousTimeMode(fmi3Instance instance) {
+    ModelInstance *comp = (ModelInstance *)instance;
     if (invalidState(comp, "fmi3EnterContinuousTimeMode", MASK_fmi3EnterContinuousTimeMode))
         return fmi3Error;
     comp->state = modelContinuousTimeMode;
     return fmi3OK;
 }
 
-fmi3Status fmi3CompletedIntegratorStep(fmi3Component c, fmi3Boolean noSetFMUStatePriorToCurrentPoint,
+fmi3Status fmi3CompletedIntegratorStep(fmi3Instance instance, fmi3Boolean noSetFMUStatePriorToCurrentPoint,
                                      fmi3Boolean *enterEventMode, fmi3Boolean *terminateSimulation) {
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
     if (invalidState(comp, "fmi3CompletedIntegratorStep", MASK_fmi3CompletedIntegratorStep))
         return fmi3Error;
     if (nullPointer(comp, "fmi3CompletedIntegratorStep", "enterEventMode", enterEventMode))
@@ -548,17 +548,17 @@ fmi3Status fmi3CompletedIntegratorStep(fmi3Component c, fmi3Boolean noSetFMUStat
 }
 
 /* Providing independent variables and re-initialization of caching */
-fmi3Status fmi3SetTime(fmi3Component c, fmi3Float64 time) {
-    ModelInstance *comp = (ModelInstance *)c;
+fmi3Status fmi3SetTime(fmi3Instance instance, fmi3Float64 time) {
+    ModelInstance *comp = (ModelInstance *)instance;
     if (invalidState(comp, "fmi3SetTime", MASK_fmi3SetTime))
         return fmi3Error;
     comp->time = time;
     return fmi3OK;
 }
 
-fmi3Status fmi3SetContinuousStates(fmi3Component c, const fmi3Float64 x[], size_t nx){
+fmi3Status fmi3SetContinuousStates(fmi3Instance instance, const fmi3Float64 x[], size_t nx){
 
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
 
     if (invalidState(comp, "fmi3SetContinuousStates", MASK_fmi3SetContinuousStates))
         return fmi3Error;
@@ -575,9 +575,9 @@ fmi3Status fmi3SetContinuousStates(fmi3Component c, const fmi3Float64 x[], size_
 }
 
 /* Evaluation of the model equations */
-fmi3Status fmi3GetDerivatives(fmi3Component c, fmi3Float64 derivatives[], size_t nx) {
+fmi3Status fmi3GetDerivatives(fmi3Instance instance, fmi3Float64 derivatives[], size_t nx) {
 
-    ModelInstance* comp = (ModelInstance *)c;
+    ModelInstance* comp = (ModelInstance *)instance;
 
     if (invalidState(comp, "fmi3GetDerivatives", MASK_fmi3GetDerivatives))
         return fmi3Error;
@@ -593,10 +593,10 @@ fmi3Status fmi3GetDerivatives(fmi3Component c, fmi3Float64 derivatives[], size_t
     return fmi3OK;
 }
 
-fmi3Status fmi3GetEventIndicators(fmi3Component c, fmi3Float64 eventIndicators[], size_t ni) {
+fmi3Status fmi3GetEventIndicators(fmi3Instance instance, fmi3Float64 eventIndicators[], size_t ni) {
 
 #if NUMBER_OF_EVENT_INDICATORS > 0
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
 
     if (invalidState(comp, "fmi3GetEventIndicators", MASK_fmi3GetEventIndicators))
         return fmi3Error;
@@ -611,9 +611,9 @@ fmi3Status fmi3GetEventIndicators(fmi3Component c, fmi3Float64 eventIndicators[]
     return fmi3OK;
 }
 
-fmi3Status fmi3GetContinuousStates(fmi3Component c, fmi3Float64 states[], size_t nx) {
+fmi3Status fmi3GetContinuousStates(fmi3Instance instance, fmi3Float64 states[], size_t nx) {
 
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
 
     if (invalidState(comp, "fmi3GetContinuousStates", MASK_fmi3GetContinuousStates))
         return fmi3Error;
@@ -629,9 +629,9 @@ fmi3Status fmi3GetContinuousStates(fmi3Component c, fmi3Float64 states[], size_t
     return fmi3OK;
 }
 
-fmi3Status fmi3GetNominalsOfContinuousStates(fmi3Component c, fmi3Float64 x_nominal[], size_t nx) {
+fmi3Status fmi3GetNominalsOfContinuousStates(fmi3Instance instance, fmi3Float64 x_nominal[], size_t nx) {
     int i;
-    ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)instance;
     if (invalidState(comp, "fmi3GetNominalsOfContinuousStates", MASK_fmi3GetNominalsOfContinuousStates))
         return fmi3Error;
     if (invalidNumber(comp, "fmi3GetNominalContinuousStates", "nx", nx, NUMBER_OF_STATES))

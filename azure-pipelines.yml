@@ -15,7 +15,8 @@ jobs:
 
   - bash: |
       source activate myEnvironment
-      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 fmpy=0.2.12 pytest scipy
+      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 dask lxml numpy pathlib pip pytest requests scipy
+      python -m pip install https://github.com/CATIA-Systems/FMPy/archive/develop.zip --no-deps
     displayName: Install Anaconda packages
 
   - bash: |
@@ -54,7 +55,8 @@ jobs:
 
   - bash: |
       source activate myEnvironment
-      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 fmpy=0.2.12 pytest scipy
+      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 dask lxml numpy pathlib pip pytest requests scipy
+      python -m pip install https://github.com/CATIA-Systems/FMPy/archive/develop.zip --no-deps
     displayName: Install Anaconda packages
 
   - bash: |
@@ -88,8 +90,13 @@ jobs:
 
   - script: |
       call activate myEnvironment
-      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 cmake fmpy=0.2.12 pytest scipy
+      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 dask lxml numpy pathlib pip pytest pywin32 requests scipy
     displayName: Install Anaconda packages
+
+  - script: |
+      call activate myEnvironment
+      python -m pip install https://github.com/CATIA-Systems/FMPy/archive/develop.zip --no-deps
+    displayName: Install FMPy
 
   - script: |
       call activate myEnvironment

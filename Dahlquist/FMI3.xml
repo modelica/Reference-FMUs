@@ -1,16 +1,26 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<fmiModelDescription fmiVersion="3.0-alpha" modelName="Dahlquist" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f000}" numberOfEventIndicators="0">
+<fmiModelDescription fmiVersion="3.0-alpha.2" modelName="Dahlquist" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f000}" numberOfEventIndicators="0">
 
   <ModelExchange modelIdentifier="Dahlquist">
-    <SourceFiles>
-      <File name="all.c"/>
-    </SourceFiles>
+    <BuildConfiguration>
+      <SourceFileSet language="C99">
+        <SourceFile name="fmi3Functions.c"/>
+        <SourceFile name="model.c"/>
+        <SourceFile name="slave.c"/>
+        <PreprocessorDefinition name="FMI_VERSION" value="3"/>
+      </SourceFileSet>
+    </BuildConfiguration>
   </ModelExchange>
 
   <CoSimulation modelIdentifier="Dahlquist" canHandleVariableCommunicationStepSize="true">
-    <SourceFiles>
-      <File name="all.c"/>
-    </SourceFiles>
+    <BuildConfiguration>
+      <SourceFileSet language="C99">
+        <SourceFile name="fmi3Functions.c"/>
+        <SourceFile name="model.c"/>
+        <SourceFile name="slave.c"/>
+        <PreprocessorDefinition name="FMI_VERSION" value="3"/>
+      </SourceFileSet>
+    </BuildConfiguration>
   </CoSimulation>
 
   <LogCategories>
@@ -27,15 +37,9 @@
   </ModelVariables>
 
   <ModelStructure>
-    <Outputs>
-      <Unknown valueReference="0"/>
-    </Outputs>
-    <Derivatives>
-      <Unknown valueReference="1"/>
-    </Derivatives>
-    <InitialUnknowns>
-      <Unknown valueReference="1"/>
-    </InitialUnknowns>
+    <Output valueReference="0"/>
+    <Derivative valueReference="1"/>
+    <InitialUnknown valueReference="1"/>
   </ModelStructure>
 
 </fmiModelDescription>

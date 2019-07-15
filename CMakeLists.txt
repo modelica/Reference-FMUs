@@ -58,12 +58,14 @@ endif ()
 
 MESSAGE("FMI_PLATFORM: " ${FMI_PLATFORM})
 
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/all.c" "#define FMI_VERSION ${FMI_VERSION}
+if (${FMI_VERSION} LESS 3)
+  file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/all.c" "#define FMI_VERSION ${FMI_VERSION}
 
 #include \"fmi${FMI_VERSION}Functions.c\"
 #include \"model.c\"
 #include \"slave.c\"
 ")
+endif ()
 
 set (MODEL_NAMES BouncingBall Dahlquist Stair Feedthrough VanDerPol)
 
@@ -84,12 +86,19 @@ SET(HEADERS
   include/model.h
 )
 
-if (${FMI_VERSION} GREATER 1)
+if (${FMI_VERSION} EQUAL 2)
   SET(HEADERS
     ${HEADERS}
-    include/fmi${FMI_VERSION}Functions.h
-    include/fmi${FMI_VERSION}FunctionTypes.h
-    include/fmi${FMI_VERSION}TypesPlatform.h
+    include/fmi2Functions.h
+    include/fmi2FunctionTypes.h
+    include/fmi2TypesPlatform.h
+  )
+elseif (${FMI_VERSION} EQUAL 3)
+  SET(HEADERS
+    ${HEADERS}
+    include/fmi3Functions.h
+    include/fmi3FunctionTypes.h
+    include/fmi3PlatformTypes.h
   )
 endif()
 
@@ -197,10 +206,12 @@ foreach (SOURCE_FILE fmi${FMI_VERSION}Functions.c slave.c)
 endforeach(SOURCE_FILE)
 
 # all.c
-add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-  "${CMAKE_CURRENT_BINARY_DIR}/all.c"
-  "${FMU_BUILD_DIR}/sources/all.c"
-)
+if (${FMI_VERSION} LESS 3)
+  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+    "${CMAKE_CURRENT_BINARY_DIR}/all.c"
+    "${FMU_BUILD_DIR}/sources/all.c"
+  )
+endif()
 
 set(ARCHIVE_FILES "modelDescription.xml" "binaries" "documentation" "sources")
 
