@@ -1,4 +1,6 @@
 # build artifacts
+__pycache__
+.cache
 .idea/
 build/
 fmi1_cs/
