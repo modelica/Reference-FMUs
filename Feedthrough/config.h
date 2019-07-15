@@ -1,6 +1,7 @@
 #ifndef config_h
 #define config_h
 
+#include <stddef.h>  // for size_t
 #include <stdbool.h> // for bool
 
 
@@ -16,11 +17,13 @@
 #define GET_INT32
 #define GET_BOOLEAN
 #define GET_STRING
+#define GET_BINARY
 
 #define SET_FLOAT64
 #define SET_INT32
 #define SET_BOOLEAN
 #define SET_STRING
+#define SET_BINARY
 
 #define EVENT_UPDATE
 
@@ -38,6 +41,8 @@ typedef enum {
     vr_bool_in,
     vr_bool_out,
     vr_string,
+    vr_binary_in,
+    vr_binary_out,
 } ValueReference;
 
 typedef struct {
@@ -48,8 +53,11 @@ typedef struct {
     int         integer;
     bool        boolean;
     const char *string;
+    size_t      binary_size;
+    const char *binary;
 } ModelData;
 
 extern const char *STRING_START;
+extern const char *BINARY_START;
 
 #endif /* config_h */

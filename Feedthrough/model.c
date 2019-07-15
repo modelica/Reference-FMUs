@@ -3,6 +3,7 @@
 #include <string.h> // for strcmp()
 
 const char *STRING_START = "Set me!";
+const char *BINARY_START = "Set me, too!";
 
 void setStartValues(ModelInstance *comp) {
     M(real_fixed_parameter)   = 0;
@@ -12,6 +13,8 @@ void setStartValues(ModelInstance *comp) {
     M(integer)                = 0;
     M(boolean)                = false;
     M(string)                 = STRING_START;
+    M(binary_size)            = strlen(BINARY_START);
+    M(binary)                 = BINARY_START;
 }
 
 void calculateValues(ModelInstance *comp) {
@@ -65,6 +68,19 @@ Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *i
             return OK;
         default: return Error;
     }
+}
+
+Status getBinary(ModelInstance* comp, ValueReference vr, size_t size[], const char *value[], size_t *index) {
+    calculateValues(comp);
+    switch (vr) {
+        case vr_binary_in:
+        case vr_binary_out:
+            value[*index] = M(binary);
+            size[(*index)++] = M(binary_size);
+            return OK;
+        default: return Error;
+    }
+    return Error;
 }
 
 Status getString(ModelInstance* comp, ValueReference vr, const char **value, size_t *index) {
@@ -152,6 +168,21 @@ Status setString(ModelInstance* comp, ValueReference vr, const char *const *valu
                 freeMemory(comp, (void *)M(string));
             }
             M(string) = duplicateString(comp, value[(*index)++]);
+            return OK;
+        default:
+            return Error;
+    }
+}
+
+Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], const char *const value[], size_t *index) {
+    switch (vr) {
+        case vr_binary_in:
+            if (M(binary) != BINARY_START) {
+                freeMemory(comp, (void *)M(binary));
+            }
+            M(binary_size) = size[*index];
+            M(binary) = allocateMemory(comp, 1, M(binary_size));
+            memcpy((void *)M(binary), value[(*index)++], M(binary_size));
             return OK;
         default:
             return Error;

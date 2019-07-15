@@ -274,6 +274,12 @@ Status getString(ModelInstance* comp, ValueReference vr, const char **value, siz
 }
 #endif
 
+#ifndef GET_BINARY
+Status getBinary(ModelInstance* comp, ValueReference vr, size_t size[], const char *value[], size_t *index) {
+    return Error;
+}
+#endif
+
 #ifndef SET_FLOAT64
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
     return Error;
@@ -294,6 +300,12 @@ Status setBoolean(ModelInstance* comp, ValueReference vr, const bool *value, siz
 
 #ifndef SET_STRING
 Status setString(ModelInstance* comp, ValueReference vr, const char *const *value, size_t *index) {
+    return Error;
+}
+#endif
+
+#ifndef SET_BINARY
+Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], const char *const value[], size_t *index) {
     return Error;
 }
 #endif

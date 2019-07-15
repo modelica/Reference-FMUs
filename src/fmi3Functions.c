@@ -333,6 +333,22 @@ fmi3Status fmi3GetString(fmi3Component c, const fmi3ValueReference vr[], size_t 
     GET_VARIABLES(String)
 }
 
+fmi3Status fmi3GetBinary(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, size_t size[], fmi3Binary value[], size_t nValues) {
+    
+    ModelInstance *comp = (ModelInstance *)c;
+    
+    Status status = OK;
+    
+    for (int i = 0; i < nvr; i++) {
+        size_t index = 0;
+        Status s = getBinary(comp, vr[i], size, value, &index);
+        status = max(status, s);
+        if (status > Warning) return status;
+    }
+    
+    return status;
+}
+
 fmi3Status fmi3SetFloat64(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const fmi3Float64 value[], size_t nValues) {
 
     ModelInstance *comp = (ModelInstance *)c;
@@ -395,6 +411,22 @@ fmi3Status fmi3SetString(fmi3Component c, const fmi3ValueReference vr[], size_t 
         return fmi3Error;
 
     SET_VARIABLES(String)
+}
+
+fmi3Status fmi3SetBinary(fmi3Component c, const fmi3ValueReference vr[], size_t nvr, const size_t size[], const fmi3Binary value[], size_t nValues) {
+    
+    ModelInstance *comp = (ModelInstance *)c;
+    
+    Status status = OK;
+    
+    for (int i = 0; i < nvr; i++) {
+        size_t index = 0;
+        Status s = setBinary(comp, vr[i], size, value, &index);
+        status = max(status, s);
+        if (status > Warning) return status;
+    }
+    
+    return status;
 }
 
 fmi3Status fmi3GetFMUstate(fmi3Component c, fmi3FMUstate* FMUstate) {
