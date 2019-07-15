@@ -40,10 +40,11 @@
 
   <ModelStructure>
     <Outputs>
-      <Unknown valueReference="2"/>
-      <Unknown valueReference="4"/>
-      <Unknown valueReference="6"/>
-      <Unknown valueReference="8"/>
+      <Unknown valueReference="3"/>
+      <Unknown valueReference="5"/>
+      <Unknown valueReference="7"/>
+      <Unknown valueReference="9"/>
+      <Unknown valueReference="12"/>
     </Outputs>
   </ModelStructure>
 
