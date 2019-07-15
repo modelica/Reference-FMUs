@@ -84,6 +84,15 @@ SET(HEADERS
   include/model.h
 )
 
+if (${FMI_VERSION} GREATER 1)
+  SET(HEADERS
+    ${HEADERS}
+    include/fmi${FMI_VERSION}Functions.h
+    include/fmi${FMI_VERSION}FunctionTypes.h
+    include/fmi${FMI_VERSION}TypesPlatform.h
+  )
+endif()
+
 SET(SOURCES
   ${MODEL_NAME}/model.c
   src/fmi${FMI_VERSION}Functions.c
