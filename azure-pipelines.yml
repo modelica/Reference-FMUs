@@ -15,7 +15,7 @@ jobs:
 
   - bash: |
       source activate myEnvironment
-      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 fmpy pytest scipy
+      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 fmpy=0.2.12 pytest scipy
     displayName: Install Anaconda packages
 
   - bash: |
@@ -54,7 +54,7 @@ jobs:
 
   - bash: |
       source activate myEnvironment
-      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 fmpy pytest scipy
+      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 fmpy=0.2.12 pytest scipy
     displayName: Install Anaconda packages
 
   - bash: |
@@ -88,7 +88,7 @@ jobs:
 
   - script: |
       call activate myEnvironment
-      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 cmake fmpy pytest scipy
+      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 cmake fmpy=0.2.12 pytest scipy
     displayName: Install Anaconda packages
 
   - script: |
@@ -115,7 +115,7 @@ jobs:
   displayName: 'Merge platform binaries'
   pool:
     vmImage: 'ubuntu-16.04'
-    
+
   steps:
 
   - bash: mkdir fmus
