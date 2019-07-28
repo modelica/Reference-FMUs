@@ -434,11 +434,19 @@ fmi2Status fmi2SerializedFMUstateSize(fmi2Component c, fmi2FMUstate FMUstate, si
     return fmi2OK;
 }
 
-fmi2Status fmi2SerializeFMUstate (fmi2Component c, fmi2FMUstate FMUstate, fmi2Byte serializedState[], size_t size) {
-    ModelInstance *comp = (ModelInstance *)c;
-    // TODO: check size
-    memcpy(serializedState, comp->modelData, sizeof(ModelData));
-    return fmi2OK;
+fmi2Status fmi2SerializeFMUstate(fmi2Component c, fmi2FMUstate FMUstate, fmi2Byte serializedState[], size_t size) {
+    
+	ModelInstance *comp = (ModelInstance *)c;
+
+	if (nullPointer(comp, "fmi2SerializeFMUstate", "FMUstate", FMUstate))
+		return fmi2Error;
+
+	if (invalidNumber(comp, "fmi2SerializeFMUstate", "size", size, sizeof(ModelData)))
+		return fmi2Error;
+    
+	memcpy(serializedState, FMUstate, sizeof(ModelData));
+    
+	return fmi2OK;
 }
 
 fmi2Status fmi2DeSerializeFMUstate (fmi2Component c, const fmi2Byte serializedState[], size_t size, fmi2FMUstate* FMUstate) {
