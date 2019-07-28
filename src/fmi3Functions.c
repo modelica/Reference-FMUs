@@ -476,6 +476,18 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance, const fmi3ValueRe
     return fmi3OK;
 }
 
+fmi3Status fmi3EnterConfigurationMode(fmi3Instance instance) {
+    ModelInstance *comp = (ModelInstance *)instance;
+    logError(comp, "fmi3EnterConfigurationMode() is not supported.");
+    return fmi3Error;
+}
+
+fmi3Status fmi3ExitConfigurationMode(fmi3Instance instance) {
+    ModelInstance *comp = (ModelInstance *)instance;
+    logError(comp, "fmi3ExitConfigurationMode() is not supported.");
+    return fmi3Error;
+}
+
 // ---------------------------------------------------------------------------
 // Functions for FMI for Co-Simulation
 // ---------------------------------------------------------------------------
