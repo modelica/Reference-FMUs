@@ -6,8 +6,12 @@ import os
 import markdown2
 
 
-header = """
+header1 = """
 <html>
+<head>
+"""
+
+header2 = """
 <style>
 body {
     font-family: Helvetica, Arial, Sans-Serif;
@@ -45,6 +49,7 @@ th, td {
     padding: 6px 13px;
 }
 </style>
+</head>
 <body>
 <div class="container">
 """
@@ -100,6 +105,8 @@ for model_name, start_values, output_interval in info:
     md = markdown2.markdown_path(md_file, extras=['tables', 'fenced-code-blocks'])
 
     with open(html_file, 'w') as html:
-        html.write(header)
+        html.write(header1)
+        html.write("<title>%s</title>" % model_name)
+        html.write(header2)
         html.write(md)
         html.write(footer)
