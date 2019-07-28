@@ -451,7 +451,29 @@ fmi2Status fmi2DeSerializeFMUstate (fmi2Component c, const fmi2Byte serializedSt
 fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReference vUnknown_ref[], size_t nUnknown,
                                         const fmi2ValueReference vKnown_ref[] , size_t nKnown,
                                         const fmi2Real dvKnown[], fmi2Real dvUnknown[]) {
-    return unsupportedFunction(c, "fmi2GetDirectionalDerivative", MASK_fmi2GetDirectionalDerivative);
+
+    if (invalidState(c, "fmi2GetDirectionalDerivative", MASK_fmi2GetDirectionalDerivative))
+        return fmi2Error;
+    
+    // TODO: check value references
+    // TODO: assert nUnknowns == nDeltaOfUnknowns
+    // TODO: assert nKnowns == nDeltaKnowns
+
+    ModelInstance *comp = (ModelInstance *)c;
+    Status status = OK;
+
+    for (int i = 0; i < nUnknown; i++) {
+        dvUnknown[i] = 0;
+        for (int j = 0; j < nKnown; j++) {
+            double partialDerivative = 0;
+            Status s = getPartialDerivative(comp, vUnknown_ref[i], vKnown_ref[j], &partialDerivative);
+            status = max(status, s);
+            if (status > Warning) return status;
+            dvUnknown[i] += partialDerivative * dvKnown[j];
+        }
+    }
+    
+    return fmi2OK;
 }
 
 // ---------------------------------------------------------------------------

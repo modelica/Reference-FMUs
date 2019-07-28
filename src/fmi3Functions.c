@@ -449,6 +449,33 @@ fmi3Status fmi3DeSerializeFMUState (fmi3Instance instance, const fmi3Byte serial
     return unsupportedFunction(instance, "fmi3DeSerializeFMUState", MASK_fmi3DeSerializeFMUState);
 }
 
+fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance, const fmi3ValueReference unknowns[], size_t nUnknowns, const fmi3ValueReference knowns[], size_t nKnowns, const fmi3Float64 deltaKnowns[], size_t nDeltaKnowns, fmi3Float64 deltaUnknowns[], size_t nDeltaOfUnknowns) {
+    
+    if (invalidState(instance, "fmi3GetDirectionalDerivative", MASK_fmi3GetDirectionalDerivative))
+        return fmi3Error;
+    
+    // TODO: check value references
+    // TODO: assert nUnknowns == nDeltaOfUnknowns
+    // TODO: assert nKnowns == nDeltaKnowns
+
+    ModelInstance *comp = (ModelInstance *)instance;
+    Status status = OK;
+    
+    for (int i = 0; i < nUnknowns; i++) {
+        deltaUnknowns[i] = 0;
+        for (int j = 0; j < nKnowns; j++) {
+            double partialDerivative = 0;
+            Status s = getPartialDerivative(comp, unknowns[i], knowns[j], &partialDerivative);
+            status = max(status, s);
+            if (status > Warning) return status;
+            deltaUnknowns[i] += partialDerivative * deltaKnowns[j];
+        }
+        deltaUnknowns[i] *= deltaUnknowns[i];
+    }
+    
+    return fmi3OK;
+}
+
 // ---------------------------------------------------------------------------
 // Functions for FMI for Co-Simulation
 // ---------------------------------------------------------------------------

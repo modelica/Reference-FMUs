@@ -12,6 +12,8 @@
 #define GET_FLOAT64
 #define SET_FLOAT64
 
+#define GET_PARTIAL_DERIVATIVE
+
 #define FIXED_SOLVER_STEP 1e-2
 
 typedef enum {

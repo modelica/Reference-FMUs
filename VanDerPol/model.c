@@ -78,6 +78,23 @@ void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
     dx[1] = M(der_x1);
 }
 
+Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative) {
+
+    if (unknown == vr_der_x0 && known == vr_x0) {
+        *partialDerivative = 0;
+    } else if (unknown == vr_der_x0 && known == vr_x1) {
+        *partialDerivative = 1;
+    } else if (unknown == vr_der_x1 && known == vr_x0) {
+        *partialDerivative = -2 * M(x0) * M(x1) * M(mu) - 1;
+    } else if (unknown == vr_der_x1 && known == vr_x1) {
+        *partialDerivative = M(mu) * (1 - M(x0) * M(x0));
+    } else {
+        *partialDerivative = 0;
+    }
+
+    return OK;
+}
+
 void eventUpdate(ModelInstance *comp) {
     comp->valuesOfContinuousStatesChanged   = false;
     comp->nominalsOfContinuousStatesChanged = false;

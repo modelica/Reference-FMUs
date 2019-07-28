@@ -316,6 +316,12 @@ void setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {}
 void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {}
 #endif
 
+#ifndef GET_PARTIAL_DERIVATIVE
+Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative) {
+    return Error;
+}
+#endif
+
 Status doStep(ModelInstance *comp, double t, double tNext) {
 
     bool stateEvent, timeEvent;

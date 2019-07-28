@@ -136,6 +136,7 @@ Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], co
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx);
 void setContinuousStates(ModelInstance *comp, const double x[], size_t nx);
 void getDerivatives(ModelInstance *comp, double dx[], size_t nx);
+Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative);
 void getEventIndicators(ModelInstance *comp, double z[], size_t nz);
 void eventUpdate(ModelInstance *comp);
 
