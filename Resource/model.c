@@ -57,7 +57,7 @@ void calculateValues(ModelInstance *comp) {
     }
 
     // read the first character
-    c = fgetc(file);
+    c = (char)fgetc(file);
 
     // assign it to y
     comp->modelData->y = c;
@@ -72,7 +72,7 @@ void calculateValues(ModelInstance *comp) {
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
     switch (vr) {
         case vr_y:
-            *value = M(y);
+			value[(*index)++] = M(y);
             return OK;
         default:
             return Error;

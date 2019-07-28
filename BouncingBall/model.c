@@ -15,7 +15,8 @@ void setStartValues(ModelInstance *comp) {
 }
 
 void calculateValues(ModelInstance *comp) {
-    // do nothing
+	UNUSED(comp)
+	// do nothing
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
@@ -108,20 +109,24 @@ void eventUpdate(ModelInstance *comp) {
 }
 
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
+	UNUSED(nx)
     x[0] = M(h);
     x[1] = M(v);
 }
 
 void setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
+	UNUSED(nx)
     M(h) = x[0];
     M(v) = x[1];
 }
 
 void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
+	UNUSED(nx)
     dx[0] = M(v);
     dx[1] = M(g);
 }
 
 void getEventIndicators(ModelInstance *comp, double z[], size_t nz) {
+	UNUSED(nz)
     z[0] = (M(h) == 0 && M(v) == 0) ? 1 : M(h);
 }

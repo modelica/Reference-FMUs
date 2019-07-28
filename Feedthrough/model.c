@@ -18,6 +18,7 @@ void setStartValues(ModelInstance *comp) {
 }
 
 void calculateValues(ModelInstance *comp) {
+	UNUSED(comp)
     // do nothing
 }
 
