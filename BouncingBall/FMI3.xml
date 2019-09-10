@@ -5,27 +5,23 @@
   description="This model calculates the trajectory, over time, of a ball dropped from a height of 1 m."
   instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f003}" numberOfEventIndicators="1">
 
-  <ModelExchange modelIdentifier="BouncingBall">
-    <BuildConfiguration>
-      <SourceFileSet language="C99">
-        <SourceFile name="fmi3Functions.c"/>
-        <SourceFile name="model.c"/>
-        <SourceFile name="slave.c"/>
-        <PreprocessorDefinition name="FMI_VERSION" value="3"/>
-      </SourceFileSet>
-    </BuildConfiguration>
-  </ModelExchange>
+  <ModelExchange modelIdentifier="BouncingBall"/>
 
-  <CoSimulation modelIdentifier="BouncingBall" canHandleVariableCommunicationStepSize="true">
-    <BuildConfiguration>
-      <SourceFileSet language="C99">
-        <SourceFile name="fmi3Functions.c"/>
-        <SourceFile name="model.c"/>
-        <SourceFile name="slave.c"/>
-        <PreprocessorDefinition name="FMI_VERSION" value="3"/>
-      </SourceFileSet>
-    </BuildConfiguration>
-  </CoSimulation>
+  <CoSimulation modelIdentifier="BouncingBall"
+    canHandleVariableCommunicationStepSize="true"
+    providesIntermediateVariableAccess="true"
+    canReturnEarlyAfterIntermediateUpdate="true"
+    providesHybridCoSimulation="true"
+  />
+
+  <BuildConfiguration modelIdentifier="BouncingBall">
+    <SourceFileSet language="C99">
+      <SourceFile name="fmi3Functions.c"/>
+      <SourceFile name="model.c"/>
+      <SourceFile name="slave.c"/>
+      <PreprocessorDefinition name="FMI_VERSION" value="3"/>
+    </SourceFileSet>
+  </BuildConfiguration>
 
   <UnitDefinitions>
     <Unit name="m">

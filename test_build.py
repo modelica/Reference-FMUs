@@ -168,10 +168,20 @@ class BuildTest(unittest.TestCase):
         subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=3', '..'], cwd=build_dir)
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
+        # run examples
+        for example in ['co_simulation', 'cs_clocked', 'cs_early_return', 'jacobian']:
+            print("Running %s example..." % example)
+            if os.name == 'nt':
+                filename = os.path.join(build_dir, 'Release', example + '.exe')
+            else:
+                filename = os.path.join(build_dir, example)
+            subprocess.check_call(filename)
+
         if fmi3_available:
             self.validate(build_dir, models=['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol'])
 
         copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='3.0', fmi_types=['cs', 'me'])
+
 
 if __name__ == '__main__':
     unittest.main()

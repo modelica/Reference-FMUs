@@ -10,16 +10,23 @@
 #include "config.h"
 #include "slave.h"
 
+#if FMI_VERSION == 3
+#include "fmi3Functions.h"
+#endif
+
+
 ModelInstance *createModelInstance(
 	loggerType cbLogger,
 	allocateMemoryType cbAllocateMemory,
 	freeMemoryType cbFreeMemory,
+    intermediateUpdateType intermediateUpdate,
 	void *componentEnvironment,
 	const char *instanceName,
 	const char *GUID,
 	const char *resourceLocation,
 	bool loggingOn,
-	InterfaceType interfaceType) {
+	InterfaceType interfaceType,
+    bool returnEarly) {
 
 	ModelInstance *comp = NULL;
 
@@ -60,6 +67,7 @@ ModelInstance *createModelInstance(
 		comp->logger = cbLogger;
 		comp->allocateMemory = cbAllocateMemory;
 		comp->freeMemory = cbFreeMemory;
+        comp->intermediateUpdate = intermediateUpdate;
 
 		comp->instanceName = (char *)allocateMemory(comp, 1 + strlen(instanceName), sizeof(char));
 
@@ -75,7 +83,9 @@ ModelInstance *createModelInstance(
         
         comp->logEvents = loggingOn;
         comp->logErrors = true; // always log errors
-	}
+        
+        comp->returnEarly = false;
+    }
 
 	if (!comp || !comp->modelData || !comp->instanceName) {
 		logError(comp, "Out of memory.");
@@ -157,13 +167,16 @@ bool invalidState(ModelInstance *comp, const char *f, int statesExpected) {
 		return true;
 	}
 
-	if (!(comp->state & statesExpected)) {
-		comp->state = modelError;
-		logError(comp, "%s: Illegal call sequence.", f);
-		return true;
-	}
-	
-	return false;
+    // TODO: add missing states and check state
+    return false;
+    
+//    if (!(comp->state & statesExpected)) {
+//        comp->state = modelError;
+//        logError(comp, "%s: Illegal call sequence.", f);
+//        return true;
+//    }
+//
+//    return false;
 }
 
 bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void *p) {
@@ -225,7 +238,7 @@ static void logMessage(ModelInstance *comp, int status, const char *category, co
 
 void logEvent(ModelInstance *comp, const char *message, ...) {
     
-    if (!comp->logEvents) return;
+    if (!comp || !comp->logEvents) return;
     
     va_list args;
     va_start(args, message);
@@ -235,7 +248,7 @@ void logEvent(ModelInstance *comp, const char *message, ...) {
 
 void logError(ModelInstance *comp, const char *message, ...) {
     
-    if (!comp->logErrors) return;
+    if (!comp || !comp->logErrors) return;
 
     va_list args;
     va_start(args, message);
@@ -259,6 +272,16 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
 	UNUSED(vr)
 	UNUSED(value)
 	UNUSED(index)
+    return Error;
+}
+#endif
+
+#ifndef GET_UINT16
+Status getUInt16(ModelInstance* comp, ValueReference vr, uint16_t *value, size_t *index) {
+    UNUSED(comp)
+    UNUSED(vr)
+    UNUSED(value)
+    UNUSED(index)
     return Error;
 }
 #endif
@@ -314,6 +337,16 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
 }
 #endif
 
+#ifndef SET_UINT16
+Status setUInt16(ModelInstance* comp, ValueReference vr, const uint16_t *value, size_t *index) {
+    UNUSED(comp)
+    UNUSED(vr)
+    UNUSED(value)
+    UNUSED(index)
+    return Error;
+}
+#endif
+
 #ifndef SET_INT32
 Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t *index) {
 	UNUSED(comp)
@@ -355,6 +388,23 @@ Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], co
 }
 #endif
 
+#ifndef ACTIVATE_CLOCK
+Status activateClock(ModelInstance* comp, ValueReference vr) {
+    UNUSED(comp)
+    UNUSED(vr)
+    return Error;
+}
+#endif
+
+#ifndef GET_CLOCK
+Status getClock(ModelInstance* comp, ValueReference vr, int* value) {
+	UNUSED(comp)
+	UNUSED(vr)
+	UNUSED(value)
+	return Error;
+}
+#endif
+
 #if NUMBER_OF_STATES < 1
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
 	UNUSED(comp)
@@ -385,9 +435,9 @@ Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueRe
 }
 #endif
 
-Status doStep(ModelInstance *comp, double t, double tNext) {
+Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
 
-	UNUSED(t)
+	UNUSED(t)  // TODO: check t == comp->time ?
 
     bool stateEvent, timeEvent;
     
@@ -419,9 +469,10 @@ Status doStep(ModelInstance *comp, double t, double tNext) {
 #if NUMBER_OF_EVENT_INDICATORS > 0
 		getEventIndicators(comp, comp->z, NUMBER_OF_EVENT_INDICATORS);
 		
-        // check for zero-crossing
+        // check for zero-crossings
 		for (int i = 0; i < NUMBER_OF_EVENT_INDICATORS; i++) {
-		    stateEvent |= (comp->prez[i] * comp->z[i]) <= 0;
+            stateEvent |= comp->prez[i] < 0 && comp->z[i] >= 0;
+            stateEvent |= comp->prez[i] > 0 && comp->z[i] <= 0;
 		}
 		
 		// remember the current event indicators
@@ -431,14 +482,45 @@ Status doStep(ModelInstance *comp, double t, double tNext) {
 #endif
         
         // check for time event
-        timeEvent = comp->nextEventTimeDefined && comp->time >= comp->nextEventTime;
+        timeEvent = comp->nextEventTimeDefined && (comp->time + FIXED_SOLVER_STEP * 1e-2) >= comp->nextEventTime;
         
         // log events
         if (timeEvent) logEvent(comp, "Time event detected at t=%g s.", comp->time);
         if (stateEvent) logEvent(comp, "State event detected at t=%g s.", comp->time);
 
         if (stateEvent || timeEvent) {
+            
             eventUpdate(comp);
+
+			comp->returnEarly = comp->nextEventTime < t + tNext;
+            
+#if NUMBER_OF_EVENT_INDICATORS > 0
+			// update previous event indicators
+            getEventIndicators(comp, comp->prez, NUMBER_OF_EVENT_INDICATORS);
+#endif
+
+#if FMI_VERSION == 3
+            if (comp->intermediateUpdate) { // Hybrid Co-Simulation
+                
+                fmi3IntermediateUpdateInfo updateInfo = { 0 };
+                
+                updateInfo.intermediateUpdateTime         = comp->time;
+                updateInfo.eventOccurred                  = fmi3True;
+                updateInfo.clocksTicked                   = comp->clocksTicked;
+                updateInfo.intermediateVariableSetAllowed = fmi3False;
+                updateInfo.intermediateVariableGetAllowed = fmi3False;
+                updateInfo.intermediateStepFinished       = fmi3False;
+                updateInfo.canReturnEarly                 = fmi3True;
+                
+                // call intermediate update callback
+                comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment, &updateInfo);
+                
+                if (comp->returnEarly) {
+                    *earlyReturn = 1;
+                    return OK;
+                }
+            }
+#endif
         }
 
         // terminate simulation, if requested by the model in the previous step
@@ -452,5 +534,9 @@ Status doStep(ModelInstance *comp, double t, double tNext) {
 		comp->time += FIXED_SOLVER_STEP;
     }
 
+    if (earlyReturn) {
+        *earlyReturn = 0;
+    }
+    
     return OK;
 }

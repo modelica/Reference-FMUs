@@ -10,3 +10,4 @@ fmi3/
 fmus/
 *.fmu
 *.zip
+*_out.csv

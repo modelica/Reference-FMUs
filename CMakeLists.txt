@@ -20,7 +20,10 @@ endif ()
 if (MSVC)
   string(REPLACE "/MD"  "/MT"  CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
   string(REPLACE "/MDd" "/MTd" CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}")
+  add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 endif ()
+
+add_compile_definitions(FMI_VERSION=${FMI_VERSION})
 
 if (${FMI_VERSION} GREATER 2)
 
@@ -74,7 +77,7 @@ if (${FMI_VERSION} GREATER 1 OR "${FMI_TYPE}" STREQUAL "CS")
 endif ()
 
 if (${FMI_VERSION} GREATER 2)
-  set (MODEL_NAMES ${MODEL_NAMES} LinearTransform)
+  set (MODEL_NAMES ${MODEL_NAMES} LinearTransform Clocks)
 endif ()
 
 foreach (MODEL_NAME ${MODEL_NAMES})
@@ -117,9 +120,7 @@ add_library(${TARGET_NAME} SHARED
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist)
 
 target_compile_definitions(${TARGET_NAME} PRIVATE
-  _CRT_SECURE_NO_WARNINGS
   DISABLE_PREFIX
-  FMI_VERSION=${FMI_VERSION}
 )
 
 if (${FMI_VERSION} EQUAL 1 AND "${FMI_TYPE}" STREQUAL CS)
@@ -127,8 +128,8 @@ if (${FMI_VERSION} EQUAL 1 AND "${FMI_TYPE}" STREQUAL CS)
 endif()
 
 target_include_directories(${TARGET_NAME} PRIVATE
-  "include"
-  "${MODEL_NAME}"
+  include
+  ${MODEL_NAME}
 )
 
 set(FMU_BUILD_DIR temp/${MODEL_NAME})
@@ -231,3 +232,9 @@ add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
 )
 
 endforeach(MODEL_NAME)
+
+
+# Examples
+if (${FMI_VERSION} EQUAL 3)
+  include(examples/Examples.cmake)
+endif()

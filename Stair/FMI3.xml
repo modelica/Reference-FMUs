@@ -1,27 +1,18 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <fmiModelDescription fmiVersion="3.0-alpha.2" modelName="Stair" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f008}" numberOfEventIndicators="0">
 
-  <ModelExchange modelIdentifier="Stair">
-    <BuildConfiguration>
-      <SourceFileSet language="C99">
-        <SourceFile name="fmi3Functions.c"/>
-        <SourceFile name="model.c"/>
-        <SourceFile name="slave.c"/>
-        <PreprocessorDefinition name="FMI_VERSION" value="3"/>
-      </SourceFileSet>
-    </BuildConfiguration>
-  </ModelExchange>
+  <ModelExchange modelIdentifier="Stair"/>
 
-  <CoSimulation modelIdentifier="Stair" canHandleVariableCommunicationStepSize="true">
-    <BuildConfiguration>
-      <SourceFileSet language="C99">
-        <SourceFile name="fmi3Functions.c"/>
-        <SourceFile name="model.c"/>
-        <SourceFile name="slave.c"/>
-        <PreprocessorDefinition name="FMI_VERSION" value="3"/>
-      </SourceFileSet>
-    </BuildConfiguration>
-  </CoSimulation>
+  <CoSimulation modelIdentifier="Stair" canHandleVariableCommunicationStepSize="true"/>
+
+  <BuildConfiguration modelIdentifier="Stair">
+    <SourceFileSet language="C99">
+      <SourceFile name="fmi3Functions.c"/>
+      <SourceFile name="model.c"/>
+      <SourceFile name="slave.c"/>
+      <PreprocessorDefinition name="FMI_VERSION" value="3"/>
+    </SourceFileSet>
+  </BuildConfiguration>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>

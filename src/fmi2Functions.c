@@ -119,17 +119,6 @@
 #define MASK_fmi2GetBooleanStatus        MASK_fmi2GetStatus
 #define MASK_fmi2GetStringStatus         MASK_fmi2GetStatus
 
-// ---------------------------------------------------------------------------
-// Private helpers used below to validate function arguments
-// ---------------------------------------------------------------------------
-
-static fmi2Status unsupportedFunction(fmi2Component c, const char *fName, int statesExpected) {
-    ModelInstance *comp = (ModelInstance *)c;
-    if (invalidState(comp, fName, statesExpected))
-        return fmi2Error;
-	logError(comp, "%s: Function not implemented.", fName);
-    return fmi2Error;
-}
 
 // ---------------------------------------------------------------------------
 // FMI functions
@@ -145,12 +134,14 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
 		(loggerType)functions->logger,
 		(allocateMemoryType)functions->allocateMemory,
 		(freeMemoryType)functions->freeMemory,
+        NULL,
 		functions->componentEnvironment,
 		instanceName,
 		fmuGUID,
 		fmuResourceLocation,
 		loggingOn,
-		fmuType
+		fmuType,
+        false
 	);
 }
 
@@ -560,7 +551,9 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
         return fmi2Error;
     }
 
-    return doStep(comp, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize);
+    int earlyReturn;
+    
+    return doStep(comp, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &earlyReturn);
 }
 
 /* Inquire slave status */

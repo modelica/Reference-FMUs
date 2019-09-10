@@ -255,12 +255,14 @@ fmiComponent fmiInstantiateSlave(fmiString  instanceName, fmiString GUID,
 		(loggerType)functions.logger,
 		(allocateMemoryType)functions.allocateMemory,
 		(freeMemoryType)functions.freeMemory,
+        NULL,
 		NULL,
 		instanceName,
 		GUID,
 		fmuLocation,
 		loggingOn,
-		CoSimulation);
+		CoSimulation,
+        false);
 }
 
 fmiStatus fmiInitializeSlave(fmiComponent c, fmiReal tStart, fmiBoolean StopTimeDefined, fmiReal tStop) {
@@ -325,7 +327,8 @@ fmiStatus fmiCancelStep(fmiComponent c) {
 
 fmiStatus fmiDoStep(fmiComponent c, fmiReal currentCommunicationPoint, fmiReal communicationStepSize, fmiBoolean newStep) {
     ModelInstance* comp = (ModelInstance *)c;
-    return doStep(comp, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize);
+    int earlyReturn;
+    return doStep(comp, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &earlyReturn);
 }
 
 static fmiStatus getStatus(char* fname, fmiComponent c, const fmiStatusKind s) {
@@ -386,12 +389,14 @@ fmiComponent fmiInstantiateModel(fmiString instanceName, fmiString GUID,  fmiCal
 		(loggerType)functions.logger,
 		(allocateMemoryType)functions.allocateMemory,
 		(freeMemoryType)functions.freeMemory,
+        NULL,
 		NULL,
 		instanceName,
 		GUID,
 		NULL,
 		loggingOn,
-		ModelExchange);
+		ModelExchange,
+        false);
 }
 
 fmiStatus fmiInitialize(fmiComponent c, fmiBoolean toleranceControlled, fmiReal relativeTolerance, fmiEventInfo* eventInfo) {

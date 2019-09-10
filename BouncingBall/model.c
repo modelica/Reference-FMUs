@@ -89,10 +89,10 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
 
 void eventUpdate(ModelInstance *comp) {
 
-    if (M(h) <= 0) {
+    if (M(h) <= 0 && M(v) < 0) {
 
         M(h) = 0;
-        M(v) = fabs(M(v) * M(e));
+        M(v) = -M(v) * M(e);
 
         if (M(v) < V_MIN) {
             // stop bouncing

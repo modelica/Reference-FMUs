@@ -1,27 +1,18 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <fmiModelDescription fmiVersion="3.0-alpha.2" modelName="Dahlquist" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f000}" numberOfEventIndicators="0">
 
-  <ModelExchange modelIdentifier="Dahlquist">
-    <BuildConfiguration>
-      <SourceFileSet language="C99">
-        <SourceFile name="fmi3Functions.c"/>
-        <SourceFile name="model.c"/>
-        <SourceFile name="slave.c"/>
-        <PreprocessorDefinition name="FMI_VERSION" value="3"/>
-      </SourceFileSet>
-    </BuildConfiguration>
-  </ModelExchange>
+  <ModelExchange modelIdentifier="Dahlquist"/>
 
-  <CoSimulation modelIdentifier="Dahlquist" canHandleVariableCommunicationStepSize="true">
-    <BuildConfiguration>
-      <SourceFileSet language="C99">
-        <SourceFile name="fmi3Functions.c"/>
-        <SourceFile name="model.c"/>
-        <SourceFile name="slave.c"/>
-        <PreprocessorDefinition name="FMI_VERSION" value="3"/>
-      </SourceFileSet>
-    </BuildConfiguration>
-  </CoSimulation>
+  <CoSimulation modelIdentifier="Dahlquist" canHandleVariableCommunicationStepSize="true"/>
+
+  <BuildConfiguration modelIdentifier="Dahlquist">
+    <SourceFileSet language="C99">
+      <SourceFile name="fmi3Functions.c"/>
+      <SourceFile name="model.c"/>
+      <SourceFile name="slave.c"/>
+      <PreprocessorDefinition name="FMI_VERSION" value="3"/>
+    </SourceFileSet>
+  </BuildConfiguration>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>

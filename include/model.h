@@ -9,6 +9,7 @@
 
 #include <stddef.h>  // for size_t
 #include <stdbool.h> // for bool
+#include <stdint.h>
 
 #include "config.h"
 
@@ -71,6 +72,9 @@ typedef void* (*allocateMemoryType)(void *componentEnvironment, size_t nobj, siz
 typedef void  (*freeMemoryType)    (void *componentEnvironment, void *obj);
 #endif
 
+typedef Status (*intermediateUpdateType) (void *componentEnvironment, void *intermediateUpdateInfo);
+                                                      
+
 typedef struct {
     
     double time;
@@ -82,6 +86,7 @@ typedef struct {
 	loggerType logger;
 	allocateMemoryType allocateMemory;
 	freeMemoryType freeMemory;
+    intermediateUpdateType intermediateUpdate;
 
     bool logEvents;
     bool logErrors;
@@ -96,6 +101,7 @@ typedef struct {
     bool valuesOfContinuousStatesChanged;
     bool nextEventTimeDefined;
     double nextEventTime;
+	bool clocksTicked;
     
     bool isDirtyValues;
     bool isNewEventIteration;
@@ -106,34 +112,44 @@ typedef struct {
 	double *z;
 	double *prez;
     
+    // hybrid co-simulation
+    bool returnEarly;
+    
 } ModelInstance;
 
 ModelInstance *createModelInstance(
 	loggerType logger,
 	allocateMemoryType allocateMemory,
 	freeMemoryType freeMemory,
+    intermediateUpdateType intermediateUpdate,
 	void *componentEnvironment,
 	const char *instanceName,
 	const char *GUID,
 	const char *resourceLocation,
 	bool loggingOn,
-	InterfaceType interfaceType);
+    InterfaceType interfaceType,
+    bool returnEarly);
 void freeModelInstance(ModelInstance *comp);
 
 void setStartValues(ModelInstance *comp);
 void calculateValues(ModelInstance *comp);
     
-Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index);
-Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index);
-Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *index);
-Status getString(ModelInstance* comp, ValueReference vr, const char **value, size_t *index);
-Status getBinary(ModelInstance* comp, ValueReference vr, size_t size[], const char *value[], size_t *index);
+Status getFloat64 (ModelInstance* comp, ValueReference vr, double      *value, size_t *index);
+Status getInt32   (ModelInstance* comp, ValueReference vr, int32_t     *value, size_t *index);
+Status getUInt16  (ModelInstance* comp, ValueReference vr, uint16_t    *value, size_t *index);
+Status getBoolean (ModelInstance* comp, ValueReference vr, bool        *value, size_t *index);
+Status getString  (ModelInstance* comp, ValueReference vr, const char **value, size_t *index);
+Status getBinary  (ModelInstance* comp, ValueReference vr, size_t size[], const char *value[], size_t *index);
 
-Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index);
-Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t *index);
-Status setBoolean(ModelInstance* comp, ValueReference vr, const bool *value, size_t *index);
-Status setString(ModelInstance* comp, ValueReference vr, const char *const *value, size_t *index);
-Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], const char *const value[], size_t *index);
+Status setFloat64 (ModelInstance* comp, ValueReference vr, const double      *value, size_t *index);
+Status setUInt16  (ModelInstance* comp, ValueReference vr, const uint16_t    *value, size_t *index);
+Status setInt32   (ModelInstance* comp, ValueReference vr, const int32_t     *value, size_t *index);
+Status setBoolean (ModelInstance* comp, ValueReference vr, const bool        *value, size_t *index);
+Status setString  (ModelInstance* comp, ValueReference vr, const char *const *value, size_t *index);
+Status setBinary  (ModelInstance* comp, ValueReference vr, const size_t size[], const char *const value[], size_t *index);
+
+Status activateClock(ModelInstance* comp, ValueReference vr);
+Status getClock(ModelInstance* comp, ValueReference vr, int* value);
 
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx);
 void setContinuousStates(ModelInstance *comp, const double x[], size_t nx);
@@ -141,6 +157,7 @@ void getDerivatives(ModelInstance *comp, double dx[], size_t nx);
 Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative);
 void getEventIndicators(ModelInstance *comp, double z[], size_t nz);
 void eventUpdate(ModelInstance *comp);
+//void updateEventTime(ModelInstance *comp);
 
 void *allocateMemory(ModelInstance *comp, size_t num, size_t size);
 void freeMemory(ModelInstance *comp, void *obj);

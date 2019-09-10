@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<fmiModelDescription fmiVersion="3.0-alpha.2" modelName="Clocks" instantiationToken="{}">
+
+  <CoSimulation modelIdentifier="Clocks"/>
+
+  <LogCategories>
+    <Category name="logEvents" description="Log events"/>
+    <Category name="logStatusError" description="Log error messages"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="1"/>
+
+  <ModelVariables>
+    <Clock name="c1" valueReference="0" causality="input"  variability="clock" clockType="synchronousTime" periodic="true"  start="0"/>
+    <Clock name="c2" valueReference="1" causality="input"  variability="clock" clockType="synchronousTime" periodic="false" start="0"/>
+    <Clock name="c3" valueReference="2" causality="output" variability="clock" clockType="synchronousTime" periodic="true"/>
+    <Clock name="c4" valueReference="3" causality="output" variability="clock" clockType="synchronousTime" periodic="false"/>
+    <Int32 name="c1Ticks"    valueReference="5" causality="output"/>
+    <Int32 name="c2Ticks"    valueReference="6" causality="output"/>
+    <Int32 name="totalTicks" valueReference="7" causality="output"/>
+  </ModelVariables>
+
+  <ModelStructure>
+    <Output valueReference="5"/>
+    <Output valueReference="6"/>
+    <Output valueReference="7"/>
+  </ModelStructure>
+
+</fmiModelDescription>
