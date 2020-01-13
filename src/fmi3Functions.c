@@ -132,7 +132,7 @@ static fmi3Status unsupportedFunction(fmi3Instance instance, const char *fName, 
     ModelInstance *comp = (ModelInstance *)instance;
     if (invalidState(comp, fName, statesExpected))
         return fmi3Error;
-	logError(comp, "%s: Function not implemented.", fName);
+    logError(comp, "%s: Function not implemented.", fName);
     return fmi3Error;
 }
 
@@ -145,12 +145,12 @@ const char* fmi3GetVersion() {
 }
 
 fmi3Status fmi3SetDebugLogging(fmi3Instance instance, fmi3Boolean loggingOn, size_t nCategories, const fmi3String categories[]) {
-    
+
     ModelInstance *comp = (ModelInstance *)instance;
-    
+
     if (invalidState(comp, "fmi3SetDebugLogging", MASK_fmi3SetDebugLogging))
         return fmi3Error;
-    
+
     return setDebugLogging(comp, loggingOn, nCategories, categories);
 }
 
@@ -162,34 +162,34 @@ fmi3Instance fmi3Instantiate(fmi3String        instanceName,
                              fmi3Boolean       visible,
                              fmi3Boolean       loggingOn,
                              const fmi3CoSimulationConfiguration* fmuCoSimulationConfiguration) {
-    
+
     const bool returnEarly = fmuCoSimulationConfiguration &&
         fmuCoSimulationConfiguration->coSimulationMode == fmi3ModeHybridCoSimulation;
 
-	return createModelInstance(
-		(loggerType)functions->logMessage,
-		(allocateMemoryType)functions->allocateMemory,
-		(freeMemoryType)functions->freeMemory,
+    return createModelInstance(
+        (loggerType)functions->logMessage,
+        (allocateMemoryType)functions->allocateMemory,
+        (freeMemoryType)functions->freeMemory,
         (intermediateUpdateType)functions->intermediateUpdate,
-		functions->instanceEnvironment,
-		instanceName,
-		fmuInstantiationToken,
-		fmuResourceLocation,
-		loggingOn,
-		fmuType,
+        functions->instanceEnvironment,
+        instanceName,
+        fmuInstantiationToken,
+        fmuResourceLocation,
+        loggingOn,
+        fmuType,
         returnEarly
     );
 }
 
 void fmi3FreeInstance(fmi3Instance instance) {
-    
+
     ModelInstance *comp = (ModelInstance *)instance;
-    
+
     if (!comp) return;
-    
+
     if (invalidState(comp, "fmi3FreeInstance", MASK_fmi3FreeInstance))
         return;
-    
+
     freeModelInstance(comp);
 }
 
@@ -216,9 +216,9 @@ fmi3Status fmi3EnterInitializationMode(fmi3Instance instance) {
 }
 
 fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
-    
+
     ModelInstance *comp = (ModelInstance *)instance;
-    
+
     if (invalidState(comp, "fmi3ExitInitializationMode", MASK_fmi3ExitInitializationMode))
         return fmi3Error;
 
@@ -235,7 +235,7 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
     } else {
         comp->state = modelStepComplete;
     }
-    
+
 #if NUMBER_OF_EVENT_INDICATORS > 0
     // initialize event indicators
     getEventIndicators(comp, comp->prez, NUMBER_OF_EVENT_INDICATORS);
@@ -467,9 +467,9 @@ fmi3Status fmi3SetInt16(fmi3Instance instance,
 fmi3Status fmi3SetUInt16(fmi3Instance instance,
                          const fmi3ValueReference vr[], size_t nvr,
                          const fmi3UInt16 value[], size_t nValues) {
-    
+
     ModelInstance *comp = (ModelInstance *)instance;
-    
+
     SET_VARIABLES(UInt16)
 }
 
@@ -592,17 +592,17 @@ fmi3Status fmi3DeSerializeFMUState (fmi3Instance instance, const fmi3Byte serial
 }
 
 fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance, const fmi3ValueReference unknowns[], size_t nUnknowns, const fmi3ValueReference knowns[], size_t nKnowns, const fmi3Float64 deltaKnowns[], size_t nDeltaKnowns, fmi3Float64 deltaUnknowns[], size_t nDeltaOfUnknowns) {
-    
+
     if (invalidState(instance, "fmi3GetDirectionalDerivative", MASK_fmi3GetDirectionalDerivative))
         return fmi3Error;
-    
+
     // TODO: check value references
     // TODO: assert nUnknowns == nDeltaOfUnknowns
     // TODO: assert nKnowns == nDeltaKnowns
 
     ModelInstance *comp = (ModelInstance *)instance;
     Status status = OK;
-    
+
     for (int i = 0; i < nUnknowns; i++) {
         deltaUnknowns[i] = 0;
         for (int j = 0; j < nKnowns; j++) {
@@ -613,7 +613,7 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance, const fmi3ValueRe
             deltaUnknowns[i] += partialDerivative * deltaKnowns[j];
         }
     }
-    
+
     return fmi3OK;
 }
 
@@ -632,9 +632,9 @@ fmi3Status fmi3ExitConfigurationMode(fmi3Instance instance) {
 fmi3Status fmi3SetClock(fmi3Instance instance,
                         const fmi3ValueReference valueReferences[], size_t nValueReferences,
                         const fmi3Boolean value[], const fmi3Boolean *subactive) {
-    
+
     Status status = OK;
-    
+
     for (size_t i = 0; i < nValueReferences; i++) {
         if (value[i]) {
             Status s = activateClock(instance,  valueReferences[i]);
@@ -642,7 +642,7 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
             if (status > Warning) return status;
         }
     }
-    
+
     return status;
 }
 
@@ -650,15 +650,15 @@ fmi3Status fmi3GetClock(fmi3Instance instance,
                         const fmi3ValueReference valueReferences[], size_t nValueReferences,
                         fmi3Boolean value[]) {
 
-	Status status = OK;
+    Status status = OK;
 
-	for (size_t i = 0; i < nValueReferences; i++) {
-		Status s = getClock(instance, valueReferences[i], &value[i]);
-		status = max(status, s);
-		if (status > Warning) return status;
-	}
+    for (size_t i = 0; i < nValueReferences; i++) {
+        Status s = getClock(instance, valueReferences[i], &value[i]);
+        status = max(status, s);
+        if (status > Warning) return status;
+    }
 
-	return status;
+    return status;
 }
 
 fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
@@ -691,16 +691,16 @@ fmi3Status fmi3NewDiscreteStates(fmi3Instance instance, fmi3EventInfo *eventInfo
 
     if (invalidState(comp, "fmi3NewDiscreteStates", MASK_fmi3NewDiscreteStates))
         return fmi3Error;
-    
+
     comp->newDiscreteStatesNeeded = fmi3False;
     comp->terminateSimulation = fmi3False;
     comp->nominalsOfContinuousStatesChanged = fmi3False;
     comp->valuesOfContinuousStatesChanged = fmi3False;
-    
+
     eventUpdate(comp);
-    
+
     comp->isNewEventIteration = false;
-    
+
     // copy internal eventInfo of component to output eventInfo
     eventInfo->newDiscreteStatesNeeded           = comp->newDiscreteStatesNeeded;
     eventInfo->terminateSimulation               = comp->terminateSimulation;
@@ -708,7 +708,7 @@ fmi3Status fmi3NewDiscreteStates(fmi3Instance instance, fmi3EventInfo *eventInfo
     eventInfo->valuesOfContinuousStatesChanged   = comp->valuesOfContinuousStatesChanged;
     eventInfo->nextEventTimeDefined              = comp->nextEventTimeDefined;
     eventInfo->nextEventTime                     = comp->nextEventTime;
-    
+
     return fmi3OK;
 }
 
@@ -748,53 +748,53 @@ fmi3Status fmi3SetTime(fmi3Instance instance, fmi3Float64 time) {
 }
 
 fmi3Status fmi3SetContinuousStates(fmi3Instance instance, const fmi3Float64 x[], size_t nx){
-    
+
     ModelInstance *comp = (ModelInstance *)instance;
-    
+
     if (invalidState(comp, "fmi3SetContinuousStates", MASK_fmi3SetContinuousStates))
         return fmi3Error;
-    
+
     if (invalidNumber(comp, "fmi3SetContinuousStates", "nx", nx, NUMBER_OF_STATES))
         return fmi3Error;
-    
+
     if (nullPointer(comp, "fmi3SetContinuousStates", "x[]", x))
         return fmi3Error;
-    
+
     setContinuousStates(comp, x, nx);
-    
+
     return fmi3OK;
 }
 
 /* Evaluation of the model equations */
 fmi3Status fmi3GetDerivatives(fmi3Instance instance, fmi3Float64 derivatives[], size_t nx) {
-    
+
     ModelInstance* comp = (ModelInstance *)instance;
-    
+
     if (invalidState(comp, "fmi3GetDerivatives", MASK_fmi3GetDerivatives))
         return fmi3Error;
-    
+
     if (invalidNumber(comp, "fmi3GetDerivatives", "nx", nx, NUMBER_OF_STATES))
         return fmi3Error;
-    
+
     if (nullPointer(comp, "fmi3GetDerivatives", "derivatives[]", derivatives))
         return fmi3Error;
-    
+
     getDerivatives(comp, derivatives, nx);
-    
+
     return fmi3OK;
 }
 
 fmi3Status fmi3GetEventIndicators(fmi3Instance instance, fmi3Float64 eventIndicators[], size_t ni) {
-    
+
 #if NUMBER_OF_EVENT_INDICATORS > 0
     ModelInstance *comp = (ModelInstance *)instance;
-    
+
     if (invalidState(comp, "fmi3GetEventIndicators", MASK_fmi3GetEventIndicators))
         return fmi3Error;
-    
+
     if (invalidNumber(comp, "fmi3GetEventIndicators", "ni", ni, NUMBER_OF_EVENT_INDICATORS))
         return fmi3Error;
-    
+
     getEventIndicators(comp, eventIndicators, ni);
 #else
     if (ni > 0) return fmi3Error;
@@ -803,20 +803,20 @@ fmi3Status fmi3GetEventIndicators(fmi3Instance instance, fmi3Float64 eventIndica
 }
 
 fmi3Status fmi3GetContinuousStates(fmi3Instance instance, fmi3Float64 states[], size_t nx) {
-    
+
     ModelInstance *comp = (ModelInstance *)instance;
-    
+
     if (invalidState(comp, "fmi3GetContinuousStates", MASK_fmi3GetContinuousStates))
         return fmi3Error;
-    
+
     if (invalidNumber(comp, "fmi3GetContinuousStates", "nx", nx, NUMBER_OF_STATES))
         return fmi3Error;
-    
+
     if (nullPointer(comp, "fmi3GetContinuousStates", "states[]", states))
         return fmi3Error;
-    
+
     getContinuousStates(comp, states, nx);
-    
+
     return fmi3OK;
 }
 
@@ -877,11 +877,11 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
     ModelInstance *comp = (ModelInstance *)instance;
 
     if (communicationStepSize <= 0) {
-		logError(comp, "fmi3DoStep: communication step size must be > 0 but was %g.", communicationStepSize);
+        logError(comp, "fmi3DoStep: communication step size must be > 0 but was %g.", communicationStepSize);
         comp->state = modelError;
         return fmi3Error;
     }
-    
+
     return doStep(comp, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, earlyReturn);
 }
 
@@ -892,13 +892,13 @@ fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
 }
 
 fmi3Status fmi3DoEarlyReturn(fmi3Instance instance, fmi3Float64 earlyReturnTime) {
-    
+
     if (!instance) return fmi3Error;
 
     ModelInstance *comp = (ModelInstance *)instance;
-    
+
     comp->returnEarly = true;
-    
+
     return fmi3OK;
 }
 
