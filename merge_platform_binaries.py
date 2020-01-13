@@ -17,7 +17,7 @@ def merge(fmi_version, fmi_types):
 
         _, platforms, _ = next(os.walk(platforms_dir))
 
-        version_dir = os.path.join(repo_dir, 'fmus', fmi_version, fmi_type, platforms[0], 'Test-FMUs', test_fmus_version)
+        version_dir = os.path.join(repo_dir, 'fmus', fmi_version, fmi_type, platforms[0], 'Reference-FMUs', test_fmus_version)
 
         _, model_names, _ = next(os.walk(version_dir))
 
@@ -27,7 +27,7 @@ def merge(fmi_version, fmi_types):
 
             for platform in platforms:
 
-                platform_fmu = os.path.join(repo_dir, 'fmus', fmi_version, fmi_type, platform, 'Test-FMUs', test_fmus_version, model_name, model_name + '.fmu')
+                platform_fmu = os.path.join(repo_dir, 'fmus', fmi_version, fmi_type, platform, 'Reference-FMUs', test_fmus_version, model_name, model_name + '.fmu')
 
                 if not os.path.isfile(platform_fmu):
                     continue

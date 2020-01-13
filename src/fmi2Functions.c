@@ -1,6 +1,6 @@
 /****************************************************************
  *  Copyright (c) Dassault Systemes. All rights reserved.       *
- *  This file is part of the Test-FMUs. See LICENSE.txt in the  *
+ *  This file is part of the Reference-FMUs. See LICENSE.txt in the  *
  *  project root for license information.                       *
  ****************************************************************/
 

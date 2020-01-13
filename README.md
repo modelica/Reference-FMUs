@@ -1,12 +1,8 @@
-<p align="center">
-  <img src="logo.svg" alt="Test FMUs logo" width="300" height="115">
-</p>
-
-# Test FMUs
+# Reference FMUs
 
 [![Build Status](https://dev.azure.com/CATIA-Systems/Test-FMUs/_apis/build/status/CATIA-Systems.Test-FMUs?branchName=develop)](https://dev.azure.com/CATIA-Systems/Test-FMUs/_build/latest?definitionId=2&branchName=develop)
 
-A set of test models for development, testing and debugging of the [Functional Mock-up Interface](https://fmi-standard.org/).
+A set of hand-coded FMUs for development, testing and debugging of the [Functional Mock-up Interface](https://fmi-standard.org/).
 
 - [BouncingBall](BouncingBall) - a bouncing ball model with state events
 - [Dahlquist](Dahlquist) - Dahlquist test equation
@@ -57,8 +53,8 @@ The FMUs will be in the `dist` folder inside the selected build folder.
 
 ## License and Attribution
 
-Copyright &copy; 2019 Dassault Systemes.
+Copyright &copy; 2020 Modelica Association Project "FMI".
 All rights reserved.
 The code is released under the [2-Clause BSD License](LICENSE.txt).
-The Test FMUs are forked from the [FMU SDK](https://github.com/qtronic/fmusdk) by QTronic.
-The stethoscope icon in the logo by [srip](https://www.flaticon.com/authors/srip) is licensed [CC-BY 3.0](http://creativecommons.org/licenses/by/3.0/).
+
+The Reference FMUs are a fork of the [Test FMUs](https://github.com/CATIA-Systems/Test-FMUs) by Dassault Syst&egrave;mes, which is are a fork of the [FMU SDK](https://github.com/qtronic/fmusdk) by QTronic, both released under the 2-Clause BSD License.
