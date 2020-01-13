@@ -51,7 +51,7 @@ To build the FMUs you need [CMake](https://cmake.org/) and a supported [build to
 
 The FMUs will be in the `dist` folder inside the selected build folder.
 
-## License and Attribution
+## License and attribution
 
 Copyright &copy; 2020 Modelica Association Project "FMI".
 All rights reserved.
