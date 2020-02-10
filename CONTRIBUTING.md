@@ -98,6 +98,9 @@ See also: #456, #789
 Good pull requests - patches, improvements, new features - are a fantastic help.
 They should remain focused in scope and avoid containing unrelated commits.
 
+**IMPORTANT**: All contributors have to sign the [Corporate Contributor License Agreement (CCLA)](https://svn.fmi-standard.org/fmi/branches/public/FMI_CCLA_v1.0_2016_06_21.pdf).
+By submitting a patch, you agree to allow the project owner to license your work under the same [license](LICENSE.txt) as that used by the project.
+
 **Please ask first** before embarking on any significant pull request (e.g. implementing features, refactoring code, porting to a different language),
 otherwise you risk spending a lot of time working on something that the project's developers might not want to merge into the project.
 
@@ -146,5 +149,3 @@ Follow this process if you'd like your work considered for inclusion in the proj
 
 7. [Open a Pull Request](https://help.github.com/articles/using-pull-requests/)
     with a clear title and description.
-
-**IMPORTANT**: By submitting a patch, you agree to allow the project owner to license your work under the same [license](LICENSE.txt) as that used by the project.

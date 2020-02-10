@@ -5,7 +5,7 @@ FUNCTION(cat IN_FILE OUT_FILE)
   file(APPEND ${OUT_FILE} "${CONTENTS}")
 ENDFUNCTION()
 
-project (Test-FMUs)
+project (Reference-FMUs)
 
 set(FMI_VERSION 2 CACHE STRING "FMI Version")
 set_property(CACHE FMI_VERSION PROPERTY STRINGS 1 2 3)

@@ -82,10 +82,10 @@ typedef struct {
     InterfaceType type;
     const char *resourceLocation;
 
-	// callback functions
-	loggerType logger;
-	allocateMemoryType allocateMemory;
-	freeMemoryType freeMemory;
+    // callback functions
+    loggerType logger;
+    allocateMemoryType allocateMemory;
+    freeMemoryType freeMemory;
     intermediateUpdateType intermediateUpdate;
 
     bool logEvents;
@@ -101,16 +101,16 @@ typedef struct {
     bool valuesOfContinuousStatesChanged;
     bool nextEventTimeDefined;
     double nextEventTime;
-	bool clocksTicked;
+    bool clocksTicked;
     
     bool isDirtyValues;
     bool isNewEventIteration;
     
     ModelData *modelData;
 
-	// event indicators
-	double *z;
-	double *prez;
+    // event indicators
+    double *z;
+    double *prez;
     
     // hybrid co-simulation
     bool returnEarly;
@@ -118,15 +118,15 @@ typedef struct {
 } ModelInstance;
 
 ModelInstance *createModelInstance(
-	loggerType logger,
-	allocateMemoryType allocateMemory,
-	freeMemoryType freeMemory,
+    loggerType logger,
+    allocateMemoryType allocateMemory,
+    freeMemoryType freeMemory,
     intermediateUpdateType intermediateUpdate,
-	void *componentEnvironment,
-	const char *instanceName,
-	const char *GUID,
-	const char *resourceLocation,
-	bool loggingOn,
+    void *componentEnvironment,
+    const char *instanceName,
+    const char *GUID,
+    const char *resourceLocation,
+    bool loggingOn,
     InterfaceType interfaceType,
     bool returnEarly);
 void freeModelInstance(ModelInstance *comp);

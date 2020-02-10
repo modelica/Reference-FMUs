@@ -12,7 +12,7 @@ void setStartValues(ModelInstance *comp) {
 
 void calculateValues(ModelInstance *comp) {
     // do nothing
-	UNUSED(comp)
+    UNUSED(comp)
 }
 
 Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {

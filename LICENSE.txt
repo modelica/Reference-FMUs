@@ -1,6 +1,6 @@
-Copyright (c) 2019 Dassault Systemes. All rights reserved.
+Copyright (c) 2020 Modelica Association Project "FMI". All rights reserved.
 
-The Test FMUs are released under the 2-Clause BSD license:
+The Reference FMUs are released under the 2-Clause BSD license:
 
 --------------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,9 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 --------------------------------------------------------------------------------
 
-The Test FMUs are a fork of the FMU SDK (https://github.com/qtronic/fmusdk) by
-QTronic, released under the 2-Clause BSD License.
+The Reference FMUs are a fork of the Test FMUs (https://github.com/CATIA-Systems/Test-FMUs)
+by Dassault Systemes, which is are a fork of the FMU SDK (https://github.com/qtronic/fmusdk)
+by QTronic, both released under the 2-Clause BSD License.
 
-The FMI header files are copyright (c) 2008-2011 MODELISAR consortium, 2012-2018
+The FMI header files are copyright (c) 2008-2011 MODELISAR consortium, 2012-2020
 the Modelica Association Project "FMI" and released under the 2-Clause BSD License.

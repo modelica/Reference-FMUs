@@ -34,9 +34,9 @@ fmi3Clock outputClocks[N_OUTPUT_CLOCKS] = { fmi3ClockInactive };
 FILE *outputFile;
 
 fmi3Status recordVariables(fmi3Instance s) {
-	fmi3Status status = fmi3GetClock(s, outputClockVRs, N_OUTPUT_CLOCKS, outputClocks);
-	fprintf(outputFile, "%g,%d,%d,%d,%d\n", time, inputClocks[0], inputClocks[1], outputClocks[0], outputClocks[1]);
-	return status;
+    fmi3Status status = fmi3GetClock(s, outputClockVRs, N_OUTPUT_CLOCKS, outputClocks);
+    fprintf(outputFile, "%g,%d,%d,%d,%d\n", time, inputClocks[0], inputClocks[1], outputClocks[0], outputClocks[1]);
+    return status;
 }
 
 // Callback
@@ -69,10 +69,10 @@ static fmi3Float64 timeUntilNextEvent() {
 }
 
 //static bool anyTriggeredClockActive(fmi3Instance s) {
-//	const fmi3ValueReference triggeredClockVRs[N_TRIGGERED_CLOCKS] = { vr_c1, vr_c2 };
-//	fmi3Clock triggeredClocks[N_TRIGGERED_CLOCKS] = { fmi3ClockInactive };
-//	fmi3GetClock(s, triggeredClockVRs, N_TRIGGERED_CLOCKS, triggeredClocks);
-//	return triggeredClocks[0] || triggeredClocks[1];
+//    const fmi3ValueReference triggeredClockVRs[N_TRIGGERED_CLOCKS] = { vr_c1, vr_c2 };
+//    fmi3Clock triggeredClocks[N_TRIGGERED_CLOCKS] = { fmi3ClockInactive };
+//    fmi3GetClock(s, triggeredClockVRs, N_TRIGGERED_CLOCKS, triggeredClocks);
+//    return triggeredClocks[0] || triggeredClocks[1];
 //}
 
 int main(int argc, char* argv[]) {
@@ -91,15 +91,15 @@ int main(int argc, char* argv[]) {
     
     printf("Running Clocked Co-Simulation example... ");
 
-	outputFile = fopen("clocks_out.csv", "w");
+    outputFile = fopen("clocks_out.csv", "w");
 
-	if (!outputFile) {
-		puts("Failed to open output file.");
-		return EXIT_FAILURE;
-	}
+    if (!outputFile) {
+        puts("Failed to open output file.");
+        return EXIT_FAILURE;
+    }
 
-	// write the header of the CSV
-	fputs("time,c1,c2,c3,c4\n", outputFile);
+    // write the header of the CSV
+    fputs("time,c1,c2,c3,c4\n", outputFile);
 
     //////////////////////////
     // Initialization sub-phase
@@ -124,9 +124,9 @@ int main(int argc, char* argv[]) {
     }
 
     // Start and stop time
-	const fmi3Float64 stopTime = 10; // 1000e-3; // 1000 ms
+    const fmi3Float64 stopTime = 10; // 1000e-3; // 1000 ms
     // Communication constant step size
-	fmi3Float64 stepSize; // 500e-6; //  500 us
+    fmi3Float64 stepSize; // 500e-6; //  500 us
 
     // set all variable start values
 
@@ -169,17 +169,17 @@ int main(int argc, char* argv[]) {
         if (eventMode) {
 
             // event update
-			do {
-				CHECK_STATUS(fmi3NewDiscreteStates(s, &s_eventInfo))
-			} while (s_eventInfo.newDiscreteStatesNeeded);
+            do {
+                CHECK_STATUS(fmi3NewDiscreteStates(s, &s_eventInfo))
+            } while (s_eventInfo.newDiscreteStatesNeeded);
 
             CHECK_STATUS(fmi3EnterStepMode(s));
 
-			eventMode = false;
+            eventMode = false;
         }
         
         recordVariables(s);
-		
+        
         // Continuous mode (default mode)
         //fmi3Float64 tend = time + step;
         //fmi3Float64 t = tend * 2;
@@ -202,10 +202,10 @@ int main(int argc, char* argv[]) {
         CHECK_STATUS(fmi3GetClock(s, outputClockVRs, N_OUTPUT_CLOCKS, outputClocks));
 
         if (updateInfo.clocksTicked) {
-			// fmi3GetInterval(s, /*Intervals*/, ...);
+            // fmi3GetInterval(s, /*Intervals*/, ...);
         };
         
-		clockTick++;
+        clockTick++;
     };
 
     fmi3Status terminateStatus;

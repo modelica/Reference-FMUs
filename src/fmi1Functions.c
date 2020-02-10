@@ -1,8 +1,9 @@
-/****************************************************************
- *  Copyright (c) Dassault Systemes. All rights reserved.       *
- *  This file is part of the Test-FMUs. See LICENSE.txt in the  *
- *  project root for license information.                       *
- ****************************************************************/
+/**************************************************************
+ *  Copyright (c) Modelica Association Project "FMI".         *
+ *  All rights reserved.                                      *
+ *  This file is part of the Reference FMUs. See LICENSE.txt  *
+ *  in the project root for license information.              *
+ **************************************************************/
 
 #if FMI_VERSION != 1
 #error FMI_VERSION must be 1
@@ -67,12 +68,12 @@ const char* fmiGetVersion() {
 // ---------------------------------------------------------------------------
 
 fmiStatus fmiSetDebugLogging(fmiComponent c, fmiBoolean loggingOn) {
-    
+
     ModelInstance* comp = (ModelInstance *)c;
-    
+
     if (invalidState(comp, "fmiSetDebugLogging", not_modelError))
          return fmiError;
-    
+
     return setDebugLogging(comp, loggingOn, 0, NULL);
 }
 
@@ -250,18 +251,18 @@ fmiComponent fmiInstantiateSlave(fmiString  instanceName, fmiString GUID,
     fmiString fmuLocation, fmiString mimeType, fmiReal timeout, fmiBoolean visible,
     fmiBoolean interactive, fmiCallbackFunctions functions, fmiBoolean loggingOn) {
 
-	// ignoring arguments: mimeType, timeout, visible, interactive
-	return createModelInstance(
-		(loggerType)functions.logger,
-		(allocateMemoryType)functions.allocateMemory,
-		(freeMemoryType)functions.freeMemory,
+    // ignoring arguments: mimeType, timeout, visible, interactive
+    return createModelInstance(
+        (loggerType)functions.logger,
+        (allocateMemoryType)functions.allocateMemory,
+        (freeMemoryType)functions.freeMemory,
         NULL,
-		NULL,
-		instanceName,
-		GUID,
-		fmuLocation,
-		loggingOn,
-		CoSimulation,
+        NULL,
+        instanceName,
+        GUID,
+        fmuLocation,
+        loggingOn,
+        CoSimulation,
         false);
 }
 
@@ -283,20 +284,20 @@ fmiStatus fmiResetSlave(fmiComponent c) {
 }
 
 void fmiFreeSlaveInstance(fmiComponent c) {
-	ModelInstance *comp = (ModelInstance *)c;
-	freeModelInstance(comp);
+    ModelInstance *comp = (ModelInstance *)c;
+    freeModelInstance(comp);
 }
 
 fmiStatus fmiSetRealInputDerivatives(fmiComponent c, const fmiValueReference vr[], size_t nvr,
     const fmiInteger order[], const fmiReal value[]) {
-    
+
     ModelInstance* comp = (ModelInstance *)c;
-    
+
     if (invalidState(comp, "fmiSetRealInputDerivatives", modelInitialized))
          return fmiError;
-    
+
     logError(comp, "fmiSetRealInputDerivatives: This model cannot interpolate inputs: canInterpolateInputs=\"fmiFalse\"");
-    
+
     return fmiError;
 }
 
@@ -308,7 +309,7 @@ fmiStatus fmiGetRealOutputDerivatives(fmiComponent c, const fmiValueReference vr
          return fmiError;
 
     logError(comp, "fmiGetRealOutputDerivatives: This model cannot compute derivatives of outputs: MaxOutputDerivativeOrder=\"0\"");
-    
+
     return fmiError;
 }
 
@@ -385,31 +386,31 @@ const char* fmiGetModelTypesPlatform() {
 }
 
 fmiComponent fmiInstantiateModel(fmiString instanceName, fmiString GUID,  fmiCallbackFunctions functions, fmiBoolean loggingOn) {
-	return createModelInstance(
-		(loggerType)functions.logger,
-		(allocateMemoryType)functions.allocateMemory,
-		(freeMemoryType)functions.freeMemory,
+    return createModelInstance(
+        (loggerType)functions.logger,
+        (allocateMemoryType)functions.allocateMemory,
+        (freeMemoryType)functions.freeMemory,
         NULL,
-		NULL,
-		instanceName,
-		GUID,
-		NULL,
-		loggingOn,
-		ModelExchange,
+        NULL,
+        instanceName,
+        GUID,
+        NULL,
+        loggingOn,
+        ModelExchange,
         false);
 }
 
 fmiStatus fmiInitialize(fmiComponent c, fmiBoolean toleranceControlled, fmiReal relativeTolerance, fmiEventInfo* eventInfo) {
-	ModelInstance *comp = (ModelInstance *)c;
+    ModelInstance *comp = (ModelInstance *)c;
 
-	eventInfo->iterationConverged          = fmiTrue;
-	eventInfo->stateValueReferencesChanged = fmiFalse;
-	eventInfo->stateValuesChanged          = fmiFalse;
-	eventInfo->terminateSimulation         = fmiFalse;
-	eventInfo->upcomingTimeEvent           = comp->nextEventTimeDefined;
-	eventInfo->nextEventTime               = comp->nextEventTime;
+    eventInfo->iterationConverged          = fmiTrue;
+    eventInfo->stateValueReferencesChanged = fmiFalse;
+    eventInfo->stateValuesChanged          = fmiFalse;
+    eventInfo->terminateSimulation         = fmiFalse;
+    eventInfo->upcomingTimeEvent           = comp->nextEventTimeDefined;
+    eventInfo->nextEventTime               = comp->nextEventTime;
 
-	return init(c);
+    return init(c);
 }
 
 fmiStatus fmiSetTime(fmiComponent c, fmiReal time) {
@@ -580,8 +581,8 @@ fmiStatus fmiTerminate(fmiComponent c){
 }
 
 void fmiFreeModelInstance(fmiComponent c) {
-	ModelInstance *comp = (ModelInstance *)c;
-	freeModelInstance(comp);
+    ModelInstance *comp = (ModelInstance *)c;
+    freeModelInstance(comp);
 }
 
 #endif // Model Exchange 1.0

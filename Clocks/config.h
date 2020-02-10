@@ -19,13 +19,13 @@
 #define FIXED_SOLVER_STEP 1
 
 typedef enum {
-	vr_c1,
-	vr_c2,
-	vr_c3,
-	vr_c4,
-	vr_c1Ticks,
-	vr_c2Ticks,
-	vr_totalTicks,
+    vr_c1,
+    vr_c2,
+    vr_c3,
+    vr_c4,
+    vr_c1Ticks,
+    vr_c2Ticks,
+    vr_totalTicks,
 } ValueReference;
 
 typedef struct {
@@ -33,9 +33,9 @@ typedef struct {
     int c2;
     int c3;
     int c4;
-	int c1Ticks;
-	int c2Ticks;
-	int totalTicks;
+    int c1Ticks;
+    int c2Ticks;
+    int totalTicks;
 } ModelData;
 
 #endif /* config_h */
