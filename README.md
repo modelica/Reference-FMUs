@@ -1,6 +1,6 @@
 # Reference FMUs
 
-[![Build Status](https://dev.azure.com/CATIA-Systems/Test-FMUs/_apis/build/status/CATIA-Systems.Test-FMUs?branchName=develop)](https://dev.azure.com/CATIA-Systems/Test-FMUs/_build/latest?definitionId=2&branchName=develop)
+[![Build Status](https://dev.azure.com/CATIA-Systems/Reference-FMUs/_apis/build/status/modelica.Reference-FMUs?branchName=master)](https://dev.azure.com/CATIA-Systems/Reference-FMUs/_build/latest?definitionId=5&branchName=master)
 
 A set of hand-coded FMUs for development, testing and debugging of the [Functional Mock-up Interface](https://fmi-standard.org/).
 
