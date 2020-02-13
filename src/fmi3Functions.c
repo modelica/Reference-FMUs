@@ -163,9 +163,6 @@ fmi3Instance fmi3Instantiate(fmi3String        instanceName,
                              fmi3Boolean       loggingOn,
                              const fmi3CoSimulationConfiguration* fmuCoSimulationConfiguration) {
 
-    const bool returnEarly = fmuCoSimulationConfiguration &&
-        fmuCoSimulationConfiguration->coSimulationMode == fmi3ModeHybridCoSimulation;
-
     return createModelInstance(
         (loggerType)functions->logMessage,
         (allocateMemoryType)functions->allocateMemory,
@@ -177,7 +174,7 @@ fmi3Instance fmi3Instantiate(fmi3String        instanceName,
         fmuResourceLocation,
         loggingOn,
         fmuType,
-        returnEarly
+        fmuType == fmi3HybridCoSimulation
     );
 }
 
