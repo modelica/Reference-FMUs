@@ -73,6 +73,8 @@ for (i = 0; i < nx; i++) {
     assert(J[0][1] == -1);
     assert(J[1][0] ==  1);
     assert(J[1][1] == -3);
+    
+    // TODO: get Jacobian using fmi3GetAdjointDerivative()
 
     fmi3Terminate(m);
     fmi3FreeInstance(m);
