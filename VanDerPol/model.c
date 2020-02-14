@@ -98,13 +98,6 @@ Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueRe
     return OK;
 }
 
-Status getAdjointDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *adjointDerivative) {
-    
-    // TODO: add implementation
-    
-    return Error;
-}
-
 void eventUpdate(ModelInstance *comp) {
     comp->valuesOfContinuousStatesChanged   = false;
     comp->nominalsOfContinuousStatesChanged = false;

@@ -436,16 +436,6 @@ Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueRe
 }
 #endif
 
-#ifndef GET_PARTIAL_DERIVATIVE
-Status getAdjointDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *adjointDerivative) {
-    UNUSED(comp)
-    UNUSED(unknown)
-    UNUSED(known)
-    UNUSED(adjointDerivative)
-    return Error;
-}
-#endif
-
 Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
 
     UNUSED(t)  // TODO: check t == comp->time ?
