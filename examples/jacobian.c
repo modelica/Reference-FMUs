@@ -74,7 +74,16 @@ for (i = 0; i < nx; i++) {
     assert(J[1][0] ==  1);
     assert(J[1][1] == -3);
     
-    // TODO: get Jacobian using fmi3GetAdjointDerivative()
+    // tag::GetJacobianAdjoint[]
+
+    for (i = 0; i < nx; i++) {
+        // construct the Jacobian matrix column wise
+        fmi3GetAdjointDerivative(m, &vr_dx[i], 1, vr_x, nx, &dk, 1, &J[i][0], nx);
+    }
+    
+    // TODO: add assertions
+    
+    // end::GetJacobianAdjoint[]
 
     fmi3Terminate(m);
     fmi3FreeInstance(m);
