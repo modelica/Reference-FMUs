@@ -34,8 +34,7 @@ ModelInstance *createModelInstance(
     if (!cbLogger) {
         return NULL;
     }
-
-    if (!cbAllocateMemory || !cbFreeMemory) {
+	if (!cbAllocateMemory || !cbFreeMemory) {
         cbLogger(componentEnvironment, instanceName, Error, "error", "Missing callback function.");
         return NULL;
     }
@@ -403,6 +402,15 @@ Status getClock(ModelInstance* comp, ValueReference vr, int* value) {
     UNUSED(vr)
     UNUSED(value)
     return Error;
+}
+#endif
+
+#ifndef ACTIVATEMODELPARTITION
+Status ActivateModelPartition(fmi3Instance instance, fmi3ValueReference clockReference, fmi3Float64 activationTime) {
+	UNUSED(instance)
+	UNUSED(clockReference)
+	UNUSED(activationTime)
+	return Error;
 }
 #endif
 

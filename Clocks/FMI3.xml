@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <fmiModelDescription fmiVersion="3.0-alpha.2" modelName="Clocks" instantiationToken="{}">
 
-  <CoSimulation modelIdentifier="Clocks"/>
+  <CoSimulation modelIdentifier="Clocks" providesScheduledExecutionSimulation = "true"/>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>
@@ -11,19 +11,29 @@
   <DefaultExperiment startTime="0" stopTime="10" stepSize="1"/>
 
   <ModelVariables>
-    <Clock name="c1" valueReference="0" causality="input"  variability="clock" clockType="synchronousTime" periodic="true"  start="0"/>
-    <Clock name="c2" valueReference="1" causality="input"  variability="clock" clockType="synchronousTime" periodic="false" start="0"/>
-    <Clock name="c3" valueReference="2" causality="output" variability="clock" clockType="synchronousTime" periodic="true"/>
-    <Clock name="c4" valueReference="3" causality="output" variability="clock" clockType="synchronousTime" periodic="false"/>
-    <Int32 name="c1Ticks"    valueReference="5" causality="output"/>
-    <Int32 name="c2Ticks"    valueReference="6" causality="output"/>
-    <Int32 name="totalTicks" valueReference="7" causality="output"/>
+    <!-- All clocks have a value reference > 1000 -->
+    <Clock name="c1" valueReference="1001"                       causality="input"  variability="clock" clockType="communicationPoint" priority=0 periodic="true"  start="0"/>
+    <Clock name="c2" valueReference="1002"                       causality="input"  variability="clock" clockType="communicationPoint" priority=1 periodic="false" start="0"/>
+    <Clock name="c3" valueReference="1003" clockReference="1004" causality="input"  variability="clock" clockType="communicationPoint" priority=2 periodic="false"/>
+    <Clock name="c4" valueReference="1004"                       causality="output" variability="clock" clockType="communicationPoint" priority=2 periodic="false"/>
+    <Clock name="c5" valueReference="1005"                       causality="output" variability="clock" clockType="communicationPoint" priority=2 periodic="false"/>
+
+
+    <!-- All other variables have a value reference > 2000 -->
+    <Int32 name="c1Ticks"    clockReference="1001" valueReference="2001" causality="output"/>
+    <Int32 name="c2Ticks"    clockReference="1002" valueReference="2002" causality="output"/>
+    <Int32 name="c3Ticks"    clockReference="1003" valueReference="2003" causality="output"/>
+    <Int32 name="totalInTicks" clockReference="1001" valueReference="2004" causality="output"/>
+
+    <Int32 name="boost_c2" clockReference="1002" valueReference="2012" causality="input"/>
+    <Int32 name="boost_c3" clockReference="1003" valueReference="2013" causality="input"/>
   </ModelVariables>
 
   <ModelStructure>
-    <Output valueReference="5"/>
-    <Output valueReference="6"/>
-    <Output valueReference="7"/>
+    <Output valueReference="2001"/>
+    <Output valueReference="2002"/>
+    <Output valueReference="2003"/>
+    <Output valueReference="2004"/>
   </ModelStructure>
 
 </fmiModelDescription>

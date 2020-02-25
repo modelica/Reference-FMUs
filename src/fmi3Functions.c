@@ -885,7 +885,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
                                       fmi3ValueReference clockReference,
                                       fmi3Float64 activationTime) {
-    NOT_IMPLEMENTED
+	return ActivateModelPartition(instance, clockReference, activationTime);
 }
 
 fmi3Status fmi3DoEarlyReturn(fmi3Instance instance, fmi3Float64 earlyReturnTime) {
