@@ -82,16 +82,10 @@ void eventUpdate(ModelInstance* comp) {
 void calculateValues(ModelInstance *comp) {
 	// Just to satisfy the framework. Never used here
 }
-void mp1_run(ModelInstance* comp) {
+void mp1_run(ModelInstance* comp, fmi3Float64 time) {
 
-	int time = comp->time;
 	printf("mp1_run: time=%d, comp->time=%f\n", time, comp->time);
 
-	if (time != comp->time) {
-		logError(comp, "Time must be a multiple of 1.");
-		comp->terminateSimulation = true;
-		return;
-	}
 	// TODO: call lockPreemption()
 	// update the counters
 	M(c1Ticks)++;
@@ -109,7 +103,7 @@ void mp1_run(ModelInstance* comp) {
 		
 		fmi3IntermediateUpdateInfo updateInfo = { 0 };
 
-		updateInfo.intermediateUpdateTime         = comp->time;
+		updateInfo.intermediateUpdateTime         = time;
 		updateInfo.eventOccurred                  = fmi3False;
 		updateInfo.clocksTicked                   = fmi3True;
 		updateInfo.intermediateVariableSetAllowed = fmi3False;
@@ -123,14 +117,12 @@ void mp1_run(ModelInstance* comp) {
 	}
 }
 
-void mp2_run(ModelInstance *comp) {
+void mp2_run(ModelInstance *comp, fmi3Float64 time) {
     
-    int time = comp->time;
+   
 	printf("mp2_run: time=%d, comp->time=%f\n", time, comp->time);
 
-    if (time != comp->time) {
-        logError(comp, "Time must be a multiple of 1.");
-    }
+    
     // TODO: lockPreemption()
 
     M(c2Ticks)++;
@@ -142,14 +134,11 @@ void mp2_run(ModelInstance *comp) {
 
 // This is the dependent part of the model
 // it is triggered as soon as output clock c4 is activated
-void mp3_run(ModelInstance* comp) {
+void mp3_run(ModelInstance* comp, fmi3Float64 time) {
 
-	int time = comp->time;
+	
 	printf("mp3_run: time=%d, comp->time=%f\n", time, comp->time);
 
-	if (time != comp->time) {
-		logError(comp, "Time must be a multiple of 1.");
-	}
 	// TODO: lockPreemption()
 
 	M(c3Ticks)++;
@@ -164,17 +153,19 @@ void mp3_run(ModelInstance* comp) {
 // The model partition is identified by its clockReference
 fmi3Status  ActivateModelPartition(fmi3Instance instance, fmi3ValueReference clockReference, fmi3Float64 activationTime) {
 	ModelInstance* comp = instance;
+	
+	// IZA: Why add it to comp? Should be added as argument to mp<n>_run!
 	comp->time = activationTime;
 	printf("ActivateModelPartition: comp->time=%f clockReference=%d\n", comp->time, clockReference);
 	switch (clockReference) {
 	case vr_c1:
-		mp1_run(comp);
+		mp1_run(comp, activationTime);
 		break;
 	case vr_c2:
-		mp2_run(comp);
+		mp2_run(comp, activationTime);
 		break;
 	case vr_c3:
-		mp3_run(comp);
+		mp3_run(comp, activationTime);
 		break;
 	default:
 		return fmi3Error;
