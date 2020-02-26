@@ -173,7 +173,6 @@ int main(int argc, char* argv[]) {
         .intermediateVariableGetRequired         = fmi3False,
         .intermediateInternalVariableGetRequired = fmi3False,
         .intermediateVariableSetRequired         = fmi3False,
-        .coSimulationMode                        = fmi3ModeScheduledExecutionSimulation
     };
 
     // Instantiate slave
