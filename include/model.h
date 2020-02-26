@@ -150,6 +150,7 @@ Status setBinary  (ModelInstance* comp, ValueReference vr, const size_t size[], 
 
 Status activateClock(ModelInstance* comp, ValueReference vr);
 Status getClock(ModelInstance* comp, ValueReference vr, int* value);
+Status activateModelPartition(ModelInstance* comp, ValueReference clockReference, double activationTime);
 
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx);
 void setContinuousStates(ModelInstance *comp, const double x[], size_t nx);

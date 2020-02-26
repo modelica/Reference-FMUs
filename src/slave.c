@@ -405,8 +405,8 @@ Status getClock(ModelInstance* comp, ValueReference vr, int* value) {
 }
 #endif
 
-#ifndef ACTIVATEMODELPARTITION
-Status ActivateModelPartition(fmi3Instance instance, fmi3ValueReference clockReference, fmi3Float64 activationTime) {
+#ifndef ACTIVATE_MODEL_PARTITION
+Status activateModelPartition(fmi3Instance instance, fmi3ValueReference clockReference, fmi3Float64 activationTime) {
 	UNUSED(instance)
 	UNUSED(clockReference)
 	UNUSED(activationTime)

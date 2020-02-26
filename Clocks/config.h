@@ -32,8 +32,7 @@ typedef enum {
 #define SET_INT32
 #define GET_INT32
 #define GET_CLOCK
-#define ACTIVATEMODELPARTITION
-
+#define ACTIVATE_MODEL_PARTITION
 
 #define FIXED_SOLVER_STEP 1
 

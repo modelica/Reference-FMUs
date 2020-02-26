@@ -2,6 +2,7 @@
 #include "model.h"
 
 #include <math.h>
+#include <stdio.h> // for printf()
 #include <stdlib.h>
 #include "fmi3Functions.h"
 
@@ -57,6 +58,7 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int* value, size_t
 		return Error;
 	}
 }
+
 Status getInt32(ModelInstance* comp, ValueReference vr, int* value, size_t* index) {
 	switch (vr) {
 	case vr_c1Ticks:
@@ -79,12 +81,14 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int* value, size_t* inde
 void eventUpdate(ModelInstance* comp) {
 	// Just to satisfy the framework. Never used here
 }
+
 void calculateValues(ModelInstance *comp) {
 	// Just to satisfy the framework. Never used here
 }
-void mp1_run(ModelInstance* comp, fmi3Float64 time) {
 
-	printf("mp1_run: time=%d, comp->time=%f\n", time, comp->time);
+void mp1_run(ModelInstance* comp, double time) {
+
+	printf("mp1_run: time=%g, comp->time=%g\n", time, comp->time);
 
 	// TODO: call lockPreemption()
 	// update the counters
@@ -92,12 +96,13 @@ void mp1_run(ModelInstance* comp, fmi3Float64 time) {
 	M(totalInTicks)++;
 
 	// set output clocks
-	if (M(c4) == fmi3False) M(c4) = M(totalInTicks) == 5;   // This triggers clock3
-	if (M(c5) == fmi3False) M(c5) = time % 4 == 0;
+	if (M(c4) == 0) M(c4) = M(totalInTicks) == 5;   // This triggers clock3
+	if (M(c5) == 0) M(c5) = fmod(time, 4) == 0;
 
 	printf("mp1_run: Total count input clock ticks=%d\n", M(totalInTicks));
 
 	comp->clocksTicked = M(c4) || M(c5);
+
 	// TODO: call unlockPreemption()
 	if (comp->clocksTicked) {
 		
@@ -117,10 +122,10 @@ void mp1_run(ModelInstance* comp, fmi3Float64 time) {
 	}
 }
 
-void mp2_run(ModelInstance *comp, fmi3Float64 time) {
+void mp2_run(ModelInstance *comp, double time) {
     
    
-	printf("mp2_run: time=%d, comp->time=%f\n", time, comp->time);
+	printf("mp2_run: time=%g, comp->time=%g\n", time, comp->time);
 
     
     // TODO: lockPreemption()
@@ -134,10 +139,10 @@ void mp2_run(ModelInstance *comp, fmi3Float64 time) {
 
 // This is the dependent part of the model
 // it is triggered as soon as output clock c4 is activated
-void mp3_run(ModelInstance* comp, fmi3Float64 time) {
+void mp3_run(ModelInstance* comp, double time) {
 
 	
-	printf("mp3_run: time=%d, comp->time=%f\n", time, comp->time);
+	printf("mp3_run: time=%g, comp->time=%g\n", time, comp->time);
 
 	// TODO: lockPreemption()
 
@@ -151,12 +156,13 @@ void mp3_run(ModelInstance* comp, fmi3Float64 time) {
 
 // This function is called by the master for every model partition that is supposed to run
 // The model partition is identified by its clockReference
-fmi3Status  ActivateModelPartition(fmi3Instance instance, fmi3ValueReference clockReference, fmi3Float64 activationTime) {
-	ModelInstance* comp = instance;
+Status activateModelPartition(ModelInstance* comp, ValueReference clockReference, double activationTime) {
 	
 	// IZA: Why add it to comp? Should be added as argument to mp<n>_run!
 	comp->time = activationTime;
+	
 	printf("ActivateModelPartition: comp->time=%f clockReference=%d\n", comp->time, clockReference);
+	
 	switch (clockReference) {
 	case vr_c1:
 		mp1_run(comp, activationTime);
@@ -168,9 +174,10 @@ fmi3Status  ActivateModelPartition(fmi3Instance instance, fmi3ValueReference clo
 		mp3_run(comp, activationTime);
 		break;
 	default:
-		return fmi3Error;
+		return Error;
 	}
-	return fmi3OK;
+
+	return OK;
 }
 
 // getClock retrieves the curren status of one specific clock.
@@ -180,23 +187,23 @@ Status getClock(ModelInstance* comp, ValueReference vr, int* value) {
 	switch (vr) {
 	case vr_c1:
 		*value = M(c1);
-		M(c1) = fmi3False;
+		M(c1) = 0;
 		return OK;
 	case vr_c2:
 		*value = M(c2);
-		M(c2) = fmi3False;
+		M(c2) = 0;
 		return OK;
 	case vr_c3:
 		*value = M(c3);
-		M(c3) = fmi3False;
+		M(c3) = 0;
 		return OK;
 	case vr_c4:
 		*value = M(c4);
-		M(c4) = fmi3False;
+		M(c4) = 0;
 		return OK;
 	case vr_c5:
 		*value = M(c5);
-		M(c5) = fmi3False;
+		M(c5) = 0;
 		return OK;
 	default:
 		return Error;
@@ -209,16 +216,16 @@ Status getOutput(ModelInstance* comp, ValueReference vr, int* value) {
 	switch (vr) {
 	case vr_c1Ticks:
 		*value = M(c1Ticks);
-		return fmi3OK;
+		return OK;
 	case vr_c2Ticks:
 		*value = M(c2Ticks);
-		return fmi3OK;
+		return OK;
 	case vr_c3Ticks:
 		*value = M(c3Ticks);
-		return fmi3OK;
+		return OK;
 	case vr_totalInTicks:
 		*value = M(totalInTicks);
-		return fmi3OK;
+		return OK;
 	default:
 		return Error;
 	}
