@@ -111,7 +111,7 @@ void mp1_run(ModelInstance* comp, fmi3Float64 time) {
 		updateInfo.intermediateStepFinished       = fmi3False;
 		updateInfo.canReturnEarly                 = fmi3False;
 		
-		comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment, &updateInfo);
+		comp->intermediateUpdate(comp, &updateInfo);
 		
 		comp->clocksTicked = fmi3False;
 	}
