@@ -614,6 +614,36 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance, const fmi3ValueRe
     return fmi3OK;
 }
 
+fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
+    const fmi3ValueReference unknowns[],
+    size_t nUnknowns,
+    const fmi3ValueReference knowns[],
+    size_t nKnowns,
+    const fmi3Float64 deltaUnknowns[],
+    size_t nDeltaOfUnknowns,
+    fmi3Float64 deltaKnowns[],
+    size_t nDeltaKnowns) {
+    
+    // TODO: check state
+    // TODO: check value references
+    
+    ModelInstance *comp = (ModelInstance *)instance;
+    Status status = OK;
+
+    for (int i = 0; i < nKnowns; i++) {
+        deltaKnowns[i] = 0;
+        for (int j = 0; j < nUnknowns; j++) {
+            double partialDerivative = 0;
+            Status s = getPartialDerivative(comp, unknowns[j], knowns[i], &partialDerivative);
+            status = max(status, s);
+            if (status > Warning) return status;
+            deltaKnowns[i] += partialDerivative * deltaUnknowns[j];
+        }
+    }
+
+    return fmi3OK;
+}
+
 fmi3Status fmi3EnterConfigurationMode(fmi3Instance instance) {
     ModelInstance *comp = (ModelInstance *)instance;
     logError(comp, "fmi3EnterConfigurationMode() is not supported.");
