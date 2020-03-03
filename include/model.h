@@ -50,7 +50,9 @@ typedef enum {
 
 typedef enum {
     ModelExchange,
-    CoSimulation
+    BasicCoSimulation,
+    HybridCoSimulation,
+    ScheduledCoSimulation,
 } InterfaceType;
 
 typedef enum {

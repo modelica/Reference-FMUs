@@ -154,27 +154,59 @@ fmi3Status fmi3SetDebugLogging(fmi3Instance instance, fmi3Boolean loggingOn, siz
     return setDebugLogging(comp, loggingOn, nCategories, categories);
 }
 
-fmi3Instance fmi3Instantiate(fmi3String        instanceName,
-                             fmi3InterfaceType fmuType,
-                             fmi3String        fmuInstantiationToken,
-                             fmi3String        fmuResourceLocation,
-                             const fmi3CallbackFunctions* functions,
-                             fmi3Boolean       visible,
-                             fmi3Boolean       loggingOn,
-                             const fmi3CoSimulationConfiguration* fmuCoSimulationConfiguration) {
+fmi3Instance fmi3InstantiateModelExchange(
+    fmi3String                 instanceName,
+    fmi3String                 instantiationToken,
+    fmi3String                 resourceLocation,
+    fmi3Boolean                visible,
+    fmi3Boolean                loggingOn,
+    fmi3InstanceEnvironment    instanceEnvironment,
+    fmi3CallbackLogMessage     logMessage,
+    fmi3CallbackAllocateMemory allocateMemory,
+    fmi3CallbackFreeMemory     freeMemory) {
+    
+    return createModelInstance(
+        (loggerType)logMessage,
+        (allocateMemoryType)allocateMemory,
+        (freeMemoryType)freeMemory,
+        NULL,
+        instanceEnvironment,
+        instanceName,
+        instantiationToken,
+        resourceLocation,
+        loggingOn,
+        ModelExchange,
+        false
+    );
+}
+
+fmi3Instance fmi3InstantiateBasicCoSimulation(
+    fmi3String                     instanceName,
+    fmi3String                     instantiationToken,
+    fmi3String                     resourceLocation,
+    fmi3Boolean                    visible,
+    fmi3Boolean                    loggingOn,
+    fmi3Boolean                    intermediateVariableGetRequired,
+    fmi3Boolean                    intermediateInternalVariableGetRequired,
+    fmi3Boolean                    intermediateVariableSetRequired,
+    fmi3InstanceEnvironment        instanceEnvironment,
+    fmi3CallbackLogMessage         logMessage,
+    fmi3CallbackAllocateMemory     allocateMemory,
+    fmi3CallbackFreeMemory         freeMemory,
+    fmi3CallbackIntermediateUpdate intermediateUpdate) {
 
     return createModelInstance(
-        (loggerType)functions->logMessage,
-        (allocateMemoryType)functions->allocateMemory,
-        (freeMemoryType)functions->freeMemory,
-        (intermediateUpdateType)functions->intermediateUpdate,
-        functions->instanceEnvironment,
+        (loggerType)logMessage,
+        (allocateMemoryType)allocateMemory,
+        (freeMemoryType)freeMemory,
+        (intermediateUpdateType)intermediateUpdate,
+        instanceEnvironment,
         instanceName,
-        fmuInstantiationToken,
-        fmuResourceLocation,
+        instantiationToken,
+        resourceLocation,
         loggingOn,
-        fmuType,
-        fmuType == fmi3HybridCoSimulation
+        BasicCoSimulation,
+        false
     );
 }
 
@@ -226,7 +258,7 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
         comp->isDirtyValues = false;
     }
 
-    if (comp->type == fmi3ModelExchange) {
+    if (comp->type == ModelExchange) {
         comp->state = modelEventMode;
         comp->isNewEventIteration = fmi3True;
     } else {
@@ -695,46 +727,57 @@ fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
 }
 
 fmi3Status fmi3SetIntervalDecimal(fmi3Instance instance,
-                                      const fmi3ValueReference valueReferences[], size_t nValueReferences,
-                                  fmi3Float64 interval[]) {
+                                  const fmi3ValueReference valueReferences[],
+                                  size_t nValueReferences,
+                                  const fmi3Float64 interval[]) {
     NOT_IMPLEMENTED
 }
 
 fmi3Status fmi3GetIntervalFraction(fmi3Instance instance,
-                                       const fmi3ValueReference valueReferences[], size_t nValueReferences,
-                                   fmi3UInt64 intervalCounter[], fmi3UInt64 resolution[]) {
+                                   const fmi3ValueReference valueReferences[],
+                                   size_t nValueReferences,
+                                   fmi3UInt64 intervalCounter[],
+                                   fmi3UInt64 resolution[]) {
     NOT_IMPLEMENTED
 }
 
 fmi3Status fmi3SetIntervalFraction(fmi3Instance instance,
-                                   const fmi3ValueReference valueReferences[], size_t nValueReferences,
-                                   fmi3UInt64 intervalCounter[], fmi3UInt64 resolution[]) {
+                                   const fmi3ValueReference valueReferences[],
+                                   size_t nValueReferences,
+                                   const fmi3UInt64 intervalCounter[],
+                                   const fmi3UInt64 resolution[]) {
     NOT_IMPLEMENTED
 }
 
-fmi3Status fmi3NewDiscreteStates(fmi3Instance instance, fmi3EventInfo *eventInfo) {
+fmi3Status fmi3NewDiscreteStates(fmi3Instance instance,
+                                 fmi3Boolean *newDiscreteStatesNeeded,
+                                 fmi3Boolean *terminateSimulation,
+                                 fmi3Boolean *nominalsOfContinuousStatesChanged,
+                                 fmi3Boolean *valuesOfContinuousStatesChanged,
+                                 fmi3Boolean *nextEventTimeDefined,
+                                 fmi3Float64 *nextEventTime) {
 
     ModelInstance *comp = (ModelInstance *)instance;
 
     if (invalidState(comp, "fmi3NewDiscreteStates", MASK_fmi3NewDiscreteStates))
         return fmi3Error;
 
-    comp->newDiscreteStatesNeeded = fmi3False;
-    comp->terminateSimulation = fmi3False;
+    comp->newDiscreteStatesNeeded           = fmi3False;
+    comp->terminateSimulation               = fmi3False;
     comp->nominalsOfContinuousStatesChanged = fmi3False;
-    comp->valuesOfContinuousStatesChanged = fmi3False;
+    comp->valuesOfContinuousStatesChanged   = fmi3False;
 
     eventUpdate(comp);
 
     comp->isNewEventIteration = false;
 
-    // copy internal eventInfo of component to output eventInfo
-    eventInfo->newDiscreteStatesNeeded           = comp->newDiscreteStatesNeeded;
-    eventInfo->terminateSimulation               = comp->terminateSimulation;
-    eventInfo->nominalsOfContinuousStatesChanged = comp->nominalsOfContinuousStatesChanged;
-    eventInfo->valuesOfContinuousStatesChanged   = comp->valuesOfContinuousStatesChanged;
-    eventInfo->nextEventTimeDefined              = comp->nextEventTimeDefined;
-    eventInfo->nextEventTime                     = comp->nextEventTime;
+    // copy internal eventInfo of component to output arguments
+    *newDiscreteStatesNeeded           = comp->newDiscreteStatesNeeded;
+    *terminateSimulation               = comp->terminateSimulation;
+    *nominalsOfContinuousStatesChanged = comp->nominalsOfContinuousStatesChanged;
+    *valuesOfContinuousStatesChanged   = comp->valuesOfContinuousStatesChanged;
+    *nextEventTimeDefined              = comp->nextEventTimeDefined;
+    *nextEventTime                     = comp->nextEventTime;
 
     return fmi3OK;
 }

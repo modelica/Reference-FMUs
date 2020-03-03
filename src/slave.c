@@ -503,18 +503,18 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
 #if FMI_VERSION == 3
             if (comp->intermediateUpdate) { // Hybrid Co-Simulation
 
-                fmi3IntermediateUpdateInfo updateInfo = { 0 };
-
-                updateInfo.intermediateUpdateTime         = comp->time;
-                updateInfo.eventOccurred                  = fmi3True;
-                updateInfo.clocksTicked                   = comp->clocksTicked;
-                updateInfo.intermediateVariableSetAllowed = fmi3False;
-                updateInfo.intermediateVariableGetAllowed = fmi3False;
-                updateInfo.intermediateStepFinished       = fmi3False;
-                updateInfo.canReturnEarly                 = fmi3True;
+//                fmi3IntermediateUpdateInfo updateInfo = { 0 };
+//
+//                updateInfo.intermediateUpdateTime         = comp->time;
+//                updateInfo.eventOccurred                  = fmi3True;
+//                updateInfo.clocksTicked                   = comp->clocksTicked;
+//                updateInfo.intermediateVariableSetAllowed = fmi3False;
+//                updateInfo.intermediateVariableGetAllowed = fmi3False;
+//                updateInfo.intermediateStepFinished       = fmi3False;
+//                updateInfo.canReturnEarly                 = fmi3True;
 
                 // call intermediate update callback
-                comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment, &updateInfo);
+//                comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment, &updateInfo);
 
                 if (comp->returnEarly) {
                     *earlyReturn = 1;

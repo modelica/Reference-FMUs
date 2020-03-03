@@ -26,14 +26,21 @@ fmi3Status recordVariables(InstanceEnvironment instanceEnvironment, fmi3Float64 
 //////////////////////////
 // Define callback
 
-// Global variables
-//fmi3IntermediateUpdateInfo s_intermediateInfo;
-
 // Callback
-fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment, fmi3IntermediateUpdateInfo* intermediateUpdateInfo) {
+fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
+                                 fmi3Float64 intermediateUpdateTime,
+                                 fmi3Boolean eventOccurred,
+                                 fmi3Boolean clocksTicked,
+                                 fmi3Boolean intermediateVariableSetAllowed,
+                                 fmi3Boolean intermediateVariableGetAllowed,
+                                 fmi3Boolean intermediateStepFinished,
+                                 fmi3Boolean canReturnEarly) {
+    
     InstanceEnvironment* env = (InstanceEnvironment*)instanceEnvironment;
+    
     // remember intermediateUpdateTime
-    env->intermediateUpdateTime = intermediateUpdateInfo->intermediateUpdateTime;
+    env->intermediateUpdateTime = intermediateUpdateTime;
+    
     // stop here
     return fmi3DoEarlyReturn(env->instance, env->intermediateUpdateTime);
 }
@@ -64,32 +71,18 @@ int main(int argc, char* argv[]) {
     // write the header of the CSV
     fputs("time,h,v\n", instanceEnvironment.outputFile);
     
-    fmi3CallbackFunctions callbacks = {
-        .allocateMemory     = cb_allocateMemory,
-        .freeMemory         = cb_freeMemory,
-        .logMessage         = cb_logMessage,
-        .intermediateUpdate = cb_intermediateUpdate,
-        .lockPreemption     = NULL,
-        .unlockPreemption   = NULL
-    };
-    
     //////////////////////////
     // Initialization sub-phase
     
-    fmi3EventInfo eventInfo;
-    
-    // Create pointer to information for identifying the FMU in callbacks
-    callbacks.instanceEnvironment = &instanceEnvironment;
-    
-    //set Co-Simulation mode
-    fmi3CoSimulationConfiguration csConfig = {
-        .intermediateVariableGetRequired         = fmi3False,
-        .intermediateInternalVariableGetRequired = fmi3False,
-        .intermediateVariableSetRequired         = fmi3False,
-    };
+//    //set Co-Simulation mode
+//    fmi3CoSimulationConfiguration csConfig = {
+//        .intermediateVariableGetRequired         = fmi3False,
+//        .intermediateInternalVariableGetRequired = fmi3False,
+//        .intermediateVariableSetRequired         = fmi3False,
+//    };
     
     // Instantiate slave
-    fmi3Instance s = fmi3Instantiate("instance", fmi3CoSimulation, MODEL_GUID, "", &callbacks, fmi3False, fmi3False, &csConfig);
+    fmi3Instance s = fmi3InstantiateBasicCoSimulation("slave1", MODEL_GUID, NULL, fmi3False, fmi3False, fmi3False, fmi3False, fmi3False, NULL, cb_logMessage, cb_allocateMemory, cb_freeMemory, NULL);
     
     if (s == NULL) {
         puts("Failed to instantiate FMU.");
@@ -143,9 +136,17 @@ int main(int argc, char* argv[]) {
                     break;
             };
         } else {
+            fmi3Boolean newDiscreteStatesNeeded = fmi3True;
+            fmi3Boolean terminateSimulation;
+            fmi3Boolean nominalsOfContinuousStatesChanged;
+            fmi3Boolean valuesOfContinuousStatesChanged;
+            fmi3Boolean nextEventTimeDefined;
+            fmi3Float64 nextEventTime;
+            
             // Event mode
-            CHECK_STATUS(fmi3NewDiscreteStates(s, &eventInfo))
-            if (!eventInfo.newDiscreteStatesNeeded) {
+            CHECK_STATUS(fmi3NewDiscreteStates(s, &newDiscreteStatesNeeded, &terminateSimulation, &nominalsOfContinuousStatesChanged, &valuesOfContinuousStatesChanged, &nextEventTimeDefined, &nextEventTime))
+            
+            if (!newDiscreteStatesNeeded) {
                 CHECK_STATUS(fmi3EnterContinuousTimeMode(s))
                 step = h - fmod(tc, h);  // finish the step
             };
