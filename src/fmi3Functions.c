@@ -410,7 +410,7 @@ fmi3Status fmi3GetBinary(fmi3Instance instance, const fmi3ValueReference vr[], s
 
     Status status = OK;
 
-    for (int i = 0; i < nvr; i++) {
+    for (unsigned int i = 0; i < nvr; i++) {
         size_t index = 0;
         Status s = getBinary(comp, vr[i], size, value, &index);
         status = max(status, s);
@@ -542,7 +542,7 @@ fmi3Status fmi3SetBinary(fmi3Instance instance, const fmi3ValueReference vr[], s
 
     Status status = OK;
 
-    for (int i = 0; i < nvr; i++) {
+    for (unsigned int i = 0; i < nvr; i++) {
         size_t index = 0;
         Status s = setBinary(comp, vr[i], size, value, &index);
         status = max(status, s);
@@ -600,44 +600,14 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance, const fmi3ValueRe
     ModelInstance *comp = (ModelInstance *)instance;
     Status status = OK;
 
-    for (int i = 0; i < nUnknowns; i++) {
+    for (unsigned int i = 0; i < nUnknowns; i++) {
         deltaUnknowns[i] = 0;
-        for (int j = 0; j < nKnowns; j++) {
+        for (unsigned int j = 0; j < nKnowns; j++) {
             double partialDerivative = 0;
             Status s = getPartialDerivative(comp, unknowns[i], knowns[j], &partialDerivative);
             status = max(status, s);
             if (status > Warning) return status;
             deltaUnknowns[i] += partialDerivative * deltaKnowns[j];
-        }
-    }
-
-    return fmi3OK;
-}
-
-fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
-    const fmi3ValueReference unknowns[],
-    size_t nUnknowns,
-    const fmi3ValueReference knowns[],
-    size_t nKnowns,
-    const fmi3Float64 deltaUnknowns[],
-    size_t nDeltaOfUnknowns,
-    fmi3Float64 deltaKnowns[],
-    size_t nDeltaKnowns) {
-    
-    // TODO: check state
-    // TODO: check value references
-    
-    ModelInstance *comp = (ModelInstance *)instance;
-    Status status = OK;
-
-    for (int i = 0; i < nKnowns; i++) {
-        deltaKnowns[i] = 0;
-        for (int j = 0; j < nUnknowns; j++) {
-            double partialDerivative = 0;
-            Status s = getPartialDerivative(comp, unknowns[j], knowns[i], &partialDerivative);
-            status = max(status, s);
-            if (status > Warning) return status;
-            deltaKnowns[i] += partialDerivative * deltaUnknowns[j];
         }
     }
 
@@ -848,7 +818,7 @@ fmi3Status fmi3GetContinuousStates(fmi3Instance instance, fmi3Float64 states[], 
 }
 
 fmi3Status fmi3GetNominalsOfContinuousStates(fmi3Instance instance, fmi3Float64 x_nominal[], size_t nx) {
-    int i;
+    unsigned int i;
     ModelInstance *comp = (ModelInstance *)instance;
     if (invalidState(comp, "fmi3GetNominalsOfContinuousStates", MASK_fmi3GetNominalsOfContinuousStates))
         return fmi3Error;
@@ -915,7 +885,12 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
                                       fmi3ValueReference clockReference,
                                       fmi3Float64 activationTime) {
-    NOT_IMPLEMENTED
+
+#ifdef ACTIVATE_MODEL_PARTITION
+	return activateModelPartition(instance, clockReference, activationTime);
+#else
+	return fmi3Error;
+#endif
 }
 
 fmi3Status fmi3DoEarlyReturn(fmi3Instance instance, fmi3Float64 earlyReturnTime) {
