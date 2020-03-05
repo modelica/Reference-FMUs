@@ -12,11 +12,11 @@
 
   <ModelVariables>
     <!-- All clocks have a value reference > 1000 -->
-    <Clock name="c1" valueReference="1001"                       causality="input"  variability="clock" clockType="communicationPoint" priority=0 periodic="true"  start="0"/>
-    <Clock name="c2" valueReference="1002"                       causality="input"  variability="clock" clockType="communicationPoint" priority=1 periodic="false" start="0"/>
-    <Clock name="c3" valueReference="1003" clockReference="1004" causality="input"  variability="clock" clockType="communicationPoint" priority=2 periodic="false"/>
-    <Clock name="c4" valueReference="1004"                       causality="output" variability="clock" clockType="communicationPoint" priority=2 periodic="false"/>
-    <Clock name="c5" valueReference="1005"                       causality="output" variability="clock" clockType="communicationPoint" priority=2 periodic="false"/>
+    <Clock name="c1" valueReference="1001"                       causality="input"  variability="clock" clockType="communicationPoint" priority="3" periodic="true"  start="0"/>
+    <Clock name="c2" valueReference="1002"                       causality="input"  variability="clock" clockType="communicationPoint" priority="33" periodic="false" start="0"/>
+    <Clock name="c3" valueReference="1003" clockReference="1004" causality="input"  variability="clock" clockType="communicationPoint" priority="63" periodic="false"/>
+    <Clock name="c4" valueReference="1004"                       causality="output" variability="clock" clockType="communicationPoint" periodic="false"/>
+    <Clock name="c5" valueReference="1005"                       causality="output" variability="clock" clockType="communicationPoint" periodic="false"/>
 
 
     <!-- All other variables have a value reference > 2000 -->
@@ -25,8 +25,8 @@
     <Int32 name="c3Ticks"    clockReference="1003" valueReference="2003" causality="output"/>
     <Int32 name="totalInTicks" clockReference="1001" valueReference="2004" causality="output"/>
 
-    <Int32 name="boost_c2" clockReference="1002" valueReference="2012" causality="input"/>
-    <Int32 name="boost_c3" clockReference="1003" valueReference="2013" causality="input"/>
+    <Int32 name="input_2" clockReference="1002" valueReference="2012" causality="input"/>
+    <Int32 name="output_3" clockReference="1003" valueReference="2013" causality="output"/>
   </ModelVariables>
 
   <ModelStructure>

@@ -48,8 +48,8 @@ void setStartValues(ModelInstance *comp) {
 	M(data_InClock_2_Ticks)     = 0;
 	M(data_InClock_3_Ticks)     = 0;
     M(data_total_InClock_Ticks) = 0;
-	M(data_boost_InClock_2)     = 0;
-	M(data_boost_InClock_3)     = 0;
+	M(data_input_2)		        = 0;
+	M(data_output_3)		    = 0;
 }
 
 /*
@@ -59,11 +59,8 @@ void setStartValues(ModelInstance *comp) {
  */
 Status setInt32(ModelInstance* comp, ValueReference vr, const int* value, size_t* index) {
 	switch (vr) {
-	case vr_boost_InClock_2:
-		M(data_boost_InClock_2) = *value;
-		return OK;
-	case vr_boost_InClock_3:
-		M(data_boost_InClock_3) = *value;
+	case vr_input_2:
+		M(data_input_2) = *value;
 		return OK;
 	default:
 		return Error;
@@ -88,6 +85,9 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int* value, size_t* inde
 		return OK;
 	case vr_total_InClock_Ticks:
 		*value = M(data_total_InClock_Ticks);
+		return OK;
+	case vr_output_3:
+		*value = M(data_output_3);
 		return OK;
 	default:
 		return Error;
@@ -157,6 +157,9 @@ void mp2_run(ModelInstance *comp, double time) {
 
     M(data_InClock_2_Ticks)++;
     M(data_total_InClock_Ticks)++;
+	
+	M(data_total_InClock_Ticks) += M(data_input_2);  // add the output from mp3
+
 	if ((M(data_OutClock_2) == fmi3ClockInactive) && (fmod(time, 4) == 0))
 		M(data_OutClock_2) = fmi3ClockActive;
     
@@ -193,6 +196,8 @@ void mp3_run(ModelInstance* comp, double time) {
 		sum += loop;
 	}
 	// ... end of burning CPU cycles
+
+	M(data_output_3) = 1000;   // this is suposed to find its way into mp2
 
 	logEvent(comp, "mp3_run: finished calculation: sum=%lu Total=%d", sum, M(data_total_InClock_Ticks));
 }

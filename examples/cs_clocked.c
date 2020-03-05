@@ -47,23 +47,20 @@ ThreadArgs iu_arguments;
 /* ********************************************************* */
 
 /* *****************  Inputs ***************** */
-fmi3Int32 inputs[N_INPUTS] = { 100, 1000 };
-const fmi3ValueReference vrInputs[N_INPUTS] = { vr_boost_InClock_2, vr_boost_InClock_3 };
 fmi3Int32 inputs_c2[1] = { 0 };
-fmi3Int32 inputs_c3[1] = { 0 };
-const fmi3ValueReference vrInputs_c2[1] = { vr_boost_InClock_2 };
-const fmi3ValueReference vrInputs_c3[1] = { vr_boost_InClock_3 };
+const fmi3ValueReference vrInputs_c2[1] = { vr_input_2 };
+#define input_boost_2 inputs_c2[0]   // shortcut to access the input of mp2
+
 /* ********************************************************* */
 
 /* *****************  Outputs ***************** */
-fmi3Int32 outputs[N_OUTPUTS] = { 0 };
-const fmi3ValueReference vrOutputs[N_OUTPUTS] = { vr_InClock_1_Ticks, vr_InClock_2_Ticks, vr_InClock_3_Ticks, vr_total_InClock_Ticks };
 fmi3Int32 outputs_c1[2] = { 0 };
 fmi3Int32 outputs_c2[1] = { 0 };
-fmi3Int32 outputs_c3[1] = { 0 };
+fmi3Int32 outputs_c3[2] = { 0 };
 const fmi3ValueReference vrOutputs_c1[2] = { vr_InClock_1_Ticks, vr_total_InClock_Ticks };
 const fmi3ValueReference vrOutputs_c2[1] = { vr_InClock_2_Ticks };
-const fmi3ValueReference vrOutputs_c3[1] = { vr_InClock_3_Ticks };
+const fmi3ValueReference vrOutputs_c3[2] = { vr_InClock_3_Ticks, vr_output_3 };
+#define output_boost_3 outputs_c3[1]   // shortcut to access the 2nd output of mp3
 /* ********************************************************* */
 
 /* *****************  Input clocks ***************** */
@@ -407,11 +404,13 @@ unsigned __stdcall thr_activateModelPartition(void *args)  {
 		break;
 		case vr_InClock_3: {
 			logEvent(TA->comp, "activateModelPartition calling fmi3ActivateModelPartition (%d)", TA->clockRef);
-			retval = fmi3SetInt32(TA->comp, vrInputs_c3, 1, inputs_c3, 1);
+			// No variables to set for this partition
 			if (retval != fmi3OK)	break;
 			retval = fmi3ActivateModelPartition(TA->comp, TA->clockRef, TA->activationTime);
 			if (retval != fmi3OK)	break;
-			retval = fmi3GetInt32(TA->comp, vrOutputs_c3, 1, outputs_c3, 1);
+			retval = fmi3GetInt32(TA->comp, vrOutputs_c3, 2, outputs_c3, 2);
+			// Use the output of model part 3 as input for model part 2
+			input_boost_2 = output_boost_3;
 			recordVariables(TA->comp, TA->activationTime, vr_InClock_3);
 		}
 		break;

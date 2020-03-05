@@ -177,7 +177,7 @@ void logError(ModelInstance *comp, const char *message, ...);
 size_t index = 0; \
 Status status = OK; \
 for (int i = 0; i < nvr; i++) { \
-    Status s = get ## T(comp, vr[i], value, &index); \
+    Status s = get ## T(comp, vr[i], &value[i], &index); \
     status = max(status, s); \
     if (status > Warning) return status; \
 } \
@@ -187,7 +187,7 @@ return status;
 size_t index = 0; \
 Status status = OK; \
 for (int i = 0; i < nvr; i++) { \
-    Status s = set ## T(comp, vr[i], value, &index); \
+    Status s = set ## T(comp, vr[i], &value[i], &index); \
     status = max(status, s); \
     if (status > Warning) return status; \
 } \

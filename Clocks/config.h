@@ -41,8 +41,8 @@ typedef enum {
 	OutClock_2 = 1
 } OutputClockEnum;
 
-#define N_INPUTS  2
-#define N_OUTPUTS 4
+#define N_INPUTS  1
+#define N_OUTPUTS 5
 
 /*
  * #defines for the implemented functions of the FMI3.0 framework
@@ -68,8 +68,8 @@ typedef enum {
 	vr_InClock_2_Ticks = 2002,
 	vr_InClock_3_Ticks = 2003,
 	vr_total_InClock_Ticks = 2004,
-	vr_boost_InClock_2 = 2012,
-	vr_boost_InClock_3 = 2013
+	vr_input_2 = 2012,
+	vr_output_3 = 2013
 } ValueReference;
 
 #define NUMMODELPART N_INPUT_CLOCKS
@@ -85,8 +85,8 @@ typedef struct {
 	int data_InClock_2_Ticks;
 	int data_InClock_3_Ticks;
     int data_total_InClock_Ticks;
-	int data_boost_InClock_2;
-	int data_boost_InClock_3;
+	int data_input_2;
+	int data_output_3;
 } ModelData;
 
 typedef struct threadArgs_t {
