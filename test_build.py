@@ -21,8 +21,8 @@ fmi3_available = False
 
 try:
     import fmpy
-
-    fmi3_available = 'fmi3' in dir(fmpy)
+# TODO: uncomment when FMPy has been updated
+#     fmi3_available = 'fmi3' in dir(fmpy)
 except:
     pass
 
