@@ -22,17 +22,34 @@ OutClock_2: output, aperiodic  // Calculated in model_part 1
    time     0 1 2 3 4 5 6 7 8 9
 InClock_1   + + + + + + + + + +    
 InClock_2   + +             + +
-InClock_3    
-OutClock_1    
-OutClock_2  
+InClock_3       +
+OutClock_1      +
+OutClock_2                  + 
    time     0 1 2 3 4 5 6 7 8 9
 
 InClock_1  = t % 4 == 0
 InClock_2  = t % 8 == 0 || (t - 1) % 8 == 0
 InClock_3  = triggered when OutClock_1 is triggered
 OutClock_1 = count total in_clock ticks and ticks if equals 5
-OutClock_2 = t % 4 == 0
+OutClock_2 = calculated by Part2: if time >=1 and time is 
 */
+
+ /*
+ This model has three model partitions:
+ Part 1 is run when the periodical input clock 1 is ticking
+ It counts the ticks for input clock 1 and the ticks of all input clocks in separate variables (InClock_1_Ticks resp. total_InClock_Ticks)
+ When the number of all input clocks is exactly 5, the output clock 1 ticks which will trigger the dependent input clock 3
+
+ Part 2 is run when the 2nd input clocks ticks (non-periodically)
+ It counts the ticks for input clock 2 and the ticks of all input clocks (InClock_2_Ticks resp. total_InClock_Ticks)
+ also it checks its input (input_2) and adds it to a result variable (result_2)
+
+ Part 3 is run when the 3rd input clock is ticking. (depending on output clock 1)
+ It counts the ticks for input clock 3 and the ticks of all input clocks (InClock_3_Ticks resp. total_InClock_Ticks)
+ Furthermore in Part 3, CPU cycles are burnt with some meaningless calculation.
+ When this is done, an ouput variable (output_3) is set to 1000. 
+ This value will find its way into model Part 2 (as input_2).
+ */
 
 /*
  * SetStartValues()
@@ -48,7 +65,8 @@ void setStartValues(ModelInstance *comp) {
 	M(data_InClock_2_Ticks)     = 0;
 	M(data_InClock_3_Ticks)     = 0;
     M(data_total_InClock_Ticks) = 0;
-	M(data_input_2)		        = 0;
+	M(data_result_2)		    = 0;
+	M(data_input_2)			    = 0;
 	M(data_output_3)		    = 0;
 }
 
@@ -86,6 +104,9 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int* value, size_t* inde
 	case vr_total_InClock_Ticks:
 		*value = M(data_total_InClock_Ticks);
 		return OK;
+	case vr_result_2:
+		*value = M(data_result_2);
+		return OK;
 	case vr_output_3:
 		*value = M(data_output_3);
 		return OK;
@@ -107,11 +128,12 @@ void calculateValues(ModelInstance *comp) {
 * triggered by the master
 */
 void mp1_run(ModelInstance* comp, double time) {
-	int  threadPrio = GetThreadPriority(GetCurrentThread());
-	logEvent(comp, "mp1_run: time=%g, comp->time=%g, prio=%d Processor= %d", time, comp->time, threadPrio, GetCurrentProcessorNumber());
+	logEvent(comp, "mp1_run: time=%g", time);
 
-	// TODO: call lockPreemption()
-	if (GlobalLock(globalLockVar) == NULL) { logEvent(comp, "mp1_run: Retrieving lock failed: %ld", GetLastError()); return; }
+	if (comp->lockPreemption(comp) != fmi3OK) {
+		logEvent(comp, "mp1_run: Retrieving lock failed: %ld", GetLastError());
+		return; 
+	}
 
 	// update the counters
 	M(data_InClock_1_Ticks)++;
@@ -125,8 +147,7 @@ void mp1_run(ModelInstance* comp, double time) {
 
 	comp->clocksTicked = M(data_OutClock_1);
 
-	// TODO: call unlockPreemption()
-	GlobalUnlock(globalLockVar);
+	comp->lockPreemption(comp);
 
 	if (comp->clocksTicked) {
 		fmi3IntermediateUpdateInfo updateInfo = { 0 };
@@ -149,24 +170,45 @@ void mp1_run(ModelInstance* comp, double time) {
 * triggered by the master
 */
 void mp2_run(ModelInstance *comp, double time) {
-	int  threadPrio = GetThreadPriority(GetCurrentThread());
-	logEvent(comp, "mp2_run: time=%g, comp->time=%g, prio=%d Processor= %d", time, comp->time, threadPrio, GetCurrentProcessorNumber());
+	logEvent(comp, "mp2_run: time=%g", time);
 
-	// TODO: lockPreemption()
-	if (GlobalLock(globalLockVar) == NULL) { logEvent(comp, "mp2_run: Retrieving lock failed: %ld", GetLastError()); return; }
+	if (comp->lockPreemption(comp) != fmi3OK) {
+		logEvent(comp, "mp2_run: Retrieving lock failed: %ld", GetLastError());
+		return; 
+	}
 
     M(data_InClock_2_Ticks)++;
     M(data_total_InClock_Ticks)++;
 	
-	M(data_total_InClock_Ticks) += M(data_input_2);  // add the output from mp3
+	// Every time the input value is set, we sum it up
+	// then reset the value
+	M(data_result_2) += M(data_input_2);  // add the output from mp3
+	M(data_input_2) = 0;
 
-	if ((M(data_OutClock_2) == fmi3ClockInactive) && (fmod(time, 4) == 0))
+
+	if ((M(data_OutClock_2) == fmi3ClockInactive) && ((time >= 1) && (fmod(time, 4) == 0))) {
+		// Due to some conditions, trigger output clock 2
 		M(data_OutClock_2) = fmi3ClockActive;
-    
-	// TODO: unlockPreemption()
-	GlobalUnlock(globalLockVar);
+		comp->clocksTicked = true;
+	}
+	comp->lockPreemption(comp);
 
-	logEvent(comp, "mp2_run: Total count input clock ticks=%d", M(data_total_InClock_Ticks));
+	if (comp->clocksTicked) {
+		fmi3IntermediateUpdateInfo updateInfo = { 0 };
+
+		updateInfo.intermediateUpdateTime = time;
+		updateInfo.eventOccurred = fmi3False;
+		updateInfo.clocksTicked = fmi3True;   // Only member, we are interested in
+		updateInfo.intermediateVariableSetAllowed = fmi3False;
+		updateInfo.intermediateVariableGetAllowed = fmi3False;
+		updateInfo.intermediateStepFinished = fmi3False;
+		updateInfo.canReturnEarly = fmi3False;
+
+		comp->intermediateUpdate(comp, &updateInfo);
+		comp->clocksTicked = fmi3False;
+	}
+
+	logEvent(comp, "mp2_run: Total count input clock ticks=%d, result=%d", M(data_total_InClock_Ticks), M(data_result_2));
 }
 
 /*
@@ -178,17 +220,17 @@ void mp2_run(ModelInstance *comp, double time) {
  * thus show that it can be interrupted by higher prio tasks
  */
 void mp3_run(ModelInstance* comp, double time) {
-	int  threadPrio = GetThreadPriority(GetCurrentThread());
-	logEvent(comp, "mp3_run: time=%g, comp->time=%g, prio=%d Processor= %d", time, comp->time, threadPrio, GetCurrentProcessorNumber());
+	logEvent(comp, "mp3_run: time=%g", time);
 
-	// TODO: lockPreemption()
-	if (GlobalLock(globalLockVar) == NULL) { logEvent(comp, "mp3_run: Retrieving lock failed: %ld", GetLastError()); return; }
+	if (comp->lockPreemption(comp) != fmi3OK) {
+		logEvent(comp, "mp3_run: Retrieving lock failed: %ld", GetLastError());
+		return; 
+	}
 
 	M(data_InClock_3_Ticks)++;
 	M(data_total_InClock_Ticks)++;
 
-	// TODO: unlockPreemption()
-	GlobalUnlock(globalLockVar);
+	comp->lockPreemption(comp);
 
 	// This partition is supposed to consume a bit of time on a low prio ...
 	unsigned long sum = 0;

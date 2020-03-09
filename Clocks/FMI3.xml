@@ -12,21 +12,21 @@
 
   <ModelVariables>
     <!-- All clocks have a value reference > 1000 -->
-    <Clock name="c1" valueReference="1001"                       causality="input"  variability="clock" clockType="communicationPoint" priority="3" periodic="true"  start="0"/>
-    <Clock name="c2" valueReference="1002"                       causality="input"  variability="clock" clockType="communicationPoint" priority="33" periodic="false" start="0"/>
-    <Clock name="c3" valueReference="1003" clockReference="1004" causality="input"  variability="clock" clockType="communicationPoint" priority="63" periodic="false"/>
-    <Clock name="c4" valueReference="1004"                       causality="output" variability="clock" clockType="communicationPoint" periodic="false"/>
-    <Clock name="c5" valueReference="1005"                       causality="output" variability="clock" clockType="communicationPoint" periodic="false"/>
+    <Clock name="InClock_1" valueReference="1001"                       causality="input"  variability="clock" clockType="communicationPoint" priority="3" periodic="true"  start="0"/>
+    <Clock name="InClock_2" valueReference="1002"                       causality="input"  variability="clock" clockType="communicationPoint" priority="33" periodic="false" start="0"/>
+    <Clock name="InClock_3" valueReference="1003" clockReference="1004" causality="input"  variability="clock" clockType="communicationPoint" priority="63" periodic="false"/>
+    <Clock name="OutClock_1" valueReference="1004"                      causality="output" variability="clock" clockType="communicationPoint" periodic="false"/>
+    <Clock name="OutClock_2" valueReference="1005"                      causality="output" variability="clock" clockType="communicationPoint" periodic="false"/>
 
 
     <!-- All other variables have a value reference > 2000 -->
-    <Int32 name="c1Ticks"    clockReference="1001" valueReference="2001" causality="output"/>
-    <Int32 name="c2Ticks"    clockReference="1002" valueReference="2002" causality="output"/>
-    <Int32 name="c3Ticks"    clockReference="1003" valueReference="2003" causality="output"/>
+    <Int32 name="c1Ticks"      clockReference="1001" valueReference="2001" causality="output"/>
+    <Int32 name="c2Ticks"      clockReference="1002" valueReference="2002" causality="output"/>
+    <Int32 name="c3Ticks"      clockReference="1003" valueReference="2003" causality="output"/>
     <Int32 name="totalInTicks" clockReference="1001" valueReference="2004" causality="output"/>
-
-    <Int32 name="input_2" clockReference="1002" valueReference="2012" causality="input"/>
-    <Int32 name="output_3" clockReference="1003" valueReference="2013" causality="output"/>
+    <Int32 name="result_2"     clockReference="1002" valueReference="2005" causality="output"/>
+    <Int32 name="input_2"      clockReference="1002" valueReference="2006" causality="input"/>
+    <Int32 name="output_3"     clockReference="1003" valueReference="2007" causality="output"/>
   </ModelVariables>
 
   <ModelStructure>
@@ -34,6 +34,8 @@
     <Output valueReference="2002"/>
     <Output valueReference="2003"/>
     <Output valueReference="2004"/>
+    <Output valueReference="2005"/>
+    <Output valueReference="2007"/>
   </ModelStructure>
 
 </fmiModelDescription>

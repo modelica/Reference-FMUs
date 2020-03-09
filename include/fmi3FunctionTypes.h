@@ -123,8 +123,8 @@ typedef fmi3Status (*fmi3CallbackIntermediateUpdate) (fmi3InstanceEnvironment in
 /* end::CallbackIntermediateUpdate[] */
 
 /* tag::PreemptionLock[] */
-typedef void       (*fmi3CallbackLockPreemption)   ();
-typedef void       (*fmi3CallbackUnlockPreemption) ();
+typedef fmi3Status (*fmi3CallbackLockPreemption)   ();
+typedef fmi3Status (*fmi3CallbackUnlockPreemption) ();
 /* end::PreemptionLock[] */
 
 typedef struct {

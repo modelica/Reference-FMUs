@@ -21,6 +21,8 @@ ModelInstance *createModelInstance(
     allocateMemoryType cbAllocateMemory,
     freeMemoryType cbFreeMemory,
     intermediateUpdateType intermediateUpdate,
+    lockPreemptionType lockPreemption,
+    lockPreemptionType unlockPreemption,
     void *componentEnvironment,
     const char *instanceName,
     const char *GUID,
@@ -68,6 +70,8 @@ ModelInstance *createModelInstance(
         comp->allocateMemory = cbAllocateMemory;
         comp->freeMemory = cbFreeMemory;
         comp->intermediateUpdate = intermediateUpdate;
+        comp->lockPreemption = lockPreemption;
+        comp->unlockPreemption = unlockPreemption;
 
         comp->instanceName = (char *)allocateMemory(comp, 1 + strlen(instanceName), sizeof(char));
 

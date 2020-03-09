@@ -23,26 +23,19 @@ typedef enum {
 	InClock_3 = 2
 } InputClockEnum;
 
-/*
- * ========== Caveat! ==========
- * Windows allows only 5 diferent priority levels
- * We map them into the areas 0..19 / 20..39 / 40..59 / 60..79 / 80..99
- * If distinct priorities are desired, use a distance of at least 20 between them 
- */ 
+/* clock priorities as defined in ModelDescription.xml */
 typedef enum {
 	InClock_1_Prio = 3,   // smaller values => higher Prio 
 	InClock_2_Prio = 33,
 	InClock_3_Prio = 63
 } InputClockPrioEnum;
 
+// definitions for the independent clocks (InClock_3 depends on OutClock_1)
 #define N_OUTPUT_CLOCKS 2
 typedef enum {
 	OutClock_1 = 0,
 	OutClock_2 = 1
 } OutputClockEnum;
-
-#define N_INPUTS  1
-#define N_OUTPUTS 5
 
 /*
  * #defines for the implemented functions of the FMI3.0 framework
@@ -53,10 +46,11 @@ typedef enum {
 #define GET_CLOCK
 #define ACTIVATE_MODEL_PARTITION
 
-
+// these times are taken from <DefaultExperiment> in ModelDescription.xml
 #define START_TIME 0
 #define STOP_TIME 10
 #define FIXED_SOLVER_STEP 1
+
 
 typedef enum {
 	vr_InClock_1 = 1001,
@@ -68,12 +62,10 @@ typedef enum {
 	vr_InClock_2_Ticks = 2002,
 	vr_InClock_3_Ticks = 2003,
 	vr_total_InClock_Ticks = 2004,
-	vr_input_2 = 2012,
-	vr_output_3 = 2013
+	vr_result_2 = 2005,
+	vr_input_2 = 2006,
+	vr_output_3 = 2007
 } ValueReference;
-
-#define NUMMODELPART N_INPUT_CLOCKS
-#define MAXNUMVARPERPART  3
 
 typedef struct {
     int data_InClock_1;
@@ -85,6 +77,7 @@ typedef struct {
 	int data_InClock_2_Ticks;
 	int data_InClock_3_Ticks;
     int data_total_InClock_Ticks;
+	int data_result_2; 
 	int data_input_2;
 	int data_output_3;
 } ModelData;

@@ -73,7 +73,8 @@ typedef void  (*freeMemoryType)    (void *componentEnvironment, void *obj);
 #endif
 
 typedef Status (*intermediateUpdateType) (void *componentEnvironment, void *intermediateUpdateInfo);
-                                                      
+typedef Status (*lockPreemptionType) (void* componentEnvironment);
+
 
 typedef struct {
     
@@ -87,6 +88,8 @@ typedef struct {
     allocateMemoryType allocateMemory;
     freeMemoryType freeMemory;
     intermediateUpdateType intermediateUpdate;
+    lockPreemptionType  lockPreemption;
+    lockPreemptionType  unlockPreemption;
 
     bool logEvents;
     bool logErrors;
@@ -122,6 +125,8 @@ ModelInstance *createModelInstance(
     allocateMemoryType allocateMemory,
     freeMemoryType freeMemory,
     intermediateUpdateType intermediateUpdate,
+    lockPreemptionType lockPreemption, 
+    lockPreemptionType unlockPreemption,
     void *componentEnvironment,
     const char *instanceName,
     const char *GUID,
