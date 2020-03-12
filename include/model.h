@@ -114,6 +114,9 @@ typedef struct {
     double *z;
     double *prez;
     
+    // internal solver steps
+    int nSteps;
+    
     // hybrid co-simulation
     bool returnEarly;
     
