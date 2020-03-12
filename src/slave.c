@@ -5,6 +5,8 @@
  *  in the project root for license information.              *
  **************************************************************/
 
+#include <float.h>  // for DBL_EPSILON
+#include <math.h>   // for fabs()
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -84,6 +86,8 @@ ModelInstance *createModelInstance(
 
         comp->logEvents = loggingOn;
         comp->logErrors = true; // always log errors
+        
+        comp->nSteps = 0;
 
         comp->returnEarly = false;
     }
@@ -451,7 +455,9 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
     double dx[NUMBER_OF_STATES] = { 0 };
 #endif
 
-    while (comp->time + FIXED_SOLVER_STEP < tNext + 0.1 * FIXED_SOLVER_STEP) {
+    double epsilon = (1.0 + fabs(comp->time)) * DBL_EPSILON;
+    
+    while (comp->time + FIXED_SOLVER_STEP < tNext + epsilon) {
 
 #if NUMBER_OF_STATES > 0
         getContinuousStates(comp, x, NUMBER_OF_STATES);
@@ -503,18 +509,9 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
 #if FMI_VERSION == 3
             if (comp->intermediateUpdate) { // Hybrid Co-Simulation
 
-                fmi3IntermediateUpdateInfo updateInfo = { 0 };
-
-                updateInfo.intermediateUpdateTime         = comp->time;
-                updateInfo.eventOccurred                  = fmi3True;
-                updateInfo.clocksTicked                   = comp->clocksTicked;
-                updateInfo.intermediateVariableSetAllowed = fmi3False;
-                updateInfo.intermediateVariableGetAllowed = fmi3False;
-                updateInfo.intermediateStepFinished       = fmi3False;
-                updateInfo.canReturnEarly                 = fmi3True;
-
                 // call intermediate update callback
-                comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment, &updateInfo);
+                comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
+                                         comp->time, 1, comp->clocksTicked, 0, 0, 0, 1);
 
                 if (comp->returnEarly) {
                     *earlyReturn = 1;
@@ -532,7 +529,7 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
             return Discard; // enforce termination of the simulation loop
         }
 
-        comp->time += FIXED_SOLVER_STEP;
+        comp->time = FIXED_SOLVER_STEP * (++comp->nSteps);
     }
 
     if (earlyReturn) {

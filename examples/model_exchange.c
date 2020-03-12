@@ -35,18 +35,7 @@ int main(int argc, char* argv[]) {
     fmi3Float64 time = 0;
     const fmi3Float64 tStart = 0;
     fmi3Boolean timeEvent, stateEvent, enterEventMode, terminateSimulation = fmi3False, initialEventMode, valuesOfContinuousStatesChanged, nominalsOfContinuousStatesChanged;
-    fmi3EventInfo eventInfo;
     fmi3Int32 rootsFound[NUMBER_OF_EVENT_INDICATORS] = { 0 };
-
-    fmi3CallbackFunctions callbacks = {
-        .allocateMemory     = cb_allocateMemory,
-        .freeMemory         = cb_freeMemory,
-        .logMessage         = cb_logMessage,
-        .intermediateUpdate = NULL,
-        .lockPreemption     = NULL,
-        .unlockPreemption   = NULL
-    };
-    
     fmi3Instance m = NULL;
     fmi3Float64 x[NUMBER_OF_STATES] = { 0 };
     fmi3Float64 x_nominal[NUMBER_OF_STATES] = { 0 };
@@ -68,7 +57,7 @@ int main(int argc, char* argv[]) {
     fputs(OUTPUT_FILE_HEADER, outputFile);
     
 // tag::ModelExchange[]
-m = M_fmi3Instantiate("m", fmi3ModelExchange, MODEL_GUID, NULL, &callbacks, fmi3False, fmi3False, NULL);
+    m = M_fmi3InstantiateModelExchange("m", MODEL_GUID, NULL, fmi3False, fmi3False, NULL, cb_logMessage, cb_allocateMemory, cb_freeMemory);
 // "m" is the instance name
 // "M_" is the MODEL_IDENTIFIER
     
@@ -120,24 +109,31 @@ while (!terminateSimulation) {
         }
 
         // event iteration
-        eventInfo.newDiscreteStatesNeeded = fmi3True;
-        valuesOfContinuousStatesChanged   = fmi3False;
-        nominalsOfContinuousStatesChanged = fmi3False;
+        fmi3Boolean newDiscreteStatesNeeded           = fmi3True;
+        fmi3Boolean terminateSimulation               = fmi3False;
+        fmi3Boolean nominalsOfContinuousStatesChanged = fmi3False;
+        fmi3Boolean valuesOfContinuousStatesChanged   = fmi3False;
+        fmi3Boolean nextEventTimeDefined              = fmi3False;
+        fmi3Float64 nextEventTime                     = 0;
 
-        while (eventInfo.newDiscreteStatesNeeded) {
+        while (newDiscreteStatesNeeded) {
 
             // set inputs at super dense time point
             // M_fmi3SetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
+            
+            fmi3Boolean nominalsChanged = fmi3False;
+            fmi3Boolean statesChanged   = fmi3False;
 
             // update discrete states
-            CHECK_STATUS(M_fmi3NewDiscreteStates(m, &eventInfo));
+            CHECK_STATUS(M_fmi3NewDiscreteStates(m, &newDiscreteStatesNeeded, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime));
 
             // getOutput at super dense time point
             // M_fmi3GetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
-            valuesOfContinuousStatesChanged |= eventInfo.valuesOfContinuousStatesChanged;
-            nominalsOfContinuousStatesChanged |= eventInfo.nominalsOfContinuousStatesChanged;
+            
+            nominalsOfContinuousStatesChanged |= nominalsChanged;
+            valuesOfContinuousStatesChanged   |= statesChanged;
 
-            if (eventInfo.terminateSimulation) goto TERMINATE_MODEL;
+            if (terminateSimulation) goto TERMINATE_MODEL;
         }
 
         // enter Continuous-Time Mode
@@ -156,8 +152,8 @@ while (!terminateSimulation) {
             CHECK_STATUS(M_fmi3GetNominalsOfContinuousStates(m, x_nominal, NUMBER_OF_STATES));
         }
 
-        if (eventInfo.nextEventTimeDefined) {
-            tNext = min(eventInfo.nextEventTime, tEnd);
+        if (nextEventTimeDefined) {
+            tNext = min(nextEventTime, tEnd);
         } else {
             tNext = tEnd;
         }

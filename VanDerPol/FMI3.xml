@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<fmiModelDescription fmiVersion="3.0-alpha.2" modelName="van der Pol oscillator" instantiationToken="{8c4e810f-3da3-4a00-8276-176fa3c9f000}" numberOfEventIndicators="0">
+<fmiModelDescription fmiVersion="3.0-alpha.2" modelName="van der Pol oscillator" instantiationToken="{8c4e810f-3da3-4a00-8276-176fa3c9f000}">
 
   <ModelExchange modelIdentifier="VanDerPol"/>
 
-  <CoSimulation modelIdentifier="VanDerPol" canHandleVariableCommunicationStepSize="true"/>
+  <BasicCoSimulation modelIdentifier="VanDerPol" canHandleVariableCommunicationStepSize="true"/>
 
   <BuildConfiguration modelIdentifier="VanDerPol">
     <SourceFileSet language="C99">

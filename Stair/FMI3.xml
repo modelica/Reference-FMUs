@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<fmiModelDescription fmiVersion="3.0-alpha.2" modelName="Stair" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f008}" numberOfEventIndicators="0">
+<fmiModelDescription fmiVersion="3.0-alpha.2" modelName="Stair" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f008}">
 
   <ModelExchange modelIdentifier="Stair"/>
 
-  <CoSimulation modelIdentifier="Stair" canHandleVariableCommunicationStepSize="true"/>
+  <BasicCoSimulation modelIdentifier="Stair" canHandleVariableCommunicationStepSize="true"/>
 
   <BuildConfiguration modelIdentifier="Stair">
     <SourceFileSet language="C99">

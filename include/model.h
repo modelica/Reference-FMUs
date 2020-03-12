@@ -50,7 +50,9 @@ typedef enum {
 
 typedef enum {
     ModelExchange,
-    CoSimulation
+    BasicCoSimulation,
+    HybridCoSimulation,
+    ScheduledCoSimulation,
 } InterfaceType;
 
 typedef enum {
@@ -72,9 +74,15 @@ typedef void* (*allocateMemoryType)(void *componentEnvironment, size_t nobj, siz
 typedef void  (*freeMemoryType)    (void *componentEnvironment, void *obj);
 #endif
 
-typedef Status (*intermediateUpdateType) (void *componentEnvironment, void *intermediateUpdateInfo);
+typedef Status (*intermediateUpdateType) (void *instanceEnvironment,
+                                          double intermediateUpdateTime,
+                                          int eventOccurred,
+                                          int clocksTicked,
+                                          int intermediateVariableSetAllowed,
+                                          int intermediateVariableGetAllowed,
+                                          int intermediateStepFinished,
+                                          int canReturnEarly);
                                                       
-
 typedef struct {
     
     double time;
@@ -111,6 +119,9 @@ typedef struct {
     // event indicators
     double *z;
     double *prez;
+    
+    // internal solver steps
+    int nSteps;
     
     // hybrid co-simulation
     bool returnEarly;

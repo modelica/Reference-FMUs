@@ -14,19 +14,19 @@ set(MODEL_SOURCES
 )
 
 # cs_clocked
-add_executable(cs_clocked
-  ${EXAMPLE_SOURCES}
-  Clocks/config.h
-  Clocks/model.c
-  src/fmi3Functions.c
-  src/slave.c
-  examples/cs_clocked.c
-)
-set_target_properties(cs_clocked PROPERTIES FOLDER examples)
-target_include_directories(cs_clocked PRIVATE include Clocks)
-if(UNIX AND NOT APPLE)
-  target_link_libraries(cs_clocked m)
-endif()
+# add_executable(cs_clocked
+#   ${EXAMPLE_SOURCES}
+#   Clocks/config.h
+#   Clocks/model.c
+#   src/fmi3Functions.c
+#   src/slave.c
+#   examples/cs_clocked.c
+# )
+# set_target_properties(cs_clocked PROPERTIES FOLDER examples)
+# target_include_directories(cs_clocked PRIVATE include Clocks)
+# if(UNIX AND NOT APPLE)
+#   target_link_libraries(cs_clocked m)
+# endif()
 
 # cs_early_return
 add_executable(cs_early_return

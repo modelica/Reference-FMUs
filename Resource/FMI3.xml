@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<fmiModelDescription fmiVersion="3.0-alpha.2" modelName="Resource" instantiationToken="{7b9c2114-2ce5-4076-a138-2cbc69e069e5}" numberOfEventIndicators="0">
+<fmiModelDescription fmiVersion="3.0-alpha.2" modelName="Resource" instantiationToken="{7b9c2114-2ce5-4076-a138-2cbc69e069e5}">
 
   <ModelExchange modelIdentifier="Resource"/>
 
-  <CoSimulation modelIdentifier="Resource" canHandleVariableCommunicationStepSize="true"/>
+  <BasicCoSimulation modelIdentifier="Resource" canHandleVariableCommunicationStepSize="true"/>
 
   <BuildConfiguration modelIdentifier="Resource">
     <SourceFileSet language="C99">

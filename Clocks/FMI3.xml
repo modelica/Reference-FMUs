@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <fmiModelDescription fmiVersion="3.0-alpha.2" modelName="Clocks" instantiationToken="{}">
 
-  <CoSimulation modelIdentifier="Clocks"/>
+  <BasicCoSimulation modelIdentifier="Clocks"/>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>
