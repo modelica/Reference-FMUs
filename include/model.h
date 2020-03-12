@@ -74,9 +74,15 @@ typedef void* (*allocateMemoryType)(void *componentEnvironment, size_t nobj, siz
 typedef void  (*freeMemoryType)    (void *componentEnvironment, void *obj);
 #endif
 
-typedef Status (*intermediateUpdateType) (void *componentEnvironment, void *intermediateUpdateInfo);
+typedef Status (*intermediateUpdateType) (void *instanceEnvironment,
+                                          double intermediateUpdateTime,
+                                          int eventOccurred,
+                                          int clocksTicked,
+                                          int intermediateVariableSetAllowed,
+                                          int intermediateVariableGetAllowed,
+                                          int intermediateStepFinished,
+                                          int canReturnEarly);
                                                       
-
 typedef struct {
     
     double time;

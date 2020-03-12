@@ -109,25 +109,29 @@ while (!terminateSimulation) {
         }
 
         // event iteration
-        fmi3Boolean newDiscreteStatesNeeded = fmi3True;
-        fmi3Boolean terminateSimulation;
-        fmi3Boolean nominalsOfContinuousStatesChanged;
-        fmi3Boolean valuesOfContinuousStatesChanged;
-        fmi3Boolean nextEventTimeDefined;
-        fmi3Float64 nextEventTime;
+        fmi3Boolean newDiscreteStatesNeeded           = fmi3True;
+        fmi3Boolean terminateSimulation               = fmi3False;
+        fmi3Boolean nominalsOfContinuousStatesChanged = fmi3False;
+        fmi3Boolean valuesOfContinuousStatesChanged   = fmi3False;
+        fmi3Boolean nextEventTimeDefined              = fmi3False;
+        fmi3Float64 nextEventTime                     = 0;
 
         while (newDiscreteStatesNeeded) {
 
             // set inputs at super dense time point
             // M_fmi3SetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
+            
+            fmi3Boolean nominalsChanged = fmi3False;
+            fmi3Boolean statesChanged   = fmi3False;
 
             // update discrete states
-            CHECK_STATUS(M_fmi3NewDiscreteStates(m, &newDiscreteStatesNeeded, &terminateSimulation, &nominalsOfContinuousStatesChanged, &valuesOfContinuousStatesChanged, &nextEventTimeDefined, &nextEventTime));
+            CHECK_STATUS(M_fmi3NewDiscreteStates(m, &newDiscreteStatesNeeded, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime));
 
             // getOutput at super dense time point
             // M_fmi3GetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
-//            valuesOfContinuousStatesChanged   |= valuesOfContinuousStatesChanged;
-//            nominalsOfContinuousStatesChanged |= nominalsOfContinuousStatesChanged;
+            
+            nominalsOfContinuousStatesChanged |= nominalsChanged;
+            valuesOfContinuousStatesChanged   |= statesChanged;
 
             if (terminateSimulation) goto TERMINATE_MODEL;
         }

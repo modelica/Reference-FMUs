@@ -74,13 +74,6 @@ int main(int argc, char* argv[]) {
     //////////////////////////
     // Initialization sub-phase
     
-//    //set Co-Simulation mode
-//    fmi3CoSimulationConfiguration csConfig = {
-//        .intermediateVariableGetRequired         = fmi3False,
-//        .intermediateInternalVariableGetRequired = fmi3False,
-//        .intermediateVariableSetRequired         = fmi3False,
-//    };
-    
     // Instantiate slave
     fmi3Instance s = fmi3InstantiateBasicCoSimulation("slave1", MODEL_GUID, NULL, fmi3False, fmi3False, fmi3False, fmi3False, fmi3False, NULL, cb_logMessage, cb_allocateMemory, cb_freeMemory, NULL);
     
