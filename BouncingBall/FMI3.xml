@@ -3,15 +3,14 @@
   fmiVersion="3.0-alpha.2"
   modelName="BouncingBall"
   description="This model calculates the trajectory, over time, of a ball dropped from a height of 1 m."
-  instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f003}" numberOfEventIndicators="1">
+  instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f003}">
 
   <ModelExchange modelIdentifier="BouncingBall"/>
 
-  <CoSimulation modelIdentifier="BouncingBall"
+  <BasicCoSimulation modelIdentifier="BouncingBall"
     canHandleVariableCommunicationStepSize="true"
     providesIntermediateVariableAccess="true"
     canReturnEarlyAfterIntermediateUpdate="true"
-    providesHybridCoSimulation="true"
   />
 
   <BuildConfiguration modelIdentifier="BouncingBall">
@@ -62,6 +61,7 @@
     <Derivative valueReference="2"/>
     <InitialUnknown valueReference="1"/>
     <InitialUnknown valueReference="2"/>
+    <EventIndicator valueReference="1"/>
   </ModelStructure>
 
 </fmiModelDescription>
