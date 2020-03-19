@@ -5,6 +5,9 @@
 #define MODEL_IDENTIFIER Dahlquist
 #define MODEL_GUID "{8c4e810f-3df3-4a00-8276-176fa3c9f000}"
 
+#define BASIC_CO_SIMULATION
+#define MODEL_EXCHANGE
+
 // define model size
 #define NUMBER_OF_STATES 1
 #define NUMBER_OF_EVENT_INDICATORS 0

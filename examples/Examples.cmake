@@ -76,3 +76,9 @@ set_target_properties(model_exchange PROPERTIES FOLDER examples)
 target_include_directories(model_exchange PRIVATE include BouncingBall)
 target_link_libraries(model_exchange model)
 target_compile_definitions(model_exchange PRIVATE DISABLE_PREFIX)
+
+# Scheduled Co-Simulation
+add_executable(scs_synchronous ${EXAMPLE_SOURCES} src/fmi3Functions.c Clocks/model.c src/slave.c examples/scs_synchronous.c Clocks/FMI3.xml Clocks/config.h)
+set_target_properties(scs_synchronous PROPERTIES FOLDER examples)
+target_include_directories(scs_synchronous PRIVATE include Clocks)
+target_compile_definitions(scs_synchronous PRIVATE DISABLE_PREFIX)

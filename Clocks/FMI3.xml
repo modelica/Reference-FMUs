@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<fmiModelDescription fmiVersion="3.0-alpha.2" modelName="Clocks" instantiationToken="{}">
+<fmiModelDescription fmiVersion="3.0-alpha.2" modelName="Clocks" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f000}">
 
   <BasicCoSimulation modelIdentifier="Clocks"/>
 
@@ -8,8 +8,28 @@
     <Category name="logStatusError" description="Log error messages"/>
   </LogCategories>
 
-  <DefaultExperiment startTime="0" stopTime="10" stepSize="1"/>
+  <DefaultExperiment stopTime="10" stepSize="1"/>
 
+<ModelVariables>
+  <Clock name="inClock1"          valueReference="1001" causality="input"  variability="clock" clockType="communicationPoint" priority="0" periodic="true" start="0"/>
+  <Clock name="inClock2"          valueReference="1002" causality="input"  variability="clock" clockType="communicationPoint" priority="1" start="0"/>
+  <Clock name="inClock3"          valueReference="1003" causality="input"  variability="clock" clockType="communicationPoint" priority="2" clockReference="1004"/>
+  <Clock name="outClock1"         valueReference="1004" causality="output" variability="clock" clockType="communicationPoint" priority="2"/>
+  <Clock name="outClock2"         valueReference="1005" causality="output" variability="clock" clockType="communicationPoint" priority="2"/>
+  <Int32 name="inClock1Ticks"     valueReference="2001" causality="output" clockReference="1001"/>
+  <Int32 name="inClock2Ticks"     valueReference="2002" causality="output" clockReference="1002"/>
+  <Int32 name="inClock3Ticks"     valueReference="2003" causality="output" clockReference="1003"/>
+  <Int32 name="totalInClockTicks" valueReference="2004" causality="output" clockReference="1001"/>
+</ModelVariables>
+
+<ModelStructure>
+  <Output valueReference="2001"/>
+  <Output valueReference="2002"/>
+  <Output valueReference="2003"/>
+  <Output valueReference="2004"/>
+</ModelStructure>
+
+<!--
   <ModelVariables>
     <Clock name="c1" valueReference="0" causality="input"  variability="clock" clockType="synchronousTime" periodic="true"  start="0"/>
     <Clock name="c2" valueReference="1" causality="input"  variability="clock" clockType="synchronousTime" periodic="false" start="0"/>
@@ -25,5 +45,6 @@
     <Output valueReference="6"/>
     <Output valueReference="7"/>
   </ModelStructure>
+-->
 
 </fmiModelDescription>

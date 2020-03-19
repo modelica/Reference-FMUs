@@ -71,6 +71,8 @@ ModelInstance *createModelInstance(
         comp->allocateMemory = cbAllocateMemory;
         comp->freeMemory = cbFreeMemory;
         comp->intermediateUpdate = intermediateUpdate;
+        comp->lockPreemtion = NULL;
+        comp->unlockPreemtion = NULL;
 
         comp->instanceName = (char *)allocateMemory(comp, 1 + strlen(instanceName), sizeof(char));
 
@@ -406,6 +408,15 @@ Status getClock(ModelInstance* comp, ValueReference vr, int* value) {
     UNUSED(comp)
     UNUSED(vr)
     UNUSED(value)
+    return Error;
+}
+#endif
+
+#ifndef ACTIVATE_MODEL_PARTITION
+Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime) {
+    UNUSED(comp)
+    UNUSED(vr)
+    UNUSED(activationTime)
     return Error;
 }
 #endif

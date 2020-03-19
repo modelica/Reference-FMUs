@@ -65,14 +65,17 @@ typedef enum {
 } Status;
 
 #if FMI_VERSION < 3
-typedef void  (*loggerType)        (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message, ...);
-typedef void* (*allocateMemoryType)(size_t nobj, size_t size);
-typedef void  (*freeMemoryType)    (void *obj);
+typedef void  (*loggerType)         (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message, ...);
+typedef void* (*allocateMemoryType) (size_t nobj, size_t size);
+typedef void  (*freeMemoryType)     (void *obj);
 #else
-typedef void  (*loggerType)        (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message);
-typedef void* (*allocateMemoryType)(void *componentEnvironment, size_t nobj, size_t size);
-typedef void  (*freeMemoryType)    (void *componentEnvironment, void *obj);
+typedef void  (*loggerType)          (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message);
+typedef void* (*allocateMemoryType)  (void *componentEnvironment, size_t nobj, size_t size);
+typedef void  (*freeMemoryType)      (void *componentEnvironment, void *obj);
 #endif
+
+typedef void  (*lockPreemptionType)   ();
+typedef void  (*unlockPreemptionType) ();
 
 typedef Status (*intermediateUpdateType) (void *instanceEnvironment,
                                           double intermediateUpdateTime,
@@ -95,6 +98,9 @@ typedef struct {
     allocateMemoryType allocateMemory;
     freeMemoryType freeMemory;
     intermediateUpdateType intermediateUpdate;
+    
+    lockPreemptionType lockPreemtion;
+    unlockPreemptionType unlockPreemtion;
 
     bool logEvents;
     bool logErrors;
@@ -161,6 +167,8 @@ Status setBinary  (ModelInstance* comp, ValueReference vr, const size_t size[], 
 
 Status activateClock(ModelInstance* comp, ValueReference vr);
 Status getClock(ModelInstance* comp, ValueReference vr, int* value);
+
+Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime);
 
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx);
 void setContinuousStates(ModelInstance *comp, const double x[], size_t nx);

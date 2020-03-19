@@ -85,5 +85,5 @@ for (i = 0; i < nx; i++) {
 
     printf("done.\n");
 
-    return 0;
+    return EXIT_SUCCESS;
 }

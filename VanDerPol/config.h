@@ -5,6 +5,9 @@
 #define MODEL_IDENTIFIER VanDerPol
 #define MODEL_GUID "{8c4e810f-3da3-4a00-8276-176fa3c9f000}"
 
+#define BASIC_CO_SIMULATION
+#define MODEL_EXCHANGE
+
 // define model size
 #define NUMBER_OF_STATES 2
 #define NUMBER_OF_EVENT_INDICATORS 0

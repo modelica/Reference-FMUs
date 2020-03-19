@@ -170,7 +170,7 @@ class BuildTest(unittest.TestCase):
 
         # run examples
         for example in ['co_simulation', #'cs_clocked',
-            'cs_early_return', 'jacobian']:
+            'cs_early_return', 'scs_synchronous', 'jacobian']:
             print("Running %s example..." % example)
             if os.name == 'nt':
                 filename = os.path.join(build_dir, 'Release', example + '.exe')

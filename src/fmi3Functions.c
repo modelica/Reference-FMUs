@@ -165,6 +165,9 @@ fmi3Instance fmi3InstantiateModelExchange(
     fmi3CallbackAllocateMemory allocateMemory,
     fmi3CallbackFreeMemory     freeMemory) {
     
+#ifndef MODEL_EXCHANGE
+    return NULL;
+#else
     return createModelInstance(
         (loggerType)logMessage,
         (allocateMemoryType)allocateMemory,
@@ -178,6 +181,7 @@ fmi3Instance fmi3InstantiateModelExchange(
         ModelExchange,
         false
     );
+#endif
 }
 
 fmi3Instance fmi3InstantiateBasicCoSimulation(
@@ -209,6 +213,48 @@ fmi3Instance fmi3InstantiateBasicCoSimulation(
         false
     );
 }
+
+fmi3Instance fmi3InstantiateScheduledCoSimulation(
+    fmi3String                     instanceName,
+    fmi3String                     instantiationToken,
+    fmi3String                     resourceLocation,
+    fmi3Boolean                    visible,
+    fmi3Boolean                    loggingOn,
+    fmi3Boolean                    intermediateVariableGetRequired,
+    fmi3Boolean                    intermediateInternalVariableGetRequired,
+    fmi3Boolean                    intermediateVariableSetRequired,
+    fmi3InstanceEnvironment        instanceEnvironment,
+    fmi3CallbackLogMessage         logMessage,
+    fmi3CallbackAllocateMemory     allocateMemory,
+    fmi3CallbackFreeMemory         freeMemory,
+    fmi3CallbackIntermediateUpdate intermediateUpdate,
+    fmi3CallbackLockPreemption     lockPreemption,
+    fmi3CallbackUnlockPreemption   unlockPreemption) {
+    
+#ifndef SCHEDULED_CO_SIMULATION
+    return NULL;
+#else
+    ModelInstance *comp = createModelInstance(
+        (loggerType)logMessage,
+        (allocateMemoryType)allocateMemory,
+        (freeMemoryType)freeMemory,
+        (intermediateUpdateType) intermediateUpdate,
+        instanceEnvironment,
+        instanceName,
+        instantiationToken,
+        resourceLocation,
+        loggingOn,
+        ScheduledCoSimulation,
+        false
+    );
+    
+    comp->lockPreemtion = lockPreemption;
+    comp->unlockPreemtion = unlockPreemption;
+
+    return comp;
+#endif
+}
+
 
 void fmi3FreeInstance(fmi3Instance instance) {
 
@@ -707,7 +753,7 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
 
 fmi3Status fmi3GetClock(fmi3Instance instance,
                         const fmi3ValueReference valueReferences[], size_t nValueReferences,
-                        fmi3Boolean value[]) {
+                        fmi3Clock value[]) {
 
     Status status = OK;
 
@@ -958,7 +1004,8 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
                                       fmi3ValueReference clockReference,
                                       fmi3Float64 activationTime) {
-    NOT_IMPLEMENTED
+    ModelInstance *comp = (ModelInstance *)instance;
+    return activateModelPartition(comp, clockReference, activationTime);
 }
 
 fmi3Status fmi3DoEarlyReturn(fmi3Instance instance, fmi3Float64 earlyReturnTime) {

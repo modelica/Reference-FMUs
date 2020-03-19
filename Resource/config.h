@@ -5,6 +5,9 @@
 #define MODEL_IDENTIFIER Resource
 #define MODEL_GUID "{7b9c2114-2ce5-4076-a138-2cbc69e069e5}"
 
+#define BASIC_CO_SIMULATION
+#define MODEL_EXCHANGE
+
 // define model size
 #define NUMBER_OF_STATES 0
 #define NUMBER_OF_EVENT_INDICATORS 0
