@@ -4,12 +4,10 @@
 #include <math.h>
 #include <stdlib.h>
 #include <windows.h>
-#include <process.h>
+// #include <process.h>
 #include "fmi3Functions.h"
 
 
-// Global variables for this model
- HGLOBAL globalLockVar;
 
 /*
 
@@ -124,7 +122,7 @@ void calculateValues(ModelInstance *comp) {
 }
 
 /*
-* Runnable function for model partition 1
+* Function for model partition 1
 * triggered by the master
 */
 void mp1_run(ModelInstance* comp, double time) {
@@ -147,7 +145,7 @@ void mp1_run(ModelInstance* comp, double time) {
 
 	comp->clocksTicked = M(data_OutClock_1);
 
-	comp->lockPreemption(comp);
+	comp->unlockPreemption(comp);
 
 	if (comp->clocksTicked) {
 		fmi3IntermediateUpdateInfo updateInfo = { 0 };
@@ -166,7 +164,7 @@ void mp1_run(ModelInstance* comp, double time) {
 }
 
 /*
-* Runnable function for model partition 2
+* Function for model partition 2
 * triggered by the master
 */
 void mp2_run(ModelInstance *comp, double time) {
@@ -191,7 +189,7 @@ void mp2_run(ModelInstance *comp, double time) {
 		M(data_OutClock_2) = fmi3ClockActive;
 		comp->clocksTicked = true;
 	}
-	comp->lockPreemption(comp);
+	comp->unlockPreemption(comp);
 
 	if (comp->clocksTicked) {
 		fmi3IntermediateUpdateInfo updateInfo = { 0 };
@@ -212,7 +210,7 @@ void mp2_run(ModelInstance *comp, double time) {
 }
 
 /*
- * Runnable function for model partition 3
+ * Function for model partition 3
  * This is the dependent part of the model
  * it is triggered when OutClock_1 is activated
 
@@ -230,7 +228,7 @@ void mp3_run(ModelInstance* comp, double time) {
 	M(data_InClock_3_Ticks)++;
 	M(data_total_InClock_Ticks)++;
 
-	comp->lockPreemption(comp);
+	comp->unlockPreemption(comp);
 
 	// This partition is supposed to consume a bit of time on a low prio ...
 	unsigned long sum = 0;
@@ -254,7 +252,7 @@ void mp3_run(ModelInstance* comp, double time) {
 */
 Status activateModelPartition(ModelInstance* comp, ValueReference clockReference, double activationTime) {
 	
-	logEvent(comp, "ActivateModelPartition: comp->time=%f clockReference=%d", activationTime, clockReference);
+	logEvent(comp, "ActivateModelPartition: time=%f clockReference=%d", activationTime, clockReference);
 	
 	switch (clockReference) {
 	case vr_InClock_1:

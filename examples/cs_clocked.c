@@ -28,7 +28,7 @@ void logEvent(fmi3Instance* comp, const char* message, ...);
 
 /* *****************  Global variables ***************** */
 // Global lock for protecting the access to the model's memory area
-extern HGLOBAL globalLockVar;
+HGLOBAL globalLockVar;
 
 // All threads for the model partitions are supposed to run on the same processor
 // stores the to-be-used processor for the thread creation.
@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
 	};
 
 	// Instantiate slave
-	const fmi3Instance s = fmi3Instantiate("instance", fmi3CoSimulation, MODEL_GUID, "", &callbacks, fmi3False, fmi3True, &csConfig);
+	const fmi3Instance s = fmi3Instantiate("instance", fmi3ScheduledCoSimulation, MODEL_GUID, "", &callbacks, fmi3False, fmi3True, &csConfig);
 
 	if (s == NULL) {
 		status = fmi3Error;
@@ -271,18 +271,34 @@ fmi3Status recordVariables(fmi3Instance s, fmi3Float64 time, int modelPart) {
 fmi3Status cb_intermediateUpdate(fmi3Instance s, fmi3IntermediateUpdateInfo* intermediateUpdateInfo) {
 	HANDLE thr_handle;
 	int returnval;
+	// Local copy for this thread of the states of the output clocks 
+	fmi3Clock locOutputClocks[N_OUTPUT_CLOCKS]; 
+	
 
 	// In this example we only check for ticking output clocks.
-	// If there is no such clock, that's ok.
-	if (!intermediateUpdateInfo->clocksTicked || !checkOutputClocks(s)) {
+	if (!intermediateUpdateInfo->clocksTicked) {
 		logEvent(s, "No clock active in intermediateUpdate callback");
 		return fmi3OK;
 	}
 
+	// In order to be threadsafe we have to check the clocks under lock
+	// and copy their states
+	GlobalLock(globalLockVar);
+	if (!checkOutputClocks(s)) {
+		GlobalUnlock(globalLockVar);
+		logEvent(s, "No clock active in intermediateUpdate callback");
+		return fmi3OK;
+	}
+	for (int oc = 0; oc < N_OUTPUT_CLOCKS; oc++) {
+		locOutputClocks[oc] = outputClocks[oc];
+	}
+	GlobalUnlock(globalLockVar);
+
+
 	// Some output clock ticked, check for dependend input clocks and, if there are any, fire them
 	// input clock 3 depends on output clock 1
 	// This dependency is taken from ModelDescription.xml 
-	if (outputClocks[OutClock_1]) {
+	if (locOutputClocks[OutClock_1]) {
 		// create a thread that will run the model partition for input clock 3
 		logEvent(s, "cb_intermediateUpdate starting thread for input clock 3 (vr=%d)", vr_InClock_3);
 
@@ -302,7 +318,7 @@ fmi3Status cb_intermediateUpdate(fmi3Instance s, fmi3IntermediateUpdateInfo* int
 		}
 
 	}
-	if (outputClocks[OutClock_2]) {
+	if (locOutputClocks[OutClock_2]) {
 		//  so far, no other action but a log message
 		logEvent(s, "Detected ticking of output clock 2 (time=%g)", time);
 	}
