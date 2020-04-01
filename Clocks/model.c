@@ -4,7 +4,6 @@
 #include <math.h>
 #include <stdlib.h>
 #include <windows.h>
-// #include <process.h>
 #include "fmi3Functions.h"
 
 
@@ -37,7 +36,7 @@ OutClock_2 = calculated by Part2: if time >=1 and time is
  Part 1 is run when the periodical input clock 1 is ticking
  It counts the ticks for input clock 1 and the ticks of all input clocks in separate variables (InClock_1_Ticks resp. total_InClock_Ticks)
  When the number of all input clocks is exactly 5, the output clock 1 ticks which will trigger the dependent input clock 3
-
+   
  Part 2 is run when the 2nd input clocks ticks (non-periodically)
  It counts the ticks for input clock 2 and the ticks of all input clocks (InClock_2_Ticks resp. total_InClock_Ticks)
  also it checks its input (input_2) and adds it to a result variable (result_2)

@@ -120,9 +120,18 @@
 #define MASK_fmi3GetBooleanStatus        MASK_fmi3GetStatus
 #define MASK_fmi3GetStringStatus         MASK_fmi3GetStatus
 
-// ---------------------------------------------------------------------------
-// Private helpers used below to validate function arguments
-// ---------------------------------------------------------------------------
+/***************************************************
+ Externally defined Functions
+****************************************************/
+
+#ifdef ACTIVATE_MODEL_PARTITION
+extern Status activateModelPartition(ModelInstance*, ValueReference, double);
+#endif
+
+
+/***************************************************
+ Private helpers used below to validate function arguments
+****************************************************/
 
 #define NOT_IMPLEMENTED ModelInstance *comp = (ModelInstance *)instance; \
     logError(comp, "Function is not implemented."); \
@@ -138,7 +147,7 @@ static fmi3Status unsupportedFunction(fmi3Instance instance, const char *fName, 
 
 /***************************************************
  Common Functions
- ****************************************************/
+****************************************************/
 
 const char* fmi3GetVersion() {
     return fmi3Version;
@@ -887,6 +896,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
                                       fmi3ValueReference clockReference,
                                       fmi3Float64 activationTime) {
+
 
 #ifdef ACTIVATE_MODEL_PARTITION
 	return activateModelPartition(instance, clockReference, activationTime);
