@@ -91,8 +91,12 @@ jobs:
   - script: |
       call activate myEnvironment
       conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 dask lark-parser lxml numpy pathlib pip pytest pywin32 requests scipy
-      python -m pip install --no-deps https://github.com/CATIA-Systems/FMPy/archive/85a19dd161f2773e342550d4c5c9272ba4e25412.zip
     displayName: Install Anaconda packages
+
+  - script: |
+      call activate myEnvironment
+      python -m pip install --no-deps https://github.com/CATIA-Systems/FMPy/archive/85a19dd161f2773e342550d4c5c9272ba4e25412.zip
+    displayName: Install FMPy
 
   - script: |
       call activate myEnvironment
