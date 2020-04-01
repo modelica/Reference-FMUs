@@ -20,6 +20,7 @@ jobs:
     displayName: Install Anaconda packages
 
   - bash: |
+      source activate myEnvironment
       pytest --junitxml=junit/test-results.xml
     displayName: Build and run tests
 
@@ -59,6 +60,7 @@ jobs:
     displayName: Install Anaconda packages
 
   - bash: |
+      source activate myEnvironment
       pytest --junitxml=junit/test-results.xml
     displayName: Build and run tests
 
@@ -93,6 +95,7 @@ jobs:
     displayName: Install Anaconda packages
 
   - script: |
+      call activate myEnvironment
       pytest --junitxml=junit/test-results.xml
     displayName: Build, install and run tests
 
