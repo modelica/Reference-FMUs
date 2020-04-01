@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<fmiModelDescription fmiVersion="3.0-alpha.2" modelName="Feedthrough" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f004}">
+<fmiModelDescription fmiVersion="3.0-alpha.3" modelName="Feedthrough" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f004}">
 
   <ModelExchange modelIdentifier="Feedthrough"/>
 
