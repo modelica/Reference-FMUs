@@ -2,33 +2,12 @@ import unittest
 import subprocess
 import os
 import shutil
+from fmpy import simulate_fmu, platform
+from fmpy.util import compile_platform_binary
 
 
 fmus_dir = os.path.join(os.path.dirname(__file__), 'fmus')  # /path/to/fmi-cross-check/fmus
 test_fmus_version = '0.0.2'
-
-try:
-    from fmpy import simulate_fmu
-    from fmpy.util import compile_platform_binary
-
-    fmpy_available = True
-except:
-    print("FMPy not available. Skipping simulation.")
-    fmpy_available = False
-
-
-fmi3_available = False
-
-try:
-    import fmpy
-# TODO: uncomment when FMPy has been updated
-#     fmi3_available = 'fmi3' in dir(fmpy)
-except:
-    pass
-
-if not fmi3_available:
-    print("FMI 3.0 support in FMPy not available. Skipping FMI 3.0 simulation.")
-
 
 test_fmus_dir = os.path.dirname(__file__)
 
@@ -46,7 +25,7 @@ def copy_to_cross_check(build_dir, model_names, fmi_version, fmi_types):
 
     for fmi_type in fmi_types:
         for model in model_names:
-            target_dir = os.path.join(fmus_dir, fmi_version, fmi_type, fmpy.platform, 'Reference-FMUs', test_fmus_version, model)
+            target_dir = os.path.join(fmus_dir, fmi_version, fmi_type, platform, 'Reference-FMUs', test_fmus_version, model)
             if not os.path.exists(target_dir):
                 os.makedirs(target_dir)
             shutil.copy(os.path.join(build_dir, 'dist', model + '.fmu'), target_dir)
@@ -114,10 +93,9 @@ class BuildTest(unittest.TestCase):
 
         model_names = ['BouncingBall', 'Dahlquist', 'Stair', 'VanDerPol']
 
-        if fmpy_available:
-            self.validate(build_dir,
-                          fmi_types=['ModelExchange'],
-                          models=model_names)
+        self.validate(build_dir,
+                      fmi_types=['ModelExchange'],
+                      models=model_names)
 
         copy_to_cross_check(build_dir=build_dir, model_names=model_names, fmi_version='1.0', fmi_types=['me'])
 
@@ -133,10 +111,9 @@ class BuildTest(unittest.TestCase):
 
         model_names = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol']
 
-        if fmpy_available:
-            self.validate(build_dir,
-                          fmi_types=['CoSimulation'],
-                          models=model_names)
+        self.validate(build_dir,
+                      fmi_types=['CoSimulation'],
+                      models=model_names)
 
         copy_to_cross_check(build_dir=build_dir, model_names=model_names, fmi_version='1.0', fmi_types=['cs'])
 
@@ -150,9 +127,8 @@ class BuildTest(unittest.TestCase):
         subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=2', '..'], cwd=build_dir)
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
-        if fmpy_available:
-            self.validate(build_dir)
-            self.validate(build_dir, compile=True)
+        self.validate(build_dir)
+        self.validate(build_dir, compile=True)
 
         copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='2.0', fmi_types=['cs', 'me'])
 
@@ -178,8 +154,9 @@ class BuildTest(unittest.TestCase):
                 filename = os.path.join(build_dir, example)
             subprocess.check_call(filename)
 
-        if fmi3_available:
-            self.validate(build_dir, models=['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol'])
+        models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
+        self.validate(build_dir, models=models)
+        self.validate(build_dir, models=models, compile=True)
 
         copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='3.0', fmi_types=['cs', 'me'])
 
