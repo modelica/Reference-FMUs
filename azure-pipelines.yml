@@ -16,6 +16,7 @@ jobs:
   - bash: |
       source activate myEnvironment
       conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 pip pytest scipy
+      source activate myEnvironment
       python -m pip install --no-deps https://github.com/CATIA-Systems/FMPy/archive/85a19dd161f2773e342550d4c5c9272ba4e25412.zip
     displayName: Install Anaconda packages
 
@@ -56,6 +57,7 @@ jobs:
   - bash: |
       source activate myEnvironment
       conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 pip pytest scipy
+      source activate myEnvironment
       python -m pip install --no-deps https://github.com/CATIA-Systems/FMPy/archive/85a19dd161f2773e342550d4c5c9272ba4e25412.zip
     displayName: Install Anaconda packages
 
