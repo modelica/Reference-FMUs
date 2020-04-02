@@ -1,3 +1,7 @@
+variables:
+  fmpy: https://github.com/CATIA-Systems/FMPy/archive/85a19dd161f2773e342550d4c5c9272ba4e25412.zip
+  conda.packages: python=3.7 dask lark-parser lxml numpy pathlib pip pytest pywin32 requests scipy
+
 jobs:
 
 - job: linux64
@@ -10,17 +14,16 @@ jobs:
   - bash: echo "##vso[task.prependpath]$CONDA/bin"
     displayName: Add conda to PATH
 
-  - bash: conda create --yes --quiet --name myEnvironment
-    displayName: Create Anaconda environment
+  - bash: conda create --yes --quiet --name ref_fmus $CONDA_PACKAGES
+    displayName: Create Conda environment
 
   - bash: |
-      source activate myEnvironment
-      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 dask lark-parser lxml numpy pathlib pip pytest requests scipy
-      python -m pip install --no-deps https://github.com/CATIA-Systems/FMPy/archive/85a19dd161f2773e342550d4c5c9272ba4e25412.zip
-    displayName: Install Anaconda packages
+      source activate ref_fmus
+      python -m pip install --no-deps $FMPY
+    displayName: Install FMPy
 
   - bash: |
-      source activate myEnvironment
+      source activate ref_fmus
       pytest --junitxml=junit/test-results.xml
     displayName: Build and run tests
 
@@ -50,17 +53,16 @@ jobs:
   - bash: sudo chown -R $USER $CONDA
     displayName: Take ownership of conda installation
 
-  - bash: conda create --yes --quiet --name myEnvironment
+  - bash: conda create --yes --quiet --name ref_fmus $CONDA_PACKAGES
     displayName: Create Anaconda environment
 
   - bash: |
-      source activate myEnvironment
-      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 dask lark-parser lxml numpy pathlib pip pytest requests scipy
-      python -m pip install --no-deps https://github.com/CATIA-Systems/FMPy/archive/85a19dd161f2773e342550d4c5c9272ba4e25412.zip
-    displayName: Install Anaconda packages
+      source activate ref_fmus
+      python -m pip install --no-deps $FMPY
+    displayName: Install FMPY
 
   - bash: |
-      source activate myEnvironment
+      source activate ref_fmus
       pytest --junitxml=junit/test-results.xml
     displayName: Build and run tests
 
@@ -85,21 +87,16 @@ jobs:
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
     displayName: Add conda to PATH
 
-  - script: conda create --yes --quiet --name myEnvironment
+  - script: conda create --yes --quiet --name ref_fmus %CONDA_PACKAGES% pywin32
     displayName: Create Anaconda environment
 
   - script: |
-      call activate myEnvironment
-      conda install --yes --quiet --name myEnvironment -c conda-forge python=3.7 dask lark-parser lxml numpy pathlib pip pytest pywin32 requests scipy
-    displayName: Install Anaconda packages
-
-  - script: |
-      call activate myEnvironment
-      python -m pip install --no-deps https://github.com/CATIA-Systems/FMPy/archive/85a19dd161f2773e342550d4c5c9272ba4e25412.zip
+      call activate ref_fmus
+      python -m pip install --no-deps %FMPY%
     displayName: Install FMPy
 
   - script: |
-      call activate myEnvironment
+      call activate ref_fmus
       pytest --junitxml=junit/test-results.xml
     displayName: Build, install and run tests
 
