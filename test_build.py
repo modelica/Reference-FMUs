@@ -145,8 +145,7 @@ class BuildTest(unittest.TestCase):
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
         # run examples
-        for example in ['co_simulation', #'cs_clocked',
-            'cs_early_return', 'scs_synchronous', 'jacobian']:
+        for example in ['co_simulation', 'scs_threaded', 'cs_early_return', 'scs_synchronous', 'jacobian']:
             print("Running %s example..." % example)
             if os.name == 'nt':
                 filename = os.path.join(build_dir, 'Release', example + '.exe')
@@ -154,7 +153,7 @@ class BuildTest(unittest.TestCase):
                 filename = os.path.join(build_dir, example)
             subprocess.check_call(filename)
 
-        models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
+        models = ['BouncingBall', 'Clocks', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
         self.validate(build_dir, models=models)
         self.validate(build_dir, models=models, compile=True)
 
