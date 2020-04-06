@@ -13,20 +13,6 @@ set(MODEL_SOURCES
   VanDerPol/sources/slave.c
 )
 
-# cs_clocked
-# add_executable(cs_clocked
-#   ${EXAMPLE_SOURCES}
-#   Clocks/config.h
-#   Clocks/model.c
-#   src/fmi3Functions.c
-#   src/slave.c
-#   examples/cs_clocked.c
-# )
-# set_target_properties(cs_clocked PROPERTIES FOLDER examples)
-# target_include_directories(cs_clocked PRIVATE include Clocks)
-# if(UNIX AND NOT APPLE)
-#   target_link_libraries(cs_clocked m)
-# endif()
 
 # cs_early_return
 add_executable(cs_early_return
@@ -82,3 +68,8 @@ add_executable(scs_synchronous ${EXAMPLE_SOURCES} src/fmi3Functions.c Clocks/mod
 set_target_properties(scs_synchronous PROPERTIES FOLDER examples)
 target_include_directories(scs_synchronous PRIVATE include Clocks)
 target_compile_definitions(scs_synchronous PRIVATE DISABLE_PREFIX)
+
+add_executable(scs_threaded ${EXAMPLE_SOURCES} src/fmi3Functions.c Clocks/model.c src/slave.c examples/scs_threaded.c Clocks/FMI3.xml Clocks/config.h)
+set_target_properties(scs_threaded PROPERTIES FOLDER examples)
+target_include_directories(scs_threaded PRIVATE include Clocks)
+target_compile_definitions(scs_threaded PRIVATE DISABLE_PREFIX)
