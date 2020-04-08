@@ -153,7 +153,7 @@ class BuildTest(unittest.TestCase):
                 filename = os.path.join(build_dir, example)
             subprocess.check_call(filename)
 
-        models = ['BouncingBall', 'Clocks', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
+        models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
         self.validate(build_dir, models=models)
         self.validate(build_dir, models=models, compile=True)
 
