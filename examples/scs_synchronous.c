@@ -3,9 +3,7 @@
 #include "fmi3Functions.h"
 #include "util.h"
 #include "config.h"
-#ifdef WINDOWS
-#include <windows.h> // only runs on Windows
-#endif
+
 
 #define CHECK_STATUS(S) status = S; if (status != fmi3OK) goto TERMINATE;
 
@@ -109,9 +107,7 @@ int main(int argc, char* argv[]) {
         CHECK_STATUS(fmi3GetClock(m, outClockVRs, 2, outClockValues));
                 
         CHECK_STATUS(recordVariables(m, time));
-#ifdef WINDOWS
-        Sleep(950); // sleep for a little less than step time 
-#endif
+
         time += 1;
     }
 
