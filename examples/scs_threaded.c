@@ -2,10 +2,12 @@
 #include <stdbool.h>
 #include "config.h"
 
-#ifdef WINDOWS
-#include <windows.h> // only runs on Windows
+#ifdef _WIN32
+#include <windows.h>
 #include <strsafe.h>
 #include <process.h>
+#else
+#error This example can only be compiled on Windows
 #endif
 
 #define _USE_MATH_DEFINES
