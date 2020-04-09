@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
     const fmi3Float64 tEnd = STOP_TIME;
     fmi3Float64 time = 0;
     const fmi3Float64 tStart = 0;
-    fmi3Boolean timeEvent, stateEvent, enterEventMode, terminateSimulation = fmi3False, initialEventMode, valuesOfContinuousStatesChanged, nominalsOfContinuousStatesChanged;
+    fmi3Boolean timeEvent, stateEvent, enterEventMode, terminateSimulation = fmi3False, initialEventMode;
     fmi3Int32 rootsFound[NUMBER_OF_EVENT_INDICATORS] = { 0 };
     fmi3Instance m = NULL;
     fmi3Float64 x[NUMBER_OF_STATES] = { 0 };
