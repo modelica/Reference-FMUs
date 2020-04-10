@@ -7,6 +7,8 @@
 #define MODEL_IDENTIFIER Clocks
 #define MODEL_GUID "{8c4e810f-3df3-4a00-8276-176fa3c9f000}"
 
+#define WINDOWS
+
 #define SCHEDULED_CO_SIMULATION
 
 // define model size
@@ -16,9 +18,11 @@
 #define EVENT_UPDATE
 #define ACTIVATE_CLOCK
 #define GET_INT32
+#define SET_INT32
 #define GET_CLOCK
 #define ACTIVATE_MODEL_PARTITION
-
+#define N_INPUT_CLOCKS 3
+#define N_OUTPUT_CLOCKS 2
 
 #define FIXED_SOLVER_STEP 1
 
@@ -32,6 +36,9 @@ typedef enum {
     vr_inClock2Ticks     = 2002,
     vr_inClock3Ticks     = 2003,
     vr_totalInClockTicks = 2004,
+    vr_result2           = 2005,
+    vr_input2            = 2006,
+    vr_output3           = 2007,
 } ValueReference;
 
 typedef struct {
@@ -41,6 +48,10 @@ typedef struct {
     int inClock2Ticks;
     int inClock3Ticks;
     int totalInClockTicks;
+    int result2;
+    int input2;
+    int output3;
 } ModelData;
+
 
 #endif /* config_h */
