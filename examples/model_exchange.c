@@ -23,7 +23,9 @@ fmi3Status recordVariables(FILE *outputFile, fmi3Instance s, fmi3Float64 time) {
     return status;
 }
 
+// tag::CheckStatus[]
 #define CHECK_STATUS(S) status = S; if (status != fmi3OK) goto TERMINATE_MODEL;
+// end::CheckStatus[]
 
 int main(int argc, char* argv[]) {
 
@@ -224,6 +226,7 @@ TERMINATE_MODEL:
         // clean up
         M_fmi3FreeInstance(m);
     }
+    // end::ModelExchange[]
 
     printf("done.\n");
 
