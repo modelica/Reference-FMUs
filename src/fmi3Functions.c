@@ -39,48 +39,35 @@
 // ---------------------------------------------------------------------------
 // Function calls allowed state masks for both Model-exchange and Co-simulation
 // ---------------------------------------------------------------------------
-#define MASK_fmi3GetTypesPlatform        (modelStartAndEnd | modelInstantiated | modelInitializationMode \
-| modelEventMode | modelContinuousTimeMode \
-| modelStepComplete | modelStepInProgress | modelStepFailed | modelStepCanceled \
-| modelTerminated | modelError)
-#define MASK_fmi3GetVersion              MASK_fmi3GetTypesPlatform
-#define MASK_fmi3SetDebugLogging         (modelInstantiated | modelInitializationMode \
-| modelEventMode | modelContinuousTimeMode \
-| modelStepComplete | modelStepInProgress | modelStepFailed | modelStepCanceled \
-| modelTerminated | modelError)
-#define MASK_fmi3Instantiate             (modelStartAndEnd)
-#define MASK_fmi3FreeInstance            (modelInstantiated | modelInitializationMode \
-| modelEventMode | modelContinuousTimeMode \
-| modelStepComplete | modelStepFailed | modelStepCanceled \
-| modelTerminated | modelError)
-#define MASK_fmi3SetupExperiment         modelInstantiated
-#define MASK_fmi3EnterInitializationMode modelInstantiated
-#define MASK_fmi3ExitInitializationMode  modelInitializationMode
-#define MASK_fmi3Terminate               (modelEventMode | modelContinuousTimeMode \
-| modelStepComplete | modelStepFailed)
-#define MASK_fmi3Reset                   MASK_fmi3FreeInstance
-#define MASK_fmi3GetFloat64              (modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
-#define MASK_fmi3GetUInt16               MASK_fmi3GetFloat64
-#define MASK_fmi3GetInt32                MASK_fmi3GetFloat64
-#define MASK_fmi3GetBoolean              MASK_fmi3GetFloat64
-#define MASK_fmi3GetString               MASK_fmi3GetFloat64
-#define MASK_fmi3SetFloat64              (modelInstantiated | modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete)
-#define MASK_fmi3SetInt32                (modelInstantiated | modelInitializationMode | modelEventMode | modelStepComplete)
-#define MASK_fmi3SetBoolean              MASK_fmi3SetInt32
-#define MASK_fmi3SetString               MASK_fmi3SetInt32
-#define MASK_fmi3SetBinary               MASK_fmi3SetInt32
-#define MASK_fmi3GetFMUState             MASK_fmi3FreeInstance
-#define MASK_fmi3SetFMUState             MASK_fmi3FreeInstance
-#define MASK_fmi3FreeFMUState            MASK_fmi3FreeInstance
-#define MASK_fmi3SerializedFMUStateSize  MASK_fmi3FreeInstance
-#define MASK_fmi3SerializeFMUState       MASK_fmi3FreeInstance
-#define MASK_fmi3DeSerializeFMUState     MASK_fmi3FreeInstance
-#define MASK_fmi3GetDirectionalDerivative (modelInitializationMode \
-| modelEventMode | modelContinuousTimeMode \
-| modelStepComplete | modelStepFailed | modelStepCanceled \
-| modelTerminated | modelError)
+#define MASK_fmi3GetTypesPlatform         (modelStartAndEnd | modelInstantiated | modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepInProgress | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
+#define MASK_fmi3GetVersion               MASK_fmi3GetTypesPlatform
+#define MASK_fmi3SetDebugLogging          (modelInstantiated | modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepInProgress | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
+#define MASK_fmi3Instantiate              (modelStartAndEnd)
+#define MASK_fmi3FreeInstance             (modelInstantiated | modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
+#define MASK_fmi3SetupExperiment          modelInstantiated
+#define MASK_fmi3EnterInitializationMode  modelInstantiated
+#define MASK_fmi3ExitInitializationMode   modelInitializationMode
+#define MASK_fmi3Reset                    MASK_fmi3FreeInstance
+#define MASK_fmi3GetFloat64               (modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
+#define MASK_fmi3GetUInt16                MASK_fmi3GetFloat64
+#define MASK_fmi3GetInt32                 MASK_fmi3GetFloat64
+#define MASK_fmi3GetBoolean               MASK_fmi3GetFloat64
+#define MASK_fmi3GetString                MASK_fmi3GetFloat64
+#define MASK_fmi3SetFloat64               (modelInstantiated | modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete)
+#define MASK_fmi3SetInt32                 (modelInstantiated | modelInitializationMode | modelEventMode | modelStepComplete)
+#define MASK_fmi3SetBoolean               MASK_fmi3SetInt32
+#define MASK_fmi3SetString                MASK_fmi3SetInt32
+#define MASK_fmi3SetBinary                MASK_fmi3SetInt32
+#define MASK_fmi3GetFMUState              MASK_fmi3FreeInstance
+#define MASK_fmi3SetFMUState              MASK_fmi3FreeInstance
+#define MASK_fmi3FreeFMUState             MASK_fmi3FreeInstance
+#define MASK_fmi3SerializedFMUStateSize   MASK_fmi3FreeInstance
+#define MASK_fmi3SerializeFMUState        MASK_fmi3FreeInstance
+#define MASK_fmi3DeSerializeFMUState      MASK_fmi3FreeInstance
+#define MASK_fmi3GetDirectionalDerivative (modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
 
 // TODO: fix masks
+#define MASK_fmi3Terminate                 (~0) // (modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepFailed)
 #define MASK_fmi3GetClock                  (~0)
 #define MASK_fmi3SetClock                  (~0)
 #define MASK_fmi3ActivateModelPartition    (~0)
@@ -91,15 +78,15 @@
 // ---------------------------------------------------------------------------
 // Function calls allowed state masks for Model-exchange
 // ---------------------------------------------------------------------------
-#define MASK_fmi3EnterEventMode          (modelEventMode | modelContinuousTimeMode)
-#define MASK_fmi3NewDiscreteStates       modelEventMode
-#define MASK_fmi3EnterContinuousTimeMode modelEventMode
-#define MASK_fmi3CompletedIntegratorStep modelContinuousTimeMode
-#define MASK_fmi3SetTime                 (modelEventMode | modelContinuousTimeMode)
-#define MASK_fmi3SetContinuousStates     modelContinuousTimeMode
-#define MASK_fmi3GetEventIndicators      (modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelTerminated | modelError)
-#define MASK_fmi3GetContinuousStates     MASK_fmi3GetEventIndicators
-#define MASK_fmi3GetDerivatives          (modelEventMode | modelContinuousTimeMode | modelTerminated | modelError)
+#define MASK_fmi3EnterEventMode                (modelEventMode | modelContinuousTimeMode)
+#define MASK_fmi3NewDiscreteStates             modelEventMode
+#define MASK_fmi3EnterContinuousTimeMode       modelEventMode
+#define MASK_fmi3CompletedIntegratorStep       modelContinuousTimeMode
+#define MASK_fmi3SetTime                       (modelEventMode | modelContinuousTimeMode)
+#define MASK_fmi3SetContinuousStates           modelContinuousTimeMode
+#define MASK_fmi3GetEventIndicators            (modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelTerminated | modelError)
+#define MASK_fmi3GetContinuousStates           MASK_fmi3GetEventIndicators
+#define MASK_fmi3GetDerivatives                (modelEventMode | modelContinuousTimeMode | modelTerminated | modelError)
 #define MASK_fmi3GetNominalsOfContinuousStates ( modelInstantiated | modelEventMode | modelContinuousTimeMode | modelTerminated | modelError)
 
 // ---------------------------------------------------------------------------
@@ -342,8 +329,7 @@ fmi3Status fmi3EnterEventMode(fmi3Instance instance,
 fmi3Status fmi3Terminate(fmi3Instance instance) {
     
     ASSERT_STATE(Terminate)
-    
-    
+     
     S->state = modelTerminated;
     
     return fmi3OK;
