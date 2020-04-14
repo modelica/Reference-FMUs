@@ -120,6 +120,25 @@
 #define MASK_fmi2GetBooleanStatus        MASK_fmi2GetStatus
 #define MASK_fmi2GetStringStatus         MASK_fmi2GetStatus
 
+// shorthand to access the model instance
+#define S ((ModelInstance *)c)
+
+#define ASSERT_STATE(S) if(!allowedState(c, MASK_fmi2##S, #S)) return fmi2Error;
+
+static bool allowedState(ModelInstance *instance, int statesExpected, char *name) {
+    
+    if (!instance) {
+        return false;
+    }
+        
+    if (!(instance->state & statesExpected)) {
+        logError(instance, "fmi3%s: Illegal call sequence.", name);
+        return false;
+    }
+    
+    return true;
+
+}
 
 // ---------------------------------------------------------------------------
 // FMI functions
@@ -153,73 +172,71 @@ fmi2Status fmi2SetupExperiment(fmi2Component c, fmi2Boolean toleranceDefined, fm
     UNUSED(tolerance)
     UNUSED(stopTimeDefined)
     UNUSED(stopTime)
+    
+    ASSERT_STATE(SetupExperiment)
 
-    ModelInstance *instance = (ModelInstance *)c;
-
-    if (invalidState(instance, "fmi2SetupExperiment", MASK_fmi2SetupExperiment))
-        return fmi2Error;
-
-    instance->time = startTime;
+    S->time = startTime;
 
     return fmi2OK;
 }
 
 fmi2Status fmi2EnterInitializationMode(fmi2Component c) {
-    ModelInstance *instance = (ModelInstance *)c;
-    if (invalidState(instance, "fmi2EnterInitializationMode", MASK_fmi2EnterInitializationMode))
-        return fmi2Error;
-    instance->state = modelInitializationMode;
+
+    ASSERT_STATE(EnterInitializationMode)
+
+    S->state = modelInitializationMode;
+    
     return fmi2OK;
 }
 
 fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
-    ModelInstance *instance = (ModelInstance *)c;
-    if (invalidState(instance, "fmi2ExitInitializationMode", MASK_fmi2ExitInitializationMode))
-        return fmi2Error;
+
+    ASSERT_STATE(ExitInitializationMode)
 
     // if values were set and no fmi2GetXXX triggered update before,
     // ensure calculated values are updated now
-    if (instance->isDirtyValues) {
-        calculateValues(instance);
-        instance->isDirtyValues = false;
+    if (S->isDirtyValues) {
+        calculateValues(S);
+        S->isDirtyValues = false;
     }
 
-    if (instance->type == ModelExchange) {
-        instance->state = modelEventMode;
-        instance->isNewEventIteration = false;
+    if (S->type == ModelExchange) {
+        S->state = modelEventMode;
+        S->isNewEventIteration = false;
+    } else {
+        S->state = modelStepComplete;
     }
-    else instance->state = modelStepComplete;
+    
     return fmi2OK;
 }
 
 fmi2Status fmi2Terminate(fmi2Component c) {
-    ModelInstance *instance = (ModelInstance *)c;
-    if (invalidState(instance, "fmi2Terminate", MASK_fmi2Terminate))
-        return fmi2Error;
-    instance->state = modelTerminated;
+    
+    ASSERT_STATE(Terminate)
+
+    S->state = modelTerminated;
+    
     return fmi2OK;
 }
 
 fmi2Status fmi2Reset(fmi2Component c) {
-    ModelInstance* instance = (ModelInstance *)c;
-    if (invalidState(instance, "fmi2Reset", MASK_fmi2Reset))
-        return fmi2Error;
-    instance->state = modelInstantiated;
-    setStartValues(instance); // to be implemented by the includer of this file
-    instance->isDirtyValues = true; // because we just called setStartValues
+
+    ASSERT_STATE(Reset)
+
+    S->state = modelInstantiated;
+
+    setStartValues(S); // to be implemented by the includer of this file
+
+    S->isDirtyValues = true; // because we just called setStartValues
+
     return fmi2OK;
 }
 
 void fmi2FreeInstance(fmi2Component c) {
 
-    ModelInstance *instance = (ModelInstance *)c;
-
-    if (!instance) return;
-
-    if (invalidState(instance, "fmi2FreeInstance", MASK_fmi2FreeInstance))
-        return;
-
-    freeModelInstance(instance);
+    if (S) {
+        freeModelInstance(S);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -241,199 +258,202 @@ const char* fmi2GetTypesPlatform() {
 
 fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean loggingOn, size_t nCategories, const fmi2String categories[]) {
 
-    ModelInstance *instance = (ModelInstance *)c;
+    ASSERT_STATE(SetDebugLogging)
 
-    if (invalidState(instance, "fmi2SetDebugLogging", MASK_fmi2SetDebugLogging)) return fmi2Error;
-
-    return setDebugLogging(instance, loggingOn, nCategories, categories);
+    return setDebugLogging(S, loggingOn, nCategories, categories);
 }
 
 fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
 
-    ModelInstance *instance = (ModelInstance *)c;
+    ASSERT_STATE(GetReal)
 
-    if (invalidState(instance, "fmi2GetReal", MASK_fmi2GetReal))
+    if (nvr > 0 && nullPointer(S, "fmi2GetReal", "vr[]", vr))
         return fmi2Error;
 
-    if (nvr > 0 && nullPointer(instance, "fmi2GetReal", "vr[]", vr))
+    if (nvr > 0 && nullPointer(S, "fmi2GetReal", "value[]", value))
         return fmi2Error;
 
-    if (nvr > 0 && nullPointer(instance, "fmi2GetReal", "value[]", value))
-        return fmi2Error;
-
-    if (nvr > 0 && instance->isDirtyValues) {
-        calculateValues(instance);
-        instance->isDirtyValues = false;
+    if (nvr > 0 && S->isDirtyValues) {
+        calculateValues(S);
+        S->isDirtyValues = false;
     }
+    
+    ModelInstance *instance = (ModelInstance *)c;
 
     GET_VARIABLES(Float64)
 }
 
 fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
 
-    ModelInstance *instance = (ModelInstance *)c;
+    ASSERT_STATE(GetInteger)
 
-    if (invalidState(instance, "fmi2GetInteger", MASK_fmi2GetInteger))
-        return fmi2Error;
-
-    if (nvr > 0 && nullPointer(instance, "fmi2GetInteger", "vr[]", vr))
+    if (nvr > 0 && nullPointer(S, "fmi2GetInteger", "vr[]", vr))
             return fmi2Error;
 
-    if (nvr > 0 && nullPointer(instance, "fmi2GetInteger", "value[]", value))
+    if (nvr > 0 && nullPointer(S, "fmi2GetInteger", "value[]", value))
             return fmi2Error;
 
-    if (nvr > 0 && instance->isDirtyValues) {
-        calculateValues(instance);
-        instance->isDirtyValues = false;
+    if (nvr > 0 && S->isDirtyValues) {
+        calculateValues(S);
+        S->isDirtyValues = false;
     }
+    
+    ModelInstance *instance = (ModelInstance *)c;
 
     GET_VARIABLES(Int32)
 }
 
 fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
 
-    ModelInstance *instance = (ModelInstance *)c;
+    ASSERT_STATE(GetBoolean)
 
-    if (invalidState(instance, "fmi2GetBoolean", MASK_fmi2GetBoolean))
-        return fmi2Error;
-
-    if (nvr > 0 && nullPointer(instance, "fmi2GetBoolean", "vr[]", vr))
+    if (nvr > 0 && nullPointer(S, "fmi2GetBoolean", "vr[]", vr))
             return fmi2Error;
 
-    if (nvr > 0 && nullPointer(instance, "fmi2GetBoolean", "value[]", value))
+    if (nvr > 0 && nullPointer(S, "fmi2GetBoolean", "value[]", value))
             return fmi2Error;
 
-    if (nvr > 0 && instance->isDirtyValues) {
-        calculateValues(instance);
-        instance->isDirtyValues = false;
+    if (nvr > 0 && S->isDirtyValues) {
+        calculateValues(S);
+        S->isDirtyValues = false;
     }
+
+    ModelInstance *instance = (ModelInstance *)c;
 
     GET_BOOLEAN_VARIABLES
 }
 
 fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
 
-    ModelInstance *instance = (ModelInstance *)c;
+    ASSERT_STATE(GetString)
 
-    if (invalidState(instance, "fmi2GetString", MASK_fmi2GetString))
-        return fmi2Error;
-
-    if (nvr>0 && nullPointer(instance, "fmi2GetString", "vr[]", vr))
+    if (nvr>0 && nullPointer(S, "fmi2GetString", "vr[]", vr))
             return fmi2Error;
 
-    if (nvr>0 && nullPointer(instance, "fmi2GetString", "value[]", value))
+    if (nvr>0 && nullPointer(S, "fmi2GetString", "value[]", value))
             return fmi2Error;
 
-    if (nvr > 0 && instance->isDirtyValues) {
-        calculateValues(instance);
-        instance->isDirtyValues = false;
+    if (nvr > 0 && S->isDirtyValues) {
+        calculateValues(S);
+        S->isDirtyValues = false;
     }
+
+    ModelInstance *instance = (ModelInstance *)c;
 
     GET_VARIABLES(String)
 }
 
 fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
 
+    ASSERT_STATE(SetReal)
+
+    if (invalidState(S, "fmi2SetReal", MASK_fmi2SetReal))
+        return fmi2Error;
+
+    if (nvr > 0 && nullPointer(S, "fmi2SetReal", "vr[]", vr))
+        return fmi2Error;
+
+    if (nvr > 0 && nullPointer(S, "fmi2SetReal", "value[]", value))
+        return fmi2Error;
+
     ModelInstance *instance = (ModelInstance *)c;
-
-    if (invalidState(instance, "fmi2SetReal", MASK_fmi2SetReal))
-        return fmi2Error;
-
-    if (nvr > 0 && nullPointer(instance, "fmi2SetReal", "vr[]", vr))
-        return fmi2Error;
-
-    if (nvr > 0 && nullPointer(instance, "fmi2SetReal", "value[]", value))
-        return fmi2Error;
 
     SET_VARIABLES(Float64)
 }
 
 fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
 
+    ASSERT_STATE(SetInteger)
+
+    if (nvr > 0 && nullPointer(S, "fmi2SetInteger", "vr[]", vr))
+        return fmi2Error;
+
+    if (nvr > 0 && nullPointer(S, "fmi2SetInteger", "value[]", value))
+        return fmi2Error;
+
     ModelInstance *instance = (ModelInstance *)c;
-
-    if (invalidState(instance, "fmi2SetInteger", MASK_fmi2SetInteger))
-        return fmi2Error;
-
-    if (nvr > 0 && nullPointer(instance, "fmi2SetInteger", "vr[]", vr))
-        return fmi2Error;
-
-    if (nvr > 0 && nullPointer(instance, "fmi2SetInteger", "value[]", value))
-        return fmi2Error;
 
     SET_VARIABLES(Int32)
 }
 
 fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
 
+    ASSERT_STATE(SetBoolean)
+
+    if (nvr>0 && nullPointer(S, "fmi2SetBoolean", "vr[]", vr))
+        return fmi2Error;
+
+    if (nvr>0 && nullPointer(S, "fmi2SetBoolean", "value[]", value))
+        return fmi2Error;
+
     ModelInstance *instance = (ModelInstance *)c;
-
-    if (invalidState(instance, "fmi2SetBoolean", MASK_fmi2SetBoolean))
-        return fmi2Error;
-
-    if (nvr>0 && nullPointer(instance, "fmi2SetBoolean", "vr[]", vr))
-        return fmi2Error;
-
-    if (nvr>0 && nullPointer(instance, "fmi2SetBoolean", "value[]", value))
-        return fmi2Error;
 
     SET_BOOLEAN_VARIABLES
 }
 
 fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
 
+    ASSERT_STATE(SetString)
+
+    if (nvr>0 && nullPointer(S, "fmi2SetString", "vr[]", vr))
+        return fmi2Error;
+
+    if (nvr>0 && nullPointer(S, "fmi2SetString", "value[]", value))
+        return fmi2Error;
+
     ModelInstance *instance = (ModelInstance *)c;
-
-    if (invalidState(instance, "fmi2SetString", MASK_fmi2SetString))
-        return fmi2Error;
-
-    if (nvr>0 && nullPointer(instance, "fmi2SetString", "vr[]", vr))
-        return fmi2Error;
-
-    if (nvr>0 && nullPointer(instance, "fmi2SetString", "value[]", value))
-        return fmi2Error;
 
     SET_VARIABLES(String)
 }
 
 fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {
-    ModelInstance *instance = (ModelInstance *)c;
-    ModelData *modelData = instance->allocateMemory(1, sizeof(ModelData));
-    memcpy(modelData, instance->modelData, sizeof(ModelData));
+    
+    ASSERT_STATE(GetFMUstate)
+
+    ModelData *modelData = S->allocateMemory(1, sizeof(ModelData));
+    memcpy(modelData, S->modelData, sizeof(ModelData));
     *FMUstate = modelData;
     return fmi2OK;
 }
 
 fmi2Status fmi2SetFMUstate (fmi2Component c, fmi2FMUstate FMUstate) {
-    ModelInstance *instance = (ModelInstance *)c;
+    
+    ASSERT_STATE(SetFMUstate)
+
     ModelData *modelData = FMUstate;
-    memcpy(instance->modelData, modelData, sizeof(ModelData));
+    memcpy(S->modelData, modelData, sizeof(ModelData));
     return fmi2OK;
 }
 
 fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate* FMUstate) {
-    ModelInstance *instance = (ModelInstance *)c;
+    
+    ASSERT_STATE(FreeFMUstate)
+
     ModelData *modelData = *FMUstate;
-    instance->freeMemory(modelData);
+    S->freeMemory(modelData);
     *FMUstate = NULL;
     return fmi2OK;
 }
 
 fmi2Status fmi2SerializedFMUstateSize(fmi2Component c, fmi2FMUstate FMUstate, size_t *size) {
+
     UNUSED(c)
     UNUSED(FMUstate)
+
+    ASSERT_STATE(SerializedFMUstateSize)
+
     *size = sizeof(ModelData);
     return fmi2OK;
 }
 
 fmi2Status fmi2SerializeFMUstate(fmi2Component c, fmi2FMUstate FMUstate, fmi2Byte serializedState[], size_t size) {
 
-    ModelInstance *instance = (ModelInstance *)c;
+    ASSERT_STATE(SerializeFMUstate)
 
-    if (nullPointer(instance, "fmi2SerializeFMUstate", "FMUstate", FMUstate))
+    if (nullPointer(S, "fmi2SerializeFMUstate", "FMUstate", FMUstate))
         return fmi2Error;
 
-    if (invalidNumber(instance, "fmi2SerializeFMUstate", "size", size, sizeof(ModelData)))
+    if (invalidNumber(S, "fmi2SerializeFMUstate", "size", size, sizeof(ModelData)))
         return fmi2Error;
 
     memcpy(serializedState, FMUstate, sizeof(ModelData));
@@ -443,13 +463,13 @@ fmi2Status fmi2SerializeFMUstate(fmi2Component c, fmi2FMUstate FMUstate, fmi2Byt
 
 fmi2Status fmi2DeSerializeFMUstate (fmi2Component c, const fmi2Byte serializedState[], size_t size, fmi2FMUstate* FMUstate) {
 
-    ModelInstance *instance = (ModelInstance *)c;
+    ASSERT_STATE(DeSerializeFMUstate)
 
     if (*FMUstate == NULL) {
-        *FMUstate = instance->allocateMemory(1, sizeof(ModelData));
+        *FMUstate = S->allocateMemory(1, sizeof(ModelData));
     }
 
-    if (invalidNumber(instance, "fmi2DeSerializeFMUstate", "size", size, sizeof(ModelData)))
+    if (invalidNumber(S, "fmi2DeSerializeFMUstate", "size", size, sizeof(ModelData)))
         return fmi2Error;
 
     memcpy(*FMUstate, serializedState, sizeof(ModelData));
@@ -461,21 +481,20 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReferenc
                                         const fmi2ValueReference vKnown_ref[] , size_t nKnown,
                                         const fmi2Real dvKnown[], fmi2Real dvUnknown[]) {
 
-    if (invalidState(c, "fmi2GetDirectionalDerivative", MASK_fmi2GetDirectionalDerivative))
-        return fmi2Error;
+    ASSERT_STATE(GetDirectionalDerivative)
 
     // TODO: check value references
     // TODO: assert nUnknowns == nDeltaOfUnknowns
     // TODO: assert nKnowns == nDeltaKnowns
 
-    ModelInstance *instance = (ModelInstance *)c;
+    
     Status status = OK;
 
     for (int i = 0; i < nUnknown; i++) {
         dvUnknown[i] = 0;
         for (int j = 0; j < nKnown; j++) {
             double partialDerivative = 0;
-            Status s = getPartialDerivative(instance, vUnknown_ref[i], vKnown_ref[j], &partialDerivative);
+            Status s = getPartialDerivative(S, vUnknown_ref[i], vKnown_ref[j], &partialDerivative);
             status = max(status, s);
             if (status > Warning) return status;
             dvUnknown[i] += partialDerivative * dvKnown[j];
@@ -492,18 +511,14 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReferenc
 fmi2Status fmi2SetRealInputDerivatives(fmi2Component c, const fmi2ValueReference vr[], size_t nvr,
                                      const fmi2Integer order[], const fmi2Real value[]) {
 
-    ModelInstance *instance = (ModelInstance *)c;
-
     UNUSED(vr)
     UNUSED(nvr)
     UNUSED(order)
     UNUSED(value)
 
-    if (invalidState(instance, "fmi2SetRealInputDerivatives", MASK_fmi2SetRealInputDerivatives)) {
-        return fmi2Error;
-    }
+    ASSERT_STATE(SetRealInputDerivatives)
 
-    logError(instance, "fmi2SetRealInputDerivatives: ignoring function call."
+    logError(S, "fmi2SetRealInputDerivatives: ignoring function call."
             " This model cannot interpolate inputs: canInterpolateInputs=\"fmi2False\"");
 
     return fmi2Error;
@@ -512,73 +527,67 @@ fmi2Status fmi2SetRealInputDerivatives(fmi2Component c, const fmi2ValueReference
 fmi2Status fmi2GetRealOutputDerivatives(fmi2Component c, const fmi2ValueReference vr[], size_t nvr,
                                       const fmi2Integer order[], fmi2Real value[]) {
 
-    ModelInstance *instance = (ModelInstance *)c;
-
     UNUSED(vr)
     UNUSED(nvr)
     UNUSED(order)
     UNUSED(value)
 
-    if (invalidState(instance, "fmi2GetRealOutputDerivatives", MASK_fmi2GetRealOutputDerivatives))
-        return fmi2Error;
+    ASSERT_STATE(GetRealOutputDerivatives)
 
-    logError(instance, "fmi2GetRealOutputDerivatives: ignoring function call."
+    logError(S, "fmi2GetRealOutputDerivatives: ignoring function call."
         " This model cannot compute derivatives of outputs: MaxOutputDerivativeOrder=\"0\"");
 
     return fmi2Error;
 }
 
 fmi2Status fmi2CancelStep(fmi2Component c) {
-    ModelInstance *instance = (ModelInstance *)c;
-    if (invalidState(instance, "fmi2CancelStep", MASK_fmi2CancelStep)) {
-        // always fmi2CancelStep is invalid, because model is never in modelStepInProgress state.
-        return fmi2Error;
-    }
-    logError(instance, "fmi2CancelStep: Can be called when fmi2DoStep returned fmi2Pending."
+    
+    ASSERT_STATE(CancelStep)
+
+    logError(S, "fmi2CancelStep: Can be called when fmi2DoStep returned fmi2Pending."
         " This is not the case.");
+    
     return fmi2Error;
 }
 
 fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
                     fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
 
-    ModelInstance *instance = (ModelInstance *)c;
-
     UNUSED(noSetFMUStatePriorToCurrentPoint)
 
+    ASSERT_STATE(DoStep)
+
     if (communicationStepSize <= 0) {
-        logError(instance, "fmi2DoStep: communication step size must be > 0. Fount %g.", communicationStepSize);
-        instance->state = modelError;
+        logError(S, "fmi2DoStep: communication step size must be > 0 but was %g.", communicationStepSize);
+        S->state = modelError;
         return fmi2Error;
     }
 
     int earlyReturn;
 
-    return doStep(instance, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &earlyReturn);
+    return doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &earlyReturn);
 }
 
 /* Inquire slave status */
 static fmi2Status getStatus(char* fname, fmi2Component c, const fmi2StatusKind s) {
 
-    ModelInstance *instance = (ModelInstance *)c;
-
-    if (invalidState(instance, fname, MASK_fmi2GetStatus)) // all get status have the same MASK_fmi2GetStatus
+    if (invalidState(S, fname, MASK_fmi2GetStatus)) // all get status have the same MASK_fmi2GetStatus
         return fmi2Error;
 
     switch(s) {
-    case fmi2DoStepStatus: logError(instance,
+    case fmi2DoStepStatus: logError(S,
         "%s: Can be called with fmi2DoStepStatus when fmi2DoStep returned fmi2Pending."
         " This is not the case.", fname);
         break;
-    case fmi2PendingStatus: logError(instance,
+    case fmi2PendingStatus: logError(S,
         "%s: Can be called with fmi2PendingStatus when fmi2DoStep returned fmi2Pending."
         " This is not the case.", fname);
         break;
-    case fmi2LastSuccessfulTime: logError(instance,
+    case fmi2LastSuccessfulTime: logError(S,
         "%s: Can be called with fmi2LastSuccessfulTime when fmi2DoStep returned fmi2Discard."
         " This is not the case.", fname);
         break;
-    case fmi2Terminated: logError(instance,
+    case fmi2Terminated: logError(S,
         "%s: Can be called with fmi2Terminated when fmi2DoStep returned fmi2Discard."
         " This is not the case.", fname);
         break;
@@ -588,39 +597,50 @@ static fmi2Status getStatus(char* fname, fmi2Component c, const fmi2StatusKind s
 }
 
 fmi2Status fmi2GetStatus(fmi2Component c, const fmi2StatusKind s, fmi2Status *value) {
+
     UNUSED(value)
+
+    ASSERT_STATE(GetStatus)
+
     return getStatus("fmi2GetStatus", c, s);
 }
 
 fmi2Status fmi2GetRealStatus(fmi2Component c, const fmi2StatusKind s, fmi2Real *value) {
+    
+    ASSERT_STATE(GetRealStatus)
+
     if (s == fmi2LastSuccessfulTime) {
-        ModelInstance *instance = (ModelInstance *)c;
-        if (invalidState(instance, "fmi2GetRealStatus", MASK_fmi2GetRealStatus))
-            return fmi2Error;
-        *value = instance->time;
+        *value = S->time;
         return fmi2OK;
     }
+    
     return getStatus("fmi2GetRealStatus", c, s);
 }
 
 fmi2Status fmi2GetIntegerStatus(fmi2Component c, const fmi2StatusKind s, fmi2Integer *value) {
+    
     UNUSED(value)
+
+    ASSERT_STATE(GetIntegerStatus)
+
     return getStatus("fmi2GetIntegerStatus", c, s);
 }
 
 fmi2Status fmi2GetBooleanStatus(fmi2Component c, const fmi2StatusKind s, fmi2Boolean *value) {
+    
+    ASSERT_STATE(GetBooleanStatus)
+
     if (s == fmi2Terminated) {
-        ModelInstance *instance = (ModelInstance *)c;
-        if (invalidState(instance, "fmi2GetBooleanStatus", MASK_fmi2GetBooleanStatus))
-            return fmi2Error;
-        *value = instance->terminateSimulation;
+        *value = S->terminateSimulation;
         return fmi2OK;
     }
+    
     return getStatus("fmi2GetBooleanStatus", c, s);
 }
 
 fmi2Status fmi2GetStringStatus(fmi2Component c, const fmi2StatusKind s, fmi2String *value) {
     UNUSED(value)
+    ASSERT_STATE(GetStringStatus)
     return getStatus("fmi2GetStringStatus", c, s);
 }
 
@@ -629,65 +649,67 @@ fmi2Status fmi2GetStringStatus(fmi2Component c, const fmi2StatusKind s, fmi2Stri
 // ---------------------------------------------------------------------------
 /* Enter and exit the different modes */
 fmi2Status fmi2EnterEventMode(fmi2Component c) {
-    ModelInstance *instance = (ModelInstance *)c;
-    if (invalidState(instance, "fmi2EnterEventMode", MASK_fmi2EnterEventMode))
-        return fmi2Error;
-    instance->state = modelEventMode;
-    instance->isNewEventIteration = fmi2True;
+    
+    ASSERT_STATE(EnterEventMode)
+
+    S->state = modelEventMode;
+    S->isNewEventIteration = fmi2True;
+    
     return fmi2OK;
 }
 
 fmi2Status fmi2NewDiscreteStates(fmi2Component c, fmi2EventInfo *eventInfo) {
-    ModelInstance *instance = (ModelInstance *)c;
-    int timeEvent = 0;
-    if (invalidState(instance, "fmi2NewDiscreteStates", MASK_fmi2NewDiscreteStates))
-        return fmi2Error;
-    instance->newDiscreteStatesNeeded = fmi2False;
-    instance->terminateSimulation = fmi2False;
-    instance->nominalsOfContinuousStatesChanged = fmi2False;
-    instance->valuesOfContinuousStatesChanged = fmi2False;
+    
+    ASSERT_STATE(NewDiscreteStates)
 
-    if (instance->nextEventTimeDefined && instance->nextEventTime <= instance->time) {
+    int timeEvent = 0;
+    
+    S->newDiscreteStatesNeeded = fmi2False;
+    S->terminateSimulation = fmi2False;
+    S->nominalsOfContinuousStatesChanged = fmi2False;
+    S->valuesOfContinuousStatesChanged = fmi2False;
+
+    if (S->nextEventTimeDefined && S->nextEventTime <= S->time) {
         timeEvent = 1;
     }
 
-    eventUpdate(instance);
+    eventUpdate(S);
 
-    instance->isNewEventIteration = false;
+    S->isNewEventIteration = false;
 
     // copy internal eventInfo of component to output eventInfo
-    eventInfo->newDiscreteStatesNeeded           = instance->newDiscreteStatesNeeded;
-    eventInfo->terminateSimulation               = instance->terminateSimulation;
-    eventInfo->nominalsOfContinuousStatesChanged = instance->nominalsOfContinuousStatesChanged;
-    eventInfo->valuesOfContinuousStatesChanged   = instance->valuesOfContinuousStatesChanged;
-    eventInfo->nextEventTimeDefined              = instance->nextEventTimeDefined;
-    eventInfo->nextEventTime                     = instance->nextEventTime;
+    eventInfo->newDiscreteStatesNeeded           = S->newDiscreteStatesNeeded;
+    eventInfo->terminateSimulation               = S->terminateSimulation;
+    eventInfo->nominalsOfContinuousStatesChanged = S->nominalsOfContinuousStatesChanged;
+    eventInfo->valuesOfContinuousStatesChanged   = S->valuesOfContinuousStatesChanged;
+    eventInfo->nextEventTimeDefined              = S->nextEventTimeDefined;
+    eventInfo->nextEventTime                     = S->nextEventTime;
 
     return fmi2OK;
 }
 
 fmi2Status fmi2EnterContinuousTimeMode(fmi2Component c) {
-    ModelInstance *instance = (ModelInstance *)c;
-    if (invalidState(instance, "fmi2EnterContinuousTimeMode", MASK_fmi2EnterContinuousTimeMode))
-        return fmi2Error;
-    instance->state = modelContinuousTimeMode;
+    
+    ASSERT_STATE(EnterContinuousTimeMode)
+
+    S->state = modelContinuousTimeMode;
+    
     return fmi2OK;
 }
 
 fmi2Status fmi2CompletedIntegratorStep(fmi2Component c, fmi2Boolean noSetFMUStatePriorToCurrentPoint,
                                      fmi2Boolean *enterEventMode, fmi2Boolean *terminateSimulation) {
 
-    ModelInstance *instance = (ModelInstance *)c;
+    
 
     UNUSED(noSetFMUStatePriorToCurrentPoint)
+    
+    ASSERT_STATE(CompletedIntegratorStep)
 
-    if (invalidState(instance, "fmi2CompletedIntegratorStep", MASK_fmi2CompletedIntegratorStep))
+    if (nullPointer(S, "fmi2CompletedIntegratorStep", "enterEventMode", enterEventMode))
         return fmi2Error;
 
-    if (nullPointer(instance, "fmi2CompletedIntegratorStep", "enterEventMode", enterEventMode))
-        return fmi2Error;
-
-    if (nullPointer(instance, "fmi2CompletedIntegratorStep", "terminateSimulation", terminateSimulation))
+    if (nullPointer(S, "fmi2CompletedIntegratorStep", "terminateSimulation", terminateSimulation))
         return fmi2Error;
 
     *enterEventMode = fmi2False;
@@ -698,27 +720,25 @@ fmi2Status fmi2CompletedIntegratorStep(fmi2Component c, fmi2Boolean noSetFMUStat
 
 /* Providing independent variables and re-initialization of caching */
 fmi2Status fmi2SetTime(fmi2Component c, fmi2Real time) {
-    ModelInstance *instance = (ModelInstance *)c;
-    if (invalidState(instance, "fmi2SetTime", MASK_fmi2SetTime))
-        return fmi2Error;
-    instance->time = time;
+    
+    ASSERT_STATE(SetTime)
+
+    S->time = time;
+
     return fmi2OK;
 }
 
 fmi2Status fmi2SetContinuousStates(fmi2Component c, const fmi2Real x[], size_t nx){
 
-    ModelInstance *instance = (ModelInstance *)c;
+    ASSERT_STATE(SetContinuousStates)
 
-    if (invalidState(instance, "fmi2SetContinuousStates", MASK_fmi2SetContinuousStates))
+    if (invalidNumber(S, "fmi2SetContinuousStates", "nx", nx, NUMBER_OF_STATES))
         return fmi2Error;
 
-    if (invalidNumber(instance, "fmi2SetContinuousStates", "nx", nx, NUMBER_OF_STATES))
+    if (nullPointer(S, "fmi2SetContinuousStates", "x[]", x))
         return fmi2Error;
 
-    if (nullPointer(instance, "fmi2SetContinuousStates", "x[]", x))
-        return fmi2Error;
-
-    setContinuousStates(instance, x, nx);
+    setContinuousStates(S, x, nx);
 
     return fmi2OK;
 }
@@ -726,34 +746,29 @@ fmi2Status fmi2SetContinuousStates(fmi2Component c, const fmi2Real x[], size_t n
 /* Evaluation of the model equations */
 fmi2Status fmi2GetDerivatives(fmi2Component c, fmi2Real derivatives[], size_t nx) {
 
-    ModelInstance* instance = (ModelInstance *)c;
+    ASSERT_STATE(GetDerivatives)
 
-    if (invalidState(instance, "fmi2GetDerivatives", MASK_fmi2GetDerivatives))
+    if (invalidNumber(S, "fmi2GetDerivatives", "nx", nx, NUMBER_OF_STATES))
         return fmi2Error;
 
-    if (invalidNumber(instance, "fmi2GetDerivatives", "nx", nx, NUMBER_OF_STATES))
+    if (nullPointer(S, "fmi2GetDerivatives", "derivatives[]", derivatives))
         return fmi2Error;
 
-    if (nullPointer(instance, "fmi2GetDerivatives", "derivatives[]", derivatives))
-        return fmi2Error;
-
-    getDerivatives(instance, derivatives, nx);
+    getDerivatives(S, derivatives, nx);
 
     return fmi2OK;
 }
 
 fmi2Status fmi2GetEventIndicators(fmi2Component c, fmi2Real eventIndicators[], size_t ni) {
+    
+    ASSERT_STATE(GetEventIndicators)
 
 #if NUMBER_OF_EVENT_INDICATORS > 0
-    ModelInstance *instance = (ModelInstance *)c;
 
-    if (invalidState(instance, "fmi2GetEventIndicators", MASK_fmi2GetEventIndicators))
+    if (invalidNumber(S, "fmi2GetEventIndicators", "ni", ni, NUMBER_OF_EVENT_INDICATORS))
         return fmi2Error;
 
-    if (invalidNumber(instance, "fmi2GetEventIndicators", "ni", ni, NUMBER_OF_EVENT_INDICATORS))
-        return fmi2Error;
-
-    getEventIndicators(instance, eventIndicators, ni);
+    getEventIndicators(S, eventIndicators, ni);
 #else
     UNUSED(c)
     UNUSED(eventIndicators)
@@ -764,32 +779,31 @@ fmi2Status fmi2GetEventIndicators(fmi2Component c, fmi2Real eventIndicators[], s
 
 fmi2Status fmi2GetContinuousStates(fmi2Component c, fmi2Real states[], size_t nx) {
 
-    ModelInstance *instance = (ModelInstance *)c;
+    ASSERT_STATE(GetContinuousStates)
 
-    if (invalidState(instance, "fmi2GetContinuousStates", MASK_fmi2GetContinuousStates))
+    if (invalidNumber(S, "fmi2GetContinuousStates", "nx", nx, NUMBER_OF_STATES))
         return fmi2Error;
 
-    if (invalidNumber(instance, "fmi2GetContinuousStates", "nx", nx, NUMBER_OF_STATES))
+    if (nullPointer(S, "fmi2GetContinuousStates", "states[]", states))
         return fmi2Error;
 
-    if (nullPointer(instance, "fmi2GetContinuousStates", "states[]", states))
-        return fmi2Error;
-
-    getContinuousStates(instance, states, nx);
+    getContinuousStates(S, states, nx);
 
     return fmi2OK;
 }
 
 fmi2Status fmi2GetNominalsOfContinuousStates(fmi2Component c, fmi2Real x_nominal[], size_t nx) {
-    int i;
-    ModelInstance *instance = (ModelInstance *)c;
-    if (invalidState(instance, "fmi2GetNominalsOfContinuousStates", MASK_fmi2GetNominalsOfContinuousStates))
+    
+    ASSERT_STATE(GetNominalsOfContinuousStates)
+
+    if (invalidNumber(S, "fmi2GetNominalContinuousStates", "nx", nx, NUMBER_OF_STATES))
         return fmi2Error;
-    if (invalidNumber(instance, "fmi2GetNominalContinuousStates", "nx", nx, NUMBER_OF_STATES))
+    
+    if (nullPointer(S, "fmi2GetNominalContinuousStates", "x_nominal[]", x_nominal))
         return fmi2Error;
-    if (nullPointer(instance, "fmi2GetNominalContinuousStates", "x_nominal[]", x_nominal))
-        return fmi2Error;
-    for (i = 0; i < nx; i++)
+    
+    for (int i = 0; i < nx; i++)
         x_nominal[i] = 1;
+    
     return fmi2OK;
 }
