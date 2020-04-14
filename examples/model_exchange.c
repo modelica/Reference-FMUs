@@ -88,6 +88,8 @@ stateEvent       = fmi3False;
 
 // initialize previous event indicators
 CHECK_STATUS(M_fmi3GetEventIndicators(m, previous_z, NUMBER_OF_EVENT_INDICATORS));
+    
+initialEventMode = fmi3False;
 
 CHECK_STATUS(M_fmi3EnterContinuousTimeMode(m));
 
