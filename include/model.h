@@ -196,7 +196,7 @@ void logError(ModelInstance *comp, const char *message, ...);
 size_t index = 0; \
 Status status = OK; \
 for (int i = 0; i < nvr; i++) { \
-    Status s = get ## T(comp, vr[i], value, &index); \
+    Status s = get ## T((ModelInstance *)instance, vr[i], value, &index); \
     status = max(status, s); \
     if (status > Warning) return status; \
 } \
@@ -206,11 +206,11 @@ return status;
 size_t index = 0; \
 Status status = OK; \
 for (int i = 0; i < nvr; i++) { \
-    Status s = set ## T(comp, vr[i], value, &index); \
+    Status s = set ## T((ModelInstance *)instance, vr[i], value, &index); \
     status = max(status, s); \
     if (status > Warning) return status; \
 } \
-if (nvr > 0) comp->isDirtyValues = true; \
+if (nvr > 0) ((ModelInstance *)instance)->isDirtyValues = true; \
 return status;
 
 // TODO: make this work with arrays
@@ -219,7 +219,7 @@ Status status = OK; \
 for (int i = 0; i < nvr; i++) { \
     bool v = false; \
     size_t index = 0; \
-    Status s = getBoolean(comp, vr[i], &v, &index); \
+    Status s = getBoolean((ModelInstance *)instance, vr[i], &v, &index); \
     value[i] = v; \
     status = max(status, s); \
     if (status > Warning) return status; \
@@ -232,7 +232,7 @@ Status status = OK; \
 for (int i = 0; i < nvr; i++) { \
     bool v = value[i]; \
     size_t index = 0; \
-    Status s = setBoolean(comp, vr[i], &v, &index); \
+    Status s = setBoolean((ModelInstance *)instance, vr[i], &v, &index); \
     status = max(status, s); \
     if (status > Warning) return status; \
 } \
