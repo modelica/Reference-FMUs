@@ -164,9 +164,7 @@ fmi3Instance fmi3InstantiateModelExchange(
     fmi3Boolean                visible,
     fmi3Boolean                loggingOn,
     fmi3InstanceEnvironment    instanceEnvironment,
-    fmi3CallbackLogMessage     logMessage,
-    fmi3CallbackAllocateMemory allocateMemory,
-    fmi3CallbackFreeMemory     freeMemory) {
+    fmi3CallbackLogMessage     logMessage) {
     
 #ifndef MODEL_EXCHANGE
     return NULL;
@@ -198,8 +196,6 @@ fmi3Instance fmi3InstantiateBasicCoSimulation(
     fmi3Boolean                    intermediateVariableSetRequired,
     fmi3InstanceEnvironment        instanceEnvironment,
     fmi3CallbackLogMessage         logMessage,
-    fmi3CallbackAllocateMemory     allocateMemory,
-    fmi3CallbackFreeMemory         freeMemory,
     fmi3CallbackIntermediateUpdate intermediateUpdate) {
 
     return createModelInstance(
@@ -228,8 +224,6 @@ fmi3Instance fmi3InstantiateScheduledCoSimulation(
     fmi3Boolean                    intermediateVariableSetRequired,
     fmi3InstanceEnvironment        instanceEnvironment,
     fmi3CallbackLogMessage         logMessage,
-    fmi3CallbackAllocateMemory     allocateMemory,
-    fmi3CallbackFreeMemory         freeMemory,
     fmi3CallbackIntermediateUpdate intermediateUpdate,
     fmi3CallbackLockPreemption     lockPreemption,
     fmi3CallbackUnlockPreemption   unlockPreemption) {
@@ -266,21 +260,12 @@ void fmi3FreeInstance(fmi3Instance instance) {
     }
 }
 
-fmi3Status fmi3SetupExperiment(fmi3Instance instance, fmi3Boolean toleranceDefined, fmi3Float64 tolerance,
-                            fmi3Float64 startTime, fmi3Boolean stopTimeDefined, fmi3Float64 stopTime) {
+fmi3Status fmi3EnterInitializationMode(fmi3Instance instance, fmi3Boolean toleranceDefined, fmi3Float64 tolerance, fmi3Float64 startTime, fmi3Boolean stopTimeDefined, fmi3Float64 stopTime) {
     
-    ASSERT_STATE(SetupExperiment)
-
-    // ignore arguments: stopTimeDefined, stopTime
-
-    S->time = startTime;
-
-    return fmi3OK;
-}
-
-fmi3Status fmi3EnterInitializationMode(fmi3Instance instance) {
     ASSERT_STATE(EnterInitializationMode)
+    
     S->state = modelInitializationMode;
+    
     return fmi3OK;
 }
 

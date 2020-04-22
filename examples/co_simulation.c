@@ -33,9 +33,9 @@ int main(int argc, char* argv[]) {
 // Initialization sub-phase
     
 // instantiate both slaves
-s1 = s1_fmi3InstantiateBasicCoSimulation("slave1", guid, NULL, fmi3False, fmi3False, fmi3False, fmi3False, fmi3False, NULL, cb_logMessage, cb_allocateMemory, cb_freeMemory, NULL);
+s1 = s1_fmi3InstantiateBasicCoSimulation("slave1", guid, NULL, fmi3False, fmi3False, fmi3False, fmi3False, fmi3False, NULL, cb_logMessage, NULL);
                                                   
-s2 = s2_fmi3InstantiateBasicCoSimulation("slave2", guid, NULL, fmi3False, fmi3False, fmi3False, fmi3False, fmi3False, NULL, cb_logMessage, cb_allocateMemory, cb_freeMemory, NULL);
+s2 = s2_fmi3InstantiateBasicCoSimulation("slave2", guid, NULL, fmi3False, fmi3False, fmi3False, fmi3False, fmi3False, NULL, cb_logMessage, NULL);
 
 if (s1 == NULL || s2 == NULL)
     return EXIT_FAILURE;
@@ -52,11 +52,8 @@ h = 0.01;
 // s2_fmi3SetReal/Integer/Boolean/String(s2, ...);
 
 // initialize the slaves
-s1_fmi3SetupExperiment(s1, fmi3False, 0.0, startTime, fmi3True, stopTime);
-s2_fmi3SetupExperiment(s2, fmi3False, 0.0, startTime, fmi3True, stopTime);
-
-s1_fmi3EnterInitializationMode(s1);
-s2_fmi3EnterInitializationMode(s2);
+s1_fmi3EnterInitializationMode(s1, fmi3False, 0.0, startTime, fmi3True, stopTime);
+s2_fmi3EnterInitializationMode(s2, fmi3False, 0.0, startTime, fmi3True, stopTime);
 
 // set the input values at time = startTime
 // fmi3SetReal/Integer/Boolean/String(s1, ...);

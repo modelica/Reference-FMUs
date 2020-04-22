@@ -32,14 +32,6 @@ static void cb_logMessage(fmi3InstanceEnvironment instanceEnvironment, fmi3Strin
     puts(message);
 }
 
-static void* cb_allocateMemory(fmi3InstanceEnvironment instanceEnvironment, size_t nobj, size_t size) {
-    return calloc(nobj, size);
-}
-
-static void cb_freeMemory(fmi3InstanceEnvironment instanceEnvironment, void* obj)  {
-    free(obj);
-}
-
 //static void cb_lockPreemption() {
 //    // do nothing
 //}

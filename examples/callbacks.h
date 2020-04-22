@@ -26,12 +26,4 @@ static void cb_logMessage(fmi3InstanceEnvironment instanceEnvironment, fmi3Strin
     printf("\n[%s] %s", prefix, message);
 }
 
-static void* cb_allocateMemory(fmi3InstanceEnvironment instanceEnvironment, size_t nobj, size_t size) {
-    return calloc(nobj, size);
-}
-
-static void cb_freeMemory(fmi3InstanceEnvironment instanceEnvironment, void* obj)  {
-    free(obj);
-}
-
 #endif /* callbacks_h */
