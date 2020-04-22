@@ -171,8 +171,6 @@ fmi3Instance fmi3InstantiateModelExchange(
 #else
     return createModelInstance(
         (loggerType)logMessage,
-        (allocateMemoryType)allocateMemory,
-        (freeMemoryType)freeMemory,
         NULL,
         instanceEnvironment,
         instanceName,
@@ -200,8 +198,6 @@ fmi3Instance fmi3InstantiateBasicCoSimulation(
 
     return createModelInstance(
         (loggerType)logMessage,
-        (allocateMemoryType)allocateMemory,
-        (freeMemoryType)freeMemory,
         (intermediateUpdateType)intermediateUpdate,
         instanceEnvironment,
         instanceName,
@@ -233,8 +229,6 @@ fmi3Instance fmi3InstantiateScheduledCoSimulation(
 #else
     ModelInstance *instance = createModelInstance(
         (loggerType)logMessage,
-        (allocateMemoryType)allocateMemory,
-        (freeMemoryType)freeMemory,
         (intermediateUpdateType) intermediateUpdate,
         instanceEnvironment,
         instanceName,
