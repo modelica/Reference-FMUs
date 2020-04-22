@@ -144,8 +144,6 @@ class BuildTest(unittest.TestCase):
         subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=3', '..'], cwd=build_dir)
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
-        return  # skip until FMPy implements latest API
-
         # run examples
         examples = ['co_simulation', 'cs_early_return', 'jacobian', 'scs_synchronous']
 
