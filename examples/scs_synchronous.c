@@ -72,8 +72,6 @@ int main(int argc, char* argv[]) {
                                               fmi3False,
                                               &m,
                                               cb_logMessage,
-                                              cb_allocateMemory,
-                                              cb_freeMemory,
                                               cb_intermediateUpdate,
                                               cb_lockPreemption,
                                               cb_unlockPreemption);
@@ -83,9 +81,7 @@ int main(int argc, char* argv[]) {
         goto TERMINATE;
     }
 
-    CHECK_STATUS(fmi3SetupExperiment(m, fmi3False, 0, 0, fmi3False, 0));
-
-    CHECK_STATUS(fmi3EnterInitializationMode(m));
+    CHECK_STATUS(fmi3EnterInitializationMode(m, fmi3False, 0, 0, fmi3False, 0));
     CHECK_STATUS(fmi3ExitInitializationMode(m));
     
     int time = 0;

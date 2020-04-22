@@ -143,8 +143,6 @@ int main(int argc, char* argv[]) {
 		false,                 // intermediateVariableSetRequired,
 		NULL,                  // instanceEnvironment,
 		cb_logMessage,         // logMessage,
-		cb_allocateMemory,     // allocateMemory,
-		cb_freeMemory,         // freeMemory,
 		cb_intermediateUpdate, // intermediateUpdate,
 		cb_lockPreemption,     // lockPreemption,
 		cb_unlockPreemption    // unlockPreemption
@@ -171,8 +169,7 @@ int main(int argc, char* argv[]) {
 	CHECK_STATUS(initializeOutputFiles());
 
 	// Initialize slave
-	CHECK_STATUS(fmi3SetupExperiment(s, fmi3False, 0.0, time, fmi3True, stopTime));
-	CHECK_STATUS(fmi3EnterInitializationMode(s));
+	CHECK_STATUS(fmi3EnterInitializationMode(s, fmi3False, 0.0, time, fmi3True, stopTime));
 
 	// update clocks
 	CHECK_STATUS(fmi3GetClock(s, vrOutputClocks, N_OUTPUT_CLOCKS, outputClocks));

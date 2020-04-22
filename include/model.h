@@ -65,13 +65,9 @@ typedef enum {
 } Status;
 
 #if FMI_VERSION < 3
-typedef void  (*loggerType)         (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message, ...);
-typedef void* (*allocateMemoryType) (size_t nobj, size_t size);
-typedef void  (*freeMemoryType)     (void *obj);
+typedef void  (*loggerType) (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message, ...);
 #else
-typedef void  (*loggerType)          (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message);
-typedef void* (*allocateMemoryType)  (void *componentEnvironment, size_t nobj, size_t size);
-typedef void  (*freeMemoryType)      (void *componentEnvironment, void *obj);
+typedef void  (*loggerType) (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message);
 #endif
 
 typedef void  (*lockPreemptionType)   ();
@@ -95,8 +91,6 @@ typedef struct {
 
     // callback functions
     loggerType logger;
-    allocateMemoryType allocateMemory;
-    freeMemoryType freeMemory;
     intermediateUpdateType intermediateUpdate;
     
     lockPreemptionType lockPreemtion;
@@ -136,8 +130,6 @@ typedef struct {
 
 ModelInstance *createModelInstance(
     loggerType logger,
-    allocateMemoryType allocateMemory,
-    freeMemoryType freeMemory,
     intermediateUpdateType intermediateUpdate,
     void *componentEnvironment,
     const char *instanceName,
@@ -178,9 +170,6 @@ void getEventIndicators(ModelInstance *comp, double z[], size_t nz);
 void eventUpdate(ModelInstance *comp);
 //void updateEventTime(ModelInstance *comp);
 
-void *allocateMemory(ModelInstance *comp, size_t num, size_t size);
-void freeMemory(ModelInstance *comp, void *obj);
-const char *duplicateString(ModelInstance *comp, const char *str1);
 bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected);
 bool invalidState(ModelInstance *comp, const char *f, int statesExpected);
 bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void *p);

@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
     fputs(OUTPUT_FILE_HEADER, outputFile);
     
 // tag::ModelExchange[]
-    m = M_fmi3InstantiateModelExchange("m", MODEL_GUID, NULL, fmi3False, fmi3False, NULL, cb_logMessage, cb_allocateMemory, cb_freeMemory);
+    m = M_fmi3InstantiateModelExchange("m", MODEL_GUID, NULL, fmi3False, fmi3False, NULL, cb_logMessage);
 // "m" is the instance name
 // "M_" is the MODEL_IDENTIFIER
     
@@ -77,8 +77,7 @@ time  = tStart;
 
 // initialize
 // determine continuous and discrete states
-CHECK_STATUS(M_fmi3SetupExperiment(m, fmi3False, 0.0, tStart, fmi3True, tEnd));
-CHECK_STATUS(M_fmi3EnterInitializationMode(m));
+CHECK_STATUS(M_fmi3EnterInitializationMode(m, fmi3False, 0.0, tStart, fmi3True, tEnd));
 CHECK_STATUS(M_fmi3ExitInitializationMode(m));
 
 initialEventMode = fmi3True;
