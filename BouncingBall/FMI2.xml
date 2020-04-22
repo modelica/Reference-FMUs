@@ -6,13 +6,13 @@
   guid="{8c4e810f-3df3-4a00-8276-176fa3c9f003}"
   numberOfEventIndicators="1">
 
-  <ModelExchange modelIdentifier="BouncingBall">
+  <ModelExchange modelIdentifier="BouncingBall" canNotUseMemoryManagementFunctions="true">
     <SourceFiles>
       <File name="all.c"/>
     </SourceFiles>
   </ModelExchange>
 
-  <CoSimulation modelIdentifier="BouncingBall" canHandleVariableCommunicationStepSize="true">
+  <CoSimulation modelIdentifier="BouncingBall" canHandleVariableCommunicationStepSize="true" canNotUseMemoryManagementFunctions="true">
     <SourceFiles>
       <File name="all.c"/>
     </SourceFiles>
