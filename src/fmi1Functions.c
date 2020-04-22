@@ -254,8 +254,6 @@ fmiComponent fmiInstantiateSlave(fmiString  instanceName, fmiString GUID,
     // ignoring arguments: mimeType, timeout, visible, interactive
     return createModelInstance(
         (loggerType)functions.logger,
-        (allocateMemoryType)functions.allocateMemory,
-        (freeMemoryType)functions.freeMemory,
         NULL,
         NULL,
         instanceName,
@@ -388,8 +386,6 @@ const char* fmiGetModelTypesPlatform() {
 fmiComponent fmiInstantiateModel(fmiString instanceName, fmiString GUID,  fmiCallbackFunctions functions, fmiBoolean loggingOn) {
     return createModelInstance(
         (loggerType)functions.logger,
-        (allocateMemoryType)functions.allocateMemory,
-        (freeMemoryType)functions.freeMemory,
         NULL,
         NULL,
         instanceName,
