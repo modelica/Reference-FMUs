@@ -5,8 +5,9 @@
  *  in the project root for license information.              *
  **************************************************************/
 
-#include <float.h>  // for DBL_EPSILON
-#include <math.h>   // for fabs()
+#include <stdlib.h>  // for calloc(), free()
+#include <float.h>   // for DBL_EPSILON
+#include <math.h>    // for fabs()
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -20,8 +21,6 @@
 
 ModelInstance *createModelInstance(
     loggerType cbLogger,
-    allocateMemoryType cbAllocateMemory,
-    freeMemoryType cbFreeMemory,
     intermediateUpdateType intermediateUpdate,
     void *componentEnvironment,
     const char *instanceName,
@@ -34,11 +33,6 @@ ModelInstance *createModelInstance(
     ModelInstance *comp = NULL;
 
     if (!cbLogger) {
-        return NULL;
-    }
-
-    if (!cbAllocateMemory || !cbFreeMemory) {
-        cbLogger(componentEnvironment, instanceName, Error, "error", "Missing callback function.");
         return NULL;
     }
 
@@ -57,34 +51,28 @@ ModelInstance *createModelInstance(
         return NULL;
     }
 
-#if FMI_VERSION < 3
-    comp = (ModelInstance *)cbAllocateMemory(1, sizeof(ModelInstance));
-#else
-    comp = (ModelInstance *)cbAllocateMemory(componentEnvironment, 1, sizeof(ModelInstance));
-#endif
+    comp = (ModelInstance *)calloc(1, sizeof(ModelInstance));
 
     if (comp) {
 
         // set the callbacks
         comp->componentEnvironment = componentEnvironment;
         comp->logger = cbLogger;
-        comp->allocateMemory = cbAllocateMemory;
-        comp->freeMemory = cbFreeMemory;
         comp->intermediateUpdate = intermediateUpdate;
         comp->lockPreemtion = NULL;
         comp->unlockPreemtion = NULL;
 
-        comp->instanceName = (char *)allocateMemory(comp, 1 + strlen(instanceName), sizeof(char));
+        comp->instanceName = (char *)calloc(1 + strlen(instanceName), sizeof(char));
 
         // resourceLocation is NULL for FMI 1.0 ME
         if (resourceLocation) {
-            comp->resourceLocation = (char *)allocateMemory(comp, 1 + strlen(resourceLocation), sizeof(char));
+            comp->resourceLocation = (char *)calloc(1 + strlen(resourceLocation), sizeof(char));
             strcpy((char *)comp->resourceLocation, (char *)resourceLocation);
         } else {
             comp->resourceLocation = NULL;
         }
 
-        comp->modelData = (ModelData *)allocateMemory(comp, 1, sizeof(ModelData));
+        comp->modelData = (ModelData *)calloc(1, sizeof(ModelData));
 
         comp->logEvents = loggingOn;
         comp->logErrors = true; // always log errors
@@ -117,10 +105,10 @@ ModelInstance *createModelInstance(
     comp->isDirtyValues = true; // because we just called setStartValues
 
 #if NUMBER_OF_EVENT_INDICATORS > 0
-    comp->z = allocateMemory(comp, sizeof(double), NUMBER_OF_EVENT_INDICATORS);
-    comp->prez = allocateMemory(comp, sizeof(double), NUMBER_OF_EVENT_INDICATORS);
+    comp->z    = calloc(sizeof(double), NUMBER_OF_EVENT_INDICATORS);
+    comp->prez = calloc(sizeof(double), NUMBER_OF_EVENT_INDICATORS);
 #else
-    comp->z = NULL;
+    comp->z    = NULL;
     comp->prez = NULL;
 #endif
 
@@ -128,33 +116,10 @@ ModelInstance *createModelInstance(
 }
 
 void freeModelInstance(ModelInstance *comp) {
-    freeMemory(comp, (void *)comp->instanceName);
-    freeMemory(comp, (void *)comp->z);
-    freeMemory(comp, (void *)comp->prez);
-    freeMemory(comp, comp);
-}
-
-void *allocateMemory(ModelInstance *comp, size_t num, size_t size) {
-#if FMI_VERSION > 2
-    return comp->allocateMemory(comp->componentEnvironment, num, size);
-#else
-    return comp->allocateMemory(num, size);
-#endif
-}
-
-void freeMemory(ModelInstance *comp, void *obj) {
-#if FMI_VERSION > 2
-    comp->freeMemory(comp->componentEnvironment, obj);
-#else
-    comp->freeMemory(obj);
-#endif
-}
-
-const char *duplicateString(ModelInstance *comp, const char *str1) {
-    size_t len = strlen(str1);
-    char *str2 = allocateMemory(comp, len + 1, sizeof(char));
-    strncpy(str2, str1, len + 1);
-    return str2;
+    free((void *)comp->instanceName);
+    free(comp->z);
+    free(comp->prez);
+    free(comp);
 }
 
 bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected) {
@@ -233,14 +198,14 @@ static void logMessage(ModelInstance *comp, int status, const char *category, co
     va_end(args1);
 
     va_copy(args1, args);
-    buf = allocateMemory(comp, len + 1, sizeof(char));
+    buf = (char *)calloc(len + 1, sizeof(char));
     vsnprintf(buf, len + 1, message, args);
     va_end(args1);
 
     // no need to distinguish between FMI versions since we're not using variadic arguments
     comp->logger(comp->componentEnvironment, comp->instanceName, status, category, buf);
 
-    freeMemory(comp, buf);
+    free(buf);
 }
 
 void logEvent(ModelInstance *comp, const char *message, ...) {

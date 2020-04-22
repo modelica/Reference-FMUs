@@ -152,8 +152,6 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
 
     return createModelInstance(
         (loggerType)functions->logger,
-        (allocateMemoryType)functions->allocateMemory,
-        (freeMemoryType)functions->freeMemory,
         NULL,
         functions->componentEnvironment,
         instanceName,
@@ -410,7 +408,7 @@ fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {
     
     ASSERT_STATE(GetFMUstate)
 
-    ModelData *modelData = S->allocateMemory(1, sizeof(ModelData));
+    ModelData *modelData = (ModelData *)calloc(1, sizeof(ModelData));
     memcpy(modelData, S->modelData, sizeof(ModelData));
     *FMUstate = modelData;
     return fmi2OK;
@@ -430,8 +428,9 @@ fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate* FMUstate) {
     ASSERT_STATE(FreeFMUstate)
 
     ModelData *modelData = *FMUstate;
-    S->freeMemory(modelData);
+    free(modelData);
     *FMUstate = NULL;
+    
     return fmi2OK;
 }
 
@@ -466,7 +465,7 @@ fmi2Status fmi2DeSerializeFMUstate (fmi2Component c, const fmi2Byte serializedSt
     ASSERT_STATE(DeSerializeFMUstate)
 
     if (*FMUstate == NULL) {
-        *FMUstate = S->allocateMemory(1, sizeof(ModelData));
+        *FMUstate = (fmi2FMUstate *)calloc(1, sizeof(ModelData));
     }
 
     if (invalidNumber(S, "fmi2DeSerializeFMUstate", "size", size, sizeof(ModelData)))
