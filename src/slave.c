@@ -421,6 +421,7 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
     UNUSED(t)  // TODO: check t == comp->time ?
 
     bool stateEvent, timeEvent;
+    Status status = OK;
 
 #if NUMBER_OF_EVENT_INDICATORS > 0
     double *temp = NULL;
@@ -486,12 +487,12 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
             if (comp->intermediateUpdate) { // Hybrid Co-Simulation
 
                 // call intermediate update callback
-                comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
+                status = comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
                                          comp->time, 1, comp->clocksTicked, 0, 0, 0, 1);
 
                 if (comp->returnEarly) {
                     *earlyReturn = 1;
-                    return OK;
+                    return status;
                 }
             }
 #endif
@@ -512,5 +513,5 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
         *earlyReturn = 0;
     }
 
-    return OK;
+    return status;
 }

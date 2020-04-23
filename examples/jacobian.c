@@ -7,14 +7,6 @@ void cb_logMessage(fmi3InstanceEnvironment instanceEnvironment, fmi3String insta
     puts(message);
 }
 
-void* cb_allocateMemory(fmi3InstanceEnvironment instanceEnvironment, size_t nobj, size_t size) {
-    return calloc(nobj, size);
-}
-
-void  cb_freeMemory(fmi3InstanceEnvironment instanceEnvironment, void* obj)  {
-    free(obj);
-}
-
 int main(int argc, char* argv[]) {
 
     int i = 0;

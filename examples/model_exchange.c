@@ -23,10 +23,6 @@ fmi3Status recordVariables(FILE *outputFile, fmi3Instance s, fmi3Float64 time) {
     return status;
 }
 
-// tag::CheckStatus[]
-#define CHECK_STATUS(S) status = S; if (status != fmi3OK) goto TERMINATE_MODEL;
-// end::CheckStatus[]
-
 int main(int argc, char* argv[]) {
 
     fmi3Status status = fmi3OK;
@@ -65,7 +61,7 @@ int main(int argc, char* argv[]) {
     
     if (m == NULL) {
         status = fmi3Error;
-        goto TERMINATE_MODEL;
+        goto TERMINATE;
     }
 
 // set the start time
@@ -136,7 +132,7 @@ while (!terminateSimulation) {
             nominalsOfContinuousStatesChanged |= nominalsChanged;
             valuesOfContinuousStatesChanged   |= statesChanged;
 
-            if (terminateSimulation) goto TERMINATE_MODEL;
+            if (terminateSimulation) goto TERMINATE;
         }
 
         // enter Continuous-Time Mode
@@ -165,7 +161,7 @@ while (!terminateSimulation) {
     }
 
     if (time >= tEnd) {
-        goto TERMINATE_MODEL;
+        goto TERMINATE;
     }
 
     // compute derivatives
@@ -215,7 +211,7 @@ while (!terminateSimulation) {
     CHECK_STATUS(recordVariables(outputFile, m, time));
 }
     
-TERMINATE_MODEL:
+TERMINATE:
 
     if (m && status != fmi3Error && status != fmi3Fatal) {
         // retrieve final values and terminate simulation

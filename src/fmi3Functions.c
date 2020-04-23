@@ -67,6 +67,7 @@
 #define MASK_fmi3GetDirectionalDerivative (modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
 
 // TODO: fix masks
+#define MASK_fmi3EnterEventMode            (~0) // (modelEventMode | modelContinuousTimeMode)
 #define MASK_fmi3Terminate                 (~0) // (modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepFailed)
 #define MASK_fmi3GetClock                  (~0)
 #define MASK_fmi3SetClock                  (~0)
@@ -78,7 +79,6 @@
 // ---------------------------------------------------------------------------
 // Function calls allowed state masks for Model-exchange
 // ---------------------------------------------------------------------------
-#define MASK_fmi3EnterEventMode                (modelEventMode | modelContinuousTimeMode)
 #define MASK_fmi3NewDiscreteStates             modelEventMode
 #define MASK_fmi3EnterContinuousTimeMode       modelEventMode
 #define MASK_fmi3CompletedIntegratorStep       modelContinuousTimeMode
@@ -209,6 +209,22 @@ fmi3Instance fmi3InstantiateBasicCoSimulation(
     );
 }
 
+fmi3Instance fmi3InstantiateHybridCoSimulation(
+    fmi3String                     instanceName,
+    fmi3String                     instantiationToken,
+    fmi3String                     resourceLocation,
+    fmi3Boolean                    visible,
+    fmi3Boolean                    loggingOn,
+    fmi3Boolean                    intermediateVariableGetRequired,
+    fmi3Boolean                    intermediateInternalVariableGetRequired,
+    fmi3Boolean                    intermediateVariableSetRequired,
+    fmi3InstanceEnvironment        instanceEnvironment,
+    fmi3CallbackLogMessage         logMessage,
+    fmi3CallbackIntermediateUpdate intermediateUpdate) {
+    
+    return NULL;  // not implemented
+}
+
 fmi3Instance fmi3InstantiateScheduledCoSimulation(
     fmi3String                     instanceName,
     fmi3String                     instantiationToken,
@@ -298,7 +314,6 @@ fmi3Status fmi3EnterEventMode(fmi3Instance instance,
     
     ASSERT_STATE(EnterEventMode)
 
-    
     S->state = modelEventMode;
     S->isNewEventIteration = true;
     
