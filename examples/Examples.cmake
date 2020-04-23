@@ -43,21 +43,6 @@ if(UNIX AND NOT APPLE)
   target_link_libraries(hcs_early_return m)
 endif()
 
-# cs_intermediate_update
-add_executable(cs_intermediate_update
-  ${EXAMPLE_SOURCES}
-  BouncingBall/config.h
-  BouncingBall/model.c
-  src/fmi3Functions.c
-  src/slave.c
-  examples/cs_intermediate_update.c
-)
-set_target_properties(cs_intermediate_update PROPERTIES FOLDER examples)
-target_include_directories(cs_intermediate_update PRIVATE include BouncingBall)
-if(UNIX AND NOT APPLE)
-  target_link_libraries(cs_intermediate_update m)
-endif()
-
 # co_simulation
 add_library(slave1 STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c VanDerPol/model.c src/slave.c)
 set_target_properties(slave1 PROPERTIES FOLDER examples)
