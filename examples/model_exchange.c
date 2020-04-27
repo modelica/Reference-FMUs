@@ -104,7 +104,7 @@ while (!terminateSimulation) {
     if (enterEventMode || stateEvent || timeEvent) {
         
         if (!initialEventMode) {
-            CHECK_STATUS(M_fmi3EnterEventMode(m, fmi3False, fmi3False, NUMBER_OF_EVENT_INDICATORS, rootsFound, timeEvent));
+            CHECK_STATUS(M_fmi3EnterEventMode(m, fmi3False, fmi3False, rootsFound, NUMBER_OF_EVENT_INDICATORS, timeEvent));
         }
 
         // event iteration

@@ -28,6 +28,8 @@
 #endif
 #include "fmi2Functions.h"
 
+#define FMI_STATUS fmi2Status
+
 #ifndef max
 #define max(a,b) ((a)>(b) ? (a) : (b))
 #endif
@@ -39,39 +41,39 @@
 // ---------------------------------------------------------------------------
 // Function calls allowed state masks for both Model-exchange and Co-simulation
 // ---------------------------------------------------------------------------
-#define MASK_fmi2GetTypesPlatform        (modelStartAndEnd | modelInstantiated | modelInitializationMode \
-| modelEventMode | modelContinuousTimeMode \
-| modelStepComplete | modelStepInProgress | modelStepFailed | modelStepCanceled \
-| modelTerminated | modelError)
+#define MASK_fmi2GetTypesPlatform        (StartAndEnd | Instantiated | InitializationMode \
+| EventMode | ContinuousTimeMode \
+| StepComplete | StepInProgress | StepFailed | StepCanceled \
+| Terminated | Error)
 #define MASK_fmi2GetVersion              MASK_fmi2GetTypesPlatform
-#define MASK_fmi2SetDebugLogging         (modelInstantiated | modelInitializationMode \
-| modelEventMode | modelContinuousTimeMode \
-| modelStepComplete | modelStepInProgress | modelStepFailed | modelStepCanceled \
-| modelTerminated | modelError)
-#define MASK_fmi2Instantiate             (modelStartAndEnd)
-#define MASK_fmi2FreeInstance            (modelInstantiated | modelInitializationMode \
-| modelEventMode | modelContinuousTimeMode \
-| modelStepComplete | modelStepFailed | modelStepCanceled \
-| modelTerminated | modelError)
-#define MASK_fmi2SetupExperiment         modelInstantiated
-#define MASK_fmi2EnterInitializationMode modelInstantiated
-#define MASK_fmi2ExitInitializationMode  modelInitializationMode
-#define MASK_fmi2Terminate               (modelEventMode | modelContinuousTimeMode \
-| modelStepComplete | modelStepFailed)
+#define MASK_fmi2SetDebugLogging         (Instantiated | InitializationMode \
+| EventMode | ContinuousTimeMode \
+| StepComplete | StepInProgress | StepFailed | StepCanceled \
+| Terminated | Error)
+#define MASK_fmi2Instantiate             (StartAndEnd)
+#define MASK_fmi2FreeInstance            (Instantiated | InitializationMode \
+| EventMode | ContinuousTimeMode \
+| StepComplete | StepFailed | StepCanceled \
+| Terminated | Error)
+#define MASK_fmi2SetupExperiment         Instantiated
+#define MASK_fmi2EnterInitializationMode Instantiated
+#define MASK_fmi2ExitInitializationMode  InitializationMode
+#define MASK_fmi2Terminate               (EventMode | ContinuousTimeMode \
+| StepComplete | StepFailed)
 #define MASK_fmi2Reset                   MASK_fmi2FreeInstance
-#define MASK_fmi2GetReal                 (modelInitializationMode \
-| modelEventMode | modelContinuousTimeMode \
-| modelStepComplete | modelStepFailed | modelStepCanceled \
-| modelTerminated | modelError)
+#define MASK_fmi2GetReal                 (InitializationMode \
+| EventMode | ContinuousTimeMode \
+| StepComplete | StepFailed | StepCanceled \
+| Terminated | Error)
 #define MASK_fmi2GetInteger              MASK_fmi2GetReal
 #define MASK_fmi2GetBoolean              MASK_fmi2GetReal
 #define MASK_fmi2GetString               MASK_fmi2GetReal
-#define MASK_fmi2SetReal                 (modelInstantiated | modelInitializationMode \
-| modelEventMode | modelContinuousTimeMode \
-| modelStepComplete)
-#define MASK_fmi2SetInteger              (modelInstantiated | modelInitializationMode \
-| modelEventMode \
-| modelStepComplete)
+#define MASK_fmi2SetReal                 (Instantiated | InitializationMode \
+| EventMode | ContinuousTimeMode \
+| StepComplete)
+#define MASK_fmi2SetInteger              (Instantiated | InitializationMode \
+| EventMode \
+| StepComplete)
 #define MASK_fmi2SetBoolean              MASK_fmi2SetInteger
 #define MASK_fmi2SetString               MASK_fmi2SetInteger
 #define MASK_fmi2GetFMUstate             MASK_fmi2FreeInstance
@@ -80,47 +82,47 @@
 #define MASK_fmi2SerializedFMUstateSize  MASK_fmi2FreeInstance
 #define MASK_fmi2SerializeFMUstate       MASK_fmi2FreeInstance
 #define MASK_fmi2DeSerializeFMUstate     MASK_fmi2FreeInstance
-#define MASK_fmi2GetDirectionalDerivative (modelInitializationMode \
-| modelEventMode | modelContinuousTimeMode \
-| modelStepComplete | modelStepFailed | modelStepCanceled \
-| modelTerminated | modelError)
+#define MASK_fmi2GetDirectionalDerivative (InitializationMode \
+| EventMode | ContinuousTimeMode \
+| StepComplete | StepFailed | StepCanceled \
+| Terminated | Error)
 
 // ---------------------------------------------------------------------------
 // Function calls allowed state masks for Model-exchange
 // ---------------------------------------------------------------------------
-#define MASK_fmi2EnterEventMode          (modelEventMode | modelContinuousTimeMode)
-#define MASK_fmi2NewDiscreteStates       modelEventMode
-#define MASK_fmi2EnterContinuousTimeMode modelEventMode
-#define MASK_fmi2CompletedIntegratorStep modelContinuousTimeMode
-#define MASK_fmi2SetTime                 (modelEventMode | modelContinuousTimeMode)
-#define MASK_fmi2SetContinuousStates     modelContinuousTimeMode
-#define MASK_fmi2GetEventIndicators      (modelInitializationMode \
-| modelEventMode | modelContinuousTimeMode \
-| modelTerminated | modelError)
+#define MASK_fmi2EnterEventMode          (EventMode | ContinuousTimeMode)
+#define MASK_fmi2NewDiscreteStates       EventMode
+#define MASK_fmi2EnterContinuousTimeMode EventMode
+#define MASK_fmi2CompletedIntegratorStep ContinuousTimeMode
+#define MASK_fmi2SetTime                 (EventMode | ContinuousTimeMode)
+#define MASK_fmi2SetContinuousStates     ContinuousTimeMode
+#define MASK_fmi2GetEventIndicators      (InitializationMode \
+| EventMode | ContinuousTimeMode \
+| Terminated | Error)
 #define MASK_fmi2GetContinuousStates     MASK_fmi2GetEventIndicators
-#define MASK_fmi2GetDerivatives          (modelEventMode | modelContinuousTimeMode \
-| modelTerminated | modelError)
-#define MASK_fmi2GetNominalsOfContinuousStates ( modelInstantiated \
-| modelEventMode | modelContinuousTimeMode \
-| modelTerminated | modelError)
+#define MASK_fmi2GetDerivatives          (EventMode | ContinuousTimeMode \
+| Terminated | Error)
+#define MASK_fmi2GetNominalsOfContinuousStates ( Instantiated \
+| EventMode | ContinuousTimeMode \
+| Terminated | Error)
 
 // ---------------------------------------------------------------------------
 // Function calls allowed state masks for Co-simulation
 // ---------------------------------------------------------------------------
-#define MASK_fmi2SetRealInputDerivatives (modelInstantiated | modelInitializationMode \
-| modelStepComplete)
-#define MASK_fmi2GetRealOutputDerivatives (modelStepComplete | modelStepFailed | modelStepCanceled \
-| modelTerminated | modelError)
-#define MASK_fmi2DoStep                  modelStepComplete
-#define MASK_fmi2CancelStep              modelStepInProgress
-#define MASK_fmi2GetStatus               (modelStepComplete | modelStepInProgress | modelStepFailed \
-| modelTerminated)
+#define MASK_fmi2SetRealInputDerivatives (Instantiated | InitializationMode \
+| StepComplete)
+#define MASK_fmi2GetRealOutputDerivatives (StepComplete | StepFailed | StepCanceled \
+| Terminated | Error)
+#define MASK_fmi2DoStep                  StepComplete
+#define MASK_fmi2CancelStep              StepInProgress
+#define MASK_fmi2GetStatus               (StepComplete | StepInProgress | StepFailed \
+| Terminated)
 #define MASK_fmi2GetRealStatus           MASK_fmi2GetStatus
 #define MASK_fmi2GetIntegerStatus        MASK_fmi2GetStatus
 #define MASK_fmi2GetBooleanStatus        MASK_fmi2GetStatus
 #define MASK_fmi2GetStringStatus         MASK_fmi2GetStatus
 
-// shorthand to access the model instance
+// shorthand to access the  instance
 #define S ((ModelInstance *)c)
 
 #define ASSERT_STATE(S) if(!allowedState(c, MASK_fmi2##S, #S)) return fmi2Error;
@@ -158,7 +160,7 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
         fmuGUID,
         fmuResourceLocation,
         loggingOn,
-        fmuType,
+        (InterfaceType)fmuType,
         false
     );
 }
@@ -182,7 +184,7 @@ fmi2Status fmi2EnterInitializationMode(fmi2Component c) {
 
     ASSERT_STATE(EnterInitializationMode)
 
-    S->state = modelInitializationMode;
+    S->state = InitializationMode;
     
     return fmi2OK;
 }
@@ -199,10 +201,10 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
     }
 
     if (S->type == ModelExchange) {
-        S->state = modelEventMode;
+        S->state = EventMode;
         S->isNewEventIteration = false;
     } else {
-        S->state = modelStepComplete;
+        S->state = StepComplete;
     }
     
     return fmi2OK;
@@ -212,7 +214,7 @@ fmi2Status fmi2Terminate(fmi2Component c) {
     
     ASSERT_STATE(Terminate)
 
-    S->state = modelTerminated;
+    S->state = Terminated;
     
     return fmi2OK;
 }
@@ -221,7 +223,7 @@ fmi2Status fmi2Reset(fmi2Component c) {
 
     ASSERT_STATE(Reset)
 
-    S->state = modelInstantiated;
+    S->state = Instantiated;
 
     setStartValues(S); // to be implemented by the includer of this file
 
@@ -651,7 +653,7 @@ fmi2Status fmi2EnterEventMode(fmi2Component c) {
     
     ASSERT_STATE(EnterEventMode)
 
-    S->state = modelEventMode;
+    S->state = EventMode;
     S->isNewEventIteration = fmi2True;
     
     return fmi2OK;
@@ -691,7 +693,7 @@ fmi2Status fmi2EnterContinuousTimeMode(fmi2Component c) {
     
     ASSERT_STATE(EnterContinuousTimeMode)
 
-    S->state = modelContinuousTimeMode;
+    S->state = ContinuousTimeMode;
     
     return fmi2OK;
 }

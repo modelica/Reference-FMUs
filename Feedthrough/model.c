@@ -101,8 +101,8 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
         case vr_fixed_real_parameter:
 #if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
-                comp->state != modelInstantiated &&
-                comp->state != modelInitializationMode) {
+                comp->state != Instantiated &&
+                comp->state != InitializationMode) {
                 logError(comp, "Variable fixed_real_parameter can only be set after instantiation or in initialization mode.");
                 return Error;
             }
@@ -113,9 +113,9 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
         case vr_tunable_real_parameter:
 #if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
-                comp->state != modelInstantiated &&
-                comp->state != modelInitializationMode &&
-                comp->state != modelEventMode) {
+                comp->state != Instantiated &&
+                comp->state != InitializationMode &&
+                comp->state != EventMode) {
                 logError(comp, "Variable tunable_real_parameter can only be set after instantiation, in initialization mode or event mode.");
                 return Error;
             }
@@ -130,8 +130,8 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
         case vr_discrete_real_in:
 #if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
-                comp->state != modelInitializationMode &&
-                comp->state != modelEventMode) {
+                comp->state != InitializationMode &&
+                comp->state != EventMode) {
                 logError(comp, "Variable real_in can only be set in initialization mode or event mode.");
                 return Error;
             }

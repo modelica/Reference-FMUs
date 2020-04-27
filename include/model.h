@@ -15,35 +15,54 @@
 
 #if FMI_VERSION == 1
 
-#define not_modelError (modelInstantiated|modelInitialized|modelTerminated)
+#define not_modelError (Instantiated| Initialized | Terminated)
 
 typedef enum {
-    modelInstantiated = 1<<0,
-    modelInitialized  = 1<<1,
-    modelTerminated   = 1<<2,
-    modelError        = 1<<3
+    Instantiated = 1<<0,
+    Initialized  = 1<<1,
+    Terminated   = 1<<2,
+    modelError   = 1<<3
+} ModelState;
+
+#elif FMI_VERSION == 2
+
+typedef enum {
+    StartAndEnd        = 1<<0,
+    Instantiated       = 1<<1,
+    InitializationMode = 1<<2,
+
+    // ME states
+    EventMode          = 1<<3,
+    ContinuousTimeMode = 1<<4,
+    
+    // CS states
+    StepComplete       = 1<<5,
+    StepInProgress     = 1<<6,
+    StepFailed         = 1<<7,
+    StepCanceled       = 1<<8,
+
+    Terminated         = 1<<9,
+    modelError         = 1<<10,
+    modelFatal         = 1<<11,
 } ModelState;
 
 #else
 
 typedef enum {
-    modelStartAndEnd        = 1<<0,
-    modelInstantiated       = 1<<1,
-    modelInitializationMode = 1<<2,
-
-    // ME states
-    modelEventMode          = 1<<3,
-    modelContinuousTimeMode = 1<<4,
-    
-    // CS states
-    modelStepComplete       = 1<<5,
-    modelStepInProgress     = 1<<6,
-    modelStepFailed         = 1<<7,
-    modelStepCanceled       = 1<<8,
-
-    modelTerminated         = 1<<9,
-    modelError              = 1<<10,
-    modelFatal              = 1<<11,
+    StartAndEnd            = 1 << 0,
+    ConfigurationMode      = 1 << 1,
+    Instantiated           = 1 << 2,
+    InitializationMode     = 1 << 3,
+    EventMode              = 1 << 4,
+    ContinuousTimeMode     = 1 << 5,
+    StepMode               = 1 << 6,
+    ClockActiviationMode   = 1 << 7,
+    StepDiscarded          = 1 << 8,
+    ReconfigurationMode    = 1 << 9,
+    IntermediateUpdateMode = 1 << 10,
+    Terminated             = 1 << 11,
+    modelError             = 1 << 12,
+    modelFatal             = 1 << 13,
 } ModelState;
 
 #endif
@@ -89,6 +108,8 @@ typedef struct {
     InterfaceType type;
     const char *resourceLocation;
 
+    Status status;
+    
     // callback functions
     loggerType logger;
     intermediateUpdateType intermediateUpdate;
@@ -187,9 +208,9 @@ Status status = OK; \
 for (int i = 0; i < nvr; i++) { \
     Status s = get ## T((ModelInstance *)instance, vr[i], value, &index); \
     status = max(status, s); \
-    if (status > Warning) return status; \
+    if (status > Warning) return (FMI_STATUS)status; \
 } \
-return status;
+return (FMI_STATUS)status;
 
 #define SET_VARIABLES(T) \
 size_t index = 0; \
@@ -197,10 +218,10 @@ Status status = OK; \
 for (int i = 0; i < nvr; i++) { \
     Status s = set ## T((ModelInstance *)instance, vr[i], value, &index); \
     status = max(status, s); \
-    if (status > Warning) return status; \
+    if (status > Warning) return (FMI_STATUS)status; \
 } \
 if (nvr > 0) ((ModelInstance *)instance)->isDirtyValues = true; \
-return status;
+return (FMI_STATUS)status;
 
 // TODO: make this work with arrays
 #define GET_BOOLEAN_VARIABLES \
@@ -211,9 +232,9 @@ for (int i = 0; i < nvr; i++) { \
     Status s = getBoolean((ModelInstance *)instance, vr[i], &v, &index); \
     value[i] = v; \
     status = max(status, s); \
-    if (status > Warning) return status; \
+    if (status > Warning) return (FMI_STATUS)status; \
 } \
-return status;
+return (FMI_STATUS)status;
 
 // TODO: make this work with arrays
 #define SET_BOOLEAN_VARIABLES \
@@ -223,8 +244,8 @@ for (int i = 0; i < nvr; i++) { \
     size_t index = 0; \
     Status s = setBoolean((ModelInstance *)instance, vr[i], &v, &index); \
     status = max(status, s); \
-    if (status > Warning) return status; \
+    if (status > Warning) return (FMI_STATUS)status; \
 } \
-return status;
+return (FMI_STATUS)status;
 
 #endif  /* model_h */

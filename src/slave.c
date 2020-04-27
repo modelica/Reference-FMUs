@@ -71,6 +71,8 @@ ModelInstance *createModelInstance(
         } else {
             comp->resourceLocation = NULL;
         }
+        
+        comp->status = OK;
 
         comp->modelData = (ModelData *)calloc(1, sizeof(ModelData));
 
@@ -91,7 +93,7 @@ ModelInstance *createModelInstance(
     strcpy((char *)comp->instanceName, (char *)instanceName);
     comp->type = interfaceType;
 
-    comp->state = modelInstantiated;
+    comp->state = Instantiated;
     comp->isNewEventIteration = false;
 
     comp->newDiscreteStatesNeeded = false;
@@ -500,8 +502,8 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
 
         // terminate simulation, if requested by the model in the previous step
         if (comp->terminateSimulation) {
-#if FMI_VERSION > 1
-            comp->state = modelStepFailed;
+#if FMI_VERSION == 2
+            comp->state = StepFailed;
 #endif
             return Discard; // enforce termination of the simulation loop
         }

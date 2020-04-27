@@ -55,8 +55,8 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
         case vr_g:
 #if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
-                comp->state != modelInstantiated &&
-                comp->state != modelInitializationMode) {
+                comp->state != Instantiated &&
+                comp->state != InitializationMode) {
                 logError(comp, "Variable g can only be set after instantiation or in initialization mode.");
                 return Error;
             }
@@ -67,9 +67,9 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
         case vr_e:
 #if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
-                comp->state != modelInstantiated &&
-                comp->state != modelInitializationMode &&
-                comp->state != modelEventMode) {
+                comp->state != Instantiated &&
+                comp->state != InitializationMode &&
+                comp->state != EventMode) {
                 logError(comp, "Variable e can only be set after instantiation, in initialization mode or event mode.");
                 return Error;
             }

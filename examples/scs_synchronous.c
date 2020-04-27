@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
                 
         CHECK_STATUS(recordVariables(m, time));
 
-        time += 1;
+        time++;
     }
 
     TERMINATE:

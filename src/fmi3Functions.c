@@ -19,6 +19,8 @@
 #include "slave.h"
 
 
+#define FMI_STATUS fmi3Status
+
 // C-code FMUs have functions names prefixed with MODEL_IDENTIFIER_.
 // Define DISABLE_PREFIX to build a binary FMU.
 #ifndef DISABLE_PREFIX
@@ -113,15 +115,15 @@
 // shorthand to access the model instance
 #define S ((ModelInstance *)instance)
 
-static fmi3Status unsupportedFunction(fmi3Instance instance, const char *fName, int statesExpected) {
-    
-//    if (invalidState(S, fName, statesExpected))
-//        return fmi3Error;
-    
-    logError(S, "%s: Function not implemented.", fName);
-    
-    return fmi3Error;
-}
+//static fmi3Status unsupportedFunction(fmi3Instance instance, const char *fName, int statesExpected) {
+//
+////    if (invalidState(S, fName, statesExpected))
+////        return fmi3Error;
+//
+//    logError(S, "%s: Function not implemented.", fName);
+//
+//    return fmi3Error;
+//}
 
 /***************************************************
  Common Functions
@@ -131,30 +133,305 @@ const char* fmi3GetVersion() {
     return fmi3Version;
 }
 
-static bool allowedState(ModelInstance *instance, int statesExpected, char *name) {
+//static bool allowedState(ModelInstance *instance, int statesExpected, char *name) {
+//
+//    if (!instance) {
+//        return false;
+//    }
+//
+//    if (!(instance->state & statesExpected)) {
+//        logError(instance, "fmi3%s: Illegal call sequence.", name);
+//        return false;
+//    }
+//
+//    return true;
+//
+//}
+
+typedef enum {
+    
+    /***************************************************
+    Common Functions
+    ****************************************************/
+
+    /* Inquire version numbers and set debug logging */
+    GetVersion,
+    SetDebugLogging,
+
+    /* Creation and destruction of FMU instances */
+    InstantiateModelExchange,
+    InstantiateBasicCoSimulation,
+    InstantiateHybridCoSimulation,
+    InstantiateScheduledCoSimulation,
+    FreeInstance,
+
+    /* Enter and exit initialization mode, terminate and reset */
+    EnterInitializationMode,
+    ExitInitializationMode,
+    EnterEventMode,
+    Terminate,
+    Reset,
+
+    /* Getting and setting variable values */
+    GetFloat32,
+    GetFloat64,
+    GetInt8,
+    GetUInt8,
+    GetInt16,
+    GetUInt16,
+    GetInt32,
+    GetUInt32,
+    GetInt64,
+    GetUInt64,
+    GetBoolean,
+    GetString,
+    GetBinary,
+    SetFloat32,
+    SetFloat64,
+    SetInt8,
+    SetUInt8,
+    SetInt16,
+    SetUInt16,
+    SetInt32,
+    SetUInt32,
+    SetInt64,
+    SetUInt64,
+    SetBoolean,
+    SetString,
+    SetBinary,
+
+    /* Getting Variable Dependency Information */
+    GetNumberOfVariableDependencies,
+    GetVariableDependencies,
+
+    /* Getting and setting the internal FMU state */
+    GetFMUState,
+    SetFMUState,
+    FreeFMUState,
+    SerializedFMUStateSize,
+    SerializeFMUState,
+    DeSerializeFMUState,
+
+    /* Getting partial derivatives */
+    GetDirectionalDerivative,
+    GetAdjointDerivative,
+
+    /* Entering and exiting the Configuration or Reconfiguration Mode */
+    EnterConfigurationMode,
+    ExitConfigurationMode,
+
+    /* Clock related functions */
+    GetClock,
+    SetClock,
+    GetIntervalDecimal,
+    GetIntervalFraction,
+    SetIntervalDecimal,
+    SetIntervalFraction,
+    NewDiscreteStates,
+
+    /***************************************************
+    Functions for Model Exchange
+    ****************************************************/
+
+    EnterContinuousTimeMode,
+    CompletedIntegratorStep,
+
+    /* Providing independent variables and re-initialization of caching */
+    SetTime,
+    SetContinuousStates,
+
+    /* Evaluation of the model equations */
+    GetDerivatives,
+    GetEventIndicators,
+    GetContinuousStates,
+    GetNominalsOfContinuousStates,
+    GetNumberOfEventIndicators,
+    GetNumberOfContinuousStates,
+
+    /***************************************************
+    Functions for Co-Simulation
+    ****************************************************/
+
+    /* Simulating the slave */
+    EnterStepMode,
+    SetInputDerivatives,
+    GetOutputDerivatives,
+    DoStep,
+    ActivateModelPartition,
+    DoEarlyReturn,
+    GetDoStepDiscardedStatus,
+
+} Functions;
+
+static bool allowedState(ModelInstance *instance, Functions function, char *name) {
     
     if (!instance) {
         return false;
     }
-        
-    if (!(instance->state & statesExpected)) {
-        logError(instance, "fmi3%s: Illegal call sequence.", name);
+    
+    if (instance->status & (Error | Fatal)) {
         return false;
     }
     
-    return true;
+    switch (function) {
+        
+        /* Inquire version numbers and set debug logging */
+        case GetVersion:
+        case SetDebugLogging:
+            return true;
 
+        /* Creation and destruction of FMU instances */
+        case InstantiateModelExchange:
+        case InstantiateBasicCoSimulation:
+        case InstantiateHybridCoSimulation:
+        case InstantiateScheduledCoSimulation:
+            return instance->state & StartAndEnd;
+        case FreeInstance:
+            return true;
+
+        /* Enter and exit initialization mode, terminate and reset */
+        case EnterInitializationMode:
+            return instance->state & Instantiated;
+        case ExitInitializationMode:
+            return instance->state & InitializationMode;
+        case EnterEventMode:
+            return instance->state & (ContinuousTimeMode | StepMode);
+        case Terminate:
+            return instance->state & (ContinuousTimeMode | StepMode | StepDiscarded | EventMode | ClockActiviationMode | ReconfigurationMode);
+        case Reset:
+            return true;
+
+        /* Getting and setting variable values */
+        case GetFloat32:
+        case GetFloat64:
+        case GetInt8:
+        case GetUInt8:
+        case GetInt16:
+        case GetUInt16:
+        case GetInt32:
+        case GetUInt32:
+        case GetInt64:
+        case GetUInt64:
+        case GetBoolean:
+        case GetString:
+        case GetBinary:
+            return instance->state & (InitializationMode | EventMode | ContinuousTimeMode | StepMode | ClockActiviationMode | Terminated);
+        case SetFloat32:
+        case SetFloat64:
+            return instance->state & (Instantiated | InitializationMode | EventMode | ContinuousTimeMode | StepMode | ClockActiviationMode | Terminated);
+        case SetInt8:
+        case SetUInt8:
+        case SetInt16:
+        case SetUInt16:
+        case SetInt32:
+        case SetUInt32:
+        case SetInt64:
+        case SetUInt64:
+        case SetBoolean:
+        case SetString:
+        case SetBinary:
+            return instance->state & (Instantiated | InitializationMode | EventMode | StepMode | Terminated);
+            
+        /* Getting Variable Dependency Information */
+        case GetNumberOfVariableDependencies:
+        case GetVariableDependencies:
+            return true;
+
+        /* Getting and setting the internal FMU state */
+        case GetFMUState:
+        case SetFMUState:
+        case FreeFMUState:
+        case SerializedFMUStateSize:
+        case SerializeFMUState:
+        case DeSerializeFMUState:
+            return true;
+
+        /* Getting partial derivatives */
+        case GetDirectionalDerivative:
+        case GetAdjointDerivative:
+            return instance->state & (InitializationMode | EventMode | ContinuousTimeMode | Terminated);
+
+        /* Entering and exiting the Configuration or Reconfiguration Mode */
+        case EnterConfigurationMode:
+            switch (instance->type) {
+                case BasicCoSimulation:
+                    return instance->state & (Instantiated | StepMode);
+                case HybridCoSimulation:
+                case ModelExchange:
+                    return instance->state & (Instantiated | EventMode);
+                case ScheduledCoSimulation:
+                    return instance->state & (Instantiated | ClockActiviationMode);
+            }
+        case ExitConfigurationMode:
+            return instance->state & (ConfigurationMode | ReconfigurationMode);
+
+        /* Clock related functions */
+        case GetClock:
+        case SetClock:
+        case GetIntervalDecimal:
+        case GetIntervalFraction:
+        case SetIntervalDecimal:
+        case SetIntervalFraction:
+        case NewDiscreteStates:
+            return true;
+
+        /***************************************************
+        Functions for Model Exchange
+        ****************************************************/
+
+        case EnterContinuousTimeMode:
+            return instance->state == EventMode;
+        case CompletedIntegratorStep:
+            return instance->state == ContinuousTimeMode;
+
+        /* Providing independent variables and re-initialization of caching */
+        case SetTime:
+            return instance->state & (EventMode | ContinuousTimeMode);
+        case SetContinuousStates:
+            return instance->state == ContinuousTimeMode;
+
+        /* Evaluation of the model equations */
+        case GetDerivatives:
+        case GetEventIndicators:
+        case GetContinuousStates:
+        case GetNominalsOfContinuousStates:
+        case GetNumberOfEventIndicators:
+        case GetNumberOfContinuousStates:
+            return instance->state & (InitializationMode | EventMode | ContinuousTimeMode | Terminated);
+
+        /***************************************************
+        Functions for Co-Simulation
+        ****************************************************/
+
+        /* Simulating the slave */
+        case EnterStepMode:
+            return instance->state == StepDiscarded;
+        case SetInputDerivatives:
+            return instance->state & (Instantiated | InitializationMode);
+        case GetOutputDerivatives:
+            return instance->state & (IntermediateUpdateMode | Terminated);
+        case DoStep:
+            return instance->state == StepMode;
+        case ActivateModelPartition:
+            return instance->state == ClockActiviationMode;
+        case DoEarlyReturn:
+            return instance->state & (StepMode | ClockActiviationMode);
+        case GetDoStepDiscardedStatus:
+            return instance->state == StepDiscarded;
+    }
+        
+    return false;
 }
 
 
-#define ASSERT_STATE(S) if(!allowedState(instance, MASK_fmi3##S, #S)) return fmi3Error;
+#define ASSERT_STATE(S) if(!allowedState(instance, S, #S)) return fmi3Error;
 
 
 fmi3Status fmi3SetDebugLogging(fmi3Instance instance, fmi3Boolean loggingOn, size_t nCategories, const fmi3String categories[]) {
 
     ASSERT_STATE(SetDebugLogging)
 
-    return setDebugLogging(S, loggingOn, nCategories, categories);
+    return (fmi3Status)setDebugLogging(S, loggingOn, nCategories, categories);
 }
 
 fmi3Instance fmi3InstantiateModelExchange(
@@ -196,7 +473,7 @@ fmi3Instance fmi3InstantiateBasicCoSimulation(
     fmi3CallbackLogMessage         logMessage,
     fmi3CallbackIntermediateUpdate intermediateUpdate) {
 
-    return createModelInstance(
+    ModelInstance *instance = createModelInstance(
         (loggerType)logMessage,
         (intermediateUpdateType)intermediateUpdate,
         instanceEnvironment,
@@ -207,6 +484,10 @@ fmi3Instance fmi3InstantiateBasicCoSimulation(
         BasicCoSimulation,
         false
     );
+    
+    instance->state = Instantiated;
+    
+    return instance;
 }
 
 fmi3Instance fmi3InstantiateHybridCoSimulation(
@@ -255,8 +536,9 @@ fmi3Instance fmi3InstantiateScheduledCoSimulation(
         false
     );
     
-    S->lockPreemtion = lockPreemption;
-    S->unlockPreemtion = unlockPreemption;
+    instance->state = Instantiated;
+    instance->lockPreemtion = lockPreemption;
+    instance->unlockPreemtion = unlockPreemption;
 
     return instance;
 #endif
@@ -274,7 +556,7 @@ fmi3Status fmi3EnterInitializationMode(fmi3Instance instance, fmi3Boolean tolera
     
     ASSERT_STATE(EnterInitializationMode)
     
-    S->state = modelInitializationMode;
+    S->state = InitializationMode;
     
     return fmi3OK;
 }
@@ -282,7 +564,7 @@ fmi3Status fmi3EnterInitializationMode(fmi3Instance instance, fmi3Boolean tolera
 fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
 
     ASSERT_STATE(ExitInitializationMode)
-
+    
     // if values were set and no fmi3GetXXX triggered update before,
     // ensure calculated values are updated now
     if (S->isDirtyValues) {
@@ -290,18 +572,25 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
         S->isDirtyValues = false;
     }
 
-    if (S->type == ModelExchange) {
-        S->state = modelEventMode;
-        S->isNewEventIteration = true;
-    } else {
-        S->state = modelStepComplete;
+    switch (S->type) {
+        case BasicCoSimulation:
+            S->state = StepMode;
+            break;
+        case ScheduledCoSimulation:
+            S->state = ClockActiviationMode;
+            break;
+        case HybridCoSimulation:
+        case ModelExchange:
+            S->state = EventMode;
+            S->isNewEventIteration = true;
+            break;
     }
 
 #if NUMBER_OF_EVENT_INDICATORS > 0
     // initialize event indicators
     getEventIndicators(S, S->prez, NUMBER_OF_EVENT_INDICATORS);
 #endif
-
+    
     return fmi3OK;
 }
 
@@ -314,7 +603,7 @@ fmi3Status fmi3EnterEventMode(fmi3Instance instance,
     
     ASSERT_STATE(EnterEventMode)
 
-    S->state = modelEventMode;
+    S->state = EventMode;
     S->isNewEventIteration = true;
     
     return fmi3OK;
@@ -324,7 +613,7 @@ fmi3Status fmi3Terminate(fmi3Instance instance) {
     
     ASSERT_STATE(Terminate)
      
-    S->state = modelTerminated;
+    S->state = Terminated;
     
     return fmi3OK;
 }
@@ -333,7 +622,7 @@ fmi3Status fmi3Reset(fmi3Instance instance) {
 
     ASSERT_STATE(Reset)
 
-    S->state = modelInstantiated;
+    S->state = Instantiated;
     setStartValues(S);
     S->isDirtyValues = true;
     
@@ -471,10 +760,10 @@ fmi3Status fmi3GetBinary(fmi3Instance instance, const fmi3ValueReference vr[], s
         size_t index = 0;
         Status s = getBinary(S, vr[i], size, value, &index);
         status = max(status, s);
-        if (status > Warning) return status;
+        if (status > Warning) return (fmi3Status)status;
     }
 
-    return status;
+    return (fmi3Status)status;
 }
 
 fmi3Status fmi3SetFloat32(fmi3Instance instance,
@@ -589,10 +878,10 @@ fmi3Status fmi3SetBinary(fmi3Instance instance, const fmi3ValueReference vr[], s
         size_t index = 0;
         Status s = setBinary(S, vr[i], size, value, &index);
         status = max(status, s);
-        if (status > Warning) return status;
+        if (status > Warning) return (fmi3Status)status;
     }
 
-    return status;
+    return (fmi3Status)status;
 }
 
 fmi3Status fmi3GetNumberOfVariableDependencies(fmi3Instance instance,
@@ -612,23 +901,23 @@ fmi3Status fmi3GetVariableDependencies(fmi3Instance instance,
 }
 
 fmi3Status fmi3GetFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
-    return unsupportedFunction(instance, "fmi3GetFMUState", MASK_fmi3GetFMUState);
+    return fmi3Error; // unsupportedFunction(instance, "fmi3GetFMUState", MASK_fmi3GetFMUState);
 }
 fmi3Status fmi3SetFMUState(fmi3Instance instance, fmi3FMUState FMUState) {
-    return unsupportedFunction(instance, "fmi3SetFMUState", MASK_fmi3SetFMUState);
+    return fmi3Error; // unsupportedFunction(instance, "fmi3SetFMUState", MASK_fmi3SetFMUState);
 }
 fmi3Status fmi3FreeFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
-    return unsupportedFunction(instance, "fmi3FreeFMUState", MASK_fmi3FreeFMUState);
+    return fmi3Error; // unsupportedFunction(instance, "fmi3FreeFMUState", MASK_fmi3FreeFMUState);
 }
 fmi3Status fmi3SerializedFMUStateSize(fmi3Instance instance, fmi3FMUState FMUState, size_t *size) {
-    return unsupportedFunction(instance, "fmi3SerializedFMUStateSize", MASK_fmi3SerializedFMUStateSize);
+    return fmi3Error; // unsupportedFunction(instance, "fmi3SerializedFMUStateSize", MASK_fmi3SerializedFMUStateSize);
 }
 fmi3Status fmi3SerializeFMUState(fmi3Instance instance, fmi3FMUState FMUState, fmi3Byte serializedState[], size_t size) {
-    return unsupportedFunction(instance, "fmi3SerializeFMUState", MASK_fmi3SerializeFMUState);
+    return fmi3Error; // unsupportedFunction(instance, "fmi3SerializeFMUState", MASK_fmi3SerializeFMUState);
 }
 fmi3Status fmi3DeSerializeFMUState (fmi3Instance instance, const fmi3Byte serializedState[], size_t size,
                                     fmi3FMUState* FMUState) {
-    return unsupportedFunction(instance, "fmi3DeSerializeFMUState", MASK_fmi3DeSerializeFMUState);
+    return fmi3Error; // unsupportedFunction(instance, "fmi3DeSerializeFMUState", MASK_fmi3DeSerializeFMUState);
 }
 
 fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance, const fmi3ValueReference unknowns[], size_t nUnknowns, const fmi3ValueReference knowns[], size_t nKnowns, const fmi3Float64 deltaKnowns[], size_t nDeltaKnowns, fmi3Float64 deltaUnknowns[], size_t nDeltaOfUnknowns) {
@@ -647,7 +936,7 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance, const fmi3ValueRe
             double partialDerivative = 0;
             Status s = getPartialDerivative(S, unknowns[i], knowns[j], &partialDerivative);
             status = max(status, s);
-            if (status > Warning) return status;
+            if (status > Warning) return (fmi3Status)status;
             deltaUnknowns[i] += partialDerivative * deltaKnowns[j];
         }
     }
@@ -677,7 +966,7 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
             double partialDerivative = 0;
             Status s = getPartialDerivative(S, unknowns[j], knowns[i], &partialDerivative);
             status = max(status, s);
-            if (status > Warning) return status;
+            if (status > Warning) return (fmi3Status)status;
             deltaKnowns[i] += partialDerivative * deltaUnknowns[j];
         }
     }
@@ -705,11 +994,11 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
         if (value[i]) {
             Status s = activateClock(instance,  valueReferences[i]);
             status = max(status, s);
-            if (status > Warning) return status;
+            if (status > Warning) return (fmi3Status)status;
         }
     }
 
-    return status;
+    return (fmi3Status)status;
 }
 
 fmi3Status fmi3GetClock(fmi3Instance instance,
@@ -723,10 +1012,10 @@ fmi3Status fmi3GetClock(fmi3Instance instance,
     for (size_t i = 0; i < nValueReferences; i++) {
         Status s = getClock(instance, valueReferences[i], &value[i]);
         status = max(status, s);
-        if (status > Warning) return status;
+        if (status > Warning) return (fmi3Status)status;
     }
 
-    return status;
+    return (fmi3Status)status;
 }
 
 fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
@@ -796,7 +1085,7 @@ fmi3Status fmi3EnterContinuousTimeMode(fmi3Instance instance) {
     
     ASSERT_STATE(EnterContinuousTimeMode)
 
-    S->state = modelContinuousTimeMode;
+    S->state = ContinuousTimeMode;
 
     return fmi3OK;
 }
@@ -957,7 +1246,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
         return fmi3Error;
     }
 
-    return doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, earlyReturn);
+    return (fmi3Status)doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, earlyReturn);
 }
 
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
@@ -966,12 +1255,12 @@ fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
     
     ASSERT_STATE(ActivateModelPartition)
     
-    return activateModelPartition(S, clockReference, activationTime);
+    return (fmi3Status)activateModelPartition(S, clockReference, activationTime);
 }
 
 fmi3Status fmi3DoEarlyReturn(fmi3Instance instance, fmi3Float64 earlyReturnTime) {
     
-    ASSERT_STATE(ActivateModelPartition)
+    ASSERT_STATE(DoEarlyReturn)
 
     S->returnEarly = true;
 
