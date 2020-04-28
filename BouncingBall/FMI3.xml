@@ -10,17 +10,7 @@
   <BasicCoSimulation modelIdentifier="BouncingBall"
     canHandleVariableCommunicationStepSize="true"
     providesIntermediateVariableAccess="true"
-    canReturnEarlyAfterIntermediateUpdate="true"
-  />
-
-  <BuildConfiguration modelIdentifier="BouncingBall">
-    <SourceFileSet language="C99">
-      <SourceFile name="fmi3Functions.c"/>
-      <SourceFile name="model.c"/>
-      <SourceFile name="slave.c"/>
-      <PreprocessorDefinition name="FMI_VERSION" value="3"/>
-    </SourceFileSet>
-  </BuildConfiguration>
+    canReturnEarlyAfterIntermediateUpdate="true"/>
 
   <UnitDefinitions>
     <Unit name="m">

@@ -5,15 +5,6 @@
 
   <BasicCoSimulation modelIdentifier="Feedthrough" canHandleVariableCommunicationStepSize="true"/>
 
-  <BuildConfiguration modelIdentifier="Feedthrough">
-    <SourceFileSet language="C99">
-      <SourceFile name="fmi3Functions.c"/>
-      <SourceFile name="model.c"/>
-      <SourceFile name="slave.c"/>
-      <PreprocessorDefinition name="FMI_VERSION" value="3"/>
-    </SourceFileSet>
-  </BuildConfiguration>
-
   <LogCategories>
     <Category name="logEvents" description="Log events"/>
     <Category name="logStatusError" description="Log error messages"/>
