@@ -19,6 +19,8 @@
 #include "slave.h"
 
 
+#define FMI_STATUS fmi3Status
+
 // C-code FMUs have functions names prefixed with MODEL_IDENTIFIER_.
 // Define DISABLE_PREFIX to build a binary FMU.
 #ifndef DISABLE_PREFIX
@@ -39,68 +41,113 @@
 // ---------------------------------------------------------------------------
 // Function calls allowed state masks for both Model-exchange and Co-simulation
 // ---------------------------------------------------------------------------
-#define MASK_fmi3GetTypesPlatform         (modelStartAndEnd | modelInstantiated | modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepInProgress | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
-#define MASK_fmi3GetVersion               MASK_fmi3GetTypesPlatform
-#define MASK_fmi3SetDebugLogging          (modelInstantiated | modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepInProgress | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
-#define MASK_fmi3Instantiate              (modelStartAndEnd)
-#define MASK_fmi3FreeInstance             (modelInstantiated | modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
-#define MASK_fmi3SetupExperiment          modelInstantiated
-#define MASK_fmi3EnterInitializationMode  modelInstantiated
-#define MASK_fmi3ExitInitializationMode   modelInitializationMode
-#define MASK_fmi3Reset                    MASK_fmi3FreeInstance
-#define MASK_fmi3GetFloat64               (modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
-#define MASK_fmi3GetUInt16                MASK_fmi3GetFloat64
-#define MASK_fmi3GetInt32                 MASK_fmi3GetFloat64
-#define MASK_fmi3GetBoolean               MASK_fmi3GetFloat64
-#define MASK_fmi3GetString                MASK_fmi3GetFloat64
-#define MASK_fmi3SetFloat64               (modelInstantiated | modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete)
-#define MASK_fmi3SetInt32                 (modelInstantiated | modelInitializationMode | modelEventMode | modelStepComplete)
-#define MASK_fmi3SetBoolean               MASK_fmi3SetInt32
-#define MASK_fmi3SetString                MASK_fmi3SetInt32
-#define MASK_fmi3SetBinary                MASK_fmi3SetInt32
-#define MASK_fmi3GetFMUState              MASK_fmi3FreeInstance
-#define MASK_fmi3SetFMUState              MASK_fmi3FreeInstance
-#define MASK_fmi3FreeFMUState             MASK_fmi3FreeInstance
-#define MASK_fmi3SerializedFMUStateSize   MASK_fmi3FreeInstance
-#define MASK_fmi3SerializeFMUState        MASK_fmi3FreeInstance
-#define MASK_fmi3DeSerializeFMUState      MASK_fmi3FreeInstance
-#define MASK_fmi3GetDirectionalDerivative (modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
+#define MASK_AnyState                     (~0)
 
+/* Inquire version numbers and set debug logging */
+#define MASK_fmi3GetVersion               MASK_AnyState
+#define MASK_fmi3SetDebugLogging          MASK_AnyState
+
+/* Creation and destruction of FMU instances */
+#define MASK_fmi3InstantiateInstantiateModelExchange MASK_AnyState
+#define MASK_fmi3InstantiateBasicCoSimulation        MASK_AnyState
+#define MASK_fmi3InstantiateHybridCoSimulation       MASK_AnyState
+#define MASK_fmi3InstantiateScheduledCoSimulation    MASK_AnyState
+#define MASK_fmi3FreeInstance                        MASK_AnyState
+
+/* Enter and exit initialization mode, terminate and reset */
+#define MASK_fmi3EnterInitializationMode  Instantiated
+#define MASK_fmi3ExitInitializationMode   InitializationMode
+#define MASK_fmi3EnterEventMode           (ContinuousTimeMode | StepMode)
+#define MASK_fmi3Terminate                (ContinuousTimeMode | StepMode | StepDiscarded | EventMode | ClockActivationMode | ReconfigurationMode)
+#define MASK_fmi3Reset                    MASK_AnyState
+
+/* Common Functions */
+
+/* Getting and setting variable values */
+#define MASK_fmi3GetFloat32               (InitializationMode | EventMode | ContinuousTimeMode | StepMode | ClockActivationMode | Terminated)
+#define MASK_fmi3GetFloat64               MASK_fmi3GetFloat32
+#define MASK_fmi3GetInt8                  MASK_fmi3GetFloat32
+#define MASK_fmi3GetUInt8                 MASK_fmi3GetFloat32
+#define MASK_fmi3GetInt16                 MASK_fmi3GetFloat32
+#define MASK_fmi3GetUInt16                MASK_fmi3GetFloat32
+#define MASK_fmi3GetInt32                 MASK_fmi3GetFloat32
+#define MASK_fmi3GetUInt32                MASK_fmi3GetFloat32
+#define MASK_fmi3GetInt64                 MASK_fmi3GetFloat32
+#define MASK_fmi3GetUInt64                MASK_fmi3GetFloat32
+#define MASK_fmi3GetBoolean               MASK_fmi3GetFloat32
+#define MASK_fmi3GetString                MASK_fmi3GetFloat32
+#define MASK_fmi3GetBinary                MASK_fmi3GetFloat32
+
+#define MASK_fmi3SetFloat32               (Instantiated | InitializationMode | EventMode | ContinuousTimeMode | StepMode | ClockActivationMode | Terminated)
+#define MASK_fmi3SetFloat64               MASK_fmi3SetFloat32
+#define MASK_fmi3SetInt8                  (Instantiated | InitializationMode | EventMode | StepMode | ClockActivationMode | Terminated)
+#define MASK_fmi3SetUInt8                 MASK_fmi3SetInt8
+#define MASK_fmi3SetInt16                 MASK_fmi3SetInt8
+#define MASK_fmi3SetUInt16                MASK_fmi3SetInt8
+#define MASK_fmi3SetInt32                 MASK_fmi3SetInt8
+#define MASK_fmi3SetUInt32                MASK_fmi3SetInt8
+#define MASK_fmi3SetInt64                 MASK_fmi3SetInt8
+#define MASK_fmi3SetUInt64                MASK_fmi3SetInt8
+#define MASK_fmi3SetBoolean               MASK_fmi3SetInt8
+#define MASK_fmi3SetString                MASK_fmi3SetInt8
+#define MASK_fmi3SetBinary                MASK_fmi3SetInt8
+
+/* Getting Variable Dependency Information */
+#define MASK_fmi3GetNumberOfVariableDependencies  MASK_AnyState
+#define MASK_fmi3GetVariableDependencies          MASK_AnyState
+
+/* Getting and setting the internal FMU state */
+#define MASK_fmi3GetFMUState              MASK_AnyState
+#define MASK_fmi3SetFMUState              MASK_AnyState
+#define MASK_fmi3FreeFMUState             MASK_AnyState
+#define MASK_fmi3SerializedFMUStateSize   MASK_AnyState
+#define MASK_fmi3SerializeFMUState        MASK_AnyState
+#define MASK_fmi3DeSerializeFMUState      MASK_AnyState
+
+/* Getting partial derivatives */
+#define MASK_fmi3GetDirectionalDerivative (InitializationMode | EventMode | ContinuousTimeMode | Terminated)
+#define MASK_fmi3GetAdjointDerivative     MASK_fmi3GetDirectionalDerivative
+
+/* Entering and exiting the Configuration or Reconfiguration Mode */
+#define MASK_fmi3EnterConfigurationMode   (Instantiated | StepMode | EventMode | ClockActivationMode)
+#define MASK_fmi3ExitConfigurationMode    (ConfigurationMode | ReconfigurationMode)
+
+/* Clock related functions */
 // TODO: fix masks
-#define MASK_fmi3Terminate                 (~0) // (modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepFailed)
-#define MASK_fmi3GetClock                  (~0)
-#define MASK_fmi3SetClock                  (~0)
-#define MASK_fmi3ActivateModelPartition    (~0)
-#define MASK_fmi3GetDoStepDiscardedStatus  (~0)
-#define MASK_fmi3GetAdjointDerivative      (~0)
-#define MASK_fmi3EnterStepMode             (~0)
+#define MASK_fmi3GetClock                  MASK_AnyState
+#define MASK_fmi3SetClock                  MASK_AnyState
+#define MASK_fmi3GetIntervalDecimal        MASK_AnyState
+#define MASK_fmi3GetIntervalFraction       MASK_AnyState
+#define MASK_fmi3SetIntervalDecimal        MASK_AnyState
+#define MASK_fmi3SetIntervalFraction       MASK_AnyState
+#define MASK_fmi3NewDiscreteStates         MASK_AnyState
 
-// ---------------------------------------------------------------------------
-// Function calls allowed state masks for Model-exchange
-// ---------------------------------------------------------------------------
-#define MASK_fmi3EnterEventMode                (modelEventMode | modelContinuousTimeMode)
-#define MASK_fmi3NewDiscreteStates             modelEventMode
-#define MASK_fmi3EnterContinuousTimeMode       modelEventMode
-#define MASK_fmi3CompletedIntegratorStep       modelContinuousTimeMode
-#define MASK_fmi3SetTime                       (modelEventMode | modelContinuousTimeMode)
-#define MASK_fmi3SetContinuousStates           modelContinuousTimeMode
-#define MASK_fmi3GetEventIndicators            (modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelTerminated | modelError)
-#define MASK_fmi3GetContinuousStates           MASK_fmi3GetEventIndicators
-#define MASK_fmi3GetDerivatives                (modelEventMode | modelContinuousTimeMode | modelTerminated | modelError)
-#define MASK_fmi3GetNominalsOfContinuousStates ( modelInstantiated | modelEventMode | modelContinuousTimeMode | modelTerminated | modelError)
+/* Functions for Model Exchange */
 
-// ---------------------------------------------------------------------------
-// Function calls allowed state masks for Co-simulation
-// ---------------------------------------------------------------------------
-#define MASK_fmi3SetRealInputDerivatives  (modelInstantiated | modelInitializationMode | modelStepComplete)
-#define MASK_fmi3GetRealOutputDerivatives (modelStepComplete | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
-#define MASK_fmi3DoStep                   modelStepComplete
-#define MASK_fmi3CancelStep               modelStepInProgress
-#define MASK_fmi3GetStatus                (modelStepComplete | modelStepInProgress | modelStepFailed | modelTerminated)
-#define MASK_fmi3GetRealStatus            MASK_fmi3GetStatus
-#define MASK_fmi3GetIntegerStatus         MASK_fmi3GetStatus
-#define MASK_fmi3GetBooleanStatus         MASK_fmi3GetStatus
-#define MASK_fmi3GetStringStatus          MASK_fmi3GetStatus
+#define MASK_fmi3EnterContinuousTimeMode       EventMode
+#define MASK_fmi3CompletedIntegratorStep       ContinuousTimeMode
+
+/* Providing independent variables and re-initialization of caching */
+#define MASK_fmi3SetTime                       (EventMode | ContinuousTimeMode)
+#define MASK_fmi3SetContinuousStates           ContinuousTimeMode
+
+/* Evaluation of the model equations */
+#define MASK_fmi3GetDerivatives                (InitializationMode | EventMode | ContinuousTimeMode | Terminated)
+#define MASK_fmi3GetEventIndicators            MASK_fmi3GetDerivatives
+#define MASK_fmi3GetContinuousStates           MASK_fmi3GetDerivatives
+#define MASK_fmi3GetNominalsOfContinuousStates MASK_fmi3GetDerivatives
+#define MASK_fmi3GetNumberOfEventIndicators    MASK_fmi3GetDerivatives
+#define MASK_fmi3GetNumberOfContinuousStates   MASK_fmi3GetDerivatives
+
+/* Functions for Co-Simulation */
+
+#define MASK_fmi3EnterStepMode            (InitializationMode | EventMode)
+#define MASK_fmi3SetInputDerivatives      (Instantiated | InitializationMode | StepMode)
+#define MASK_fmi3GetOutputDerivatives     (StepMode | StepDiscarded | Terminated | Error)
+#define MASK_fmi3DoStep                   StepMode
+#define MASK_fmi3ActivateModelPartition   ClockActivationMode
+#define MASK_fmi3DoEarlyReturn            IntermediateUpdateMode
+#define MASK_fmi3GetDoStepDiscardedStatus StepMode
 
 // ---------------------------------------------------------------------------
 // Private helpers used below to validate function arguments
@@ -113,16 +160,6 @@
 // shorthand to access the model instance
 #define S ((ModelInstance *)instance)
 
-static fmi3Status unsupportedFunction(fmi3Instance instance, const char *fName, int statesExpected) {
-    
-//    if (invalidState(S, fName, statesExpected))
-//        return fmi3Error;
-    
-    logError(S, "%s: Function not implemented.", fName);
-    
-    return fmi3Error;
-}
-
 /***************************************************
  Common Functions
  ****************************************************/
@@ -130,6 +167,8 @@ static fmi3Status unsupportedFunction(fmi3Instance instance, const char *fName, 
 const char* fmi3GetVersion() {
     return fmi3Version;
 }
+
+#define ASSERT_STATE(S) if(!allowedState(instance, MASK_fmi3##S, #S)) return fmi3Error;
 
 static bool allowedState(ModelInstance *instance, int statesExpected, char *name) {
     
@@ -146,15 +185,11 @@ static bool allowedState(ModelInstance *instance, int statesExpected, char *name
 
 }
 
-
-#define ASSERT_STATE(S) if(!allowedState(instance, MASK_fmi3##S, #S)) return fmi3Error;
-
-
 fmi3Status fmi3SetDebugLogging(fmi3Instance instance, fmi3Boolean loggingOn, size_t nCategories, const fmi3String categories[]) {
 
     ASSERT_STATE(SetDebugLogging)
 
-    return setDebugLogging(S, loggingOn, nCategories, categories);
+    return (fmi3Status)setDebugLogging(S, loggingOn, nCategories, categories);
 }
 
 fmi3Instance fmi3InstantiateModelExchange(
@@ -196,7 +231,7 @@ fmi3Instance fmi3InstantiateBasicCoSimulation(
     fmi3CallbackLogMessage         logMessage,
     fmi3CallbackIntermediateUpdate intermediateUpdate) {
 
-    return createModelInstance(
+    ModelInstance *instance = createModelInstance(
         (loggerType)logMessage,
         (intermediateUpdateType)intermediateUpdate,
         instanceEnvironment,
@@ -207,6 +242,26 @@ fmi3Instance fmi3InstantiateBasicCoSimulation(
         BasicCoSimulation,
         false
     );
+    
+    instance->state = Instantiated;
+    
+    return instance;
+}
+
+fmi3Instance fmi3InstantiateHybridCoSimulation(
+    fmi3String                     instanceName,
+    fmi3String                     instantiationToken,
+    fmi3String                     resourceLocation,
+    fmi3Boolean                    visible,
+    fmi3Boolean                    loggingOn,
+    fmi3Boolean                    intermediateVariableGetRequired,
+    fmi3Boolean                    intermediateInternalVariableGetRequired,
+    fmi3Boolean                    intermediateVariableSetRequired,
+    fmi3InstanceEnvironment        instanceEnvironment,
+    fmi3CallbackLogMessage         logMessage,
+    fmi3CallbackIntermediateUpdate intermediateUpdate) {
+    
+    return NULL;  // not implemented
 }
 
 fmi3Instance fmi3InstantiateScheduledCoSimulation(
@@ -239,8 +294,9 @@ fmi3Instance fmi3InstantiateScheduledCoSimulation(
         false
     );
     
-    S->lockPreemtion = lockPreemption;
-    S->unlockPreemtion = unlockPreemption;
+    instance->state = Instantiated;
+    instance->lockPreemtion = lockPreemption;
+    instance->unlockPreemtion = unlockPreemption;
 
     return instance;
 #endif
@@ -258,7 +314,7 @@ fmi3Status fmi3EnterInitializationMode(fmi3Instance instance, fmi3Boolean tolera
     
     ASSERT_STATE(EnterInitializationMode)
     
-    S->state = modelInitializationMode;
+    S->state = InitializationMode;
     
     return fmi3OK;
 }
@@ -266,7 +322,7 @@ fmi3Status fmi3EnterInitializationMode(fmi3Instance instance, fmi3Boolean tolera
 fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
 
     ASSERT_STATE(ExitInitializationMode)
-
+    
     // if values were set and no fmi3GetXXX triggered update before,
     // ensure calculated values are updated now
     if (S->isDirtyValues) {
@@ -274,18 +330,25 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
         S->isDirtyValues = false;
     }
 
-    if (S->type == ModelExchange) {
-        S->state = modelEventMode;
-        S->isNewEventIteration = true;
-    } else {
-        S->state = modelStepComplete;
+    switch (S->type) {
+        case BasicCoSimulation:
+            S->state = StepMode;
+            break;
+        case ScheduledCoSimulation:
+            S->state = ClockActivationMode;
+            break;
+        case HybridCoSimulation:
+        case ModelExchange:
+            S->state = EventMode;
+            S->isNewEventIteration = true;
+            break;
     }
 
 #if NUMBER_OF_EVENT_INDICATORS > 0
     // initialize event indicators
     getEventIndicators(S, S->prez, NUMBER_OF_EVENT_INDICATORS);
 #endif
-
+    
     return fmi3OK;
 }
 
@@ -298,8 +361,7 @@ fmi3Status fmi3EnterEventMode(fmi3Instance instance,
     
     ASSERT_STATE(EnterEventMode)
 
-    
-    S->state = modelEventMode;
+    S->state = EventMode;
     S->isNewEventIteration = true;
     
     return fmi3OK;
@@ -309,7 +371,7 @@ fmi3Status fmi3Terminate(fmi3Instance instance) {
     
     ASSERT_STATE(Terminate)
      
-    S->state = modelTerminated;
+    S->state = Terminated;
     
     return fmi3OK;
 }
@@ -318,7 +380,7 @@ fmi3Status fmi3Reset(fmi3Instance instance) {
 
     ASSERT_STATE(Reset)
 
-    S->state = modelInstantiated;
+    S->state = Instantiated;
     setStartValues(S);
     S->isDirtyValues = true;
     
@@ -456,10 +518,10 @@ fmi3Status fmi3GetBinary(fmi3Instance instance, const fmi3ValueReference vr[], s
         size_t index = 0;
         Status s = getBinary(S, vr[i], size, value, &index);
         status = max(status, s);
-        if (status > Warning) return status;
+        if (status > Warning) return (fmi3Status)status;
     }
 
-    return status;
+    return (fmi3Status)status;
 }
 
 fmi3Status fmi3SetFloat32(fmi3Instance instance,
@@ -574,10 +636,10 @@ fmi3Status fmi3SetBinary(fmi3Instance instance, const fmi3ValueReference vr[], s
         size_t index = 0;
         Status s = setBinary(S, vr[i], size, value, &index);
         status = max(status, s);
-        if (status > Warning) return status;
+        if (status > Warning) return (fmi3Status)status;
     }
 
-    return status;
+    return (fmi3Status)status;
 }
 
 fmi3Status fmi3GetNumberOfVariableDependencies(fmi3Instance instance,
@@ -597,23 +659,23 @@ fmi3Status fmi3GetVariableDependencies(fmi3Instance instance,
 }
 
 fmi3Status fmi3GetFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
-    return unsupportedFunction(instance, "fmi3GetFMUState", MASK_fmi3GetFMUState);
+    return fmi3Error; // unsupportedFunction(instance, "fmi3GetFMUState", MASK_fmi3GetFMUState);
 }
 fmi3Status fmi3SetFMUState(fmi3Instance instance, fmi3FMUState FMUState) {
-    return unsupportedFunction(instance, "fmi3SetFMUState", MASK_fmi3SetFMUState);
+    return fmi3Error; // unsupportedFunction(instance, "fmi3SetFMUState", MASK_fmi3SetFMUState);
 }
 fmi3Status fmi3FreeFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
-    return unsupportedFunction(instance, "fmi3FreeFMUState", MASK_fmi3FreeFMUState);
+    return fmi3Error; // unsupportedFunction(instance, "fmi3FreeFMUState", MASK_fmi3FreeFMUState);
 }
 fmi3Status fmi3SerializedFMUStateSize(fmi3Instance instance, fmi3FMUState FMUState, size_t *size) {
-    return unsupportedFunction(instance, "fmi3SerializedFMUStateSize", MASK_fmi3SerializedFMUStateSize);
+    return fmi3Error; // unsupportedFunction(instance, "fmi3SerializedFMUStateSize", MASK_fmi3SerializedFMUStateSize);
 }
 fmi3Status fmi3SerializeFMUState(fmi3Instance instance, fmi3FMUState FMUState, fmi3Byte serializedState[], size_t size) {
-    return unsupportedFunction(instance, "fmi3SerializeFMUState", MASK_fmi3SerializeFMUState);
+    return fmi3Error; // unsupportedFunction(instance, "fmi3SerializeFMUState", MASK_fmi3SerializeFMUState);
 }
 fmi3Status fmi3DeSerializeFMUState (fmi3Instance instance, const fmi3Byte serializedState[], size_t size,
                                     fmi3FMUState* FMUState) {
-    return unsupportedFunction(instance, "fmi3DeSerializeFMUState", MASK_fmi3DeSerializeFMUState);
+    return fmi3Error; // unsupportedFunction(instance, "fmi3DeSerializeFMUState", MASK_fmi3DeSerializeFMUState);
 }
 
 fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance, const fmi3ValueReference unknowns[], size_t nUnknowns, const fmi3ValueReference knowns[], size_t nKnowns, const fmi3Float64 deltaKnowns[], size_t nDeltaKnowns, fmi3Float64 deltaUnknowns[], size_t nDeltaOfUnknowns) {
@@ -632,7 +694,7 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance, const fmi3ValueRe
             double partialDerivative = 0;
             Status s = getPartialDerivative(S, unknowns[i], knowns[j], &partialDerivative);
             status = max(status, s);
-            if (status > Warning) return status;
+            if (status > Warning) return (fmi3Status)status;
             deltaUnknowns[i] += partialDerivative * deltaKnowns[j];
         }
     }
@@ -662,7 +724,7 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
             double partialDerivative = 0;
             Status s = getPartialDerivative(S, unknowns[j], knowns[i], &partialDerivative);
             status = max(status, s);
-            if (status > Warning) return status;
+            if (status > Warning) return (fmi3Status)status;
             deltaKnowns[i] += partialDerivative * deltaUnknowns[j];
         }
     }
@@ -690,11 +752,11 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
         if (value[i]) {
             Status s = activateClock(instance,  valueReferences[i]);
             status = max(status, s);
-            if (status > Warning) return status;
+            if (status > Warning) return (fmi3Status)status;
         }
     }
 
-    return status;
+    return (fmi3Status)status;
 }
 
 fmi3Status fmi3GetClock(fmi3Instance instance,
@@ -708,10 +770,10 @@ fmi3Status fmi3GetClock(fmi3Instance instance,
     for (size_t i = 0; i < nValueReferences; i++) {
         Status s = getClock(instance, valueReferences[i], &value[i]);
         status = max(status, s);
-        if (status > Warning) return status;
+        if (status > Warning) return (fmi3Status)status;
     }
 
-    return status;
+    return (fmi3Status)status;
 }
 
 fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
@@ -781,7 +843,7 @@ fmi3Status fmi3EnterContinuousTimeMode(fmi3Instance instance) {
     
     ASSERT_STATE(EnterContinuousTimeMode)
 
-    S->state = modelContinuousTimeMode;
+    S->state = ContinuousTimeMode;
 
     return fmi3OK;
 }
@@ -942,7 +1004,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
         return fmi3Error;
     }
 
-    return doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, earlyReturn);
+    return (fmi3Status)doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, earlyReturn);
 }
 
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
@@ -951,12 +1013,12 @@ fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
     
     ASSERT_STATE(ActivateModelPartition)
     
-    return activateModelPartition(S, clockReference, activationTime);
+    return (fmi3Status)activateModelPartition(S, clockReference, activationTime);
 }
 
 fmi3Status fmi3DoEarlyReturn(fmi3Instance instance, fmi3Float64 earlyReturnTime) {
     
-    ASSERT_STATE(ActivateModelPartition)
+    ASSERT_STATE(DoEarlyReturn)
 
     S->returnEarly = true;
 

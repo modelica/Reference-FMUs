@@ -169,7 +169,8 @@ int main(int argc, char* argv[]) {
 	CHECK_STATUS(initializeOutputFiles());
 
 	// Initialize slave
-	CHECK_STATUS(fmi3EnterInitializationMode(s, fmi3False, 0.0, time, fmi3True, stopTime));
+	CHECK_STATUS(fmi3EnterInitializationMode(s, fmi3False, 0.0, time, fmi3True, stopTime))
+	CHECK_STATUS(fmi3ExitInitializationMode(s))
 
 	// update clocks
 	CHECK_STATUS(fmi3GetClock(s, vrOutputClocks, N_OUTPUT_CLOCKS, outputClocks));

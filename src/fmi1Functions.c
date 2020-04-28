@@ -25,6 +25,8 @@
 #include "fmiModelFunctions.h"
 #endif
 
+#define FMI_STATUS fmiStatus
+
 #ifndef max
 #define max(a,b) ((a)>(b) ? (a) : (b))
 #endif
@@ -40,7 +42,7 @@
 // fname is fmiInitialize or fmiInitializeSlave
 static fmiStatus init(fmiComponent c) {
     ModelInstance* instance = (ModelInstance *)c;
-    instance->state = modelInitialized;
+    instance->state = Initialized;
     calculateValues(instance);
     return fmiOK;
 }
@@ -48,9 +50,9 @@ static fmiStatus init(fmiComponent c) {
 // fname is fmiTerminate or fmiTerminateSlave
 static fmiStatus terminate(char* fname, fmiComponent c) {
     ModelInstance* instance = (ModelInstance *)c;
-    if (invalidState(instance, fname, modelInitialized))
+    if (invalidState(instance, fname, Initialized))
          return fmiError;
-    instance->state = modelTerminated;
+    instance->state = Terminated;
     return fmiOK;
 }
 
@@ -81,7 +83,7 @@ fmiStatus fmiSetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, c
 
     ModelInstance* instance = (ModelInstance *)c;
 
-    if (invalidState(instance, "fmiSetReal", modelInstantiated|modelInitialized))
+    if (invalidState(instance, "fmiSetReal", Instantiated|Initialized))
          return fmiError;
 
     if (nvr>0 && nullPointer(instance, "fmiSetReal", "vr[]", vr))
@@ -101,7 +103,7 @@ fmiStatus fmiSetInteger(fmiComponent c, const fmiValueReference vr[], size_t nvr
 
     ModelInstance* instance = (ModelInstance *)c;
 
-    if (invalidState(instance, "fmiSetInteger", modelInstantiated|modelInitialized))
+    if (invalidState(instance, "fmiSetInteger", Instantiated|Initialized))
          return fmiError;
 
     if (nvr>0 && nullPointer(instance, "fmiSetInteger", "vr[]", vr))
@@ -121,7 +123,7 @@ fmiStatus fmiSetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr
 
     ModelInstance* instance = (ModelInstance *)c;
 
-    if (invalidState(instance, "fmiSetBoolean", modelInstantiated|modelInitialized))
+    if (invalidState(instance, "fmiSetBoolean", Instantiated|Initialized))
          return fmiError;
 
     if (nvr>0 && nullPointer(instance, "fmiSetBoolean", "vr[]", vr))
@@ -136,7 +138,7 @@ fmiStatus fmiSetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr
 fmiStatus fmiSetString(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiString value[]){
 //    int i;
 //    ModelInstance* instance = (ModelInstance *)c;
-//    if (invalidState(instance, "fmiSetString", modelInstantiated|modelInitialized))
+//    if (invalidState(instance, "fmiSetString", Instantiated|Initialized))
 //         return fmiError;
 //    if (nvr>0 && nullPointer(instance, "fmiSetString", "vr[]", vr))
 //         return fmiError;
@@ -274,9 +276,9 @@ fmiStatus fmiTerminateSlave(fmiComponent c) {
 
 fmiStatus fmiResetSlave(fmiComponent c) {
     ModelInstance* instance = (ModelInstance *)c;
-    if (invalidState(instance, "fmiResetSlave", modelInitialized))
+    if (invalidState(instance, "fmiResetSlave", Initialized))
          return fmiError;
-    instance->state = modelInstantiated;
+    instance->state = Instantiated;
     setStartValues(instance); // to be implemented by the includer of this file
     return fmiOK;
 }
@@ -291,7 +293,7 @@ fmiStatus fmiSetRealInputDerivatives(fmiComponent c, const fmiValueReference vr[
 
     ModelInstance* instance = (ModelInstance *)c;
 
-    if (invalidState(instance, "fmiSetRealInputDerivatives", modelInitialized))
+    if (invalidState(instance, "fmiSetRealInputDerivatives", Initialized))
          return fmiError;
 
     logError(instance, "fmiSetRealInputDerivatives: This model cannot interpolate inputs: canInterpolateInputs=\"fmiFalse\"");
@@ -303,7 +305,7 @@ fmiStatus fmiGetRealOutputDerivatives(fmiComponent c, const fmiValueReference vr
 
     ModelInstance* instance = (ModelInstance *)c;
 
-    if (invalidState(instance, "fmiGetRealOutputDerivatives", modelInitialized))
+    if (invalidState(instance, "fmiGetRealOutputDerivatives", Initialized))
          return fmiError;
 
     logError(instance, "fmiGetRealOutputDerivatives: This model cannot compute derivatives of outputs: MaxOutputDerivativeOrder=\"0\"");
@@ -315,7 +317,7 @@ fmiStatus fmiCancelStep(fmiComponent c) {
 
     ModelInstance* instance = (ModelInstance *)c;
 
-    if (invalidState(instance, "fmiCancelStep", modelInitialized))
+    if (invalidState(instance, "fmiCancelStep", Initialized))
          return fmiError;
 
     logError(instance, "fmiCancelStep: Can be called when fmiDoStep returned fmiPending."
@@ -334,7 +336,7 @@ static fmiStatus getStatus(char* fname, fmiComponent c, const fmiStatusKind s) {
 //    const char* statusKind[3] = {"fmiDoStepStatus","fmiPendingStatus","fmiLastSuccessfulTime"};
 //    ModelInstance* instance = (ModelInstance *)c;
 //    fmiCallbackLogger log = instance->functions.logger;
-//    if (invalidState(instance, fname, modelInstantiated|modelInitialized))
+//    if (invalidState(instance, fname, Instantiated|Initialized))
 //         return fmiError;
 //    if (instance->loggingOn) log(c, instance->instanceName, fmiOK, "log", "$s: fmiStatusKind = %s", fname, statusKind[s]);
 //    switch(s) {
@@ -413,7 +415,7 @@ fmiStatus fmiSetTime(fmiComponent c, fmiReal time) {
 
     ModelInstance* instance = (ModelInstance *)c;
 
-    if (invalidState(instance, "fmiSetTime", modelInstantiated|modelInitialized))
+    if (invalidState(instance, "fmiSetTime", Instantiated|Initialized))
          return fmiError;
 
     instance->time = time;
@@ -425,7 +427,7 @@ fmiStatus fmiSetContinuousStates(fmiComponent c, const fmiReal x[], size_t nx) {
 
     ModelInstance* instance = (ModelInstance *)c;
 
-    if (invalidState(instance, "fmiSetContinuousStates", modelInitialized))
+    if (invalidState(instance, "fmiSetContinuousStates", Initialized))
          return fmiError;
 
     if (invalidNumber(instance, "fmiSetContinuousStates", "nx", nx, NUMBER_OF_STATES))
@@ -445,7 +447,7 @@ fmiStatus fmiEventUpdate(fmiComponent c, fmiBoolean intermediateResults, fmiEven
 
     int timeEvent = 0;
 
-    if (invalidState(instance, "fmiEventUpdate", modelInitialized))
+    if (invalidState(instance, "fmiEventUpdate", Initialized))
         return fmiError;
 
     if (nullPointer(instance, "fmiEventUpdate", "eventInfo", eventInfo))
@@ -477,7 +479,7 @@ fmiStatus fmiCompletedIntegratorStep(fmiComponent c, fmiBoolean* callEventUpdate
 
     ModelInstance* instance = (ModelInstance *)c;
 
-    if (invalidState(instance, "fmiCompletedIntegratorStep", modelInitialized))
+    if (invalidState(instance, "fmiCompletedIntegratorStep", Initialized))
          return fmiError;
 
     if (nullPointer(instance, "fmiCompletedIntegratorStep", "callEventUpdate", callEventUpdate))

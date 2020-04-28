@@ -145,7 +145,7 @@ class BuildTest(unittest.TestCase):
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
         # run examples
-        examples = ['co_simulation', 'cs_early_return', 'jacobian', 'scs_synchronous']
+        examples = ['co_simulation', 'bcs_early_return', 'jacobian', 'scs_synchronous']
 
         is_windows = os.name == 'nt'
 

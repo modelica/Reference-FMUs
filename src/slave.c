@@ -71,6 +71,8 @@ ModelInstance *createModelInstance(
         } else {
             comp->resourceLocation = NULL;
         }
+        
+        comp->status = OK;
 
         comp->modelData = (ModelData *)calloc(1, sizeof(ModelData));
 
@@ -91,7 +93,7 @@ ModelInstance *createModelInstance(
     strcpy((char *)comp->instanceName, (char *)instanceName);
     comp->type = interfaceType;
 
-    comp->state = modelInstantiated;
+    comp->state = Instantiated;
     comp->isNewEventIteration = false;
 
     comp->newDiscreteStatesNeeded = false;
@@ -421,6 +423,7 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
     UNUSED(t)  // TODO: check t == comp->time ?
 
     bool stateEvent, timeEvent;
+    Status status = OK;
 
 #if NUMBER_OF_EVENT_INDICATORS > 0
     double *temp = NULL;
@@ -484,14 +487,24 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
 
 #if FMI_VERSION == 3
             if (comp->intermediateUpdate) { // Hybrid Co-Simulation
+                
+                comp->state = IntermediateUpdateMode;
 
                 // call intermediate update callback
-                comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
+                status = comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
                                          comp->time, 1, comp->clocksTicked, 0, 0, 0, 1);
+                
+                if (status > Warning) {
+                    logError(comp, "Intermediate update callback returned with fmi3Error.");
+                    comp->state = Terminated;
+                    return Error;
+                }
+                
+                comp->state = StepMode;
 
                 if (comp->returnEarly) {
                     *earlyReturn = 1;
-                    return OK;
+                    return status;
                 }
             }
 #endif
@@ -499,8 +512,8 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
 
         // terminate simulation, if requested by the model in the previous step
         if (comp->terminateSimulation) {
-#if FMI_VERSION > 1
-            comp->state = modelStepFailed;
+#if FMI_VERSION == 2
+            comp->state = StepFailed;
 #endif
             return Discard; // enforce termination of the simulation loop
         }
@@ -512,5 +525,5 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
         *earlyReturn = 0;
     }
 
-    return OK;
+    return status;
 }
