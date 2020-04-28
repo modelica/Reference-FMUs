@@ -41,68 +41,113 @@
 // ---------------------------------------------------------------------------
 // Function calls allowed state masks for both Model-exchange and Co-simulation
 // ---------------------------------------------------------------------------
-#define MASK_fmi3GetTypesPlatform         (modelStartAndEnd | modelInstantiated | modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepInProgress | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
-#define MASK_fmi3GetVersion               MASK_fmi3GetTypesPlatform
-#define MASK_fmi3SetDebugLogging          (modelInstantiated | modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepInProgress | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
-#define MASK_fmi3Instantiate              (modelStartAndEnd)
-#define MASK_fmi3FreeInstance             (modelInstantiated | modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
-#define MASK_fmi3SetupExperiment          modelInstantiated
-#define MASK_fmi3EnterInitializationMode  modelInstantiated
-#define MASK_fmi3ExitInitializationMode   modelInitializationMode
-#define MASK_fmi3Reset                    MASK_fmi3FreeInstance
-#define MASK_fmi3GetFloat64               (modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
-#define MASK_fmi3GetUInt16                MASK_fmi3GetFloat64
-#define MASK_fmi3GetInt32                 MASK_fmi3GetFloat64
-#define MASK_fmi3GetBoolean               MASK_fmi3GetFloat64
-#define MASK_fmi3GetString                MASK_fmi3GetFloat64
-#define MASK_fmi3SetFloat64               (modelInstantiated | modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete)
-#define MASK_fmi3SetInt32                 (modelInstantiated | modelInitializationMode | modelEventMode | modelStepComplete)
-#define MASK_fmi3SetBoolean               MASK_fmi3SetInt32
-#define MASK_fmi3SetString                MASK_fmi3SetInt32
-#define MASK_fmi3SetBinary                MASK_fmi3SetInt32
-#define MASK_fmi3GetFMUState              MASK_fmi3FreeInstance
-#define MASK_fmi3SetFMUState              MASK_fmi3FreeInstance
-#define MASK_fmi3FreeFMUState             MASK_fmi3FreeInstance
-#define MASK_fmi3SerializedFMUStateSize   MASK_fmi3FreeInstance
-#define MASK_fmi3SerializeFMUState        MASK_fmi3FreeInstance
-#define MASK_fmi3DeSerializeFMUState      MASK_fmi3FreeInstance
-#define MASK_fmi3GetDirectionalDerivative (modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
+#define MASK_AnyState                     (~0)
 
+/* Inquire version numbers and set debug logging */
+#define MASK_fmi3GetVersion               MASK_AnyState
+#define MASK_fmi3SetDebugLogging          MASK_AnyState
+
+/* Creation and destruction of FMU instances */
+#define MASK_fmi3InstantiateInstantiateModelExchange MASK_AnyState
+#define MASK_fmi3InstantiateBasicCoSimulation        MASK_AnyState
+#define MASK_fmi3InstantiateHybridCoSimulation       MASK_AnyState
+#define MASK_fmi3InstantiateScheduledCoSimulation    MASK_AnyState
+#define MASK_fmi3FreeInstance                        MASK_AnyState
+
+/* Enter and exit initialization mode, terminate and reset */
+#define MASK_fmi3EnterInitializationMode  Instantiated
+#define MASK_fmi3ExitInitializationMode   InitializationMode
+#define MASK_fmi3EnterEventMode           (ContinuousTimeMode | StepMode)
+#define MASK_fmi3Terminate                (ContinuousTimeMode | StepMode | StepDiscarded | EventMode | ClockActivationMode | ReconfigurationMode)
+#define MASK_fmi3Reset                    MASK_AnyState
+
+/* Common Functions */
+
+/* Getting and setting variable values */
+#define MASK_fmi3GetFloat32               (InitializationMode | EventMode | ContinuousTimeMode | StepMode | ClockActivationMode | Terminated)
+#define MASK_fmi3GetFloat64               MASK_fmi3GetFloat32
+#define MASK_fmi3GetInt8                  MASK_fmi3GetFloat32
+#define MASK_fmi3GetUInt8                 MASK_fmi3GetFloat32
+#define MASK_fmi3GetInt16                 MASK_fmi3GetFloat32
+#define MASK_fmi3GetUInt16                MASK_fmi3GetFloat32
+#define MASK_fmi3GetInt32                 MASK_fmi3GetFloat32
+#define MASK_fmi3GetUInt32                MASK_fmi3GetFloat32
+#define MASK_fmi3GetInt64                 MASK_fmi3GetFloat32
+#define MASK_fmi3GetUInt64                MASK_fmi3GetFloat32
+#define MASK_fmi3GetBoolean               MASK_fmi3GetFloat32
+#define MASK_fmi3GetString                MASK_fmi3GetFloat32
+#define MASK_fmi3GetBinary                MASK_fmi3GetFloat32
+
+#define MASK_fmi3SetFloat32               (Instantiated | InitializationMode | EventMode | ContinuousTimeMode | StepMode | ClockActivationMode | Terminated)
+#define MASK_fmi3SetFloat64               MASK_fmi3SetFloat32
+#define MASK_fmi3SetInt8                  (Instantiated | InitializationMode | EventMode | StepMode | ClockActivationMode | Terminated)
+#define MASK_fmi3SetUInt8                 MASK_fmi3SetInt8
+#define MASK_fmi3SetInt16                 MASK_fmi3SetInt8
+#define MASK_fmi3SetUInt16                MASK_fmi3SetInt8
+#define MASK_fmi3SetInt32                 MASK_fmi3SetInt8
+#define MASK_fmi3SetUInt32                MASK_fmi3SetInt8
+#define MASK_fmi3SetInt64                 MASK_fmi3SetInt8
+#define MASK_fmi3SetUInt64                MASK_fmi3SetInt8
+#define MASK_fmi3SetBoolean               MASK_fmi3SetInt8
+#define MASK_fmi3SetString                MASK_fmi3SetInt8
+#define MASK_fmi3SetBinary                MASK_fmi3SetInt8
+
+/* Getting Variable Dependency Information */
+#define MASK_fmi3GetNumberOfVariableDependencies  MASK_AnyState
+#define MASK_fmi3GetVariableDependencies          MASK_AnyState
+
+/* Getting and setting the internal FMU state */
+#define MASK_fmi3GetFMUState              MASK_AnyState
+#define MASK_fmi3SetFMUState              MASK_AnyState
+#define MASK_fmi3FreeFMUState             MASK_AnyState
+#define MASK_fmi3SerializedFMUStateSize   MASK_AnyState
+#define MASK_fmi3SerializeFMUState        MASK_AnyState
+#define MASK_fmi3DeSerializeFMUState      MASK_AnyState
+
+/* Getting partial derivatives */
+#define MASK_fmi3GetDirectionalDerivative (InitializationMode | EventMode | ContinuousTimeMode | Terminated)
+#define MASK_fmi3GetAdjointDerivative     MASK_fmi3GetDirectionalDerivative
+
+/* Entering and exiting the Configuration or Reconfiguration Mode */
+#define MASK_fmi3EnterConfigurationMode   (Instantiated | StepMode | EventMode | ClockActivationMode)
+#define MASK_fmi3ExitConfigurationMode    (ConfigurationMode | ReconfigurationMode)
+
+/* Clock related functions */
 // TODO: fix masks
-#define MASK_fmi3EnterEventMode            (~0) // (modelEventMode | modelContinuousTimeMode)
-#define MASK_fmi3Terminate                 (~0) // (modelEventMode | modelContinuousTimeMode | modelStepComplete | modelStepFailed)
-#define MASK_fmi3GetClock                  (~0)
-#define MASK_fmi3SetClock                  (~0)
-#define MASK_fmi3ActivateModelPartition    (~0)
-#define MASK_fmi3GetDoStepDiscardedStatus  (~0)
-#define MASK_fmi3GetAdjointDerivative      (~0)
-#define MASK_fmi3EnterStepMode             (~0)
+#define MASK_fmi3GetClock                  MASK_AnyState
+#define MASK_fmi3SetClock                  MASK_AnyState
+#define MASK_fmi3GetIntervalDecimal        MASK_AnyState
+#define MASK_fmi3GetIntervalFraction       MASK_AnyState
+#define MASK_fmi3SetIntervalDecimal        MASK_AnyState
+#define MASK_fmi3SetIntervalFraction       MASK_AnyState
+#define MASK_fmi3NewDiscreteStates         MASK_AnyState
 
-// ---------------------------------------------------------------------------
-// Function calls allowed state masks for Model-exchange
-// ---------------------------------------------------------------------------
-#define MASK_fmi3NewDiscreteStates             modelEventMode
-#define MASK_fmi3EnterContinuousTimeMode       modelEventMode
-#define MASK_fmi3CompletedIntegratorStep       modelContinuousTimeMode
-#define MASK_fmi3SetTime                       (modelEventMode | modelContinuousTimeMode)
-#define MASK_fmi3SetContinuousStates           modelContinuousTimeMode
-#define MASK_fmi3GetEventIndicators            (modelInitializationMode | modelEventMode | modelContinuousTimeMode | modelTerminated | modelError)
-#define MASK_fmi3GetContinuousStates           MASK_fmi3GetEventIndicators
-#define MASK_fmi3GetDerivatives                (modelEventMode | modelContinuousTimeMode | modelTerminated | modelError)
-#define MASK_fmi3GetNominalsOfContinuousStates ( modelInstantiated | modelEventMode | modelContinuousTimeMode | modelTerminated | modelError)
+/* Functions for Model Exchange */
 
-// ---------------------------------------------------------------------------
-// Function calls allowed state masks for Co-simulation
-// ---------------------------------------------------------------------------
-#define MASK_fmi3SetRealInputDerivatives  (modelInstantiated | modelInitializationMode | modelStepComplete)
-#define MASK_fmi3GetRealOutputDerivatives (modelStepComplete | modelStepFailed | modelStepCanceled | modelTerminated | modelError)
-#define MASK_fmi3DoStep                   modelStepComplete
-#define MASK_fmi3CancelStep               modelStepInProgress
-#define MASK_fmi3GetStatus                (modelStepComplete | modelStepInProgress | modelStepFailed | modelTerminated)
-#define MASK_fmi3GetRealStatus            MASK_fmi3GetStatus
-#define MASK_fmi3GetIntegerStatus         MASK_fmi3GetStatus
-#define MASK_fmi3GetBooleanStatus         MASK_fmi3GetStatus
-#define MASK_fmi3GetStringStatus          MASK_fmi3GetStatus
+#define MASK_fmi3EnterContinuousTimeMode       EventMode
+#define MASK_fmi3CompletedIntegratorStep       ContinuousTimeMode
+
+/* Providing independent variables and re-initialization of caching */
+#define MASK_fmi3SetTime                       (EventMode | ContinuousTimeMode)
+#define MASK_fmi3SetContinuousStates           ContinuousTimeMode
+
+/* Evaluation of the model equations */
+#define MASK_fmi3GetDerivatives                (InitializationMode | EventMode | ContinuousTimeMode | Terminated)
+#define MASK_fmi3GetEventIndicators            MASK_fmi3GetDerivatives
+#define MASK_fmi3GetContinuousStates           MASK_fmi3GetDerivatives
+#define MASK_fmi3GetNominalsOfContinuousStates MASK_fmi3GetDerivatives
+#define MASK_fmi3GetNumberOfEventIndicators    MASK_fmi3GetDerivatives
+#define MASK_fmi3GetNumberOfContinuousStates   MASK_fmi3GetDerivatives
+
+/* Functions for Co-Simulation */
+
+#define MASK_fmi3EnterStepMode            (InitializationMode | EventMode)
+#define MASK_fmi3SetInputDerivatives      (Instantiated | InitializationMode | StepMode)
+#define MASK_fmi3GetOutputDerivatives     (StepMode | StepDiscarded | Terminated | Error)
+#define MASK_fmi3DoStep                   StepMode
+#define MASK_fmi3ActivateModelPartition   ClockActivationMode
+#define MASK_fmi3DoEarlyReturn            IntermediateUpdateMode
+#define MASK_fmi3GetDoStepDiscardedStatus StepMode
 
 // ---------------------------------------------------------------------------
 // Private helpers used below to validate function arguments
@@ -115,16 +160,6 @@
 // shorthand to access the model instance
 #define S ((ModelInstance *)instance)
 
-//static fmi3Status unsupportedFunction(fmi3Instance instance, const char *fName, int statesExpected) {
-//
-////    if (invalidState(S, fName, statesExpected))
-////        return fmi3Error;
-//
-//    logError(S, "%s: Function not implemented.", fName);
-//
-//    return fmi3Error;
-//}
-
 /***************************************************
  Common Functions
  ****************************************************/
@@ -133,299 +168,22 @@ const char* fmi3GetVersion() {
     return fmi3Version;
 }
 
-//static bool allowedState(ModelInstance *instance, int statesExpected, char *name) {
-//
-//    if (!instance) {
-//        return false;
-//    }
-//
-//    if (!(instance->state & statesExpected)) {
-//        logError(instance, "fmi3%s: Illegal call sequence.", name);
-//        return false;
-//    }
-//
-//    return true;
-//
-//}
+#define ASSERT_STATE(S) if(!allowedState(instance, MASK_fmi3##S, #S)) return fmi3Error;
 
-typedef enum {
-    
-    /***************************************************
-    Common Functions
-    ****************************************************/
-
-    /* Inquire version numbers and set debug logging */
-    GetVersion,
-    SetDebugLogging,
-
-    /* Creation and destruction of FMU instances */
-    InstantiateModelExchange,
-    InstantiateBasicCoSimulation,
-    InstantiateHybridCoSimulation,
-    InstantiateScheduledCoSimulation,
-    FreeInstance,
-
-    /* Enter and exit initialization mode, terminate and reset */
-    EnterInitializationMode,
-    ExitInitializationMode,
-    EnterEventMode,
-    Terminate,
-    Reset,
-
-    /* Getting and setting variable values */
-    GetFloat32,
-    GetFloat64,
-    GetInt8,
-    GetUInt8,
-    GetInt16,
-    GetUInt16,
-    GetInt32,
-    GetUInt32,
-    GetInt64,
-    GetUInt64,
-    GetBoolean,
-    GetString,
-    GetBinary,
-    SetFloat32,
-    SetFloat64,
-    SetInt8,
-    SetUInt8,
-    SetInt16,
-    SetUInt16,
-    SetInt32,
-    SetUInt32,
-    SetInt64,
-    SetUInt64,
-    SetBoolean,
-    SetString,
-    SetBinary,
-
-    /* Getting Variable Dependency Information */
-    GetNumberOfVariableDependencies,
-    GetVariableDependencies,
-
-    /* Getting and setting the internal FMU state */
-    GetFMUState,
-    SetFMUState,
-    FreeFMUState,
-    SerializedFMUStateSize,
-    SerializeFMUState,
-    DeSerializeFMUState,
-
-    /* Getting partial derivatives */
-    GetDirectionalDerivative,
-    GetAdjointDerivative,
-
-    /* Entering and exiting the Configuration or Reconfiguration Mode */
-    EnterConfigurationMode,
-    ExitConfigurationMode,
-
-    /* Clock related functions */
-    GetClock,
-    SetClock,
-    GetIntervalDecimal,
-    GetIntervalFraction,
-    SetIntervalDecimal,
-    SetIntervalFraction,
-    NewDiscreteStates,
-
-    /***************************************************
-    Functions for Model Exchange
-    ****************************************************/
-
-    EnterContinuousTimeMode,
-    CompletedIntegratorStep,
-
-    /* Providing independent variables and re-initialization of caching */
-    SetTime,
-    SetContinuousStates,
-
-    /* Evaluation of the model equations */
-    GetDerivatives,
-    GetEventIndicators,
-    GetContinuousStates,
-    GetNominalsOfContinuousStates,
-    GetNumberOfEventIndicators,
-    GetNumberOfContinuousStates,
-
-    /***************************************************
-    Functions for Co-Simulation
-    ****************************************************/
-
-    /* Simulating the slave */
-    EnterStepMode,
-    SetInputDerivatives,
-    GetOutputDerivatives,
-    DoStep,
-    ActivateModelPartition,
-    DoEarlyReturn,
-    GetDoStepDiscardedStatus,
-
-} Functions;
-
-static bool allowedState(ModelInstance *instance, Functions function, char *name) {
+static bool allowedState(ModelInstance *instance, int statesExpected, char *name) {
     
     if (!instance) {
         return false;
     }
-    
-    if (instance->status & (Error | Fatal)) {
+        
+    if (!(instance->state & statesExpected)) {
+        logError(instance, "fmi3%s: Illegal call sequence.", name);
         return false;
     }
     
-    switch (function) {
-        
-        /* Inquire version numbers and set debug logging */
-        case GetVersion:
-        case SetDebugLogging:
-            return true;
+    return true;
 
-        /* Creation and destruction of FMU instances */
-        case InstantiateModelExchange:
-        case InstantiateBasicCoSimulation:
-        case InstantiateHybridCoSimulation:
-        case InstantiateScheduledCoSimulation:
-            return instance->state & StartAndEnd;
-        case FreeInstance:
-            return true;
-
-        /* Enter and exit initialization mode, terminate and reset */
-        case EnterInitializationMode:
-            return instance->state & Instantiated;
-        case ExitInitializationMode:
-            return instance->state & InitializationMode;
-        case EnterEventMode:
-            return instance->state & (ContinuousTimeMode | StepMode);
-        case Terminate:
-            return instance->state & (ContinuousTimeMode | StepMode | StepDiscarded | EventMode | ClockActiviationMode | ReconfigurationMode);
-        case Reset:
-            return true;
-
-        /* Getting and setting variable values */
-        case GetFloat32:
-        case GetFloat64:
-        case GetInt8:
-        case GetUInt8:
-        case GetInt16:
-        case GetUInt16:
-        case GetInt32:
-        case GetUInt32:
-        case GetInt64:
-        case GetUInt64:
-        case GetBoolean:
-        case GetString:
-        case GetBinary:
-            return instance->state & (InitializationMode | EventMode | ContinuousTimeMode | StepMode | ClockActiviationMode | Terminated);
-        case SetFloat32:
-        case SetFloat64:
-            return instance->state & (Instantiated | InitializationMode | EventMode | ContinuousTimeMode | StepMode | ClockActiviationMode | Terminated);
-        case SetInt8:
-        case SetUInt8:
-        case SetInt16:
-        case SetUInt16:
-        case SetInt32:
-        case SetUInt32:
-        case SetInt64:
-        case SetUInt64:
-        case SetBoolean:
-        case SetString:
-        case SetBinary:
-            return instance->state & (Instantiated | InitializationMode | EventMode | StepMode | Terminated);
-            
-        /* Getting Variable Dependency Information */
-        case GetNumberOfVariableDependencies:
-        case GetVariableDependencies:
-            return true;
-
-        /* Getting and setting the internal FMU state */
-        case GetFMUState:
-        case SetFMUState:
-        case FreeFMUState:
-        case SerializedFMUStateSize:
-        case SerializeFMUState:
-        case DeSerializeFMUState:
-            return true;
-
-        /* Getting partial derivatives */
-        case GetDirectionalDerivative:
-        case GetAdjointDerivative:
-            return instance->state & (InitializationMode | EventMode | ContinuousTimeMode | Terminated);
-
-        /* Entering and exiting the Configuration or Reconfiguration Mode */
-        case EnterConfigurationMode:
-            switch (instance->type) {
-                case BasicCoSimulation:
-                    return instance->state & (Instantiated | StepMode);
-                case HybridCoSimulation:
-                case ModelExchange:
-                    return instance->state & (Instantiated | EventMode);
-                case ScheduledCoSimulation:
-                    return instance->state & (Instantiated | ClockActiviationMode);
-            }
-        case ExitConfigurationMode:
-            return instance->state & (ConfigurationMode | ReconfigurationMode);
-
-        /* Clock related functions */
-        case GetClock:
-        case SetClock:
-        case GetIntervalDecimal:
-        case GetIntervalFraction:
-        case SetIntervalDecimal:
-        case SetIntervalFraction:
-        case NewDiscreteStates:
-            return true;
-
-        /***************************************************
-        Functions for Model Exchange
-        ****************************************************/
-
-        case EnterContinuousTimeMode:
-            return instance->state == EventMode;
-        case CompletedIntegratorStep:
-            return instance->state == ContinuousTimeMode;
-
-        /* Providing independent variables and re-initialization of caching */
-        case SetTime:
-            return instance->state & (EventMode | ContinuousTimeMode);
-        case SetContinuousStates:
-            return instance->state == ContinuousTimeMode;
-
-        /* Evaluation of the model equations */
-        case GetDerivatives:
-        case GetEventIndicators:
-        case GetContinuousStates:
-        case GetNominalsOfContinuousStates:
-        case GetNumberOfEventIndicators:
-        case GetNumberOfContinuousStates:
-            return instance->state & (InitializationMode | EventMode | ContinuousTimeMode | Terminated);
-
-        /***************************************************
-        Functions for Co-Simulation
-        ****************************************************/
-
-        /* Simulating the slave */
-        case EnterStepMode:
-            return instance->state == StepDiscarded;
-        case SetInputDerivatives:
-            return instance->state & (Instantiated | InitializationMode);
-        case GetOutputDerivatives:
-            return instance->state & (IntermediateUpdateMode | Terminated);
-        case DoStep:
-            return instance->state == StepMode;
-        case ActivateModelPartition:
-            return instance->state == ClockActiviationMode;
-        case DoEarlyReturn:
-            return instance->state & (StepMode | ClockActiviationMode);
-        case GetDoStepDiscardedStatus:
-            return instance->state == StepDiscarded;
-    }
-        
-    return false;
 }
-
-
-#define ASSERT_STATE(S) if(!allowedState(instance, S, #S)) return fmi3Error;
-
 
 fmi3Status fmi3SetDebugLogging(fmi3Instance instance, fmi3Boolean loggingOn, size_t nCategories, const fmi3String categories[]) {
 
@@ -577,7 +335,7 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
             S->state = StepMode;
             break;
         case ScheduledCoSimulation:
-            S->state = ClockActiviationMode;
+            S->state = ClockActivationMode;
             break;
         case HybridCoSimulation:
         case ModelExchange:

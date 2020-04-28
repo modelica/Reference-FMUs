@@ -56,7 +56,7 @@ typedef enum {
     EventMode              = 1 << 4,
     ContinuousTimeMode     = 1 << 5,
     StepMode               = 1 << 6,
-    ClockActiviationMode   = 1 << 7,
+    ClockActivationMode    = 1 << 7,
     StepDiscarded          = 1 << 8,
     ReconfigurationMode    = 1 << 9,
     IntermediateUpdateMode = 1 << 10,

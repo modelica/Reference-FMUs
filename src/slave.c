@@ -487,10 +487,20 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
 
 #if FMI_VERSION == 3
             if (comp->intermediateUpdate) { // Hybrid Co-Simulation
+                
+                comp->state = IntermediateUpdateMode;
 
                 // call intermediate update callback
                 status = comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
                                          comp->time, 1, comp->clocksTicked, 0, 0, 0, 1);
+                
+                if (status > Warning) {
+                    logError(comp, "Intermediate update callback returned with fmi3Error.");
+                    comp->state = Terminated;
+                    return Error;
+                }
+                
+                comp->state = StepMode;
 
                 if (comp->returnEarly) {
                     *earlyReturn = 1;
