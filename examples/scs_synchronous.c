@@ -110,7 +110,8 @@ int main(int argc, char* argv[]) {
     TERMINATE:
     
     if (m && status != fmi3Error && status != fmi3Fatal) {
-        status = max(status, fmi3Terminate(m));
+		fmi3Status s = fmi3Terminate(m);
+        status = max(status, s);
     }
     
     if (m && status != fmi3Fatal) {

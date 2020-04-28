@@ -216,7 +216,8 @@ TERMINATE:
     if (m && status != fmi3Error && status != fmi3Fatal) {
         // retrieve final values and terminate simulation
         CHECK_STATUS(recordVariables(outputFile, m, time));
-        status = max(status, M_fmi3Terminate(m));
+		fmi3Status s = M_fmi3Terminate(m);
+        status = max(status, s);
     }
     
     if (m && status != fmi3Fatal) {
