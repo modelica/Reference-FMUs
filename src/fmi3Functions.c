@@ -879,7 +879,7 @@ fmi3Status fmi3SetContinuousStates(fmi3Instance instance, const fmi3Float64 x[],
 
     ASSERT_STATE(SetContinuousStates)
 
-    if (invalidNumber(S, "fmi3SetContinuousStates", "nx", nx, NUMBER_OF_STATES))
+    if (invalidNumber(S, "fmi3SetContinuousStates", "nx", nx, NX))
         return fmi3Error;
 
     if (nullPointer(S, "fmi3SetContinuousStates", "x[]", x))
@@ -895,7 +895,7 @@ fmi3Status fmi3GetDerivatives(fmi3Instance instance, fmi3Float64 derivatives[], 
 
     ASSERT_STATE(GetDerivatives)
 
-    if (invalidNumber(S, "fmi3GetDerivatives", "nx", nx, NUMBER_OF_STATES))
+    if (invalidNumber(S, "fmi3GetDerivatives", "nx", nx, NX))
         return fmi3Error;
 
     if (nullPointer(S, "fmi3GetDerivatives", "derivatives[]", derivatives))
@@ -925,7 +925,7 @@ fmi3Status fmi3GetContinuousStates(fmi3Instance instance, fmi3Float64 states[], 
 
     ASSERT_STATE(GetContinuousStates)
 
-    if (invalidNumber(S, "fmi3GetContinuousStates", "nx", nx, NUMBER_OF_STATES))
+    if (invalidNumber(S, "fmi3GetContinuousStates", "nx", nx, NX))
         return fmi3Error;
 
     if (nullPointer(S, "fmi3GetContinuousStates", "states[]", states))
@@ -940,7 +940,7 @@ fmi3Status fmi3GetNominalsOfContinuousStates(fmi3Instance instance, fmi3Float64 
     
     ASSERT_STATE(GetNominalsOfContinuousStates)
 
-    if (invalidNumber(S, "fmi3GetNominalContinuousStates", "nx", nx, NUMBER_OF_STATES))
+    if (invalidNumber(S, "fmi3GetNominalContinuousStates", "nx", nx, NX))
         return fmi3Error;
 
     if (nullPointer(S, "fmi3GetNominalContinuousStates", "x_nominal[]", x_nominal))

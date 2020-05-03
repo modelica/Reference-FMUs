@@ -11,16 +11,16 @@ int main(int argc, char* argv[]) {
     fmi3Float64 time = 0;
     fmi3Status status = fmi3OK;
   
-    size_t nx = NUMBER_OF_STATES;
+    size_t nx = NX;
     fmi3ValueReference vr_x[]  = { vr_x0, vr_x1 };
     fmi3ValueReference vr_dx[] = { vr_der_x0, vr_der_x1 };
 
     // variables:
     fmi3Instance m;
-    fmi3Float64 x[NUMBER_OF_STATES];
+    fmi3Float64 x[NX];
     fmi3Float64 dk = 1;
-    fmi3Float64 J[NUMBER_OF_STATES][NUMBER_OF_STATES];
-    fmi3Float64 c[NUMBER_OF_STATES];
+    fmi3Float64 J[NX][NX];
+    fmi3Float64 c[NX];
 
     printf("Running Jacobian example... ");
 

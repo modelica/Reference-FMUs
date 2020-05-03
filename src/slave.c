@@ -388,7 +388,7 @@ Status activateModelPartition(ModelInstance* comp, ValueReference vr, double act
 }
 #endif
 
-#if NUMBER_OF_STATES < 1
+#if NX < 1
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
     UNUSED(comp)
     UNUSED(x)
@@ -429,25 +429,25 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
     double *temp = NULL;
 #endif
 
-#if NUMBER_OF_STATES > 0
-    double  x[NUMBER_OF_STATES] = { 0 };
-    double dx[NUMBER_OF_STATES] = { 0 };
+#if NX > 0
+    double  x[NX] = { 0 };
+    double dx[NX] = { 0 };
 #endif
 
     double epsilon = (1.0 + fabs(comp->time)) * DBL_EPSILON;
     
     while (comp->time + FIXED_SOLVER_STEP < tNext + epsilon) {
 
-#if NUMBER_OF_STATES > 0
-        getContinuousStates(comp, x, NUMBER_OF_STATES);
-        getDerivatives(comp, dx, NUMBER_OF_STATES);
+#if NX > 0
+        getContinuousStates(comp, x, NX);
+        getDerivatives(comp, dx, NX);
 
         // forward Euler step
-        for (int i = 0; i < NUMBER_OF_STATES; i++) {
+        for (int i = 0; i < NX; i++) {
             x[i] += FIXED_SOLVER_STEP * dx[i];
         }
 
-        setContinuousStates(comp, x, NUMBER_OF_STATES);
+        setContinuousStates(comp, x, NX);
 #endif
 
         stateEvent = false;

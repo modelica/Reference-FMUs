@@ -430,7 +430,7 @@ fmiStatus fmiSetContinuousStates(fmiComponent c, const fmiReal x[], size_t nx) {
     if (invalidState(instance, "fmiSetContinuousStates", Initialized))
          return fmiError;
 
-    if (invalidNumber(instance, "fmiSetContinuousStates", "nx", nx, NUMBER_OF_STATES))
+    if (invalidNumber(instance, "fmiSetContinuousStates", "nx", nx, NX))
         return fmiError;
 
     if (nullPointer(instance, "fmiSetContinuousStates", "x[]", x))
@@ -493,11 +493,11 @@ fmiStatus fmiGetStateValueReferences(fmiComponent c, fmiValueReference vrx[], si
 //    ModelInstance* instance = (ModelInstance *)c;
 //    if (invalidState(instance, "fmiGetStateValueReferences", not_modelError))
 //        return fmiError;
-//    if (invalidNumber(instance, "fmiGetStateValueReferences", "nx", nx, NUMBER_OF_STATES))
+//    if (invalidNumber(instance, "fmiGetStateValueReferences", "nx", nx, NX))
 //        return fmiError;
 //    if (nullPointer(instance, "fmiGetStateValueReferences", "vrx[]", vrx))
 //         return fmiError;
-//#if NUMBER_OF_STATES>0
+//#if NX>0
 //    for (i=0; i<nx; i++) {
 //        vrx[i] = vrStates[i];
 //        if (instance->loggingOn) instance->functions.logger(c, instance->instanceName, fmiOK, "log",
@@ -514,7 +514,7 @@ fmiStatus fmiGetContinuousStates(fmiComponent c, fmiReal states[], size_t nx){
     if (invalidState(instance, "fmiGetContinuousStates", not_modelError))
         return fmiError;
 
-    if (invalidNumber(instance, "fmiGetContinuousStates", "nx", nx, NUMBER_OF_STATES))
+    if (invalidNumber(instance, "fmiGetContinuousStates", "nx", nx, NX))
         return fmiError;
 
     if (nullPointer(instance, "fmiGetContinuousStates", "states[]", states))
@@ -530,7 +530,7 @@ fmiStatus fmiGetNominalContinuousStates(fmiComponent c, fmiReal x_nominal[], siz
 //    ModelInstance* instance = (ModelInstance *)c;
 //    if (invalidState(instance, "fmiGetNominalContinuousStates", not_modelError))
 //        return fmiError;
-//    if (invalidNumber(instance, "fmiGetNominalContinuousStates", "nx", nx, NUMBER_OF_STATES))
+//    if (invalidNumber(instance, "fmiGetNominalContinuousStates", "nx", nx, NX))
 //        return fmiError;
 //    if (nullPointer(instance, "fmiGetNominalContinuousStates", "x_nominal[]", x_nominal))
 //         return fmiError;
@@ -548,7 +548,7 @@ fmiStatus fmiGetDerivatives(fmiComponent c, fmiReal derivatives[], size_t nx) {
     if (invalidState(instance, "fmiGetDerivatives", not_modelError))
          return fmiError;
 
-    if (invalidNumber(instance, "fmiGetDerivatives", "nx", nx, NUMBER_OF_STATES))
+    if (invalidNumber(instance, "fmiGetDerivatives", "nx", nx, NX))
         return fmiError;
 
     if (nullPointer(instance, "fmiGetDerivatives", "derivatives[]", derivatives))
