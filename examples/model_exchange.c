@@ -33,13 +33,13 @@ int main(int argc, char* argv[]) {
     fmi3Float64 time = 0;
     const fmi3Float64 tStart = 0;
     fmi3Boolean timeEvent, stateEvent, enterEventMode, terminateSimulation = fmi3False, initialEventMode;
-    fmi3Int32 rootsFound[NUMBER_OF_EVENT_INDICATORS] = { 0 };
+    fmi3Int32 rootsFound[NZ] = { 0 };
     fmi3Instance m = NULL;
     fmi3Float64 x[NX] = { 0 };
     fmi3Float64 x_nominal[NX] = { 0 };
     fmi3Float64 der_x[NX] = { 0 };
-    fmi3Float64 z[NUMBER_OF_EVENT_INDICATORS] = { 0 };
-    fmi3Float64 previous_z[NUMBER_OF_EVENT_INDICATORS] = { 0 };
+    fmi3Float64 z[NZ] = { 0 };
+    fmi3Float64 previous_z[NZ] = { 0 };
     FILE *outputFile = NULL;
 
     printf("Running model_exchange example... ");
@@ -82,7 +82,7 @@ timeEvent        = fmi3False;
 stateEvent       = fmi3False;
 
 // initialize previous event indicators
-CHECK_STATUS(M_fmi3GetEventIndicators(m, previous_z, NUMBER_OF_EVENT_INDICATORS));
+CHECK_STATUS(M_fmi3GetEventIndicators(m, previous_z, NZ));
     
 initialEventMode = fmi3False;
 
@@ -104,7 +104,7 @@ while (!terminateSimulation) {
     if (enterEventMode || stateEvent || timeEvent) {
         
         if (!initialEventMode) {
-            CHECK_STATUS(M_fmi3EnterEventMode(m, fmi3False, fmi3False, rootsFound, NUMBER_OF_EVENT_INDICATORS, timeEvent));
+            CHECK_STATUS(M_fmi3EnterEventMode(m, fmi3False, fmi3False, rootsFound, NZ, timeEvent));
         }
 
         // event iteration
@@ -183,11 +183,11 @@ while (!terminateSimulation) {
     CHECK_STATUS(M_fmi3SetContinuousStates(m, x, NX));
 
     // get event indicators at t = time
-    CHECK_STATUS(M_fmi3GetEventIndicators(m, z, NUMBER_OF_EVENT_INDICATORS));
+    CHECK_STATUS(M_fmi3GetEventIndicators(m, z, NZ));
 
     stateEvent = fmi3False;
 
-    for (size_t i = 0; i < NUMBER_OF_EVENT_INDICATORS; i++) {
+    for (size_t i = 0; i < NZ; i++) {
         
         // check for zero crossings
         if (previous_z[i] < 0 && z[i] >= 0) {

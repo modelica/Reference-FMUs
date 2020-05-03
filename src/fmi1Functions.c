@@ -566,7 +566,7 @@ fmiStatus fmiGetEventIndicators(fmiComponent c, fmiReal eventIndicators[], size_
     if (invalidState(instance, "fmiGetEventIndicators", not_modelError))
         return fmiError;
 
-    if (invalidNumber(instance, "fmiGetEventIndicators", "ni", ni, NUMBER_OF_EVENT_INDICATORS))
+    if (invalidNumber(instance, "fmiGetEventIndicators", "ni", ni, NZ))
         return fmiError;
 
     getEventIndicators(instance, eventIndicators, ni);

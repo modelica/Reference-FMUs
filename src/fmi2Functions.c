@@ -764,9 +764,9 @@ fmi2Status fmi2GetEventIndicators(fmi2Component c, fmi2Real eventIndicators[], s
 
     ASSERT_STATE(GetEventIndicators)
 
-#if NUMBER_OF_EVENT_INDICATORS > 0
+#if NZ > 0
 
-    if (invalidNumber(S, "fmi2GetEventIndicators", "ni", ni, NUMBER_OF_EVENT_INDICATORS))
+    if (invalidNumber(S, "fmi2GetEventIndicators", "ni", ni, NZ))
         return fmi2Error;
 
     getEventIndicators(S, eventIndicators, ni);
