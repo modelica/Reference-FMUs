@@ -9,7 +9,7 @@
 #define MODEL_EXCHANGE
 
 // define model size
-#define NUMBER_OF_STATES 1
+#define NX 1
 #define NUMBER_OF_EVENT_INDICATORS 0
 
 #define GET_FLOAT64

@@ -35,9 +35,9 @@ int main(int argc, char* argv[]) {
     fmi3Boolean timeEvent, stateEvent, enterEventMode, terminateSimulation = fmi3False, initialEventMode;
     fmi3Int32 rootsFound[NUMBER_OF_EVENT_INDICATORS] = { 0 };
     fmi3Instance m = NULL;
-    fmi3Float64 x[NUMBER_OF_STATES] = { 0 };
-    fmi3Float64 x_nominal[NUMBER_OF_STATES] = { 0 };
-    fmi3Float64 der_x[NUMBER_OF_STATES] = { 0 };
+    fmi3Float64 x[NX] = { 0 };
+    fmi3Float64 x_nominal[NX] = { 0 };
+    fmi3Float64 der_x[NX] = { 0 };
     fmi3Float64 z[NUMBER_OF_EVENT_INDICATORS] = { 0 };
     fmi3Float64 previous_z[NUMBER_OF_EVENT_INDICATORS] = { 0 };
     FILE *outputFile = NULL;
@@ -90,8 +90,8 @@ CHECK_STATUS(M_fmi3EnterContinuousTimeMode(m));
 
 // retrieve initial state x and
 // nominal values of x (if absolute tolerance is needed)
-CHECK_STATUS(M_fmi3GetContinuousStates(m, x, NUMBER_OF_STATES));
-CHECK_STATUS(M_fmi3GetNominalsOfContinuousStates(m, x_nominal, NUMBER_OF_STATES));
+CHECK_STATUS(M_fmi3GetContinuousStates(m, x, NX));
+CHECK_STATUS(M_fmi3GetNominalsOfContinuousStates(m, x_nominal, NX));
 
 // retrieve solution at t=Tstart, for example, for outputs
 // M_fmi3SetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
@@ -143,12 +143,12 @@ while (!terminateSimulation) {
 
         if (initialEventMode || valuesOfContinuousStatesChanged) {
             // the model signals a value change of states, retrieve them
-            CHECK_STATUS(M_fmi3GetContinuousStates(m, x, NUMBER_OF_STATES));
+            CHECK_STATUS(M_fmi3GetContinuousStates(m, x, NX));
         }
 
         if (initialEventMode || nominalsOfContinuousStatesChanged) {
             // the meaning of states has changed; retrieve new nominal values
-            CHECK_STATUS(M_fmi3GetNominalsOfContinuousStates(m, x_nominal, NUMBER_OF_STATES));
+            CHECK_STATUS(M_fmi3GetNominalsOfContinuousStates(m, x_nominal, NX));
         }
 
         if (nextEventTimeDefined) {
@@ -165,7 +165,7 @@ while (!terminateSimulation) {
     }
 
     // compute derivatives
-    CHECK_STATUS(M_fmi3GetDerivatives(m, der_x, NUMBER_OF_STATES));
+    CHECK_STATUS(M_fmi3GetDerivatives(m, der_x, NX));
 
     // advance time
     h = min(fixedStep, tNext - time);
@@ -176,11 +176,11 @@ while (!terminateSimulation) {
     // M_fmi3SetFloat*(m, ...)
 
     // set states at t = time and perform one step
-    for (size_t i = 0; i < NUMBER_OF_STATES; i++) {
+    for (size_t i = 0; i < NX; i++) {
         x[i] += h * der_x[i]; // forward Euler method
     }
 
-    CHECK_STATUS(M_fmi3SetContinuousStates(m, x, NUMBER_OF_STATES));
+    CHECK_STATUS(M_fmi3SetContinuousStates(m, x, NX));
 
     // get event indicators at t = time
     CHECK_STATUS(M_fmi3GetEventIndicators(m, z, NUMBER_OF_EVENT_INDICATORS));
