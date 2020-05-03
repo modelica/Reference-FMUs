@@ -76,7 +76,7 @@ fmiStatus fmiSetDebugLogging(fmiComponent c, fmiBoolean loggingOn) {
     if (invalidState(instance, "fmiSetDebugLogging", not_modelError))
          return fmiError;
 
-    return setDebugLogging(instance, loggingOn, 0, NULL);
+    return (fmiStatus)setDebugLogging(instance, loggingOn, 0, NULL);
 }
 
 fmiStatus fmiSetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiReal value[]) {
@@ -329,7 +329,7 @@ fmiStatus fmiCancelStep(fmiComponent c) {
 fmiStatus fmiDoStep(fmiComponent c, fmiReal currentCommunicationPoint, fmiReal communicationStepSize, fmiBoolean newStep) {
     ModelInstance* instance = (ModelInstance *)c;
     int earlyReturn;
-    return doStep(instance, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &earlyReturn);
+    return (fmiStatus)doStep(instance, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &earlyReturn);
 }
 
 static fmiStatus getStatus(char* fname, fmiComponent c, const fmiStatusKind s) {
