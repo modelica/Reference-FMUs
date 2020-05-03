@@ -344,9 +344,9 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
             break;
     }
 
-#if NUMBER_OF_EVENT_INDICATORS > 0
+#if NZ > 0
     // initialize event indicators
-    getEventIndicators(S, S->prez, NUMBER_OF_EVENT_INDICATORS);
+    getEventIndicators(S, S->prez, NZ);
 #endif
     
     return fmi3OK;
@@ -910,8 +910,8 @@ fmi3Status fmi3GetEventIndicators(fmi3Instance instance, fmi3Float64 eventIndica
 
     ASSERT_STATE(GetEventIndicators)
 
-#if NUMBER_OF_EVENT_INDICATORS > 0
-    if (invalidNumber(S, "fmi3GetEventIndicators", "ni", ni, NUMBER_OF_EVENT_INDICATORS))
+#if NZ > 0
+    if (invalidNumber(S, "fmi3GetEventIndicators", "ni", ni, NZ))
         return fmi3Error;
 
     getEventIndicators(S, eventIndicators, ni);

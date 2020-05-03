@@ -10,7 +10,7 @@
 
 // define model size
 #define NX 0
-#define NUMBER_OF_EVENT_INDICATORS 0
+#define NZ 0
 
 #define GET_FLOAT64
 

@@ -106,9 +106,9 @@ ModelInstance *createModelInstance(
     setStartValues(comp); // to be implemented by the includer of this file
     comp->isDirtyValues = true; // because we just called setStartValues
 
-#if NUMBER_OF_EVENT_INDICATORS > 0
-    comp->z    = calloc(sizeof(double), NUMBER_OF_EVENT_INDICATORS);
-    comp->prez = calloc(sizeof(double), NUMBER_OF_EVENT_INDICATORS);
+#if NZ > 0
+    comp->z    = calloc(sizeof(double), NZ);
+    comp->prez = calloc(sizeof(double), NZ);
 #else
     comp->z    = NULL;
     comp->prez = NULL;
@@ -231,7 +231,7 @@ void logError(ModelInstance *comp, const char *message, ...) {
 }
 
 // default implementations
-#if NUMBER_OF_EVENT_INDICATORS < 1
+#if NZ < 1
 void getEventIndicators(ModelInstance *comp, double z[], size_t nz) {
     UNUSED(comp)
     UNUSED(z)
@@ -425,7 +425,7 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
     bool stateEvent, timeEvent;
     Status status = OK;
 
-#if NUMBER_OF_EVENT_INDICATORS > 0
+#if NZ > 0
     double *temp = NULL;
 #endif
 
@@ -452,11 +452,11 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
 
         stateEvent = false;
 
-#if NUMBER_OF_EVENT_INDICATORS > 0
-        getEventIndicators(comp, comp->z, NUMBER_OF_EVENT_INDICATORS);
+#if NZ > 0
+        getEventIndicators(comp, comp->z, NZ);
 
         // check for zero-crossings
-        for (int i = 0; i < NUMBER_OF_EVENT_INDICATORS; i++) {
+        for (int i = 0; i < NZ; i++) {
             stateEvent |= comp->prez[i] < 0 && comp->z[i] >= 0;
             stateEvent |= comp->prez[i] > 0 && comp->z[i] <= 0;
         }
@@ -480,9 +480,9 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
 
             comp->returnEarly = comp->nextEventTime < t + tNext;
 
-#if NUMBER_OF_EVENT_INDICATORS > 0
+#if NZ > 0
             // update previous event indicators
-            getEventIndicators(comp, comp->prez, NUMBER_OF_EVENT_INDICATORS);
+            getEventIndicators(comp, comp->prez, NZ);
 #endif
 
 #if FMI_VERSION == 3
