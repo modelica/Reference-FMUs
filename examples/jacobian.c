@@ -1,79 +1,102 @@
 #include <stdio.h>
 #include <assert.h>
 #include "fmi3Functions.h"
+#include "config.h"
+#include "util.h"
 
-
-void cb_logMessage(fmi3InstanceEnvironment instanceEnvironment, fmi3String instanceName, fmi3Status status, fmi3String category, fmi3String message) {
-    puts(message);
-}
 
 int main(int argc, char* argv[]) {
 
-    int i = 0;
+    size_t i, j;
     fmi3Float64 time = 0;
-    int nx = 2;
-    fmi3Float64 x[2];
-    fmi3ValueReference vr_x[]  = { 0, 2 };
-    fmi3ValueReference vr_dx[] = { 1, 3 };
-    fmi3Float64 dk = 1;
-    fmi3Float64 J[2][2];
+    fmi3Status status = fmi3OK;
+  
+    size_t nx = NUMBER_OF_STATES;
+    fmi3ValueReference vr_x[]  = { vr_x0, vr_x1 };
+    fmi3ValueReference vr_dx[] = { vr_der_x0, vr_der_x1 };
+
+    // variables:
     fmi3Instance m;
+    fmi3Float64 x[NUMBER_OF_STATES];
+    fmi3Float64 dk = 1;
+    fmi3Float64 J[NUMBER_OF_STATES][NUMBER_OF_STATES];
+    fmi3Float64 c[NUMBER_OF_STATES];
 
     printf("Running Jacobian example... ");
 
-    m = fmi3InstantiateModelExchange("jacobian", "{8c4e810f-3da3-4a00-8276-176fa3c9f000}", NULL, fmi3False, fmi3False, NULL, cb_logMessage);
+    m = fmi3InstantiateModelExchange("jacobian", MODEL_GUID, NULL, fmi3False, fmi3False, NULL, cb_logMessage);
+    
+    if (!m) {
+        return EXIT_FAILURE;
+    }
 
-    fmi3EnterInitializationMode(m, fmi3False, 0, 0, fmi3False, 0);
-    fmi3ExitInitializationMode(m);
+    CHECK_STATUS(fmi3EnterInitializationMode(m, fmi3False, 0, 0, fmi3False, 0))
+    CHECK_STATUS(fmi3ExitInitializationMode(m))
 
-    fmi3EnterContinuousTimeMode(m);
+    CHECK_STATUS(fmi3EnterContinuousTimeMode(m))
 
-    fmi3GetContinuousStates(m, x, nx);
+    CHECK_STATUS(fmi3GetContinuousStates(m, x, nx))
 
-// tag::GetJacobian[]
-// from the XML file:
-//   nx       number of states
-//   vr_x[]   value references of continuous states
-//   vr_xd[]  value references of state derivatives
-//
-// variables:
-//   m        model instance
-//   x[]      continuous states
-//   dk = 1   delta knowns
-//   J[][]    Jacobian (transposed for simplicity)
+    // tag::JacobianVariables[]
+    // from the XML file:
+    //   nx       number of states
+    //   vr_x[]   value references of continuous states
+    //   vr_xd[]  value references of state derivatives
+    //
+    // variables:
+    //   m        model instance
+    //   x[]      continuous states
+    //   dk = 1   delta knowns
+    //   J[][]    Jacobian
+    // end::JacobianVariables[]
 
-// set time, states and inputs
-fmi3SetTime(m, time);
-fmi3SetContinuousStates(m, x, nx);
-// fmi3SetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
+    // tag::GetJacobian[]
+    //   c[]      column vector
 
-// if required at this step, compute the Jacobian as a dense matrix
-for (i = 0; i < nx; i++) {
-    // construct the Jacobian matrix column wise
-    fmi3GetDirectionalDerivative(m, vr_dx, nx, &vr_x[i], 1, &dk, 1, &J[i][0], nx);
-}
-// end::GetJacobian[]
+    // set time, states and inputs
+    CHECK_STATUS(fmi3SetTime(m, time))
+    CHECK_STATUS(fmi3SetContinuousStates(m, x, nx))
+    // fmi3Set{VariableType}(m, ...)
+
+    // if required at this step, compute the Jacobian as a dense matrix
+    for (i = 0; i < nx; i++) {
+        // construct the Jacobian matrix column wise
+        CHECK_STATUS(fmi3GetDirectionalDerivative(m, vr_dx, nx, &vr_x[i], 1, &dk, 1, c, nx))
+        for (j = 0; j < nx; j++) {
+            J[j][i] = c[j];
+        }
+    }
+    // end::GetJacobian[]
 
     assert(J[0][0] ==  0);
-    assert(J[0][1] == -1);
-    assert(J[1][0] ==  1);
+    assert(J[0][1] ==  1);
+    assert(J[1][0] == -1);
     assert(J[1][1] == -3);
     
     // tag::GetJacobianAdjoint[]
-
     for (i = 0; i < nx; i++) {
         // construct the Jacobian matrix column wise
-        fmi3GetAdjointDerivative(m, &vr_dx[i], 1, vr_x, nx, &dk, 1, &J[i][0], nx);
+        CHECK_STATUS(fmi3GetAdjointDerivative(m, &vr_dx[i], 1, vr_x, nx, &dk, 1, &J[i][0], nx))
     }
-    
-    // TODO: add assertions
-    
     // end::GetJacobianAdjoint[]
 
-    fmi3Terminate(m);
-    fmi3FreeInstance(m);
+    assert(J[0][0] ==  0);
+    assert(J[0][1] ==  1);
+    assert(J[1][0] == -1);
+    assert(J[1][1] == -3);
+    
+TERMINATE:
+    
+    if (status != fmi3Error && status != fmi3Fatal) {
+        fmi3Status s = fmi3Terminate(m);
+        status = max(status, s);
+    }
+    
+    if (status != fmi3Fatal) {
+        fmi3FreeInstance(m);
+    }
 
     printf("done.\n");
-
-    return EXIT_SUCCESS;
+    
+    return status == fmi3OK ? EXIT_SUCCESS : EXIT_FAILURE;
 }
