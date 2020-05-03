@@ -260,7 +260,7 @@ fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean loggingOn, size_t nC
 
     ASSERT_STATE(SetDebugLogging)
 
-    return setDebugLogging(S, loggingOn, nCategories, categories);
+    return (fmi2Status)setDebugLogging(S, loggingOn, nCategories, categories);
 }
 
 fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
@@ -497,7 +497,9 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReferenc
             double partialDerivative = 0;
             Status s = getPartialDerivative(S, vUnknown_ref[i], vKnown_ref[j], &partialDerivative);
             status = max(status, s);
-            if (status > Warning) return status;
+            if (status > Warning) {
+                return (fmi2Status)status;
+            }
             dvUnknown[i] += partialDerivative * dvKnown[j];
         }
     }
@@ -566,7 +568,7 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
 
     int earlyReturn;
 
-    return doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &earlyReturn);
+    return (fmi2Status)doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &earlyReturn);
 }
 
 /* Inquire slave status */
