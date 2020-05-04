@@ -486,13 +486,18 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
 #endif
 
 #if FMI_VERSION == 3
-            if (comp->intermediateUpdate) { // Hybrid Co-Simulation
+            if (comp->intermediateUpdate) {
                 
                 comp->state = IntermediateUpdateMode;
 
-                // call intermediate update callback
                 status = comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
-                                         comp->time, 1, comp->clocksTicked, 0, 0, 0, 1);
+                                                  comp->time,         // intermediateUpdateTime
+                                                  1,                  // eventOccurred
+                                                  comp->clocksTicked, // clocksTicked
+                                                  0,                  // intermediateVariableSetAllowed
+                                                  1,                  // intermediateVariableGetAllowed
+                                                  0,                  // intermediateStepFinished
+                                                  1);                 // canReturnEarly
                 
                 if (status > Warning) {
                     logError(comp, "Intermediate update callback returned with fmi3Error.");
@@ -519,6 +524,31 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
         }
 
         comp->time = FIXED_SOLVER_STEP * (++comp->nSteps);
+        
+#if FMI_VERSION == 3
+        if (comp->intermediateUpdate) {
+            
+            comp->state = IntermediateUpdateMode;
+
+            // call intermediate update callback
+            status = comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
+                                              comp->time, // intermediateUpdateTime
+                                              0,          // eventOccurred
+                                              0,          // clocksTicked
+                                              0,          // intermediateVariableSetAllowed
+                                              1,          // intermediateVariableGetAllowed
+                                              1,          // intermediateStepFinished
+                                              1);         // canReturnEarly
+            
+            if (status > Warning) {
+                logError(comp, "Intermediate update callback returned with fmi3Error.");
+                comp->state = Terminated;
+                return Error;
+            }
+            
+            comp->state = StepMode;
+        }
+#endif
     }
 
     if (earlyReturn) {
