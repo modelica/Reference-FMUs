@@ -28,6 +28,21 @@ if(UNIX AND NOT APPLE)
   target_link_libraries(bcs_early_return m)
 endif()
 
+# bcs_intermediate_variable_access
+add_executable(bcs_intermediate_variable_access
+  ${EXAMPLE_SOURCES}
+  BouncingBall/config.h
+  BouncingBall/model.c
+  src/fmi3Functions.c
+  src/slave.c
+  examples/bcs_intermediate_variable_access.c
+)
+set_target_properties(bcs_intermediate_variable_access PROPERTIES FOLDER examples)
+target_include_directories(bcs_intermediate_variable_access PRIVATE include BouncingBall)
+if(UNIX AND NOT APPLE)
+  target_link_libraries(bcs_intermediate_variable_access m)
+endif()
+
 # hcs_early_return
 add_executable(hcs_early_return
   ${EXAMPLE_SOURCES}
