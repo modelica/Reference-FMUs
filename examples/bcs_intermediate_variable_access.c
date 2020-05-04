@@ -12,6 +12,7 @@ typedef struct {
     fmi3Float64 intermediateUpdateTime;
 } InstanceEnvironment;
 
+// tag::IntermediateUpdateCallback[]
 fmi3Status recordVariables(InstanceEnvironment *instanceEnvironment, fmi3Float64 time) {
     fmi3ValueReference outputsVRs[2] = { vr_h, vr_v };
     fmi3Float64 y[2];
@@ -71,6 +72,7 @@ fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     // Internal execution in FMU will now continue
     return status;
 }
+// end::IntermediateUpdateCallback[]
 
 int main(int argc, char* argv[]) {
     
