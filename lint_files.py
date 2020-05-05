@@ -51,6 +51,8 @@ for root, _, files in os.walk(top):
 
         filename = os.path.join(root, file)
 
+        print(filename)
+
         messages = lint_file(filename)
 
         if messages:
