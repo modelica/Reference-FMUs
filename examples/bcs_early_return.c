@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
     fputs("\"time\",\"h\",\"v\"\n", instanceEnvironment.outputFile);
     
     // Instantiate the slave
-    fmi3Instance s = fmi3InstantiateBasicCoSimulation("slave1", MODEL_GUID, NULL, fmi3False, fmi3False, fmi3False, fmi3False, fmi3False, &instanceEnvironment, cb_logMessage, cb_intermediateUpdate);
+    fmi3Instance s = fmi3InstantiateBasicCoSimulation("slave1", INSTANTIATION_TOKEN, NULL, fmi3False, fmi3False, fmi3False, fmi3False, fmi3False, &instanceEnvironment, cb_logMessage, cb_intermediateUpdate);
     
     if (s == NULL) {
         puts("Failed to instantiate FMU.");

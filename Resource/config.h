@@ -3,7 +3,7 @@
 
 // define class name and unique id
 #define MODEL_IDENTIFIER Resource
-#define MODEL_GUID "{7b9c2114-2ce5-4076-a138-2cbc69e069e5}"
+#define INSTANTIATION_TOKEN "{7b9c2114-2ce5-4076-a138-2cbc69e069e5}"
 
 #define BASIC_CO_SIMULATION
 #define MODEL_EXCHANGE

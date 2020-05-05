@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
 
     printf("Running Jacobian example... ");
 
-    m = fmi3InstantiateModelExchange("jacobian", MODEL_GUID, NULL, fmi3False, fmi3False, NULL, cb_logMessage);
+    m = fmi3InstantiateModelExchange("jacobian", INSTANTIATION_TOKEN, NULL, fmi3False, fmi3False, NULL, cb_logMessage);
     
     if (!m) {
         return EXIT_FAILURE;
