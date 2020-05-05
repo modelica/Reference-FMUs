@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
     size_t i, j;
     fmi3Float64 time = 0;
     fmi3Status status = fmi3OK;
-  
+
     size_t nx = NX;
     fmi3ValueReference vr_x[]  = { vr_x0, vr_x1 };
     fmi3ValueReference vr_dx[] = { vr_der_x0, vr_der_x1 };
@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
     printf("Running Jacobian example... ");
 
     m = fmi3InstantiateModelExchange("jacobian", INSTANTIATION_TOKEN, NULL, fmi3False, fmi3False, NULL, cb_logMessage);
-    
+
     if (!m) {
         return EXIT_FAILURE;
     }
@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
     assert(J[0][1] ==  1);
     assert(J[1][0] == -1);
     assert(J[1][1] == -3);
-    
+
     // tag::GetJacobianAdjoint[]
     for (i = 0; i < nx; i++) {
         // construct the Jacobian matrix column wise
@@ -84,19 +84,19 @@ int main(int argc, char* argv[]) {
     assert(J[0][1] ==  1);
     assert(J[1][0] == -1);
     assert(J[1][1] == -3);
-    
+
 TERMINATE:
-    
+
     if (status != fmi3Error && status != fmi3Fatal) {
         fmi3Status s = fmi3Terminate(m);
         status = max(status, s);
     }
-    
+
     if (status != fmi3Fatal) {
         fmi3FreeInstance(m);
     }
 
     printf("done.\n");
-    
+
     return status == fmi3OK ? EXIT_SUCCESS : EXIT_FAILURE;
 }

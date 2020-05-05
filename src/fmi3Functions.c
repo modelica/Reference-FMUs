@@ -171,16 +171,16 @@ const char* fmi3GetVersion() {
 #define ASSERT_STATE(S) if(!allowedState(instance, MASK_fmi3##S, #S)) return fmi3Error;
 
 static bool allowedState(ModelInstance *instance, int statesExpected, char *name) {
-    
+
     if (!instance) {
         return false;
     }
-        
+
     if (!(instance->state & statesExpected)) {
         logError(instance, "fmi3%s: Illegal call sequence.", name);
         return false;
     }
-    
+
     return true;
 
 }
@@ -200,7 +200,7 @@ fmi3Instance fmi3InstantiateModelExchange(
     fmi3Boolean                loggingOn,
     fmi3InstanceEnvironment    instanceEnvironment,
     fmi3CallbackLogMessage     logMessage) {
-    
+
 #ifndef MODEL_EXCHANGE
     return NULL;
 #else
@@ -242,9 +242,9 @@ fmi3Instance fmi3InstantiateBasicCoSimulation(
         BasicCoSimulation,
         false
     );
-    
+
     instance->state = Instantiated;
-    
+
     return instance;
 }
 
@@ -260,7 +260,7 @@ fmi3Instance fmi3InstantiateHybridCoSimulation(
     fmi3InstanceEnvironment        instanceEnvironment,
     fmi3CallbackLogMessage         logMessage,
     fmi3CallbackIntermediateUpdate intermediateUpdate) {
-    
+
     return NULL;  // not implemented
 }
 
@@ -278,7 +278,7 @@ fmi3Instance fmi3InstantiateScheduledCoSimulation(
     fmi3CallbackIntermediateUpdate intermediateUpdate,
     fmi3CallbackLockPreemption     lockPreemption,
     fmi3CallbackUnlockPreemption   unlockPreemption) {
-    
+
 #ifndef SCHEDULED_CO_SIMULATION
     return NULL;
 #else
@@ -293,7 +293,7 @@ fmi3Instance fmi3InstantiateScheduledCoSimulation(
         ScheduledCoSimulation,
         false
     );
-    
+
     instance->state = Instantiated;
     instance->lockPreemtion = lockPreemption;
     instance->unlockPreemtion = unlockPreemption;
@@ -304,25 +304,25 @@ fmi3Instance fmi3InstantiateScheduledCoSimulation(
 
 
 void fmi3FreeInstance(fmi3Instance instance) {
-    
+
     if (S) {
         freeModelInstance(S);
     }
 }
 
 fmi3Status fmi3EnterInitializationMode(fmi3Instance instance, fmi3Boolean toleranceDefined, fmi3Float64 tolerance, fmi3Float64 startTime, fmi3Boolean stopTimeDefined, fmi3Float64 stopTime) {
-    
+
     ASSERT_STATE(EnterInitializationMode)
-    
+
     S->state = InitializationMode;
-    
+
     return fmi3OK;
 }
 
 fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
 
     ASSERT_STATE(ExitInitializationMode)
-    
+
     // if values were set and no fmi3GetXXX triggered update before,
     // ensure calculated values are updated now
     if (S->isDirtyValues) {
@@ -348,7 +348,7 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
     // initialize event indicators
     getEventIndicators(S, S->prez, NZ);
 #endif
-    
+
     return fmi3OK;
 }
 
@@ -358,21 +358,21 @@ fmi3Status fmi3EnterEventMode(fmi3Instance instance,
                               const fmi3Int32 rootsFound[],
                               size_t nEventIndicators,
                               fmi3Boolean timeEvent) {
-    
+
     ASSERT_STATE(EnterEventMode)
 
     S->state = EventMode;
     S->isNewEventIteration = true;
-    
+
     return fmi3OK;
 }
 
 fmi3Status fmi3Terminate(fmi3Instance instance) {
-    
+
     ASSERT_STATE(Terminate)
-     
+
     S->state = Terminated;
-    
+
     return fmi3OK;
 }
 
@@ -383,7 +383,7 @@ fmi3Status fmi3Reset(fmi3Instance instance) {
     S->state = Instantiated;
     setStartValues(S);
     S->isDirtyValues = true;
-    
+
     return fmi3OK;
 }
 
@@ -430,9 +430,9 @@ fmi3Status fmi3GetInt16(fmi3Instance instance,
 }
 
 fmi3Status fmi3GetUInt16(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, fmi3UInt16 value[], size_t nValues) {
-    
+
     ASSERT_STATE(GetUInt16)
-    
+
     GET_VARIABLES(UInt16)
 }
 
@@ -570,7 +570,7 @@ fmi3Status fmi3SetUInt16(fmi3Instance instance,
 }
 
 fmi3Status fmi3SetInt32(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, const fmi3Int32 value[], size_t nValues) {
-    
+
     ASSERT_STATE(SetInt32)
 
     if (nvr > 0 && nullPointer(S, "fmi3SetInteger", "vr[]", vr))
@@ -679,7 +679,7 @@ fmi3Status fmi3DeSerializeFMUState (fmi3Instance instance, const fmi3Byte serial
 }
 
 fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance, const fmi3ValueReference unknowns[], size_t nUnknowns, const fmi3ValueReference knowns[], size_t nKnowns, const fmi3Float64 deltaKnowns[], size_t nDeltaKnowns, fmi3Float64 deltaUnknowns[], size_t nDeltaOfUnknowns) {
-    
+
     ASSERT_STATE(GetDirectionalDerivative)
 
     // TODO: check value references
@@ -711,11 +711,11 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
     size_t nDeltaOfUnknowns,
     fmi3Float64 deltaKnowns[],
     size_t nDeltaKnowns) {
-    
+
     ASSERT_STATE(GetAdjointDerivative)
 
     // TODO: check value references
-    
+
     Status status = OK;
 
     for (int i = 0; i < nKnowns; i++) {
@@ -743,7 +743,7 @@ fmi3Status fmi3ExitConfigurationMode(fmi3Instance instance) {
 fmi3Status fmi3SetClock(fmi3Instance instance,
                         const fmi3ValueReference valueReferences[], size_t nValueReferences,
                         const fmi3Boolean value[], const fmi3Boolean *subactive) {
-    
+
     ASSERT_STATE(SetClock)
 
     Status status = OK;
@@ -762,7 +762,7 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
 fmi3Status fmi3GetClock(fmi3Instance instance,
                         const fmi3ValueReference valueReferences[], size_t nValueReferences,
                         fmi3Clock value[]) {
-    
+
     ASSERT_STATE(GetClock)
 
     Status status = OK;
@@ -812,7 +812,7 @@ fmi3Status fmi3NewDiscreteStates(fmi3Instance instance,
                                  fmi3Boolean *valuesOfContinuousStatesChanged,
                                  fmi3Boolean *nextEventTimeDefined,
                                  fmi3Float64 *nextEventTime) {
-    
+
     ASSERT_STATE(NewDiscreteStates)
 
     S->newDiscreteStatesNeeded           = false;
@@ -840,7 +840,7 @@ fmi3Status fmi3NewDiscreteStates(fmi3Instance instance,
  ****************************************************/
 
 fmi3Status fmi3EnterContinuousTimeMode(fmi3Instance instance) {
-    
+
     ASSERT_STATE(EnterContinuousTimeMode)
 
     S->state = ContinuousTimeMode;
@@ -850,7 +850,7 @@ fmi3Status fmi3EnterContinuousTimeMode(fmi3Instance instance) {
 
 fmi3Status fmi3CompletedIntegratorStep(fmi3Instance instance, fmi3Boolean noSetFMUStatePriorToCurrentPoint,
                                        fmi3Boolean *enterEventMode, fmi3Boolean *terminateSimulation) {
-    
+
     ASSERT_STATE(CompletedIntegratorStep)
 
     if (nullPointer(S, "fmi3CompletedIntegratorStep", "enterEventMode", enterEventMode))
@@ -867,7 +867,7 @@ fmi3Status fmi3CompletedIntegratorStep(fmi3Instance instance, fmi3Boolean noSetF
 
 /* Providing independent variables and re-initialization of caching */
 fmi3Status fmi3SetTime(fmi3Instance instance, fmi3Float64 time) {
-    
+
     ASSERT_STATE(SetTime)
 
     S->time = time;
@@ -937,7 +937,7 @@ fmi3Status fmi3GetContinuousStates(fmi3Instance instance, fmi3Float64 states[], 
 }
 
 fmi3Status fmi3GetNominalsOfContinuousStates(fmi3Instance instance, fmi3Float64 x_nominal[], size_t nx) {
-    
+
     ASSERT_STATE(GetNominalsOfContinuousStates)
 
     if (invalidNumber(S, "fmi3GetNominalContinuousStates", "nx", nx, NX))
@@ -949,7 +949,7 @@ fmi3Status fmi3GetNominalsOfContinuousStates(fmi3Instance instance, fmi3Float64 
     for (size_t i = 0; i < nx; i++) {
         x_nominal[i] = 1;
     }
-    
+
     return fmi3OK;
 }
 
@@ -966,7 +966,7 @@ fmi3Status fmi3GetNumberOfContinuousStates(fmi3Instance instance, size_t* nx) {
  ****************************************************/
 
 fmi3Status fmi3EnterStepMode(fmi3Instance instance) {
-    
+
     ASSERT_STATE(EnterStepMode)
 
     return fmi3OK;
@@ -1010,14 +1010,14 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
                                       fmi3ValueReference clockReference,
                                       fmi3Float64 activationTime) {
-    
+
     ASSERT_STATE(ActivateModelPartition)
-    
+
     return (fmi3Status)activateModelPartition(S, clockReference, activationTime);
 }
 
 fmi3Status fmi3DoEarlyReturn(fmi3Instance instance, fmi3Float64 earlyReturnTime) {
-    
+
     ASSERT_STATE(DoEarlyReturn)
 
     S->returnEarly = true;

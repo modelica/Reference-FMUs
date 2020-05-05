@@ -6,7 +6,7 @@
 
 void setStartValues(ModelInstance *comp) {
     M(counter) = 1;
-    
+
     // TODO: move this to initialize()?
     comp->nextEventTime        = 1;
     comp->nextEventTimeDefined = true;
@@ -28,14 +28,14 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *inde
 }
 
 void eventUpdate(ModelInstance *comp) {
-    
+
     double epsilon = (1.0 + fabs(comp->time)) * DBL_EPSILON;
-    
+
     if (comp->nextEventTimeDefined && comp->time + epsilon >= comp->nextEventTime) {
         M(counter)++;
         comp->nextEventTime += 1;
     }
-    
+
     comp->valuesOfContinuousStatesChanged   = false;
     comp->nominalsOfContinuousStatesChanged = false;
     comp->terminateSimulation               = false;

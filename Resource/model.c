@@ -64,7 +64,7 @@ void calculateValues(ModelInstance *comp) {
 
     // close the file
     fclose(file);
-    
+
     // clean up
     free(path);
 }

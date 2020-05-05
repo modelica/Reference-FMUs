@@ -21,9 +21,9 @@ int main(int argc, char* argv[]) {
     fmi3Status status = fmi3OK;
     fmi3Boolean discard;
     bool terminateSimulation = false;
-    
+
     const char *guid = "{8c4e810f-3da3-4a00-8276-176fa3c9f000}";
-    
+
     fmi3Instance s1, s2;
 
     printf("Running CoSimulation example... ");
@@ -31,10 +31,10 @@ int main(int argc, char* argv[]) {
 // tag::CoSimulation[]
 ////////////////////////////
 // Initialization sub-phase
-    
+
 // instantiate both slaves
 s1 = s1_fmi3InstantiateBasicCoSimulation("slave1", guid, NULL, fmi3False, fmi3False, fmi3False, fmi3False, fmi3False, NULL, cb_logMessage, NULL);
-                                                  
+
 s2 = s2_fmi3InstantiateBasicCoSimulation("slave2", guid, NULL, fmi3False, fmi3False, fmi3False, fmi3False, fmi3False, NULL, cb_logMessage, NULL);
 
 if (s1 == NULL || s2 == NULL)
@@ -67,7 +67,7 @@ s2_fmi3ExitInitializationMode(s2);
 tc = startTime; // current master time
 
 while ((tc < stopTime) && (status == fmi3OK)) {
-    
+
     // retrieve outputs
     // fmi3GetReal(s1, ..., 1, &y1);
     // fmi3GetReal(s2, ..., 1, &y2);
@@ -91,7 +91,7 @@ while ((tc < stopTime) && (status == fmi3OK)) {
         default:
             break;
     }
-    
+
     if (terminateSimulation)
         break;
 

@@ -24,16 +24,16 @@ static fmi3Status cb_intermediateUpdate(
     fmi3Boolean intermediateVariableGetAllowed,
     fmi3Boolean intermediateStepFinished,
     fmi3Boolean canReturnEarly) {
-    
+
     fmi3Status status = fmi3OK;
-    
+
     if (clocksTicked) {
         fmi3Instance *m = ((fmi3Instance *)instanceEnvironment);
-    
+
         // ModelPartition 3 depends on inClock1
         fmi3Clock outClock1;
         fmi3ValueReference vr[1] = { vr_outClock1 };
-        
+
         status = fmi3GetClock(m, vr, 1, &outClock1);
         if (status > fmi3OK) return status;
         if (outClock1) {
@@ -41,7 +41,7 @@ static fmi3Status cb_intermediateUpdate(
             status = fmi3ActivateModelPartition(m, vr_inClock3, intermediateUpdateTime);
         }
     }
-        
+
     return status;
 }
 
@@ -57,9 +57,9 @@ int main(int argc, char* argv[]) {
 
     printf("Running synchronous Scheduled Co-Simulation example... ");
     printf("\n");
-    
+
     fmi3Status status = fmi3OK;
-    
+
     fmi3Instance m;
 
     m = fmi3InstantiateScheduledCoSimulation("instance1",
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
                                               cb_intermediateUpdate,
                                               cb_lockPreemption,
                                               cb_unlockPreemption);
-    
+
     if (m == NULL) {
         status = fmi3Error;
         goto TERMINATE;
@@ -83,37 +83,37 @@ int main(int argc, char* argv[]) {
 
     CHECK_STATUS(fmi3EnterInitializationMode(m, fmi3False, 0, 0, fmi3False, 0));
     CHECK_STATUS(fmi3ExitInitializationMode(m));
-    
+
     int time = 0;
-    
+
     fmi3ValueReference outClockVRs[2] = { vr_outClock1, vr_outClock2 };
     fmi3Clock outClockValues[2];
 
     // simulation loop
     while (time < 10) {
-        
+
         // Model Partition 1 is active every second
         CHECK_STATUS(fmi3ActivateModelPartition(m, vr_inClock1, time));
-                
+
         // Model Partition 2 is active at 0, 1, 8, and 9
         if (time % 8 == 0 || (time - 1) % 8 == 0) {
             CHECK_STATUS(fmi3ActivateModelPartition(m, vr_inClock2, time));
         }
-        
+
         CHECK_STATUS(fmi3GetClock(m, outClockVRs, 2, outClockValues));
-                
+
         CHECK_STATUS(recordVariables(m, time));
 
         time++;
     }
 
     TERMINATE:
-    
+
     if (m && status != fmi3Error && status != fmi3Fatal) {
-		fmi3Status s = fmi3Terminate(m);
+        fmi3Status s = fmi3Terminate(m);
         status = max(status, s);
     }
-    
+
     if (m && status != fmi3Fatal) {
         // clean up
         fmi3FreeInstance(m);

@@ -40,7 +40,7 @@ inClock1    + + + + + + + + + +   input,  periodic,  triggered by the master eve
 inClock2    + +             + +   input,  aperiodic, triggered by the master at 0,1,8, and 9
 inClock3          +               input,  aperiodic, depends on outClock1
 outClock1         +               output, aperiodic, triggerd by inClock1 at time == 3
-outClock2   ? ? ? ? ? ? ? ? ? ?   output, aperiodic, triggered by all inClocks (íf totalInTicks % 5 == 0)
+outClock2   ? ? ? ? ? ? ? ? ? ?   output, aperiodic, triggered by all inClocks (if totalInTicks % 5 == 0)
 time        0 1 2 3 4 5 6 7 8 9
 
 -->
