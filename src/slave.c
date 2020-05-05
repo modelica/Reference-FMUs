@@ -24,7 +24,7 @@ ModelInstance *createModelInstance(
     intermediateUpdateType intermediateUpdate,
     void *componentEnvironment,
     const char *instanceName,
-    const char *GUID,
+    const char *instantiationToken,
     const char *resourceLocation,
     bool loggingOn,
     InterfaceType interfaceType,
@@ -41,12 +41,12 @@ ModelInstance *createModelInstance(
         return NULL;
     }
 
-    if (!GUID || strlen(GUID) == 0) {
+    if (!instantiationToken || strlen(instantiationToken) == 0) {
         cbLogger(componentEnvironment, instanceName, Error, "error", "Missing GUID.");
         return NULL;
     }
 
-    if (strcmp(GUID, MODEL_GUID)) {
+    if (strcmp(instantiationToken, INSTANTIATION_TOKEN)) {
         cbLogger(componentEnvironment, instanceName, Error, "error", "Wrong GUID.");
         return NULL;
     }

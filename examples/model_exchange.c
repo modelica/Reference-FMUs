@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
     fputs(OUTPUT_FILE_HEADER, outputFile);
     
 // tag::ModelExchange[]
-    m = M_fmi3InstantiateModelExchange("m", MODEL_GUID, NULL, fmi3False, fmi3False, NULL, cb_logMessage);
+    m = M_fmi3InstantiateModelExchange("m", INSTANTIATION_TOKEN, NULL, fmi3False, fmi3False, NULL, cb_logMessage);
 // "m" is the instance name
 // "M_" is the MODEL_IDENTIFIER
     

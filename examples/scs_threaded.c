@@ -134,7 +134,7 @@ int main(int argc, char* argv[]) {
 	// Instantiate slave
 	const fmi3Instance s = fmi3InstantiateScheduledCoSimulation(
 		"scs_threaded",        // instanceName,
-		MODEL_GUID,            // instantiationToken,
+		INSTANTIATION_TOKEN,   // instantiationToken,
 		"unknown",             // resourceLocation,
 		true,                  // visible,
 		true,                  // loggingOn,

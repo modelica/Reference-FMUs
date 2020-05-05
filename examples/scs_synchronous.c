@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
     fmi3Instance m;
 
     m = fmi3InstantiateScheduledCoSimulation("instance1",
-                                              MODEL_GUID,
+                                              INSTANTIATION_TOKEN,
                                               NULL,
                                               fmi3False,
                                               fmi3False,

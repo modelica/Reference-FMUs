@@ -154,7 +154,7 @@ ModelInstance *createModelInstance(
     intermediateUpdateType intermediateUpdate,
     void *componentEnvironment,
     const char *instanceName,
-    const char *GUID,
+    const char *instantiationToken,
     const char *resourceLocation,
     bool loggingOn,
     InterfaceType interfaceType,

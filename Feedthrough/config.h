@@ -7,7 +7,7 @@
 
 // define class name and unique id
 #define MODEL_IDENTIFIER Feedthrough
-#define MODEL_GUID "{8c4e810f-3df3-4a00-8276-176fa3c9f004}"
+#define INSTANTIATION_TOKEN "{8c4e810f-3df3-4a00-8276-176fa3c9f004}"
 
 #define BASIC_CO_SIMULATION
 #define MODEL_EXCHANGE

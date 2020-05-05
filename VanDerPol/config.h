@@ -3,7 +3,7 @@
 
 // define class name and unique id
 #define MODEL_IDENTIFIER VanDerPol
-#define MODEL_GUID "{8c4e810f-3da3-4a00-8276-176fa3c9f000}"
+#define INSTANTIATION_TOKEN "{8c4e810f-3da3-4a00-8276-176fa3c9f000}"
 
 #define BASIC_CO_SIMULATION
 #define MODEL_EXCHANGE
