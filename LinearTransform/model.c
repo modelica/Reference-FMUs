@@ -14,22 +14,22 @@ void setStartValues(ModelInstance *comp) {
     M(u)[0] = 0;
     M(u)[1] = 1;
     M(u)[2] = 2;
-    
+
     M(y)[0] = 0;
     M(y)[1] = 0;
 }
 
 void calculateValues(ModelInstance *comp) {
-    
+
     M(y)[0] = M(A)[0][0] * M(u)[0] + M(A)[0][1] * M(u)[1] + M(A)[0][2] * M(u)[2];
     M(y)[1] = M(A)[1][0] * M(u)[0] + M(A)[1][1] * M(u)[1] + M(A)[1][2] * M(u)[2];
 
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
-    
+
     calculateValues(comp);
-        
+
     switch (vr) {
         case vr_m:
             value[(*index)++] = M(m);

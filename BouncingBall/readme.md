@@ -12,7 +12,7 @@ when v < v_min then h := 0 and v := 0
 
 whith the variables
 
-| Variable | Start | Unit | Causality | Variability | Description    
+| Variable | Start | Unit | Causality | Variability | Description
 |:---------| -----:|:-----|-----------|-------------|:---------------
 | h        |     1 | m    | output    | continuous  | Position of the ball
 | v        |     0 | m/s  | output    | continuous  | Velocity of the ball

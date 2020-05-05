@@ -71,14 +71,14 @@ ModelInstance *createModelInstance(
         } else {
             comp->resourceLocation = NULL;
         }
-        
+
         comp->status = OK;
 
         comp->modelData = (ModelData *)calloc(1, sizeof(ModelData));
 
         comp->logEvents = loggingOn;
         comp->logErrors = true; // always log errors
-        
+
         comp->nSteps = 0;
 
         comp->returnEarly = false;
@@ -435,7 +435,7 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
 #endif
 
     double epsilon = (1.0 + fabs(comp->time)) * DBL_EPSILON;
-    
+
     while (comp->time + FIXED_SOLVER_STEP < tNext + epsilon) {
 
 #if NX > 0
@@ -487,7 +487,7 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
 
 #if FMI_VERSION == 3
             if (comp->intermediateUpdate) {
-                
+
                 comp->state = IntermediateUpdateMode;
 
                 status = comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
@@ -498,13 +498,13 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
                                                   1,                  // intermediateVariableGetAllowed
                                                   0,                  // intermediateStepFinished
                                                   1);                 // canReturnEarly
-                
+
                 if (status > Warning) {
                     logError(comp, "Intermediate update callback returned with fmi3Error.");
                     comp->state = Terminated;
                     return Error;
                 }
-                
+
                 comp->state = StepMode;
 
                 if (comp->returnEarly) {
@@ -524,10 +524,10 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
         }
 
         comp->time = FIXED_SOLVER_STEP * (++comp->nSteps);
-        
+
 #if FMI_VERSION == 3
         if (comp->intermediateUpdate) {
-            
+
             comp->state = IntermediateUpdateMode;
 
             // call intermediate update callback
@@ -539,13 +539,13 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
                                               1,          // intermediateVariableGetAllowed
                                               1,          // intermediateStepFinished
                                               1);         // canReturnEarly
-            
+
             if (status > Warning) {
                 logError(comp, "Intermediate update callback returned with fmi3Error.");
                 comp->state = Terminated;
                 return Error;
             }
-            
+
             comp->state = StepMode;
         }
 #endif

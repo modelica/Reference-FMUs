@@ -15,7 +15,7 @@
 // end::CheckStatus[]
 
 static void cb_logMessage(fmi3InstanceEnvironment instanceEnvironment, fmi3String instanceName, fmi3Status status, fmi3String category, fmi3String message) {
-    
+
     switch (status) {
         case fmi3OK:
             printf("[OK] ");
