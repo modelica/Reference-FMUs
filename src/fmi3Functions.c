@@ -26,7 +26,7 @@
 #ifndef DISABLE_PREFIX
 #define pasteA(a,b)     a ## b
 #define pasteB(a,b)    pasteA(a,b)
-#define fmi3_FUNCTION_PREFIX pasteB(MODEL_IDENTIFIER, _)
+#define FMI3_FUNCTION_PREFIX pasteB(MODEL_IDENTIFIER, _)
 #endif
 #include "fmi3Functions.h"
 
