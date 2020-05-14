@@ -23,10 +23,10 @@
 
 // C-code FMUs have functions names prefixed with MODEL_IDENTIFIER_.
 // Define DISABLE_PREFIX to build a binary FMU.
-#ifndef DISABLE_PREFIX
-#define pasteA(a,b)     a ## b
-#define pasteB(a,b)    pasteA(a,b)
-#define fmi3_FUNCTION_PREFIX pasteB(MODEL_IDENTIFIER, _)
+#if !defined(DISABLE_PREFIX) && !defined(FMI3_FUNCTION_PREFIX)
+#define pasteA(a,b)          a ## b
+#define pasteB(a,b)          pasteA(a,b)
+#define FMI3_FUNCTION_PREFIX pasteB(MODEL_IDENTIFIER, _)
 #endif
 #include "fmi3Functions.h"
 
