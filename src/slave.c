@@ -489,26 +489,26 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
             if (comp->intermediateUpdate) {
 
                 comp->state = IntermediateUpdateMode;
+                
+                int earlyReturnRequested;
+                double earlyReturnTime;
 
-                status = comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
-                                                  comp->time,         // intermediateUpdateTime
-                                                  1,                  // eventOccurred
-                                                  comp->clocksTicked, // clocksTicked
-                                                  0,                  // intermediateVariableSetAllowed
-                                                  1,                  // intermediateVariableGetAllowed
-                                                  0,                  // intermediateStepFinished
-                                                  1);                 // canReturnEarly
-
-                if (status > Warning) {
-                    logError(comp, "Intermediate update callback returned with fmi3Error.");
-                    comp->state = Terminated;
-                    return Error;
-                }
+                comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
+                                          comp->time,         // intermediateUpdateTime
+                                          1,                  // eventOccurred
+                                          comp->clocksTicked, // clocksTicked
+                                          0,                  // intermediateVariableSetAllowed
+                                          1,                  // intermediateVariableGetAllowed
+                                          0,                  // intermediateStepFinished
+                                          1,                  // canReturnEarly
+                                          &earlyReturnRequested,
+                                          &earlyReturnTime);
 
                 comp->state = StepMode;
 
-                if (comp->returnEarly) {
+                if (earlyReturnRequested) {
                     *earlyReturn = 1;
+                    // TODO: continue to earlyReturnTime?
                     return status;
                 }
             }
@@ -529,22 +529,21 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
         if (comp->intermediateUpdate) {
 
             comp->state = IntermediateUpdateMode;
+            
+            int earlyReturnRequested;
+            double earlyReturnTime;
 
             // call intermediate update callback
-            status = comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
-                                              comp->time, // intermediateUpdateTime
-                                              0,          // eventOccurred
-                                              0,          // clocksTicked
-                                              0,          // intermediateVariableSetAllowed
-                                              1,          // intermediateVariableGetAllowed
-                                              1,          // intermediateStepFinished
-                                              1);         // canReturnEarly
-
-            if (status > Warning) {
-                logError(comp, "Intermediate update callback returned with fmi3Error.");
-                comp->state = Terminated;
-                return Error;
-            }
+            comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
+                                      comp->time, // intermediateUpdateTime
+                                      0,          // eventOccurred
+                                      0,          // clocksTicked
+                                      0,          // intermediateVariableSetAllowed
+                                      1,          // intermediateVariableGetAllowed
+                                      1,          // intermediateStepFinished
+                                      1,          // canReturnEarly
+                                      &earlyReturnRequested,
+                                      &earlyReturnTime);
 
             comp->state = StepMode;
         }

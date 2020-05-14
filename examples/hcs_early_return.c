@@ -24,14 +24,20 @@ fmi3Status recordVariables(InstanceEnvironment instanceEnvironment, fmi3Float64 
 // Define callback
 
 // Callback
-fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
-                                 fmi3Float64 intermediateUpdateTime,
-                                 fmi3Boolean eventOccurred,
-                                 fmi3Boolean clocksTicked,
-                                 fmi3Boolean intermediateVariableSetAllowed,
-                                 fmi3Boolean intermediateVariableGetAllowed,
-                                 fmi3Boolean intermediateStepFinished,
-                                 fmi3Boolean canReturnEarly) {
+void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
+                       fmi3Float64 intermediateUpdateTime,
+                       fmi3Boolean eventOccurred,
+                       fmi3Boolean clocksTicked,
+                       fmi3Boolean intermediateVariableSetAllowed,
+                       fmi3Boolean intermediateVariableGetAllowed,
+                       fmi3Boolean intermediateStepFinished,
+                       fmi3Boolean canReturnEarly,
+                       fmi3Boolean *earlyReturnRequested,
+                       fmi3Float64 *earlyReturnTime) {
+
+    if (!instanceEnvironment) {
+        return;
+    }
 
     InstanceEnvironment* env = (InstanceEnvironment*)instanceEnvironment;
 
@@ -39,7 +45,8 @@ fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     env->intermediateUpdateTime = intermediateUpdateTime;
 
     // stop here
-    return fmi3DoEarlyReturn(env->instance, env->intermediateUpdateTime);
+    *earlyReturnRequested = fmi3True;
+    *earlyReturnTime = intermediateUpdateTime;
 }
 
 int main(int argc, char* argv[]) {
@@ -101,9 +108,10 @@ int main(int argc, char* argv[]) {
 
         if (step > 0) {
             // Continuous mode (default mode)
-            fmi3Boolean earlyReturn = fmi3False;
+            fmi3Boolean terminate, earlyReturn;
+            fmi3Float64 lastSuccessfulTime;
 
-            status = fmi3DoStep(s, tc, step, fmi3False, &earlyReturn);
+            status = fmi3DoStep(s, tc, step, fmi3False, &terminate, &earlyReturn, &lastSuccessfulTime);
 
             switch (status) {
                 case fmi3OK:

@@ -17,10 +17,8 @@
 
 int main(int argc, char* argv[]) {
 
-    fmi3Float64 startTime, stopTime, h, tc, lastSuccessfulTime;
+    fmi3Float64 startTime, stopTime, h, tc;
     fmi3Status status = fmi3OK;
-    fmi3Boolean discard;
-    bool terminateSimulation = false;
 
     const char *guid = "{8c4e810f-3da3-4a00-8276-176fa3c9f000}";
 
@@ -77,26 +75,18 @@ while ((tc < stopTime) && (status == fmi3OK)) {
     // fmi3SetReal(s2, ..., 1, &y1);
 
     // call slave s1 and check status
-    status = s1_fmi3DoStep(s1, tc, h, fmi3True, NULL);
-
-    switch (status) {
-        case fmi3Discard:
-            s1_fmi3GetDoStepDiscardedStatus(s1, &discard, &lastSuccessfulTime);
-            if (discard == fmi3True)
-                printf("Slave s1 wants to terminate simulation.");
-        case fmi3Error:
-        case fmi3Fatal:
-            terminateSimulation = true;
-            break;
-        default:
-            break;
+    fmi3Boolean terminate, earlyReturn;
+    fmi3Float64 lastSuccessfulTime;
+        
+    status = s1_fmi3DoStep(s1, tc, h, fmi3True, &terminate, &earlyReturn, &lastSuccessfulTime);
+    
+    if (terminate) {
+        printf("Slave s1 wants to terminate simulation.");
+        break;
     }
 
-    if (terminateSimulation)
-        break;
-
     // call slave s2 and check status as above
-    status = s2_fmi3DoStep(s2, tc, h, fmi3True, NULL);
+    status = s2_fmi3DoStep(s2, tc, h, fmi3True, &terminate, &earlyReturn, &lastSuccessfulTime);
 
     // ...
 

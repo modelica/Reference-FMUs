@@ -35,6 +35,9 @@ static void activateModelPartition1(ModelInstance *comp, double time) {
     M(outClock2) = ((M(outClock2) == false) && (M(totalInClockTicks) % 5 == 0));
 
     comp->unlockPreemtion();
+    
+    int earlyReturnRequested;
+    double earlyReturnTime;
 
     if (M(outClock1) || M(outClock2)) {
         comp->intermediateUpdate(
@@ -45,7 +48,9 @@ static void activateModelPartition1(ModelInstance *comp, double time) {
             0,    // intermediateVariableSetAllowed
             0,    // intermediateVariableGetAllowed
             1,    // intermediateStepFinished
-            0     // canReturnEarly
+            0,     // canReturnEarly
+            &earlyReturnRequested,
+            &earlyReturnTime
         );
     }
 }
@@ -72,6 +77,9 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
     // Due to some conditions, trigger output clock 2
     M(outClock2) = ((M(outClock2) == false) && (M(totalInClockTicks) % 5 == 0));
     comp->unlockPreemtion();
+    
+    int earlyReturnRequested;
+    double earlyReturnTime;
 
     if (M(outClock2)) {
         comp->intermediateUpdate(
@@ -82,7 +90,9 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
             0,     // intermediateVariableSetAllowed
             0,     // intermediateVariableGetAllowed
             1,     // intermediateStepFinished
-            0      // canReturnEarly
+            0,     // canReturnEarly
+            &earlyReturnRequested,
+            &earlyReturnTime
         );
     }
 }
@@ -113,6 +123,10 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
 
     M(outClock2) = ((M(outClock2) == false) && (M(totalInClockTicks) % 5 == 0));
     if (M(outClock2)) {
+        
+        int earlyReturnRequested;
+        double earlyReturnTime;
+        
         comp->intermediateUpdate(
             comp,  // fmu instance
             time,  // intermediateUpdateTime
@@ -121,7 +135,9 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
             0,     // intermediateVariableSetAllowed
             0,     // intermediateVariableGetAllowed
             1,     // intermediateStepFinished
-            0      // canReturnEarly
+            0,     // canReturnEarly
+            &earlyReturnRequested,
+            &earlyReturnTime
         );
     }
 }

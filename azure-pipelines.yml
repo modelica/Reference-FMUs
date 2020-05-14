@@ -1,5 +1,5 @@
 variables:
-  fmpy: https://github.com/CATIA-Systems/FMPy/archive/1e3aea131bb03bbae89df7cd6a569b5ee1374d75.zip
+  fmpy: https://github.com/CATIA-Systems/FMPy/archive/9e7f48a252b745c3e4329344c9e432761742f763.zip
   conda.packages: python=3.7 dask lark-parser lxml numpy pathlib pip pytest requests scipy
 
 jobs:
@@ -97,7 +97,7 @@ jobs:
     vmImage: 'vs2017-win2016'
   dependsOn:
   - lint_files
-  
+
   steps:
 
   - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
