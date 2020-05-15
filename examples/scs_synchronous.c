@@ -34,9 +34,9 @@ static void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
         fmi3ValueReference vr[1] = { vr_outClock1 };
 
         fmi3Status status = fmi3GetClock(m, vr, 1, &outClock1, 1);
-        
+
         if (status > fmi3OK) return;
-        
+
         if (outClock1) {
             // printf("############## Starting task for inClock3\n");
             status = fmi3ActivateModelPartition(m, vr_inClock3, 0, intermediateUpdateTime);

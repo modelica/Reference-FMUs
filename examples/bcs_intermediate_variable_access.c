@@ -35,7 +35,7 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     if (!instanceEnvironment) {
         return;
     }
-    
+
     *earlyReturnRequested = fmi3False;
 
     InstanceEnvironment* env = (InstanceEnvironment*)instanceEnvironment;
@@ -123,12 +123,12 @@ int main(int argc, char* argv[]) {
     fmi3Float64 time = startTime;
 
     while (time < stopTime) {
-        
+
         fmi3Boolean terminate, earlyReturn;
         fmi3Float64 lastSuccessfulTime;
-        
+
         CHECK_STATUS(fmi3DoStep(s, time, h, fmi3False, &terminate, &earlyReturn, &lastSuccessfulTime))
-        
+
         time += h;
     };
 

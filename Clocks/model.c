@@ -35,7 +35,7 @@ static void activateModelPartition1(ModelInstance *comp, double time) {
     M(outClock2) = ((M(outClock2) == false) && (M(totalInClockTicks) % 5 == 0));
 
     comp->unlockPreemtion();
-    
+
     int earlyReturnRequested;
     double earlyReturnTime;
 
@@ -77,7 +77,7 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
     // Due to some conditions, trigger output clock 2
     M(outClock2) = ((M(outClock2) == false) && (M(totalInClockTicks) % 5 == 0));
     comp->unlockPreemtion();
-    
+
     int earlyReturnRequested;
     double earlyReturnTime;
 
@@ -123,10 +123,10 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
 
     M(outClock2) = ((M(outClock2) == false) && (M(totalInClockTicks) % 5 == 0));
     if (M(outClock2)) {
-        
+
         int earlyReturnRequested;
         double earlyReturnTime;
-        
+
         comp->intermediateUpdate(
             comp,  // fmu instance
             time,  // intermediateUpdateTime

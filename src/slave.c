@@ -489,7 +489,7 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
             if (comp->intermediateUpdate) {
 
                 comp->state = IntermediateUpdateMode;
-                
+
                 int earlyReturnRequested;
                 double earlyReturnTime;
 
@@ -529,7 +529,7 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
         if (comp->intermediateUpdate) {
 
             comp->state = IntermediateUpdateMode;
-            
+
             int earlyReturnRequested;
             double earlyReturnTime;
 

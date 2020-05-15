@@ -77,9 +77,9 @@ while ((tc < stopTime) && (status == fmi3OK)) {
     // call slave s1 and check status
     fmi3Boolean terminate, earlyReturn;
     fmi3Float64 lastSuccessfulTime;
-        
+
     status = s1_fmi3DoStep(s1, tc, h, fmi3True, &terminate, &earlyReturn, &lastSuccessfulTime);
-    
+
     if (terminate) {
         printf("Slave s1 wants to terminate simulation.");
         break;
