@@ -1,4 +1,9 @@
+#ifdef _WIN32
+#include <Windows.h>
+#else
 #include <dlfcn.h>
+#endif
+
 #include <stdlib.h>
 
 // FMI function types
@@ -6,15 +11,20 @@
 
 #define INSTANTIATION_TOKEN "{8c4e810f-3da3-4a00-8276-176fa3c9f000}"
 
+#ifdef _WIN32
+#define RESOURCE_LOCATION "file:/C:/tmp/VanDerPol"
+#else
+#define RESOURCE_LOCATION "file:///var/tmp/VanDerPol"
+#endif
 
 static void cb_logMessage(fmi3InstanceEnvironment instanceEnvironment, fmi3String instanceName, fmi3Status status, fmi3String category, fmi3String message) {
-    // log message
+    // log message...
 }
 
 int main(int argc, char* argv[]) {
     
     # ifdef _WIN32
-        HMODULE libraryHandle = LoadLibraryEx(libraryPath.c_str(), NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+        HMODULE libraryHandle = LoadLibrary("..\\temp\\VanDerPol\\binaries\\x86_64-windows\\VanDerPol.dll");
     # else
         void *libraryHandle = dlopen("../temp/VanDerPol/binaries/x86_64-darwin/VanDerPol.dylib", RTLD_LAZY);
     # endif
@@ -24,10 +34,18 @@ int main(int argc, char* argv[]) {
     }
     
     fmi3InstantiateModelExchangeTYPE *instantiateModelExchange =
-        dlsym(libraryHandle, "fmi3InstantiateModelExchange");
-    
+#ifdef _WIN32
+		GetProcAddress(libraryHandle, "fmi3InstantiateModelExchange");
+#else
+		dlsym(libraryHandle, "fmi3InstantiateModelExchange");
+#endif
+
     fmi3FreeInstanceTYPE *freeInstance =
-        dlsym(libraryHandle, "fmi3FreeInstance");
+#ifdef _WIN32
+		GetProcAddress(libraryHandle, "fmi3FreeInstance");
+#else
+		dlsym(libraryHandle, "fmi3FreeInstance");
+#endif
     
     // load remaining FMI functions...
     
@@ -38,7 +56,7 @@ int main(int argc, char* argv[]) {
     fmi3Instance m = instantiateModelExchange(
         "instance1",             // instance name
         INSTANTIATION_TOKEN,     // instantiation token (from XML)
-        "file:///tmp/VanDerPol", // resource location (extracted FMU)
+        RESOURCE_LOCATION,       // resource location (extracted FMU)
         fmi3False,               // visible
         fmi3False,               // debug logging disabled
         NULL,                    // instance environment
@@ -54,7 +72,11 @@ int main(int argc, char* argv[]) {
     freeInstance(m);
 
     // unload shared library
-    dlclose(libraryHandle);
-    
+#ifdef _WIN32
+	FreeLibrary(libraryHandle);
+#else
+	dlclose(libraryHandle);
+#endif
+
     return EXIT_SUCCESS;
 }
