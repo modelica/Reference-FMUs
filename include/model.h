@@ -84,22 +84,24 @@ typedef enum {
 } Status;
 
 #if FMI_VERSION < 3
-typedef void  (*loggerType) (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message, ...);
+typedef void (*loggerType) (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message, ...);
 #else
-typedef void  (*loggerType) (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message);
+typedef void (*loggerType) (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message);
 #endif
 
-typedef void  (*lockPreemptionType)   ();
-typedef void  (*unlockPreemptionType) ();
+typedef void (*lockPreemptionType)   ();
+typedef void (*unlockPreemptionType) ();
 
-typedef Status (*intermediateUpdateType) (void *instanceEnvironment,
-                                          double intermediateUpdateTime,
-                                          int eventOccurred,
-                                          int clocksTicked,
-                                          int intermediateVariableSetAllowed,
-                                          int intermediateVariableGetAllowed,
-                                          int intermediateStepFinished,
-                                          int canReturnEarly);
+typedef void (*intermediateUpdateType) (void *instanceEnvironment,
+                                        double intermediateUpdateTime,
+                                        int eventOccurred,
+                                        int clocksTicked,
+                                        int intermediateVariableSetAllowed,
+                                        int intermediateVariableGetAllowed,
+                                        int intermediateStepFinished,
+                                        int canReturnEarly,
+                                        int *earlyReturnRequested,
+                                        double *earlyReturnTime);
 
 typedef struct {
 

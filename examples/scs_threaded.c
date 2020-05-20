@@ -173,7 +173,7 @@ int main(int argc, char* argv[]) {
     CHECK_STATUS(fmi3ExitInitializationMode(s))
 
     // update clocks
-    CHECK_STATUS(fmi3GetClock(s, vrOutputClocks, N_OUTPUT_CLOCKS, outputClocks));
+    CHECK_STATUS(fmi3GetClock(s, vrOutputClocks, N_OUTPUT_CLOCKS, outputClocks, N_OUTPUT_CLOCKS));
 
     /*
      * Thread related stuff below
@@ -430,7 +430,7 @@ static bool checkOutputClocks(fmi3Instance s) {
     for (cl=0; cl< N_OUTPUT_CLOCKS; cl++)
         outputClocks[cl] = fmi3ClockInactive;
 
-    fmi3GetClock(s, vrOutputClocks, N_OUTPUT_CLOCKS, outputClocks);
+    fmi3GetClock(s, vrOutputClocks, N_OUTPUT_CLOCKS, outputClocks, N_OUTPUT_CLOCKS);
     return outputClocks[IDX_OUT_CLOCK1] || outputClocks[IDX_OUT_CLOCK2];
 }
 
@@ -455,7 +455,7 @@ unsigned __stdcall thr_activateModelPartition(void *args)  {
         case vr_inClock1: {
             logEvent(TA->comp, "activateModelPartition calling fmi3ActivateModelPartition (%d)", TA->clockRef);
             // No variables to set for this partition
-            retval = fmi3ActivateModelPartition(TA->comp, TA->clockRef, TA->activationTime);
+            retval = fmi3ActivateModelPartition(TA->comp, TA->clockRef, 0, TA->activationTime);
             if (retval != fmi3OK)    break;
             retval = fmi3GetInt32(TA->comp, vrOutputs_c1, 2, &outputs_c1[0], 2);
             recordVariables(TA->comp, TA->activationTime, vr_inClock1);
@@ -467,7 +467,7 @@ unsigned __stdcall thr_activateModelPartition(void *args)  {
             // Reset the source for the input again, so it is counted just once
             inputs_c2[0] = 0;
             if (retval != fmi3OK) break;
-            retval = fmi3ActivateModelPartition(TA->comp, TA->clockRef, TA->activationTime);
+            retval = fmi3ActivateModelPartition(TA->comp, TA->clockRef, 0, TA->activationTime);
             if (retval != fmi3OK)    break;
             retval = fmi3GetInt32(TA->comp, vrOutputs_c2, 3, outputs_c2, 3);
             recordVariables(TA->comp, TA->activationTime, vr_inClock2);
@@ -477,7 +477,7 @@ unsigned __stdcall thr_activateModelPartition(void *args)  {
             logEvent(TA->comp, "activateModelPartition calling fmi3ActivateModelPartition (%d)", TA->clockRef);
             // No variables to set for this partition
             if (retval != fmi3OK)    break;
-            retval = fmi3ActivateModelPartition(TA->comp, TA->clockRef, TA->activationTime);
+            retval = fmi3ActivateModelPartition(TA->comp, TA->clockRef, 0, TA->activationTime);
             if (retval != fmi3OK)    break;
             retval = fmi3GetInt32(TA->comp, vrOutputs_c3, 3, outputs_c3, 3);
             // Use the output of model part 3 as input for model part 2

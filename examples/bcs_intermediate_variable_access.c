@@ -21,18 +21,22 @@ fmi3Status recordVariables(InstanceEnvironment *instanceEnvironment, fmi3Float64
     return status;
 }
 
-fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
-                                 fmi3Float64 intermediateUpdateTime,
-                                 fmi3Boolean eventOccurred,
-                                 fmi3Boolean clocksTicked,
-                                 fmi3Boolean intermediateVariableSetAllowed,
-                                 fmi3Boolean intermediateVariableGetAllowed,
-                                 fmi3Boolean intermediateStepFinished,
-                                 fmi3Boolean canReturnEarly) {
+void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
+                           fmi3Float64 intermediateUpdateTime,
+                           fmi3Boolean eventOccurred,
+                           fmi3Boolean clocksTicked,
+                           fmi3Boolean intermediateVariableSetAllowed,
+                           fmi3Boolean intermediateVariableGetAllowed,
+                           fmi3Boolean intermediateStepFinished,
+                           fmi3Boolean canReturnEarly,
+                           fmi3Boolean *earlyReturnRequested,
+                           fmi3Float64 *earlyReturnTime) {
 
     if (!instanceEnvironment) {
-        return fmi3Error;
+        return;
     }
+
+    *earlyReturnRequested = fmi3False;
 
     InstanceEnvironment* env = (InstanceEnvironment*)instanceEnvironment;
 
@@ -42,7 +46,7 @@ fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     fmi3Status status = fmi3OK;
 
     if (eventOccurred) {
-        return fmi3OK; // don't record events
+        return; // don't record events
     }
 
     // if getting intermediate output variables is allowed
@@ -70,7 +74,6 @@ fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     }
 
     // Internal execution in FMU will now continue
-    return status;
 }
 // end::IntermediateUpdateCallback[]
 
@@ -120,8 +123,12 @@ int main(int argc, char* argv[]) {
     fmi3Float64 time = startTime;
 
     while (time < stopTime) {
-        fmi3Boolean earlyReturn;
-        CHECK_STATUS(fmi3DoStep(s, time, h, fmi3False, &earlyReturn))
+
+        fmi3Boolean terminate, earlyReturn;
+        fmi3Float64 lastSuccessfulTime;
+
+        CHECK_STATUS(fmi3DoStep(s, time, h, fmi3False, &terminate, &earlyReturn, &lastSuccessfulTime))
+
         time += h;
     };
 

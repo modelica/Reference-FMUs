@@ -741,15 +741,18 @@ fmi3Status fmi3ExitConfigurationMode(fmi3Instance instance) {
 }
 
 fmi3Status fmi3SetClock(fmi3Instance instance,
-                        const fmi3ValueReference valueReferences[], size_t nValueReferences,
-                        const fmi3Boolean value[], const fmi3Boolean *subactive) {
+                        const fmi3ValueReference valueReferences[],
+                        size_t nValueReferences,
+                        const fmi3Clock values[],
+                        const fmi3Boolean subactive[],
+                        size_t nValues) {
 
     ASSERT_STATE(SetClock)
 
     Status status = OK;
 
     for (size_t i = 0; i < nValueReferences; i++) {
-        if (value[i]) {
+        if (values[i]) {
             Status s = activateClock(instance,  valueReferences[i]);
             status = max(status, s);
             if (status > Warning) return (fmi3Status)status;
@@ -760,15 +763,17 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
 }
 
 fmi3Status fmi3GetClock(fmi3Instance instance,
-                        const fmi3ValueReference valueReferences[], size_t nValueReferences,
-                        fmi3Clock value[]) {
+                        const fmi3ValueReference valueReferences[],
+                        size_t nValueReferences,
+                        fmi3Clock values[],
+                        size_t nValues) {
 
     ASSERT_STATE(GetClock)
 
     Status status = OK;
 
     for (size_t i = 0; i < nValueReferences; i++) {
-        Status s = getClock(instance, valueReferences[i], &value[i]);
+        Status s = getClock(instance, valueReferences[i], &values[i]);
         status = max(status, s);
         if (status > Warning) return (fmi3Status)status;
     }
@@ -777,15 +782,18 @@ fmi3Status fmi3GetClock(fmi3Instance instance,
 }
 
 fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
-                                      const fmi3ValueReference valueReferences[], size_t nValueReferences,
-                                  fmi3Float64 interval[]) {
+                                  const fmi3ValueReference valueReferences[],
+                                  size_t nValueReferences,
+                                  fmi3Float64 interval[],
+                                  size_t nValues) {
     NOT_IMPLEMENTED
 }
 
 fmi3Status fmi3SetIntervalDecimal(fmi3Instance instance,
                                   const fmi3ValueReference valueReferences[],
                                   size_t nValueReferences,
-                                  const fmi3Float64 interval[]) {
+                                  const fmi3Float64 interval[],
+                                  size_t nValues) {
     NOT_IMPLEMENTED
 }
 
@@ -793,7 +801,8 @@ fmi3Status fmi3GetIntervalFraction(fmi3Instance instance,
                                    const fmi3ValueReference valueReferences[],
                                    size_t nValueReferences,
                                    fmi3UInt64 intervalCounter[],
-                                   fmi3UInt64 resolution[]) {
+                                   fmi3UInt64 resolution[],
+                                   size_t nValues) {
     NOT_IMPLEMENTED
 }
 
@@ -801,7 +810,8 @@ fmi3Status fmi3SetIntervalFraction(fmi3Instance instance,
                                    const fmi3ValueReference valueReferences[],
                                    size_t nValueReferences,
                                    const fmi3UInt64 intervalCounter[],
-                                   const fmi3UInt64 resolution[]) {
+                                   const fmi3UInt64 resolution[],
+                                   size_t nValues) {
     NOT_IMPLEMENTED
 }
 
@@ -972,15 +982,6 @@ fmi3Status fmi3EnterStepMode(fmi3Instance instance) {
     return fmi3OK;
 }
 
-fmi3Status fmi3SetInputDerivatives(fmi3Instance instance,
-                                   const fmi3ValueReference valueReferences[],
-                                   size_t nValueReferences,
-                                   const fmi3Int32 orders[],
-                                   const fmi3Float64 values[],
-                                   size_t nValues) {
-    NOT_IMPLEMENTED
-}
-
 fmi3Status fmi3GetOutputDerivatives(fmi3Instance instance,
                                     const fmi3ValueReference valueReferences[],
                                     size_t nValueReferences,
@@ -994,7 +995,9 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
                       fmi3Float64 currentCommunicationPoint,
                       fmi3Float64 communicationStepSize,
                       fmi3Boolean noSetFMUStatePriorToCurrentPoint,
-                      fmi3Boolean* earlyReturn) {
+                      fmi3Boolean* terminate,
+                      fmi3Boolean* earlyReturn,
+                      fmi3Float64* lastSuccessfulTime) {
 
     ASSERT_STATE(DoStep)
 
@@ -1009,25 +1012,10 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
 
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
                                       fmi3ValueReference clockReference,
+                                      size_t clockElementIndex,
                                       fmi3Float64 activationTime) {
 
     ASSERT_STATE(ActivateModelPartition)
 
     return (fmi3Status)activateModelPartition(S, clockReference, activationTime);
-}
-
-fmi3Status fmi3DoEarlyReturn(fmi3Instance instance, fmi3Float64 earlyReturnTime) {
-
-    ASSERT_STATE(DoEarlyReturn)
-
-    S->returnEarly = true;
-
-    return fmi3OK;
-}
-
-fmi3Status fmi3GetDoStepDiscardedStatus(fmi3Instance instance, fmi3Boolean* terminate, fmi3Float64* lastSuccessfulTime) {
-
-    ASSERT_STATE(GetDoStepDiscardedStatus)
-
-    return fmi3Error;
 }
