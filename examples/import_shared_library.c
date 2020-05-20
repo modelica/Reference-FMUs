@@ -1,0 +1,60 @@
+#include <dlfcn.h>
+#include <stdlib.h>
+
+// FMI function types
+#include "fmi3FunctionTypes.h"
+
+#define INSTANTIATION_TOKEN "{8c4e810f-3da3-4a00-8276-176fa3c9f000}"
+
+
+static void cb_logMessage(fmi3InstanceEnvironment instanceEnvironment, fmi3String instanceName, fmi3Status status, fmi3String category, fmi3String message) {
+    // log message
+}
+
+int main(int argc, char* argv[]) {
+    
+    # ifdef _WIN32
+        HMODULE libraryHandle = LoadLibraryEx(libraryPath.c_str(), NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+    # else
+        void *libraryHandle = dlopen("../temp/VanDerPol/binaries/x86_64-darwin/VanDerPol.dylib", RTLD_LAZY);
+    # endif
+    
+    if (!libraryHandle) {
+        return EXIT_FAILURE;
+    }
+    
+    fmi3InstantiateModelExchangeTYPE *instantiateModelExchange =
+        dlsym(libraryHandle, "fmi3InstantiateModelExchange");
+    
+    fmi3FreeInstanceTYPE *freeInstance =
+        dlsym(libraryHandle, "fmi3FreeInstance");
+    
+    // load remaining FMI functions...
+    
+    if (!instantiateModelExchange || !freeInstance) {
+        return EXIT_FAILURE;
+    }
+        
+    fmi3Instance m = instantiateModelExchange(
+        "instance1",             // instance name
+        INSTANTIATION_TOKEN,     // instantiation token (from XML)
+        "file:///tmp/VanDerPol", // resource location (extracted FMU)
+        fmi3False,               // visible
+        fmi3False,               // debug logging disabled
+        NULL,                    // instance environment
+        cb_logMessage);          // logger callback
+
+    
+    if (!m) {
+        return EXIT_FAILURE;
+    }
+    
+    // simulation...
+
+    freeInstance(m);
+
+    // unload shared library
+    dlclose(libraryHandle);
+    
+    return EXIT_SUCCESS;
+}

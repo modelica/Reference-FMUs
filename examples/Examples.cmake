@@ -13,6 +13,16 @@ set(MODEL_SOURCES
   VanDerPol/sources/slave.c
 )
 
+# import_static_library
+add_executable(import_static_library ${EXAMPLE_SOURCES} src/fmi3Functions.c VanDerPol/model.c src/slave.c examples/import_static_library.c)
+set_target_properties (import_static_library PROPERTIES FOLDER examples)
+target_include_directories(import_static_library PRIVATE include VanDerPol)
+
+# import_shared_library
+add_executable(import_shared_library ${EXAMPLE_SOURCES} src/fmi3Functions.c VanDerPol/model.c src/slave.c examples/import_shared_library.c)
+set_target_properties (import_shared_library PROPERTIES FOLDER examples)
+target_include_directories(import_shared_library PRIVATE include VanDerPol)
+
 # bcs_early_return
 add_executable(bcs_early_return
   ${EXAMPLE_SOURCES}
