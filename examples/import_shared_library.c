@@ -22,37 +22,37 @@ static void cb_logMessage(fmi3InstanceEnvironment instanceEnvironment, fmi3Strin
 }
 
 int main(int argc, char* argv[]) {
-    
+
     # ifdef _WIN32
         HMODULE libraryHandle = LoadLibrary("..\\temp\\VanDerPol\\binaries\\x86_64-windows\\VanDerPol.dll");
     # else
         void *libraryHandle = dlopen("../temp/VanDerPol/binaries/x86_64-darwin/VanDerPol.dylib", RTLD_LAZY);
     # endif
-    
+
     if (!libraryHandle) {
         return EXIT_FAILURE;
     }
-    
+
     fmi3InstantiateModelExchangeTYPE *instantiateModelExchange =
 #ifdef _WIN32
-		GetProcAddress(libraryHandle, "fmi3InstantiateModelExchange");
+        GetProcAddress(libraryHandle, "fmi3InstantiateModelExchange");
 #else
-		dlsym(libraryHandle, "fmi3InstantiateModelExchange");
+        dlsym(libraryHandle, "fmi3InstantiateModelExchange");
 #endif
 
     fmi3FreeInstanceTYPE *freeInstance =
 #ifdef _WIN32
-		GetProcAddress(libraryHandle, "fmi3FreeInstance");
+        GetProcAddress(libraryHandle, "fmi3FreeInstance");
 #else
-		dlsym(libraryHandle, "fmi3FreeInstance");
+        dlsym(libraryHandle, "fmi3FreeInstance");
 #endif
-    
+
     // load remaining FMI functions...
-    
+
     if (!instantiateModelExchange || !freeInstance) {
         return EXIT_FAILURE;
     }
-        
+
     fmi3Instance m = instantiateModelExchange(
         "instance1",             // instance name
         INSTANTIATION_TOKEN,     // instantiation token (from XML)
@@ -62,20 +62,20 @@ int main(int argc, char* argv[]) {
         NULL,                    // instance environment
         cb_logMessage);          // logger callback
 
-    
+
     if (!m) {
         return EXIT_FAILURE;
     }
-    
+
     // simulation...
 
     freeInstance(m);
 
     // unload shared library
 #ifdef _WIN32
-	FreeLibrary(libraryHandle);
+    FreeLibrary(libraryHandle);
 #else
-	dlclose(libraryHandle);
+    dlclose(libraryHandle);
 #endif
 
     return EXIT_SUCCESS;

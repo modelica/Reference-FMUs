@@ -11,7 +11,7 @@ static void cb_logMessage(fmi3InstanceEnvironment instanceEnvironment, fmi3Strin
 }
 
 int main(int argc, char* argv[]) {
-        
+
     fmi3Instance m = VanDerPol_fmi3InstantiateModelExchange(
         "instance1",             // instance name
         INSTANTIATION_TOKEN,     // instantiation token (from XML)
@@ -20,9 +20,9 @@ int main(int argc, char* argv[]) {
         fmi3False,               // debug logging disabled
         NULL,                    // instance environment
         cb_logMessage);          // logger callback
-    
+
     // simulation ...
-    
+
     VanDerPol_fmi3FreeInstance(m);
 
     return m ? EXIT_SUCCESS : EXIT_FAILURE;
