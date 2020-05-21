@@ -23,11 +23,13 @@ static void cb_logMessage(fmi3InstanceEnvironment instanceEnvironment, fmi3Strin
 
 int main(int argc, char* argv[]) {
 
-    # ifdef _WIN32
-        HMODULE libraryHandle = LoadLibrary("VanDerPol\\binaries\\x86_64-windows\\VanDerPol.dll");
-    # else
-        void *libraryHandle = dlopen("VanDerPol/binaries/x86_64-darwin/VanDerPol.dylib", RTLD_LAZY);
-    # endif
+#if defined(_WIN32)
+    HMODULE libraryHandle = LoadLibrary("VanDerPol\\binaries\\x86_64-windows\\VanDerPol.dll");
+#elif defined(__APPLE__)
+	void *libraryHandle = dlopen("VanDerPol/binaries/x86_64-darwin/VanDerPol.dylib", RTLD_LAZY);
+#else
+    void *libraryHandle = dlopen("VanDerPol/binaries/x86_64-linux/VanDerPol.so", RTLD_LAZY);
+#endif
 
     if (!libraryHandle) {
         return EXIT_FAILURE;
