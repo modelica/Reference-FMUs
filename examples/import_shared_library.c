@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
 #if defined(_WIN32)
     HMODULE libraryHandle = LoadLibrary("VanDerPol\\binaries\\x86_64-windows\\VanDerPol.dll");
 #elif defined(__APPLE__)
-	void *libraryHandle = dlopen("VanDerPol/binaries/x86_64-darwin/VanDerPol.dylib", RTLD_LAZY);
+    void *libraryHandle = dlopen("VanDerPol/binaries/x86_64-darwin/VanDerPol.dylib", RTLD_LAZY);
 #else
     void *libraryHandle = dlopen("VanDerPol/binaries/x86_64-linux/VanDerPol.so", RTLD_LAZY);
 #endif
