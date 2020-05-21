@@ -17,11 +17,21 @@ set(MODEL_SOURCES
 add_executable(import_static_library ${EXAMPLE_SOURCES} src/fmi3Functions.c VanDerPol/model.c src/slave.c examples/import_static_library.c)
 set_target_properties (import_static_library PROPERTIES FOLDER examples)
 target_include_directories(import_static_library PRIVATE include VanDerPol)
+set_target_properties(import_static_library PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY         temp
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+)
 
 # import_shared_library
 add_executable(import_shared_library ${EXAMPLE_SOURCES} src/fmi3Functions.c VanDerPol/model.c src/slave.c examples/import_shared_library.c)
 set_target_properties (import_shared_library PROPERTIES FOLDER examples)
 target_include_directories(import_shared_library PRIVATE include VanDerPol)
+set_target_properties(import_shared_library PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY         temp
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+)
 
 # bcs_early_return
 add_executable(bcs_early_return
@@ -38,6 +48,11 @@ target_include_directories(bcs_early_return PRIVATE include BouncingBall)
 if(UNIX AND NOT APPLE)
   target_link_libraries(bcs_early_return m)
 endif()
+set_target_properties(bcs_early_return PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY         temp
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+)
 
 # bcs_intermediate_variable_access
 add_executable(bcs_intermediate_variable_access
@@ -54,6 +69,11 @@ target_include_directories(bcs_intermediate_variable_access PRIVATE include Boun
 if(UNIX AND NOT APPLE)
   target_link_libraries(bcs_intermediate_variable_access m)
 endif()
+set_target_properties(bcs_intermediate_variable_access PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY         temp
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+)
 
 # hcs_early_return
 add_executable(hcs_early_return
@@ -70,6 +90,11 @@ target_include_directories(hcs_early_return PRIVATE include BouncingBall)
 if(UNIX AND NOT APPLE)
   target_link_libraries(hcs_early_return m)
 endif()
+set_target_properties(hcs_early_return PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY         temp
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+)
 
 # co_simulation
 add_library(slave1 STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c VanDerPol/model.c src/slave.c)
@@ -86,12 +111,22 @@ add_executable(co_simulation ${EXAMPLE_SOURCES} examples/co_simulation.c)
 set_target_properties(co_simulation PROPERTIES FOLDER examples)
 target_include_directories(co_simulation PRIVATE include)
 target_link_libraries(co_simulation slave1 slave2)
+set_target_properties(co_simulation PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY         temp
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+)
 
 # jacobian
 add_executable(jacobian ${EXAMPLE_SOURCES} src/fmi3Functions.c VanDerPol/model.c src/slave.c examples/jacobian.c)
 set_target_properties (jacobian PROPERTIES FOLDER examples)
 target_include_directories(jacobian PRIVATE include VanDerPol)
 target_compile_definitions(jacobian PRIVATE DISABLE_PREFIX)
+set_target_properties(jacobian PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY         temp
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+)
 
 # model exchange
 add_library(model STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/slave.c)
@@ -104,12 +139,22 @@ set_target_properties(model_exchange PROPERTIES FOLDER examples)
 target_include_directories(model_exchange PRIVATE include BouncingBall)
 target_link_libraries(model_exchange model)
 target_compile_definitions(model_exchange PRIVATE DISABLE_PREFIX)
+set_target_properties(model_exchange PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY         temp
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+)
 
 # Scheduled Co-Simulation
 add_executable(scs_synchronous ${EXAMPLE_SOURCES} src/fmi3Functions.c Clocks/model.c src/slave.c examples/scs_synchronous.c Clocks/FMI3.xml Clocks/config.h)
 set_target_properties(scs_synchronous PROPERTIES FOLDER examples)
 target_include_directories(scs_synchronous PRIVATE include Clocks)
 target_compile_definitions(scs_synchronous PRIVATE DISABLE_PREFIX)
+set_target_properties(scs_synchronous PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY         temp
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+)
 
 if (WIN32)
   add_executable(scs_threaded ${EXAMPLE_SOURCES} src/fmi3Functions.c Clocks/model.c src/slave.c examples/scs_threaded.c Clocks/FMI3.xml Clocks/config.h)
@@ -117,4 +162,9 @@ if (WIN32)
   target_compile_definitions(scs_threaded PRIVATE DISABLE_PREFIX)
   target_include_directories(scs_threaded PRIVATE include Clocks)
   target_compile_definitions(scs_threaded PRIVATE DISABLE_PREFIX)
+  set_target_properties(scs_threaded PROPERTIES
+      RUNTIME_OUTPUT_DIRECTORY         temp
+      RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+      RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+  )
 endif ()

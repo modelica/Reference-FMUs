@@ -24,9 +24,9 @@ static void cb_logMessage(fmi3InstanceEnvironment instanceEnvironment, fmi3Strin
 int main(int argc, char* argv[]) {
 
     # ifdef _WIN32
-        HMODULE libraryHandle = LoadLibrary("..\\temp\\VanDerPol\\binaries\\x86_64-windows\\VanDerPol.dll");
+        HMODULE libraryHandle = LoadLibrary("VanDerPol\\binaries\\x86_64-windows\\VanDerPol.dll");
     # else
-        void *libraryHandle = dlopen("../temp/VanDerPol/binaries/x86_64-darwin/VanDerPol.dylib", RTLD_LAZY);
+        void *libraryHandle = dlopen("VanDerPol/binaries/x86_64-darwin/VanDerPol.dylib", RTLD_LAZY);
     # endif
 
     if (!libraryHandle) {
