@@ -32,6 +32,7 @@ set_target_properties(import_shared_library PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
 )
+target_link_libraries(import_shared_library ${CMAKE_DL_LIBS})
 
 # bcs_early_return
 add_executable(bcs_early_return
