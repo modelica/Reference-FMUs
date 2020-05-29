@@ -213,20 +213,20 @@ while (!terminateSimulation) {
 
 TERMINATE:
 
-    if (m && status != fmi3Error && status != fmi3Fatal) {
-        // retrieve final values and terminate simulation
-        CHECK_STATUS(recordVariables(outputFile, m, time));
-        fmi3Status s = M_fmi3Terminate(m);
-        status = max(status, s);
-    }
+if (m && status != fmi3Error && status != fmi3Fatal) {
+    // retrieve final values and terminate simulation
+    CHECK_STATUS(recordVariables(outputFile, m, time));
+    fmi3Status s = M_fmi3Terminate(m);
+    status = max(status, s);
+}
 
-    if (m && status != fmi3Fatal) {
-        // clean up
-        M_fmi3FreeInstance(m);
-    }
-    // end::ModelExchange[]
+if (m && status != fmi3Fatal) {
+    // clean up
+    M_fmi3FreeInstance(m);
+}
+// end::ModelExchange[]
 
-    printf("done.\n");
+printf("done.\n");
 
-    return status == fmi3OK ? EXIT_SUCCESS : EXIT_FAILURE;
+return status == fmi3OK ? EXIT_SUCCESS : EXIT_FAILURE;
 }
