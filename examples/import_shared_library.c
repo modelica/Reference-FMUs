@@ -1,3 +1,5 @@
+/* This example demonstrates how to import an FMU implemented as a shared library */
+
 #ifdef _WIN32
 #include <Windows.h>
 #else

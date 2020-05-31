@@ -1,3 +1,5 @@
+/* This example demonstrates how to import an FMU implemented as a static library or source code*/
+
 // FMI function prefix (from XML)
 #define FMI3_FUNCTION_PREFIX VanDerPol_
 #include "fmi3Functions.h"
