@@ -13,8 +13,8 @@
   <DefaultExperiment startTime="0" stopTime="10"/>
 
   <ModelVariables>
-    <Float64 name="m" valueReference="0" description="" causality="parameter" variability="constant" start="2"/>
-    <Float64 name="n" valueReference="1" description="" causality="parameter" variability="constant" start="3"/>
+    <Int32 name="m" valueReference="0" description="" causality="parameter" variability="constant" start="2"/>
+    <Int32 name="n" valueReference="1" description="" causality="parameter" variability="constant" start="3"/>
     <Float64 name="u" valueReference="2" description="" causality="input" start="1">
       <Dimension start="3"/>
     </Float64>

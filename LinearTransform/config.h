@@ -14,6 +14,7 @@
 
 #define GET_FLOAT64
 #define SET_FLOAT64
+#define GET_INT32
 #define EVENT_UPDATE
 
 #define FIXED_SOLVER_STEP 1

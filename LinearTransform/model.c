@@ -31,12 +31,6 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
     calculateValues(comp);
 
     switch (vr) {
-        case vr_m:
-            value[(*index)++] = M(m);
-            return OK;
-        case vr_n:
-            value[(*index)++] = M(n);
-            return OK;
         case vr_u:
             value[(*index)++] = M(u)[0];
             value[(*index)++] = M(u)[1];
@@ -66,6 +60,20 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
             M(u)[1] = value[(*index)++];
             M(u)[2] = value[(*index)++];
             calculateValues(comp);
+            return OK;
+        default:
+            return Error;
+    }
+}
+
+Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
+    calculateValues(comp);
+    switch (vr) {
+        case vr_m:
+            value[(*index)++] = M(m);
+            return OK;
+        case vr_n:
+            value[(*index)++] = M(n);
             return OK;
         default:
             return Error;
