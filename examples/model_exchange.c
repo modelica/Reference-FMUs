@@ -25,44 +25,44 @@ fmi3Status recordVariables(FILE *outputFile, fmi3Instance s, fmi3Float64 time) {
 
 int main(int argc, char* argv[]) {
 
-    fmi3Status status = fmi3OK;
-    const fmi3Float64 fixedStep = FIXED_STEP;
-    fmi3Float64 h = fixedStep;
-    fmi3Float64 tNext = h;
-    const fmi3Float64 tEnd = STOP_TIME;
-    fmi3Float64 time = 0;
-    const fmi3Float64 tStart = 0;
-    fmi3Boolean timeEvent, stateEvent, enterEventMode, terminateSimulation = fmi3False, initialEventMode;
-    fmi3Int32 rootsFound[NZ] = { 0 };
-    fmi3Instance m = NULL;
-    fmi3Float64 x[NX] = { 0 };
-    fmi3Float64 x_nominal[NX] = { 0 };
-    fmi3Float64 der_x[NX] = { 0 };
-    fmi3Float64 z[NZ] = { 0 };
-    fmi3Float64 previous_z[NZ] = { 0 };
-    FILE *outputFile = NULL;
+fmi3Status status = fmi3OK;
+const fmi3Float64 fixedStep = FIXED_STEP;
+fmi3Float64 h = fixedStep;
+fmi3Float64 tNext = h;
+const fmi3Float64 tEnd = STOP_TIME;
+fmi3Float64 time = 0;
+const fmi3Float64 tStart = 0;
+fmi3Boolean timeEvent, stateEvent, enterEventMode, terminateSimulation = fmi3False, initialEventMode;
+fmi3Int32 rootsFound[NZ] = { 0 };
+fmi3Instance m = NULL;
+fmi3Float64 x[NX] = { 0 };
+fmi3Float64 x_nominal[NX] = { 0 };
+fmi3Float64 der_x[NX] = { 0 };
+fmi3Float64 z[NZ] = { 0 };
+fmi3Float64 previous_z[NZ] = { 0 };
+FILE *outputFile = NULL;
 
-    printf("Running model_exchange example... ");
+printf("Running model_exchange example... ");
 
-    outputFile = fopen("model_exchange_out.csv", "w");
+outputFile = fopen("model_exchange_out.csv", "w");
 
-    if (!outputFile) {
-        puts("Failed to open output file.");
-        return EXIT_FAILURE;
-    }
+if (!outputFile) {
+    puts("Failed to open output file.");
+    return EXIT_FAILURE;
+}
 
-    // write the header of the CSV
-    fputs(OUTPUT_FILE_HEADER, outputFile);
+// write the header of the CSV
+fputs(OUTPUT_FILE_HEADER, outputFile);
 
 // tag::ModelExchange[]
-    m = M_fmi3InstantiateModelExchange("m", INSTANTIATION_TOKEN, NULL, fmi3False, fmi3False, NULL, cb_logMessage);
+m = M_fmi3InstantiateModelExchange("m", INSTANTIATION_TOKEN, NULL, fmi3False, fmi3False, NULL, cb_logMessage);
 // "m" is the instance name
 // "M_" is the MODEL_IDENTIFIER
 
-    if (m == NULL) {
-        status = fmi3Error;
-        goto TERMINATE;
-    }
+if (m == NULL) {
+    status = fmi3Error;
+    goto TERMINATE;
+}
 
 // set the start time
 time  = tStart;
@@ -213,20 +213,20 @@ while (!terminateSimulation) {
 
 TERMINATE:
 
-    if (m && status != fmi3Error && status != fmi3Fatal) {
-        // retrieve final values and terminate simulation
-        CHECK_STATUS(recordVariables(outputFile, m, time));
-        fmi3Status s = M_fmi3Terminate(m);
-        status = max(status, s);
-    }
+if (m && status != fmi3Error && status != fmi3Fatal) {
+    // retrieve final values and terminate simulation
+    CHECK_STATUS(recordVariables(outputFile, m, time));
+    fmi3Status s = M_fmi3Terminate(m);
+    status = max(status, s);
+}
 
-    if (m && status != fmi3Fatal) {
-        // clean up
-        M_fmi3FreeInstance(m);
-    }
-    // end::ModelExchange[]
+if (m && status != fmi3Fatal) {
+    // clean up
+    M_fmi3FreeInstance(m);
+}
+// end::ModelExchange[]
 
-    printf("done.\n");
+printf("done.\n");
 
-    return status == fmi3OK ? EXIT_SUCCESS : EXIT_FAILURE;
+return status == fmi3OK ? EXIT_SUCCESS : EXIT_FAILURE;
 }
