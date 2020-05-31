@@ -146,6 +146,8 @@ class BuildTest(unittest.TestCase):
 
         # run examples
         examples = [
+            'import_shared_library',
+            'import_static_library',
             'co_simulation',
             'bcs_early_return',
             'bcs_intermediate_variable_access',
@@ -160,11 +162,8 @@ class BuildTest(unittest.TestCase):
 
         for example in examples:
             print("Running %s example..." % example)
-            if is_windows:
-                filename = os.path.join(build_dir, 'Release', example + '.exe')
-            else:
-                filename = os.path.join(build_dir, example)
-            subprocess.check_call(filename)
+            filename = os.path.join(build_dir, 'temp', example)
+            subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
 
         models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
         self.validate(build_dir, models=models)
