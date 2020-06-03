@@ -12,7 +12,7 @@
 #define NX 0
 #define NZ 0
 
-#define GET_FLOAT64
+#define GET_INT32
 
 #define FIXED_SOLVER_STEP 1
 
@@ -21,7 +21,7 @@ typedef enum {
 } ValueReference;
 
 typedef struct {
-    double y;
+    int y;
 } ModelData;
 
 #endif /* config_h */

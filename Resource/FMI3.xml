@@ -13,7 +13,7 @@
   <DefaultExperiment startTime="0" stopTime="1"/>
 
   <ModelVariables>
-    <Float64 name="y" valueReference="0" description="Value of the first character in resources/y.txt" causality="output" variability="continuous" start="0"/>
+    <Int32 name="y" valueReference="0" description="Value of the first character in resources/y.txt" causality="output"/>
   </ModelVariables>
 
   <ModelStructure>
