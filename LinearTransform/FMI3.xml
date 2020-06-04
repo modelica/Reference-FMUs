@@ -34,9 +34,8 @@
   </ModelVariables>
 
   <ModelStructure>
-    <Output valueReference="0"/>
-    <Derivative valueReference="1"/>
-    <InitialUnknown valueReference="1"/>
+    <Output valueReference="4"/>
+    <InitialUnknown valueReference="4"/>
   </ModelStructure>
 
 </fmiModelDescription>
