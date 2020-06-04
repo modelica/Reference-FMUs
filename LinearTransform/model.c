@@ -27,10 +27,11 @@ void calculateValues(ModelInstance *comp) {
 
     // y = A * u
     for (int i = 0; i < M(m); i++) {
-    for (int j = 0; j < M(n); j++) {
-        M(y)[j] = M(A)[i][j] * M(u)[j];
-    }}
-
+        M(y)[i] = 0;
+        for (int j = 0; j < M(n); j++) {
+            M(y)[i] += M(A)[i][j] * M(u)[j];
+        }
+    }
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
