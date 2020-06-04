@@ -88,8 +88,13 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *inde
 }
 
 Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t *index) {
-    calculateValues(comp);
+    
+    if (comp->state != ConfigurationMode && comp->state != ReconfigurationMode) {
+        return Error;
+    }
+    
     int v = value[(*index)++];
+    
     switch (vr) {
         case vr_m:
             if (v < 1 || v > M_MAX) return Error;
