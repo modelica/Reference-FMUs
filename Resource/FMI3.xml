@@ -18,6 +18,7 @@
 
   <ModelStructure>
     <Output valueReference="0"/>
+    <InitialUnknown valueReference="0"/>
   </ModelStructure>
 
 </fmiModelDescription>

@@ -35,6 +35,9 @@
     <Outputs>
       <Unknown index="1"/>
     </Outputs>
+    <InitialUnknowns>
+      <Unknown index="1"/>
+    </InitialUnknowns>
   </ModelStructure>
 
 </fmiModelDescription>
