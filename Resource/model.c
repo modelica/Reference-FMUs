@@ -69,7 +69,7 @@ void calculateValues(ModelInstance *comp) {
     free(path);
 }
 
-Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
+Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
     switch (vr) {
         case vr_y:
             value[(*index)++] = M(y);
