@@ -15,9 +15,13 @@
 #define GET_FLOAT64
 #define SET_FLOAT64
 #define GET_INT32
+#define SET_INT32
 #define EVENT_UPDATE
 
 #define FIXED_SOLVER_STEP 1
+
+#define M_MAX 5
+#define N_MAX 5
 
 typedef enum {
     vr_m, vr_n, vr_u, vr_A, vr_y
@@ -27,9 +31,9 @@ typedef struct {
 
     int m;
     int n;
-    double u[3];
-    double A[2][3];
-    double y[2];
+    double u[N_MAX];
+    double A[M_MAX][N_MAX];
+    double y[M_MAX];
 
 } ModelData;
 

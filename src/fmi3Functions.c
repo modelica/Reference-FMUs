@@ -733,11 +733,36 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
 }
 
 fmi3Status fmi3EnterConfigurationMode(fmi3Instance instance) {
-    NOT_IMPLEMENTED
+    
+    ASSERT_STATE(EnterConfigurationMode)
+    
+    S->state = (S->state == Instantiated) ? ConfigurationMode : ReconfigurationMode;
+    
+    return fmi3OK;
 }
 
 fmi3Status fmi3ExitConfigurationMode(fmi3Instance instance) {
-    NOT_IMPLEMENTED
+    
+    ASSERT_STATE(ExitConfigurationMode)
+    
+    if (S->state == ConfigurationMode) {
+        S->state = Instantiated;
+    } else {
+        switch (S->type) {
+            case ModelExchange:
+            case HybridCoSimulation:
+                S->state = EventMode;
+                break;
+            case BasicCoSimulation:
+                S->state = StepMode;
+                break;
+            case ScheduledCoSimulation:
+                S->state = ClockActivationMode;
+                break;
+        }
+    }
+        
+    return fmi3OK;
 }
 
 fmi3Status fmi3SetClock(fmi3Instance instance,
