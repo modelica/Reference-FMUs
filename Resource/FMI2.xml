@@ -26,7 +26,7 @@
   <DefaultExperiment startTime="0" stopTime="1"/>
 
   <ModelVariables>
-    <ScalarVariable name="y" valueReference="0" description="Value of the first character in resources/y.txt" causality="output">
+    <ScalarVariable name="y" valueReference="0" description="Value of the first character in resources/y.txt" causality="output" variability="discrete">
       <Integer/>
     </ScalarVariable>
   </ModelVariables>
