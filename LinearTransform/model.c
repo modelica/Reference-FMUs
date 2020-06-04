@@ -68,6 +68,12 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
             }
             calculateValues(comp);
             return OK;
+        case vr_A:
+            for (int i = 0; i < M(m); i++) {
+            for (int j = 0; j < M(n); j++) {
+                M(A)[i][j] = value[(*index)++];
+            }}
+            return OK;
         default:
             return Error;
     }
