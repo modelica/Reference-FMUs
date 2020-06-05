@@ -22,7 +22,7 @@
       <Dimension valueReference="1"/>
     </Float64>
 
-    <Float64 name="A" valueReference="3" causality="parameter" variability="tunable">
+    <Float64 name="A" valueReference="3" causality="parameter" variability="tunable" start="1 0 0 1">
       <Dimension valueReference="0"/>
       <Dimension valueReference="1"/>
     </Float64>
