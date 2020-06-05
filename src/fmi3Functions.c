@@ -733,18 +733,18 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
 }
 
 fmi3Status fmi3EnterConfigurationMode(fmi3Instance instance) {
-    
+
     ASSERT_STATE(EnterConfigurationMode)
-    
+
     S->state = (S->state == Instantiated) ? ConfigurationMode : ReconfigurationMode;
-    
+
     return fmi3OK;
 }
 
 fmi3Status fmi3ExitConfigurationMode(fmi3Instance instance) {
-    
+
     ASSERT_STATE(ExitConfigurationMode)
-    
+
     if (S->state == ConfigurationMode) {
         S->state = Instantiated;
     } else {
@@ -761,7 +761,7 @@ fmi3Status fmi3ExitConfigurationMode(fmi3Instance instance) {
                 break;
         }
     }
-        
+
     return fmi3OK;
 }
 
