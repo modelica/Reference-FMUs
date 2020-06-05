@@ -17,11 +17,11 @@
     <Int32 name="m" valueReference="0" description="" causality="structuralParameter" variability="tunable" start="2" min="1" max="5"/>
 
     <Int32 name="n" valueReference="1" description="" causality="structuralParameter" variability="tunable" start="2" min="1" max="5"/>
-        
+
     <Float64 name="u" valueReference="2" description="" causality="input" start="1 2">
       <Dimension valueReference="1"/>
     </Float64>
-  
+
     <Float64 name="A" valueReference="3" causality="parameter" variability="tunable">
       <Dimension valueReference="0"/>
       <Dimension valueReference="1"/>

@@ -12,11 +12,11 @@ void setStartValues(ModelInstance *comp) {
     for (int j = 0; j < N_MAX; j++) {
         M(A)[i][j] = i == j ? 1 : 0;
     }}
-    
+
     for (int i = 0; i < M_MAX; i++) {
         M(u)[i] = i + 1;
     }
-    
+
     for (int i = 0; i < N_MAX; i++) {
         M(y)[i] = 0;
     }
@@ -94,13 +94,13 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *inde
 }
 
 Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t *index) {
-    
+
     if (comp->state != ConfigurationMode && comp->state != ReconfigurationMode) {
         return Error;
     }
-    
+
     int v = value[(*index)++];
-    
+
     switch (vr) {
         case vr_m:
             if (v < 1 || v > M_MAX) return Error;
