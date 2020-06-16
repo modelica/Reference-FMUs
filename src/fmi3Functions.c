@@ -64,7 +64,7 @@
 /* Common Functions */
 
 /* Getting and setting variable values */
-#define MASK_fmi3GetFloat32               (InitializationMode | EventMode | ContinuousTimeMode | StepMode | ClockActivationMode | IntermediateUpdateMode | Terminated)
+#define MASK_fmi3GetFloat32               (InitializationMode | ConfigurationMode | ReconfigurationMode | EventMode | ContinuousTimeMode | StepMode | ClockActivationMode | IntermediateUpdateMode | Terminated)
 #define MASK_fmi3GetFloat64               MASK_fmi3GetFloat32
 #define MASK_fmi3GetInt8                  MASK_fmi3GetFloat32
 #define MASK_fmi3GetUInt8                 MASK_fmi3GetFloat32
@@ -80,7 +80,7 @@
 
 #define MASK_fmi3SetFloat32               (Instantiated | InitializationMode | EventMode | ContinuousTimeMode | StepMode | ClockActivationMode | IntermediateUpdateMode | Terminated)
 #define MASK_fmi3SetFloat64               MASK_fmi3SetFloat32
-#define MASK_fmi3SetInt8                  (Instantiated | InitializationMode | EventMode | StepMode | ClockActivationMode | Terminated)
+#define MASK_fmi3SetInt8                  (Instantiated | ConfigurationMode | ReconfigurationMode | InitializationMode | EventMode | StepMode | ClockActivationMode | Terminated)
 #define MASK_fmi3SetUInt8                 MASK_fmi3SetInt8
 #define MASK_fmi3SetInt16                 MASK_fmi3SetInt8
 #define MASK_fmi3SetUInt16                MASK_fmi3SetInt8
@@ -733,11 +733,36 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
 }
 
 fmi3Status fmi3EnterConfigurationMode(fmi3Instance instance) {
-    NOT_IMPLEMENTED
+
+    ASSERT_STATE(EnterConfigurationMode)
+
+    S->state = (S->state == Instantiated) ? ConfigurationMode : ReconfigurationMode;
+
+    return fmi3OK;
 }
 
 fmi3Status fmi3ExitConfigurationMode(fmi3Instance instance) {
-    NOT_IMPLEMENTED
+
+    ASSERT_STATE(ExitConfigurationMode)
+
+    if (S->state == ConfigurationMode) {
+        S->state = Instantiated;
+    } else {
+        switch (S->type) {
+            case ModelExchange:
+            case HybridCoSimulation:
+                S->state = EventMode;
+                break;
+            case BasicCoSimulation:
+                S->state = StepMode;
+                break;
+            case ScheduledCoSimulation:
+                S->state = ClockActivationMode;
+                break;
+        }
+    }
+
+    return fmi3OK;
 }
 
 fmi3Status fmi3SetClock(fmi3Instance instance,

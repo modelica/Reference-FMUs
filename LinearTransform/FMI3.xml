@@ -13,24 +13,29 @@
   <DefaultExperiment startTime="0" stopTime="10"/>
 
   <ModelVariables>
-    <Int32 name="m" valueReference="0" description="" causality="parameter" variability="constant" start="2"/>
-    <Int32 name="n" valueReference="1" description="" causality="parameter" variability="constant" start="3"/>
-    <Float64 name="u" valueReference="2" description="" causality="input" start="1">
-      <Dimension start="3"/>
+
+    <Int32 name="m" valueReference="0" description="" causality="structuralParameter" variability="tunable" start="2" min="1" max="5"/>
+
+    <Int32 name="n" valueReference="1" description="" causality="structuralParameter" variability="tunable" start="2" min="1" max="5"/>
+
+    <Float64 name="u" valueReference="2" description="" causality="input" start="1 2">
+      <Dimension valueReference="1"/>
     </Float64>
-    <Float64 name="A" valueReference="3" causality="parameter" variability="fixed" initial="calculated">
-      <Dimension start="3"/>
-      <Dimension start="2"/>
+
+    <Float64 name="A" valueReference="3" causality="parameter" variability="tunable" start="1 0 0 1">
+      <Dimension valueReference="0"/>
+      <Dimension valueReference="1"/>
     </Float64>
+
     <Float64 name="y" valueReference="4" causality="output">
-      <Dimension start="2"/>
+      <Dimension valueReference="0"/>
     </Float64>
+
   </ModelVariables>
 
   <ModelStructure>
-    <Output valueReference="0"/>
-    <Derivative valueReference="1"/>
-    <InitialUnknown valueReference="1"/>
+    <Output valueReference="4"/>
+    <InitialUnknown valueReference="4"/>
   </ModelStructure>
 
 </fmiModelDescription>
