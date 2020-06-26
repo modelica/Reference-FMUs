@@ -353,7 +353,6 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
 }
 
 fmi3Status fmi3EnterEventMode(fmi3Instance instance,
-                              fmi3Boolean inputEvent,
                               fmi3Boolean stepEvent,
                               const fmi3Int32 rootsFound[],
                               size_t nEventIndicators,
@@ -910,89 +909,89 @@ fmi3Status fmi3SetTime(fmi3Instance instance, fmi3Float64 time) {
     return fmi3OK;
 }
 
-fmi3Status fmi3SetContinuousStates(fmi3Instance instance, const fmi3Float64 x[], size_t nx){
+fmi3Status fmi3SetContinuousStates(fmi3Instance instance, const fmi3Float64 continuousStates[], size_t nContinuousStates){
 
     ASSERT_STATE(SetContinuousStates)
 
-    if (invalidNumber(S, "fmi3SetContinuousStates", "nx", nx, NX))
+    if (invalidNumber(S, "fmi3SetContinuousStates", "nContinuousStates", nContinuousStates, NX))
         return fmi3Error;
 
-    if (nullPointer(S, "fmi3SetContinuousStates", "x[]", x))
+    if (nullPointer(S, "fmi3SetContinuousStates", "continuousStates", continuousStates))
         return fmi3Error;
 
-    setContinuousStates(S, x, nx);
+    setContinuousStates(S, continuousStates, nContinuousStates);
 
     return fmi3OK;
 }
 
 /* Evaluation of the model equations */
-fmi3Status fmi3GetDerivatives(fmi3Instance instance, fmi3Float64 derivatives[], size_t nx) {
+fmi3Status fmi3GetDerivatives(fmi3Instance instance, fmi3Float64 derivatives[], size_t nContinuousStates) {
 
     ASSERT_STATE(GetDerivatives)
 
-    if (invalidNumber(S, "fmi3GetDerivatives", "nx", nx, NX))
+    if (invalidNumber(S, "fmi3GetDerivatives", "nContinuousStates", nContinuousStates, NX))
         return fmi3Error;
 
-    if (nullPointer(S, "fmi3GetDerivatives", "derivatives[]", derivatives))
+    if (nullPointer(S, "fmi3GetDerivatives", "derivatives", derivatives))
         return fmi3Error;
 
-    getDerivatives(S, derivatives, nx);
+    getDerivatives(S, derivatives, nContinuousStates);
 
     return fmi3OK;
 }
 
-fmi3Status fmi3GetEventIndicators(fmi3Instance instance, fmi3Float64 eventIndicators[], size_t ni) {
+fmi3Status fmi3GetEventIndicators(fmi3Instance instance, fmi3Float64 eventIndicators[], size_t nEventIndicators) {
 
     ASSERT_STATE(GetEventIndicators)
 
 #if NZ > 0
-    if (invalidNumber(S, "fmi3GetEventIndicators", "ni", ni, NZ))
+    if (invalidNumber(S, "fmi3GetEventIndicators", "nEventIndicators", nEventIndicators, NZ))
         return fmi3Error;
 
-    getEventIndicators(S, eventIndicators, ni);
+    getEventIndicators(S, eventIndicators, nEventIndicators);
 #else
-    if (ni > 0) return fmi3Error;
+    if (nEventIndicators > 0) return fmi3Error;
 #endif
     return fmi3OK;
 }
 
-fmi3Status fmi3GetContinuousStates(fmi3Instance instance, fmi3Float64 states[], size_t nx) {
+fmi3Status fmi3GetContinuousStates(fmi3Instance instance, fmi3Float64 continuousStates[], size_t nContinuousStates) {
 
     ASSERT_STATE(GetContinuousStates)
 
-    if (invalidNumber(S, "fmi3GetContinuousStates", "nx", nx, NX))
+    if (invalidNumber(S, "fmi3GetContinuousStates", "nContinuousStates", nContinuousStates, NX))
         return fmi3Error;
 
-    if (nullPointer(S, "fmi3GetContinuousStates", "states[]", states))
+    if (nullPointer(S, "fmi3GetContinuousStates", "continuousStates", continuousStates))
         return fmi3Error;
 
-    getContinuousStates(S, states, nx);
+    getContinuousStates(S, continuousStates, nContinuousStates);
 
     return fmi3OK;
 }
 
-fmi3Status fmi3GetNominalsOfContinuousStates(fmi3Instance instance, fmi3Float64 x_nominal[], size_t nx) {
+fmi3Status fmi3GetNominalsOfContinuousStates(fmi3Instance instance, fmi3Float64 nominals[], size_t nContinuousStates) {
 
     ASSERT_STATE(GetNominalsOfContinuousStates)
 
-    if (invalidNumber(S, "fmi3GetNominalContinuousStates", "nx", nx, NX))
+    if (invalidNumber(S, "fmi3GetNominalContinuousStates", "nContinuousStates", nContinuousStates, NX))
         return fmi3Error;
 
-    if (nullPointer(S, "fmi3GetNominalContinuousStates", "x_nominal[]", x_nominal))
+    if (nullPointer(S, "fmi3GetNominalContinuousStates", "nominals", nominals))
         return fmi3Error;
 
-    for (size_t i = 0; i < nx; i++) {
-        x_nominal[i] = 1;
+    for (size_t i = 0; i < nContinuousStates; i++) {
+        nominals[i] = 1;
     }
 
     return fmi3OK;
 }
 
-fmi3Status fmi3GetNumberOfEventIndicators(fmi3Instance instance, size_t* nz) {
+fmi3Status fmi3GetNumberOfEventIndicators(fmi3Instance instance, size_t* nEventIndicators) {
     NOT_IMPLEMENTED
 }
 
-fmi3Status fmi3GetNumberOfContinuousStates(fmi3Instance instance, size_t* nx) {
+fmi3Status fmi3GetNumberOfContinuousStates(fmi3Instance instance, size_t* nContinuousStates) {
     NOT_IMPLEMENTED
 }
 

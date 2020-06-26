@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <fmiModelDescription
-  fmiVersion="3.0-alpha.3"
+  fmiVersion="3.0-alpha.4"
   modelName="BouncingBall"
   description="This model calculates the trajectory, over time, of a ball dropped from a height of 1 m."
   instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f003}">
@@ -25,9 +25,9 @@
   </UnitDefinitions>
 
   <TypeDefinitions>
-    <Float64 name="Position" quantity="Position" unit="m"/>
-    <Float64 name="Velocity" quantity="Velocity" unit="m/s"/>
-    <Float64 name="Acceleration" quantity="Acceleration" unit="m/s2"/>
+    <Float64Type name="Position" quantity="Position" unit="m"/>
+    <Float64Type name="Velocity" quantity="Velocity" unit="m/s"/>
+    <Float64Type name="Acceleration" quantity="Acceleration" unit="m/s2"/>
   </TypeDefinitions>
 
   <LogCategories>
