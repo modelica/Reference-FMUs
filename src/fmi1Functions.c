@@ -399,16 +399,21 @@ fmiComponent fmiInstantiateModel(fmiString instanceName, fmiString GUID,  fmiCal
 }
 
 fmiStatus fmiInitialize(fmiComponent c, fmiBoolean toleranceControlled, fmiReal relativeTolerance, fmiEventInfo* eventInfo) {
+
     ModelInstance *instance = (ModelInstance *)c;
 
-    eventInfo->iterationConverged          = fmiTrue;
+    fmiStatus status = init(c);
+
+    eventUpdate(instance);
+
+    eventInfo->iterationConverged          = instance->newDiscreteStatesNeeded ? fmiFalse : fmiTrue;
     eventInfo->stateValueReferencesChanged = fmiFalse;
-    eventInfo->stateValuesChanged          = fmiFalse;
-    eventInfo->terminateSimulation         = fmiFalse;
+    eventInfo->stateValuesChanged          = instance->valuesOfContinuousStatesChanged;
+    eventInfo->terminateSimulation         = instance->terminateSimulation;
     eventInfo->upcomingTimeEvent           = instance->nextEventTimeDefined;
     eventInfo->nextEventTime               = instance->nextEventTime;
 
-    return init(c);
+    return status;
 }
 
 fmiStatus fmiSetTime(fmiComponent c, fmiReal time) {
