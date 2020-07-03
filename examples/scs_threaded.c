@@ -133,18 +133,19 @@ int main(int argc, char* argv[]) {
 
     // Instantiate slave
     const fmi3Instance s = fmi3InstantiateScheduledCoSimulation(
-        "scs_threaded",        // instanceName,
-        INSTANTIATION_TOKEN,   // instantiationToken,
-        "unknown",             // resourceLocation,
-        true,                  // visible,
-        true,                  // loggingOn,
-        false,                 // intermediateVariableGetRequired,
-        false,                 // intermediateInternalVariableGetRequired,
-        false,                 // intermediateVariableSetRequired,
-        NULL,                  // instanceEnvironment,
-        cb_logMessage,         // logMessage,
-        cb_intermediateUpdate, // intermediateUpdate,
-        cb_lockPreemption,     // lockPreemption,
+        "scs_threaded",        // instanceName
+        INSTANTIATION_TOKEN,   // instantiationToken
+        "unknown",             // resourceLocation
+        true,                  // visible
+        true,                  // loggingOn
+		NULL,                  // intermediateVariablesGetRequired[]
+		0,                     // nIntermediateVariablesGetRequired
+		NULL,                  // intermediateVariablesSetRequired[]
+		0,                     // nIntermediateVariablesSetRequired
+        NULL,                  // instanceEnvironment
+        cb_logMessage,         // logMessage
+        cb_intermediateUpdate, // intermediateUpdate
+        cb_lockPreemption,     // lockPreemption
         cb_unlockPreemption    // unlockPreemption
         );
 
