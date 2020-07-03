@@ -64,11 +64,9 @@ int main(int argc, char* argv[]) {
     m = fmi3InstantiateScheduledCoSimulation("instance1",
                                               INSTANTIATION_TOKEN,
                                               NULL,
-                                              fmi3False,
-                                              fmi3False,
-                                              fmi3False,
-                                              fmi3False,
-                                              fmi3False,
+                                              fmi3False,         // visible
+                                              fmi3False,         // loggingOn
+                                              NULL, 0, NULL, 0,  // intermediateVariablesGetRequired
                                               &m,
                                               cb_logMessage,
                                               cb_intermediateUpdate,

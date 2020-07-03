@@ -79,7 +79,11 @@ int main(int argc, char* argv[]) {
     // Initialization sub-phase
 
     // Instantiate slave
-    fmi3Instance s = fmi3InstantiateHybridCoSimulation("slave1", INSTANTIATION_TOKEN, NULL, fmi3False, fmi3False, fmi3False, fmi3False, fmi3False, NULL, cb_logMessage, NULL);
+    fmi3Instance s = fmi3InstantiateHybridCoSimulation("slave1", INSTANTIATION_TOKEN, NULL,
+       fmi3False,         // visible
+       fmi3False,         // loggingOn
+       NULL, 0, NULL, 0,  // intermediateVariablesGetRequired
+       NULL, cb_logMessage, NULL);
 
     if (s == NULL) {
         puts("Failed to instantiate FMU.");
