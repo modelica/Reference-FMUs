@@ -74,6 +74,7 @@ class BuildTest(unittest.TestCase):
 
                 result = simulate_fmu(fmu_filename,
                                       fmi_type=fmi_type,
+                                      solver='Euler',
                                       start_values=start_values,
                                       input=input)
 
