@@ -138,10 +138,10 @@ int main(int argc, char* argv[]) {
         "unknown",             // resourceLocation
         true,                  // visible
         true,                  // loggingOn
-		NULL,                  // intermediateVariablesGetRequired[]
-		0,                     // nIntermediateVariablesGetRequired
-		NULL,                  // intermediateVariablesSetRequired[]
-		0,                     // nIntermediateVariablesSetRequired
+        NULL,                  // intermediateVariablesGetRequired[]
+        0,                     // nIntermediateVariablesGetRequired
+        NULL,                  // intermediateVariablesSetRequired[]
+        0,                     // nIntermediateVariablesSetRequired
         NULL,                  // instanceEnvironment
         cb_logMessage,         // logMessage
         cb_intermediateUpdate, // intermediateUpdate
