@@ -249,25 +249,25 @@ fmi3Instance fmi3InstantiateCoSimulation(
 }
 
 fmi3Instance fmi3InstantiateScheduledExecution(
-    fmi3String                     instanceName,
-    fmi3String                     instantiationToken,
-    fmi3String                     resourceLocation,
-    fmi3Boolean                    visible,
-    fmi3Boolean                    loggingOn,
-    const fmi3ValueReference       requiredIntermediateVariables[],
-    size_t                         nRequiredIntermediateVariables,
-    fmi3InstanceEnvironment        instanceEnvironment,
-    fmi3CallbackLogMessage         logMessage,
-    fmi3CallbackIntermediateUpdate intermediateUpdate,
-    fmi3CallbackLockPreemption     lockPreemption,
-    fmi3CallbackUnlockPreemption   unlockPreemption) {
+	fmi3String                     instanceName,
+	fmi3String                     instantiationToken,
+	fmi3String                     resourceLocation,
+	fmi3Boolean                    visible,
+	fmi3Boolean                    loggingOn,
+	const fmi3ValueReference       requiredIntermediateVariables[],
+	size_t                         nRequiredIntermediateVariables,
+	fmi3InstanceEnvironment        instanceEnvironment,
+	fmi3CallbackLogMessage         logMessage,
+	fmi3CallbackIntermediateUpdate intermediateUpdate,
+	fmi3CallbackLockPreemption     lockPreemption,
+	fmi3CallbackUnlockPreemption   unlockPreemption) {
 
 #ifndef SCHEDULED_CO_SIMULATION
     return NULL;
 #else
     ModelInstance *instance = createModelInstance(
         (loggerType)logMessage,
-        (intermediateUpdateType) intermediateUpdate,
+        (intermediateUpdateType)intermediateUpdate,
         instanceEnvironment,
         instanceName,
         instantiationToken,
@@ -277,9 +277,11 @@ fmi3Instance fmi3InstantiateScheduledExecution(
         false
     );
 
-    instance->state = Instantiated;
-    instance->lockPreemtion = lockPreemption;
-    instance->unlockPreemtion = unlockPreemption;
+	if (instance) {
+		instance->state = Instantiated;
+		instance->lockPreemtion = lockPreemption;
+		instance->unlockPreemtion = unlockPreemption;
+	}
 
     return instance;
 #endif
