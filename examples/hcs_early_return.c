@@ -91,7 +91,7 @@ int main(int argc, char* argv[]) {
         NULL,                   // instanceEnvironment
         cb_logMessage,          // logMessage
         NULL);                  // intermediateUpdate
-    
+
     if (s == NULL) {
         puts("Failed to instantiate FMU.");
         return EXIT_FAILURE;

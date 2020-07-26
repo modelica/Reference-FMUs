@@ -42,7 +42,7 @@ s1 = s1_fmi3InstantiateCoSimulation("slave1",      // instanceName
                                     NULL,          // instanceEnvironment
                                     cb_logMessage, // logMessage
                                     NULL);         // intermediateUpdate
-    
+
 s2 = s2_fmi3InstantiateCoSimulation("slave1",      // instanceName
                                     guid,          // instantiationToken
                                     NULL,          // resourceLocation
@@ -54,7 +54,7 @@ s2 = s2_fmi3InstantiateCoSimulation("slave1",      // instanceName
                                     NULL,          // instanceEnvironment
                                     cb_logMessage, // logMessage
                                     NULL);         // intermediateUpdate
-    
+
 if (s1 == NULL || s2 == NULL)
     return EXIT_FAILURE;
 

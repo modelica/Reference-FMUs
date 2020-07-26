@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
                                           cb_intermediateUpdate, // intermediateUpdate
                                           cb_lockPreemption,     // lockPreemption
                                           cb_unlockPreemption);  // unlockPreemption
-    
+
     if (m == NULL) {
         status = fmi3Error;
         goto TERMINATE;
