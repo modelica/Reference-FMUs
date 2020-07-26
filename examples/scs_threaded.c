@@ -132,15 +132,14 @@ int main(int argc, char* argv[]) {
     unsigned int returnval[N_INPUT_CLOCKS]; // return values of all possible threads
 
     // Instantiate slave
-    const fmi3Instance s = fmi3InstantiateScheduledCoSimulation(
+    const fmi3Instance s = fmi3InstantiateScheduledExecution(
         "scs_threaded",        // instanceName,
         INSTANTIATION_TOKEN,   // instantiationToken,
         "unknown",             // resourceLocation,
         true,                  // visible,
         true,                  // loggingOn,
-        false,                 // intermediateVariableGetRequired,
-        false,                 // intermediateInternalVariableGetRequired,
-        false,                 // intermediateVariableSetRequired,
+        NULL,                  // requiredIntermediateVariables,
+        0,                     // nRequiredIntermediateVariables,
         NULL,                  // instanceEnvironment,
         cb_logMessage,         // logMessage,
         cb_intermediateUpdate, // intermediateUpdate,

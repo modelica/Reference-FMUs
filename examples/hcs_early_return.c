@@ -78,8 +78,19 @@ int main(int argc, char* argv[]) {
     //////////////////////////
     // Initialization sub-phase
 
-    // Instantiate slave
-    fmi3Instance s = fmi3InstantiateHybridCoSimulation("slave1", INSTANTIATION_TOKEN, NULL, fmi3False, fmi3False, fmi3False, fmi3False, fmi3False, NULL, cb_logMessage, NULL);
+    // Instantiate the slave
+    fmi3Instance s = fmi3InstantiateCoSimulation(
+        "slave1",               // instanceName
+        INSTANTIATION_TOKEN,    // instantiationToken
+        NULL,                   // resourceLocation
+        fmi3False,              // visible
+        fmi3False,              // loggingOn
+        fmi3False,              // eventModeRequired
+        NULL,                   // requiredIntermediateVariables
+        0,                      // nRequiredIntermediateVariables
+        NULL,                   // instanceEnvironment
+        cb_logMessage,          // logMessage
+        NULL);                  // intermediateUpdate
 
     if (s == NULL) {
         puts("Failed to instantiate FMU.");
@@ -117,7 +128,7 @@ int main(int argc, char* argv[]) {
                 case fmi3OK:
                     if (earlyReturn) {
                         // TODO: pass reasons
-                        CHECK_STATUS(fmi3EnterEventMode(s, fmi3False, fmi3False, NULL, 0, fmi3False));
+                        CHECK_STATUS(fmi3EnterEventMode(s, fmi3False, NULL, 0, fmi3False));
                         step = 0;
                         tc = instanceEnvironment.intermediateUpdateTime;
                     } else {

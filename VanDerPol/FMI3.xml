@@ -3,7 +3,7 @@
 
   <ModelExchange modelIdentifier="VanDerPol"/>
 
-  <BasicCoSimulation modelIdentifier="VanDerPol" canHandleVariableCommunicationStepSize="true"/>
+  <CoSimulation modelIdentifier="VanDerPol" canHandleVariableCommunicationStepSize="true"/>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>
