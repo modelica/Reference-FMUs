@@ -3,7 +3,7 @@
 
   <ModelExchange modelIdentifier="Resource"/>
 
-  <BasicCoSimulation modelIdentifier="Resource" canHandleVariableCommunicationStepSize="true"/>
+  <CoSimulation modelIdentifier="Resource" canHandleVariableCommunicationStepSize="true"/>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>

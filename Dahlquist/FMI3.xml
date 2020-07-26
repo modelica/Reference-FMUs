@@ -3,7 +3,7 @@
 
   <ModelExchange modelIdentifier="Dahlquist"/>
 
-  <BasicCoSimulation modelIdentifier="Dahlquist" canHandleVariableCommunicationStepSize="true"/>
+  <CoSimulation modelIdentifier="Dahlquist" canHandleVariableCommunicationStepSize="true"/>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>

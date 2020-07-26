@@ -7,7 +7,7 @@
 
   <ModelExchange modelIdentifier="BouncingBall"/>
 
-  <BasicCoSimulation modelIdentifier="BouncingBall"
+  <CoSimulation modelIdentifier="BouncingBall"
     canHandleVariableCommunicationStepSize="true"
     providesIntermediateVariableAccess="true"
     canReturnEarlyAfterIntermediateUpdate="true"/>
@@ -25,9 +25,9 @@
   </UnitDefinitions>
 
   <TypeDefinitions>
-    <Float64 name="Position" quantity="Position" unit="m"/>
-    <Float64 name="Velocity" quantity="Velocity" unit="m/s"/>
-    <Float64 name="Acceleration" quantity="Acceleration" unit="m/s2"/>
+    <Float64Type name="Position" quantity="Position" unit="m"/>
+    <Float64Type name="Velocity" quantity="Velocity" unit="m/s"/>
+    <Float64Type name="Acceleration" quantity="Acceleration" unit="m/s2"/>
   </TypeDefinitions>
 
   <LogCategories>

@@ -218,15 +218,15 @@ fmi3Instance fmi3InstantiateModelExchange(
 #endif
 }
 
-fmi3Instance fmi3InstantiateBasicCoSimulation(
+fmi3Instance fmi3InstantiateCoSimulation(
     fmi3String                     instanceName,
     fmi3String                     instantiationToken,
     fmi3String                     resourceLocation,
     fmi3Boolean                    visible,
     fmi3Boolean                    loggingOn,
-    fmi3Boolean                    intermediateVariableGetRequired,
-    fmi3Boolean                    intermediateInternalVariableGetRequired,
-    fmi3Boolean                    intermediateVariableSetRequired,
+    fmi3Boolean                    eventModeRequired,
+    const fmi3ValueReference       requiredIntermediateVariables[],
+    size_t                         nRequiredIntermediateVariables,
     fmi3InstanceEnvironment        instanceEnvironment,
     fmi3CallbackLogMessage         logMessage,
     fmi3CallbackIntermediateUpdate intermediateUpdate) {
@@ -248,31 +248,14 @@ fmi3Instance fmi3InstantiateBasicCoSimulation(
     return instance;
 }
 
-fmi3Instance fmi3InstantiateHybridCoSimulation(
+fmi3Instance fmi3InstantiateScheduledExecution(
     fmi3String                     instanceName,
     fmi3String                     instantiationToken,
     fmi3String                     resourceLocation,
     fmi3Boolean                    visible,
     fmi3Boolean                    loggingOn,
-    fmi3Boolean                    intermediateVariableGetRequired,
-    fmi3Boolean                    intermediateInternalVariableGetRequired,
-    fmi3Boolean                    intermediateVariableSetRequired,
-    fmi3InstanceEnvironment        instanceEnvironment,
-    fmi3CallbackLogMessage         logMessage,
-    fmi3CallbackIntermediateUpdate intermediateUpdate) {
-
-    return NULL;  // not implemented
-}
-
-fmi3Instance fmi3InstantiateScheduledCoSimulation(
-    fmi3String                     instanceName,
-    fmi3String                     instantiationToken,
-    fmi3String                     resourceLocation,
-    fmi3Boolean                    visible,
-    fmi3Boolean                    loggingOn,
-    fmi3Boolean                    intermediateVariableGetRequired,
-    fmi3Boolean                    intermediateInternalVariableGetRequired,
-    fmi3Boolean                    intermediateVariableSetRequired,
+    const fmi3ValueReference       requiredIntermediateVariables[],
+    size_t                         nRequiredIntermediateVariables,
     fmi3InstanceEnvironment        instanceEnvironment,
     fmi3CallbackLogMessage         logMessage,
     fmi3CallbackIntermediateUpdate intermediateUpdate,
@@ -353,11 +336,10 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
 }
 
 fmi3Status fmi3EnterEventMode(fmi3Instance instance,
-                              fmi3Boolean inputEvent,
-                              fmi3Boolean stepEvent,
-                              const fmi3Int32 rootsFound[],
-                              size_t nEventIndicators,
-                              fmi3Boolean timeEvent) {
+    fmi3Boolean stepEvent,
+    const fmi3Int32 rootsFound[],
+    size_t nEventIndicators,
+    fmi3Boolean timeEvent) {
 
     ASSERT_STATE(EnterEventMode)
 

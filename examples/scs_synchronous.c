@@ -61,20 +61,19 @@ int main(int argc, char* argv[]) {
 
     fmi3Instance m;
 
-    m = fmi3InstantiateScheduledCoSimulation("instance1",
-                                              INSTANTIATION_TOKEN,
-                                              NULL,
-                                              fmi3False,
-                                              fmi3False,
-                                              fmi3False,
-                                              fmi3False,
-                                              fmi3False,
-                                              &m,
-                                              cb_logMessage,
-                                              cb_intermediateUpdate,
-                                              cb_lockPreemption,
-                                              cb_unlockPreemption);
-
+    m = fmi3InstantiateScheduledExecution("instance1",           // instanceName
+                                          INSTANTIATION_TOKEN,   // instantiationToken
+                                          NULL,                  // resourceLocation
+                                          fmi3False,             // visible
+                                          fmi3False,             // loggingOn
+                                          NULL,                  // requiredIntermediateVariables
+                                          0,                     // nRequiredIntermediateVariables
+                                          &m,                    // instanceEnvironment
+                                          cb_logMessage,         // logMessage
+                                          cb_intermediateUpdate, // intermediateUpdate
+                                          cb_lockPreemption,     // lockPreemption
+                                          cb_unlockPreemption);  // unlockPreemption
+    
     if (m == NULL) {
         status = fmi3Error;
         goto TERMINATE;

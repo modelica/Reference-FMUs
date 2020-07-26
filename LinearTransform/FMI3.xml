@@ -3,7 +3,7 @@
 
   <ModelExchange modelIdentifier="LinearTransform"/>
 
-  <BasicCoSimulation modelIdentifier="LinearTransform" canHandleVariableCommunicationStepSize="true"/>
+  <CoSimulation modelIdentifier="LinearTransform" canHandleVariableCommunicationStepSize="true"/>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>

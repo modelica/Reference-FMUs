@@ -3,7 +3,7 @@
 
   <ModelExchange modelIdentifier="Feedthrough"/>
 
-  <BasicCoSimulation modelIdentifier="Feedthrough" canHandleVariableCommunicationStepSize="true"/>
+  <CoSimulation modelIdentifier="Feedthrough" canHandleVariableCommunicationStepSize="true"/>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>

@@ -3,7 +3,7 @@
 
   <ModelExchange modelIdentifier="Stair"/>
 
-  <BasicCoSimulation modelIdentifier="Stair" canHandleVariableCommunicationStepSize="true"/>
+  <CoSimulation modelIdentifier="Stair" canHandleVariableCommunicationStepSize="true"/>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>
