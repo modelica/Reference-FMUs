@@ -151,7 +151,7 @@ class BuildTest(unittest.TestCase):
             'import_static_library',
             'co_simulation',
             'bcs_early_return',
-            'bcs_intermediate_variable_access',
+            'bcs_intermediate_update',
             'jacobian',
             'scs_synchronous'
         ]
