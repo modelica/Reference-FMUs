@@ -55,22 +55,22 @@ set_target_properties(bcs_early_return PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
 )
 
-# bcs_intermediate_variable_access
-add_executable(bcs_intermediate_variable_access
+# bcs_intermediate_update
+add_executable(bcs_intermediate_update
   ${EXAMPLE_SOURCES}
   BouncingBall/config.h
   BouncingBall/model.c
   src/fmi3Functions.c
   src/slave.c
-  examples/bcs_intermediate_variable_access.c
+  examples/bcs_intermediate_update.c
 )
-set_target_properties(bcs_intermediate_variable_access PROPERTIES FOLDER examples)
-target_compile_definitions(bcs_intermediate_variable_access PRIVATE DISABLE_PREFIX)
-target_include_directories(bcs_intermediate_variable_access PRIVATE include BouncingBall)
+set_target_properties(bcs_intermediate_update PROPERTIES FOLDER examples)
+target_compile_definitions(bcs_intermediate_update PRIVATE DISABLE_PREFIX)
+target_include_directories(bcs_intermediate_update PRIVATE include BouncingBall)
 if(UNIX AND NOT APPLE)
-  target_link_libraries(bcs_intermediate_variable_access m)
+  target_link_libraries(bcs_intermediate_update m)
 endif()
-set_target_properties(bcs_intermediate_variable_access PROPERTIES
+set_target_properties(bcs_intermediate_update PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
