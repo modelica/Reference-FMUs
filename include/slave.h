@@ -3,6 +3,6 @@
 
 #include "model.h"
 
-Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn);
+Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn, double* lastSuccessfulTime);
 
 #endif /* slave_h */
