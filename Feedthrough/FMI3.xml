@@ -36,6 +36,7 @@
     <Output valueReference="7"/>
     <Output valueReference="9"/>
     <Output valueReference="12"/>
+    <InitialUnknown valueReference="3"/>
   </ModelStructure>
 
 </fmiModelDescription>
