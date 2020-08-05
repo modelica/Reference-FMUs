@@ -68,12 +68,12 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    // write the header of the CSV
+    // Write the header of the CSV
     fputs("\"time\",\"h\",\"v\"\n", instanceEnvironment.outputFile);
 
-    // Instantiate the slave
+    // Instantiate the FMU
     fmi3Instance s = fmi3InstantiateCoSimulation(
-        "slave1",               // instanceName
+        "instance1",            // instanceName
         INSTANTIATION_TOKEN,    // instantiationToken
         NULL,                   // resourceLocation
         fmi3False,              // visible
@@ -97,14 +97,14 @@ int main(int argc, char* argv[]) {
 
     fmi3Status status = fmi3OK;
 
-    // Initialize the slave
+    // Initialize the model
     CHECK_STATUS(fmi3EnterInitializationMode(s, fmi3False, 0.0, startTime, fmi3True, stopTime))
     // Set the input values at time = startTime
     // fmi3Set{VariableType}()
     CHECK_STATUS(fmi3ExitInitializationMode(s))
 
-    fmi3Float64 tc = startTime; // Starting master time
-    fmi3Float64 step = h;       // Starting non-zero step size
+    fmi3Float64 tc = startTime; // current time
+    fmi3Float64 step = h;       // non-zero step size
 
     while (tc < stopTime) {
 

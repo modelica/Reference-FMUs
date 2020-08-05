@@ -30,8 +30,8 @@ int main(int argc, char* argv[]) {
 ////////////////////////////
 // Initialization sub-phase
 
-// instantiate both slaves
-s1 = s1_fmi3InstantiateCoSimulation("slave1",      // instanceName
+// instantiate both FMUs
+s1 = s1_fmi3InstantiateCoSimulation("instance1",      // instanceName
                                     guid,          // instantiationToken
                                     NULL,          // resourceLocation
                                     fmi3False,     // visible
@@ -43,7 +43,7 @@ s1 = s1_fmi3InstantiateCoSimulation("slave1",      // instanceName
                                     cb_logMessage, // logMessage
                                     NULL);         // intermediateUpdate
 
-s2 = s2_fmi3InstantiateCoSimulation("slave1",      // instanceName
+s2 = s2_fmi3InstantiateCoSimulation("instance1",      // instanceName
                                     guid,          // instantiationToken
                                     NULL,          // resourceLocation
                                     fmi3False,     // visible
@@ -69,7 +69,7 @@ h = 0.01;
 // s1_fmi3SetReal/Integer/Boolean/String(s1, ...);
 // s2_fmi3SetReal/Integer/Boolean/String(s2, ...);
 
-// initialize the slaves
+// initialize the FMUs
 s1_fmi3EnterInitializationMode(s1, fmi3False, 0.0, startTime, fmi3True, stopTime);
 s2_fmi3EnterInitializationMode(s2, fmi3False, 0.0, startTime, fmi3True, stopTime);
 
@@ -82,7 +82,7 @@ s2_fmi3ExitInitializationMode(s2);
 
 ////////////////////////
 // Simulation sub-phase
-tc = startTime; // current master time
+tc = startTime; // current time
 
 while ((tc < stopTime) && (status == fmi3OK)) {
 
@@ -94,23 +94,23 @@ while ((tc < stopTime) && (status == fmi3OK)) {
     // fmi3SetReal(s1, ..., 1, &y2);
     // fmi3SetReal(s2, ..., 1, &y1);
 
-    // call slave s1 and check status
+    // call instance s1 and check status
     fmi3Boolean terminate, earlyReturn;
     fmi3Float64 lastSuccessfulTime;
 
     status = s1_fmi3DoStep(s1, tc, h, fmi3True, &terminate, &earlyReturn, &lastSuccessfulTime);
 
     if (terminate) {
-        printf("Slave s1 wants to terminate simulation.");
+        printf("Instance s1 requested to terminate simulation.");
         break;
     }
 
-    // call slave s2 and check status as above
+    // call instance s2 and check status as above
     status = s2_fmi3DoStep(s2, tc, h, fmi3True, &terminate, &earlyReturn, &lastSuccessfulTime);
 
     // ...
 
-    // increment master time
+    // increment current time
     tc += h;
  }
 
