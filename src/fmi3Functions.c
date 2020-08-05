@@ -1016,7 +1016,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
         return fmi3Error;
     }
 
-    return (fmi3Status)doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, earlyReturn);
+    return (fmi3Status)doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, earlyReturn, lastSuccessfulTime);
 }
 
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,

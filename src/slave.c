@@ -418,7 +418,7 @@ Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueRe
 }
 #endif
 
-Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
+Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn, double* lastSuccessfulTime) {
 
     UNUSED(t)  // TODO: check t == comp->time ?
 
@@ -552,6 +552,10 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn) {
 
     if (earlyReturn) {
         *earlyReturn = 0;
+    }
+
+    if (lastSuccessfulTime) {
+        *lastSuccessfulTime = comp->time;
     }
 
     return status;
