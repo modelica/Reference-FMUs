@@ -78,9 +78,9 @@ int main(int argc, char* argv[]) {
     //////////////////////////
     // Initialization sub-phase
 
-    // Instantiate the slave
+    // Instantiate the FMU
     fmi3Instance s = fmi3InstantiateCoSimulation(
-        "slave1",               // instanceName
+        "instance1",               // instanceName
         INSTANTIATION_TOKEN,    // instantiationToken
         NULL,                   // resourceLocation
         fmi3False,              // visible
@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
 
     fmi3Status status = fmi3OK;
 
-    // Initialize slave
+    // Initialize the FMU instance
     CHECK_STATUS(fmi3EnterInitializationMode(s, fmi3False, 0.0, startTime, fmi3True, stopTime))
     // Set the input values at time = startTime
     // fmi3SetReal/Integer/Boolean/String(s, ...);
@@ -112,8 +112,8 @@ int main(int argc, char* argv[]) {
 
     //////////////////////////
     // Simulation sub-phase
-    fmi3Float64 tc = startTime; // Starting master time
-    fmi3Float64 step = h;       // Starting non-zero step size
+    fmi3Float64 tc = startTime; // current time
+    fmi3Float64 step = h;       // non-zero step size
 
     while (tc < stopTime) {
 

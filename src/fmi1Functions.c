@@ -16,7 +16,7 @@
 
 #include "config.h"
 #include "model.h"
-#include "slave.h"
+#include "cosimulation.h"
 
 
 #ifdef FMI_COSIMULATION

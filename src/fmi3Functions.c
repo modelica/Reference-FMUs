@@ -16,7 +16,7 @@
 
 #include "config.h"
 #include "model.h"
-#include "slave.h"
+#include "cosimulation.h"
 
 
 #define FMI_STATUS fmi3Status

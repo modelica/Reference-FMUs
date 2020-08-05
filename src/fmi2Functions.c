@@ -16,7 +16,7 @@
 
 #include "config.h"
 #include "model.h"
-#include "slave.h"
+#include "cosimulation.h"
 
 
 // C-code FMUs have functions names prefixed with MODEL_IDENTIFIER_.

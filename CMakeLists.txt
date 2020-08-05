@@ -66,7 +66,7 @@ if (${FMI_VERSION} LESS 3)
 
 #include \"fmi${FMI_VERSION}Functions.c\"
 #include \"model.c\"
-#include \"slave.c\"
+#include \"cosimulation.c\"
 ")
 endif ()
 
@@ -108,7 +108,7 @@ endif()
 SET(SOURCES
   ${MODEL_NAME}/model.c
   src/fmi${FMI_VERSION}Functions.c
-  src/slave.c
+  src/cosimulation.c
 )
 
 add_library(${TARGET_NAME} SHARED
@@ -191,7 +191,7 @@ add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E 
 )
 
 # common headers
-foreach (SOURCE_FILE model.h slave.h)
+foreach (SOURCE_FILE model.h cosimulation.h)
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/include/${SOURCE_FILE}"
     "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"
@@ -199,7 +199,7 @@ foreach (SOURCE_FILE model.h slave.h)
 endforeach(SOURCE_FILE)
 
 # common sources
-foreach (SOURCE_FILE fmi${FMI_VERSION}Functions.c slave.c)
+foreach (SOURCE_FILE fmi${FMI_VERSION}Functions.c cosimulation.c)
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/src/${SOURCE_FILE}"
     "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"

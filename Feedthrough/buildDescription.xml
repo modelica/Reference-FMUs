@@ -5,7 +5,7 @@
     <SourceFileSet language="C99">
       <SourceFile name="fmi3Functions.c"/>
       <SourceFile name="model.c"/>
-      <SourceFile name="slave.c"/>
+      <SourceFile name="cosimulation.c"/>
       <PreprocessorDefinition name="FMI_VERSION" value="3"/>
     </SourceFileSet>
   </BuildConfiguration>

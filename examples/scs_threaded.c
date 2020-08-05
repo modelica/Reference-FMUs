@@ -131,7 +131,7 @@ int main(int argc, char* argv[]) {
     fmi3Status terminateStatus = fmi3OK;
     unsigned int returnval[N_INPUT_CLOCKS]; // return values of all possible threads
 
-    // Instantiate slave
+    // Instantiate the FMU
     const fmi3Instance s = fmi3InstantiateScheduledExecution(
         "scs_threaded",        // instanceName,
         INSTANTIATION_TOKEN,   // instantiationToken,
@@ -167,7 +167,7 @@ int main(int argc, char* argv[]) {
 
     CHECK_STATUS(initializeOutputFiles());
 
-    // Initialize slave
+    // Initialize the instance
     CHECK_STATUS(fmi3EnterInitializationMode(s, fmi3False, 0.0, time, fmi3True, stopTime))
     CHECK_STATUS(fmi3ExitInitializationMode(s))
 
@@ -373,7 +373,7 @@ fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
 /*
  * cb_lockPreemption()
  * Callback function to grab a lock in order to avoid preemption in a critical section
- * Works on a globally defined variable initialized by the master
+ * Works on a globally defined variable initialized by the importer
 */
 void cb_lockPreemption() {
     GlobalLock(globalLockVar);
@@ -381,7 +381,7 @@ void cb_lockPreemption() {
 /*
  * cb_unlockPreemption()
  * Callback function to release a lock
- * Works on a globally defined variable initialized by the master
+ * Works on a globally defined variable initialized by the importer
 */
 void cb_unlockPreemption() {
     GlobalUnlock(globalLockVar);
@@ -420,7 +420,7 @@ static bool setAndCheckInputClocks(fmi3Instance s, fmi3Float64 time) {
 }
 
 /*
- * This function retrieves the state of the output clocks of all partitions of the slave
+ * This function retrieves the state of the output clocks of all partitions of the FMU
  * outputClocks[] is set accordingly
  * returns true if any of the outputClocks is actually set
  */

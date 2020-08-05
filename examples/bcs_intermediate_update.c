@@ -103,9 +103,9 @@ int main(int argc, char* argv[]) {
     // write the header of the CSV
     fputs("\"time\",\"h\",\"v\"\n", instanceEnvironment.outputFile);
 
-    // Instantiate the slave
+    // Instantiate the FMU
     fmi3Instance s = fmi3InstantiateCoSimulation(
-        "slave1",               // instanceName
+        "instance1",               // instanceName
         INSTANTIATION_TOKEN,    // instantiationToken
         NULL,                   // resourceLocation
         fmi3False,              // visible

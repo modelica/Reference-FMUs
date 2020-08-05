@@ -12,7 +12,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include "config.h"
-#include "slave.h"
+#include "cosimulation.h"
 
 #if FMI_VERSION == 3
 #include "fmi3Functions.h"
