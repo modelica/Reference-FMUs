@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fmiModelDescription fmiVersion="3.0-alpha.5" modelName="Feedthrough" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f004}">
+<fmiModelDescription fmiVersion="3.0-alpha.3" modelName="Feedthrough" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f004}">
 
   <ModelExchange modelIdentifier="Feedthrough"/>
 
@@ -36,6 +36,7 @@
     <Output valueReference="7"/>
     <Output valueReference="9"/>
     <Output valueReference="12"/>
+    <InitialUnknown valueReference="3"/>
   </ModelStructure>
 
 </fmiModelDescription>

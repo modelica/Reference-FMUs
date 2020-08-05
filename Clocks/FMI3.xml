@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fmiModelDescription fmiVersion="3.0-alpha.5" modelName="Clocks" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f000}">
+<fmiModelDescription fmiVersion="3.0-alpha.3" modelName="Clocks" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f000}">
 
   <ScheduledExecution modelIdentifier="Clocks"/>
 
@@ -13,7 +13,7 @@
 <ModelVariables>
   <Clock name="inClock1"          valueReference="1001" causality="input"  variability="clock" clockType="communicationPoint" priority="0" periodic="true" start="0"/>
   <Clock name="inClock2"          valueReference="1002" causality="input"  variability="clock" clockType="communicationPoint" priority="1" start="0"/>
-  <Clock name="inClock3"          valueReference="1003" causality="input"  variability="clock" clockType="communicationPoint" priority="2" clockReference="1004"/>
+  <Clock name="inClock3"          valueReference="1003" causality="input"  variability="clock" clockType="communicationPoint" priority="2" clockReference="1004" start="0" />
   <Clock name="outClock1"         valueReference="1004" causality="output" variability="clock" clockType="communicationPoint" priority="2"/>
   <Clock name="outClock2"         valueReference="1005" causality="output" variability="clock" clockType="communicationPoint" priority="2"/>
   <Int32 name="inClock1Ticks"     valueReference="2001" causality="output" clockReference="1001"/>
@@ -21,23 +21,26 @@
   <Int32 name="inClock3Ticks"     valueReference="2003" causality="output" clockReference="1003"/>
   <Int32 name="totalInClockTicks" valueReference="2004" causality="output" clockReference="1001"/>
   <Int32 name="result2"           valueReference="2005" causality="output" clockReference="1002"/>
-  <Int32 name="input2"            valueReference="2006" causality="input"  clockReference="1002"/>
+  <Int32 name="input2"            valueReference="2006" causality="input"  clockReference="1002" start="0" />
   <Int32 name="output3"           valueReference="2007" causality="output" clockReference="1003"/>
 </ModelVariables>
 
 <ModelStructure>
+  <Output valueReference="1004"/>
+  <Output valueReference="1005"/>
   <Output valueReference="2001"/>
   <Output valueReference="2002"/>
   <Output valueReference="2003"/>
   <Output valueReference="2004"/>
   <Output valueReference="2005"/>
   <Output valueReference="2007"/>
+  <InitialUnknown valueReference="1004"/>
 </ModelStructure>
 
   <!--
 time        0 1 2 3 4 5 6 7 8 9
-inClock1    + + + + + + + + + +   input,  periodic,  triggered by the importer every second
-inClock2    + +             + +   input,  aperiodic, triggered by the importer at 0,1,8, and 9
+inClock1    + + + + + + + + + +   input,  periodic,  triggered by the master every second
+inClock2    + +             + +   input,  aperiodic, triggered by the master at 0,1,8, and 9
 inClock3          +               input,  aperiodic, depends on outClock1
 outClock1         +               output, aperiodic, triggerd by inClock1 at time == 3
 outClock2   ? ? ? ? ? ? ? ? ? ?   output, aperiodic, triggered by all inClocks (if totalInTicks % 5 == 0)
