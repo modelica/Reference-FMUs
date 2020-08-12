@@ -24,9 +24,11 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
         case vr_h:
             value[(*index)++] = M(h);
             return OK;
+        case vr_der_h:
         case vr_v:
             value[(*index)++] = M(v);
             return OK;
+        case vr_der_v:
         case vr_g:
             value[(*index)++] = M(g);
             return OK;
