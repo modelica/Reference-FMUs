@@ -1,5 +1,38 @@
+#include <stdio.h>
+#include <math.h>
+#include <assert.h>
+#include "fmi3Functions.h"
+#include "config.h"
+#include "util.h"
 
+typedef struct {
+    double* x;
+    double* xd;
+    double  Tf;
+    int nStates;
+    fmi3InstanceEnvironment env;
+    fmi3CallbackIntermediateUpdate intermediateUpdate;
+} ModelInstance;
 
+#define GetStateVector(comp) (comp->x)
+#define GetStateDervativeVector(comp)  (comp->xd)
+#define GetNumberOfStates(comp)  (comp->nStates)
+#define GetFinalTime(comp)  (comp->Tf)
+#define GetInstanceEnvironment(comp)  (comp->env)
+
+/* dummy fucntions*/
+double *EvaluateDerivatives(ModelInstance *comp, double t1, double *x){return x;}
+fmi3Boolean CheckEventIndicators(ModelInstance *comp, double t2, double *x) { return fmi3False; }
+fmi3Boolean  if_STOP_button_is_pressed(fmi3InstanceEnvironment env) { return fmi3False;}
+fmi3Boolean  if_an_unpredictable_event_has_happened(fmi3InstanceEnvironment env){return fmi3False;}
+fmi3Status  Update_FMU_Variables(ModelInstance* comp) { return fmi3OK; }
+fmi3Status  HandleStateEvent(ModelInstance* comp, fmi3Float64 t) { return fmi3OK; }
+fmi3Boolean DoesThisFMUAllowEarlyReturn(ModelInstance* comp) { return fmi3OK; }
+fmi3Boolean isValid(int nx, double *x){ return fmi3True; }
+/* end of dummy fucntions*/
+
+#ifndef fmi3DoStep
+// tag::DoStepWithEarlyReturn[]
 /* This is a sime implementation of fmi3DoStep inside the FMU supporting earlyReturn*/
 fmi3Status fmi3DoStep(fmi3Instance instance,
     fmi3Float64 currentCommunicationPoint,
@@ -40,15 +73,15 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
         }
 
         xd = EvaluateDerivatives(comp, t1, x);
-        if (!isValid(xd)) { //if xd contains INF or NAN, doStep should return with fmi3Discard
+        if (!isValid(nStates, xd)) { //if xd contains INF or NAN, doStep should return with fmi3Discard
             *earlyReturn = fmi3False; // *earlyReturn will be ignored by the cosim algorithm
             *lastSuccessfulTime = t1;
             *terminate = fmi3False;
             return fmi3Discard;
         }
 
-        for (n = 0; n < nStates:n++) {
-            x[n] += dx[n] * h; // Explicit Euler method
+        for (n = 0; n < nStates;n++) {
+            x[n] += xd[n] * h; // Explicit Euler method
         }
         Update_FMU_Variables(comp);//e.g., update outputs
 
@@ -61,7 +94,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
         // Upon the internal implementation of the FMU, FMU can allow or disallow early-return
         AllowEarlyReturn = DoesThisFMUAllowEarlyReturn(comp);
 
-        Callback_intermediateUpdate(
+        comp->intermediateUpdate(
             env,                   // instanceEnvironment
             t2,                    // intermediateUpdateTime
             StateEventHappened,    // eventOccurred
@@ -106,13 +139,11 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
     return fmi3OK;
 }
 
+// end::DoStepWithEarlyReturn[]
+
+#endif
+
 ////////// Cosimulation algorithm ///////////////////////////////////////////////
-#include <stdio.h>
-#include <math.h>
-#include <assert.h>
-#include "fmi3Functions.h"
-#include "config.h"
-#include "util.h"
 
 typedef struct {
     fmi3Instance instance;
@@ -135,8 +166,8 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     if (!intermediateStepFinished) {return;}
 
     InstanceEnvironment* env = (InstanceEnvironment*)instanceEnvironment;
-    fmi3Boolean  userStopRequest = if_STOP_button_is_pressed(...); //Check asynchronously e.g. through a thread. 
-    fmi3Boolean  EventHappened = if_an_unpredictable_event_has_happened(...);//e.g. an event in another FMU
+    fmi3Boolean  userStopRequest = if_STOP_button_is_pressed(env); //Check asynchronously e.g. through a thread. 
+    fmi3Boolean  EventHappened = if_an_unpredictable_event_has_happened(env);//e.g. an event in another FMU
 
     // remember the intermediateUpdateTime
     env->intermediateUpdateTime = intermediateUpdateTime;
@@ -154,6 +185,12 @@ int main(int argc, char* argv[]) {
     const fmi3Float64 startTime = 0;
     const fmi3Float64 stopTime = 3;
     const fmi3Float64 h = 0.01;
+    fmi3Boolean newDiscreteStatesNeeded = fmi3False;
+    fmi3Boolean terminateSimulation = fmi3False;
+    fmi3Boolean nominalsOfContinuousStatesChanged = fmi3False;
+    fmi3Boolean valuesOfContinuousStatesChanged = fmi3False;
+    fmi3Boolean nextEventTimeDefined = fmi3False;
+    fmi3Float64 nextEventTime=0.0;
 
     InstanceEnvironment instanceEnvironment = {
         .instance = NULL,
@@ -197,7 +234,7 @@ int main(int argc, char* argv[]) {
 
     while (tc < stopTime) {
 
-        fmi3Set{VariableType}() //setInputs
+        //fmi3Set{VariableType}() //setInputs
         CHECK_STATUS(fmi3DoStep(s, tc, step, fmi3False, &terminate, &earlyReturn, &lastSuccessfulTime));
         if (terminate) break;
 
@@ -218,7 +255,7 @@ int main(int argc, char* argv[]) {
                     &valuesOfContinuousStatesChanged,   // * valuesOfContinuousStatesChanged,
                     &nextEventTimeDefined,              // * nextEventTimeDefined,
                     &nextEventTime);                    // * nextEventTime
-                fmi3Get{ VariableType }() //get outputs
+                //fmi3Get{ VariableType }() //get outputs
                 if (terminateSimulation) break;
             }
             if (terminateSimulation) break;
@@ -229,7 +266,7 @@ int main(int argc, char* argv[]) {
             tc += step;
             step = h;
         }
-        fmi3Get{ VariableType }() //get outputs
+        //fmi3Get{ VariableType }() //get outputs
     };
 
     fmi3Status terminateStatus;
