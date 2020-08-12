@@ -50,19 +50,25 @@
   <DefaultExperiment startTime="0" stopTime="3" stepSize="1e-3"/>
 
   <ModelVariables>
-    <ScalarVariable name="h" valueReference="0" causality="output" variability="continuous" initial="exact" description="Position of the ball">
+    <ScalarVariable name="h" valueReference="1" causality="output" variability="continuous" initial="exact" description="Position of the ball">
       <Real start="1" declaredType="Position"/>
     </ScalarVariable>
-    <ScalarVariable name="v" valueReference="1" causality="output" variability="continuous" initial="exact" description="Velocity of the ball">
-      <Real start="0" derivative="1" reinit="true" declaredType="Velocity"/>
+    <ScalarVariable name="der(h)" valueReference="2" causality="local" variability="continuous" initial="calculated" description="Derivative of h">
+      <Real derivative="1" declaredType="Velocity"/>
     </ScalarVariable>
-    <ScalarVariable name="g" valueReference="2" causality="parameter" variability="fixed" initial="exact" description="Gravity acting on the ball">
+    <ScalarVariable name="v" valueReference="3" causality="output" variability="continuous" initial="exact" description="Velocity of the ball">
+      <Real start="0" reinit="true" declaredType="Velocity"/>
+    </ScalarVariable>
+    <ScalarVariable name="der(v)" valueReference="4" causality="local" variability="continuous" initial="calculated" description="Derivative of v">
+      <Real derivative="3" declaredType="Acceleration"/>
+    </ScalarVariable>
+    <ScalarVariable name="g" valueReference="5" causality="parameter" variability="fixed" initial="exact" description="Gravity acting on the ball">
       <Real start="-9.81" derivative="2" declaredType="Acceleration"/>
     </ScalarVariable>
-    <ScalarVariable name="e" valueReference="3" causality="parameter" variability="tunable" initial="exact" description="Coefficient of restitution">
+    <ScalarVariable name="e" valueReference="6" causality="parameter" variability="tunable" initial="exact" description="Coefficient of restitution">
       <Real start="0.7" min="0.5" max="1"/>
     </ScalarVariable>
-    <ScalarVariable name="v_min" valueReference="4" variability="constant" description="Velocity below which the ball stops bouncing">
+    <ScalarVariable name="v_min" valueReference="7" variability="constant" description="Velocity below which the ball stops bouncing">
       <Real start="0.1" declaredType="Velocity"/>
     </ScalarVariable>
   </ModelVariables>
@@ -70,15 +76,15 @@
   <ModelStructure>
     <Outputs>
       <Unknown index="1"/>
-      <Unknown index="2"/>
+      <Unknown index="3"/>
     </Outputs>
     <Derivatives>
       <Unknown index="2"/>
-      <Unknown index="3"/>
+      <Unknown index="4"/>
     </Derivatives>
     <InitialUnknowns>
-      <Unknown index="2"/>
-      <Unknown index="3"/>
+      <Unknown index="2" dependencies="3" dependenciesKind="constant"/>
+      <Unknown index="4" dependencies="5" dependenciesKind="constant"/>
     </InitialUnknowns>
   </ModelStructure>
 

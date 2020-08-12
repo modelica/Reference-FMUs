@@ -46,14 +46,14 @@ th, td {
 
 <p>The BouncingBall implements the following equation:</p>
 
-<pre><code>der(h) =  v
-der(v) = -g
+<pre><code>der(h) = v
+der(v) = g
 
 when h &lt;= 0    then h := 0 and v := -e * v
 when v &lt; v_min then h := 0 and v := 0
 </code></pre>
 
-<p>whith the variables</p>
+<p>with the variables</p>
 
 <table>
 <thead>
@@ -76,6 +76,14 @@ when v &lt; v_min then h := 0 and v := 0
   <td align="left">Position of the ball</td>
 </tr>
 <tr>
+  <td align="left">der(h)</td>
+  <td align="right"></td>
+  <td align="left">m/s</td>
+  <td>local</td>
+  <td>continuous</td>
+  <td align="left">Derivative of h</td>
+</tr>
+<tr>
   <td align="left">v</td>
   <td align="right">0</td>
   <td align="left">m/s</td>
@@ -84,8 +92,16 @@ when v &lt; v_min then h := 0 and v := 0
   <td align="left">Velocity of the ball</td>
 </tr>
 <tr>
+  <td align="left">der(v)</td>
+  <td align="right"></td>
+  <td align="left">m/s2</td>
+  <td>local</td>
+  <td>continuous</td>
+  <td align="left">Derivative of v</td>
+</tr>
+<tr>
   <td align="left">g</td>
-  <td align="right">9.81</td>
+  <td align="right">-9.81</td>
   <td align="left">m/s2</td>
   <td>parameter</td>
   <td>fixed</td>

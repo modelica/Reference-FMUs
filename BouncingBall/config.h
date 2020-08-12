@@ -19,7 +19,7 @@
 #define FIXED_SOLVER_STEP 1e-3
 
 typedef enum {
-    vr_h, vr_v, vr_g, vr_e, vr_v_min
+    vr_h = 1, vr_der_h, vr_v, vr_der_v, vr_g, vr_e, vr_v_min
 } ValueReference;
 
 typedef struct {
