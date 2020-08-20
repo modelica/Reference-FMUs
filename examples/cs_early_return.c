@@ -86,7 +86,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
         Update_FMU_Variables(comp);//e.g., update outputs
 
         // checks if an event-indicator has chnaged the sign wrt the previous values at time=t1
-        StateEventHappened = CheckEventIndicators(comp, t2, x); 
+        StateEventHappened = CheckEventIndicators(comp, t2, x);
 
         earlyReturnRequested = fmi3False;
         earlyReturnTime = t2;
@@ -166,7 +166,7 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     if (!intermediateStepFinished) {return;}
 
     InstanceEnvironment* env = (InstanceEnvironment*)instanceEnvironment;
-    fmi3Boolean  userStopRequest = if_STOP_button_is_pressed(env); //Check asynchronously e.g. through a thread. 
+    fmi3Boolean  userStopRequest = if_STOP_button_is_pressed(env); //Check asynchronously e.g. through a thread.
     fmi3Boolean  EventHappened = if_an_unpredictable_event_has_happened(env);//e.g. an event in another FMU
 
     // remember the intermediateUpdateTime
@@ -197,7 +197,7 @@ int main(int argc, char* argv[]) {
         .intermediateUpdateTime = startTime,
     };
 
-    // Instantiate the FMU 
+    // Instantiate the FMU
     fmi3Instance s = fmi3InstantiateCoSimulation(
         "Fmu1",               // instanceName
         INSTANTIATION_TOKEN,    // instantiationToken
@@ -239,7 +239,7 @@ int main(int argc, char* argv[]) {
         if (terminate) break;
 
         if (earlyReturn) {
-            fmi3EnterEventMode(s,  // fmi3Instance 
+            fmi3EnterEventMode(s,  // fmi3Instance
                  fmi3False,        // stepEvent
                  NULL,             // rootsFound[],
                  0,                // nEventIndicators,
