@@ -89,6 +89,7 @@ add_executable(cs_early_return
 set_target_properties(cs_early_return PROPERTIES FOLDER examples)
 target_compile_definitions(cs_early_return PRIVATE DISABLE_PREFIX)
 target_include_directories(cs_early_return PRIVATE include BouncingBall)
+target_include_directories(cs_early_return PRIVATE include src)
 if(UNIX AND NOT APPLE)
   target_link_libraries(cs_early_return m)
 endif()
