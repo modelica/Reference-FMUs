@@ -69,9 +69,8 @@ typedef enum {
 
 typedef enum {
     ModelExchange,
-    BasicCoSimulation,
-    HybridCoSimulation,
-    ScheduledCoSimulation,
+    CoSimulation,
+    ScheduledExecution,
 } InterfaceType;
 
 typedef enum {
@@ -146,7 +145,7 @@ typedef struct {
     // internal solver steps
     int nSteps;
 
-    // hybrid co-simulation
+    // co-simulation
     bool returnEarly;
 
 } ModelInstance;

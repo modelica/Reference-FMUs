@@ -9,7 +9,7 @@
 #define NX 0
 #define NZ 0
 
-#define BASIC_CO_SIMULATION
+#define CO_SIMULATION
 #define MODEL_EXCHANGE
 
 #define GET_FLOAT64
