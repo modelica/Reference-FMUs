@@ -332,7 +332,7 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
     // initialize event indicators
     getEventIndicators(S, S->prez, NZ);
 #endif
-    
+
     switch (S->type) {
         case ModelExchange:
             S->state = EventMode;
@@ -654,28 +654,28 @@ fmi3Status fmi3GetVariableDependencies(fmi3Instance instance,
 }
 
 fmi3Status fmi3GetFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
-    
+
     ASSERT_STATE(GetFMUState)
 
     ModelData *modelData = (ModelData *)calloc(1, sizeof(ModelData));
     memcpy(modelData, S->modelData, sizeof(ModelData));
     *FMUState = modelData;
-    
+
     return fmi3OK;
 }
 
 fmi3Status fmi3SetFMUState(fmi3Instance instance, fmi3FMUState FMUState) {
-    
+
     ASSERT_STATE(SetFMUState)
 
     ModelData *modelData = FMUState;
     memcpy(S->modelData, modelData, sizeof(ModelData));
-    
+
     return fmi3OK;
 }
 
 fmi3Status fmi3FreeFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
-    
+
     ASSERT_STATE(FreeFMUState)
 
     ModelData *modelData = *FMUState;
@@ -692,7 +692,7 @@ fmi3Status fmi3SerializedFMUStateSize(fmi3Instance instance, fmi3FMUState FMUSta
      ASSERT_STATE(SerializedFMUStateSize)
 
      *size = sizeof(ModelData);
-    
+
      return fmi3OK;
 }
 
@@ -703,11 +703,11 @@ fmi3Status fmi3SerializeFMUState(fmi3Instance instance, fmi3FMUState FMUState, f
     if (nullPointer(S, "fmi3SerializeFMUState", "FMUstate", FMUState)) {
         return fmi3Error;
     }
-    
+
     if (invalidNumber(S, "fmi3SerializeFMUState", "size", size, sizeof(ModelData))) {
         return fmi3Error;
     }
-    
+
     memcpy(serializedState, FMUState, sizeof(ModelData));
 
     return fmi3OK;
@@ -1053,7 +1053,7 @@ fmi3Status fmi3GetNumberOfContinuousStates(fmi3Instance instance, size_t* nx) {
 fmi3Status fmi3EnterStepMode(fmi3Instance instance) {
 
     ASSERT_STATE(EnterStepMode)
-    
+
     S->state = StepMode;
 
     return fmi3OK;
