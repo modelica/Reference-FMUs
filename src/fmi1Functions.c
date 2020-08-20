@@ -262,7 +262,7 @@ fmiComponent fmiInstantiateSlave(fmiString  instanceName, fmiString GUID,
         GUID,
         fmuLocation,
         loggingOn,
-        BasicCoSimulation,
+        CoSimulation,
         false);
 }
 

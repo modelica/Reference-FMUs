@@ -49,9 +49,8 @@
 
 /* Creation and destruction of FMU instances */
 #define MASK_fmi3InstantiateInstantiateModelExchange MASK_AnyState
-#define MASK_fmi3InstantiateBasicCoSimulation        MASK_AnyState
-#define MASK_fmi3InstantiateHybridCoSimulation       MASK_AnyState
-#define MASK_fmi3InstantiateScheduledCoSimulation    MASK_AnyState
+#define MASK_fmi3InstantiateCoSimulation             MASK_AnyState
+#define MASK_fmi3InstantiateScheduledExectuion       MASK_AnyState
 #define MASK_fmi3FreeInstance                        MASK_AnyState
 
 /* Enter and exit initialization mode, terminate and reset */
@@ -239,7 +238,7 @@ fmi3Instance fmi3InstantiateCoSimulation(
         instantiationToken,
         resourceLocation,
         loggingOn,
-        BasicCoSimulation,
+        CoSimulation,
         false
     );
 
@@ -273,7 +272,7 @@ fmi3Instance fmi3InstantiateScheduledExecution(
         instantiationToken,
         resourceLocation,
         loggingOn,
-        ScheduledCoSimulation,
+        ScheduledExecution,
         false
     );
 
@@ -316,16 +315,16 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
     }
 
     switch (S->type) {
-        case BasicCoSimulation:
-            S->state = StepMode;
-            break;
-        case ScheduledCoSimulation:
-            S->state = ClockActivationMode;
-            break;
-        case HybridCoSimulation:
         case ModelExchange:
             S->state = EventMode;
             S->isNewEventIteration = true;
+            break;
+        case CoSimulation:
+            S->state = StepMode;
+            // TODO: new event iteration?
+            break;
+        case ScheduledExecution:
+            S->state = ClockActivationMode;
             break;
     }
 
@@ -734,13 +733,12 @@ fmi3Status fmi3ExitConfigurationMode(fmi3Instance instance) {
     } else {
         switch (S->type) {
             case ModelExchange:
-            case HybridCoSimulation:
                 S->state = EventMode;
                 break;
-            case BasicCoSimulation:
+            case CoSimulation:
                 S->state = StepMode;
                 break;
-            case ScheduledCoSimulation:
+            case ScheduledExecution:
                 S->state = ClockActivationMode;
                 break;
         }

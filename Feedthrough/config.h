@@ -9,7 +9,7 @@
 #define MODEL_IDENTIFIER Feedthrough
 #define INSTANTIATION_TOKEN "{8c4e810f-3df3-4a00-8276-176fa3c9f004}"
 
-#define BASIC_CO_SIMULATION
+#define CO_SIMULATION
 #define MODEL_EXCHANGE
 
 // define model size
