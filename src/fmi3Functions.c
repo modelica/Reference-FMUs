@@ -332,6 +332,18 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
     // initialize event indicators
     getEventIndicators(S, S->prez, NZ);
 #endif
+    
+    switch (S->type) {
+        case ModelExchange:
+            S->state = EventMode;
+            break;
+        case CoSimulation:
+            S->state = StepMode;
+            break;
+        case ScheduledExecution:
+            S->state = ClockActivationMode;
+            break;
+    }
 
     return fmi3OK;
 }
