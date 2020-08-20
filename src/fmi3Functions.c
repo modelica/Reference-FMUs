@@ -842,12 +842,12 @@ fmi3Status fmi3NewDiscreteStates(fmi3Instance instance,
     S->isNewEventIteration = false;
 
     // copy internal eventInfo of component to output arguments
-    *newDiscreteStatesNeeded           = S->newDiscreteStatesNeeded;
-    *terminateSimulation               = S->terminateSimulation;
-    *nominalsOfContinuousStatesChanged = S->nominalsOfContinuousStatesChanged;
-    *valuesOfContinuousStatesChanged   = S->valuesOfContinuousStatesChanged;
-    *nextEventTimeDefined              = S->nextEventTimeDefined;
-    *nextEventTime                     = S->nextEventTime;
+    if (newDiscreteStatesNeeded)           *newDiscreteStatesNeeded           = S->newDiscreteStatesNeeded;
+    if (terminateSimulation)               *terminateSimulation               = S->terminateSimulation;
+    if (nominalsOfContinuousStatesChanged) *nominalsOfContinuousStatesChanged = S->nominalsOfContinuousStatesChanged;
+    if (valuesOfContinuousStatesChanged)   *valuesOfContinuousStatesChanged   = S->valuesOfContinuousStatesChanged;
+    if (nextEventTimeDefined)              *nextEventTimeDefined              = S->nextEventTimeDefined;
+    if (nextEventTime)                     *nextEventTime                     = S->nextEventTime;
 
     return fmi3OK;
 }
