@@ -985,6 +985,8 @@ fmi3Status fmi3GetNumberOfContinuousStates(fmi3Instance instance, size_t* nx) {
 fmi3Status fmi3EnterStepMode(fmi3Instance instance) {
 
     ASSERT_STATE(EnterStepMode)
+    
+    S->state = StepMode;
 
     return fmi3OK;
 }
