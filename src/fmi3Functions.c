@@ -642,23 +642,79 @@ fmi3Status fmi3GetVariableDependencies(fmi3Instance instance,
 }
 
 fmi3Status fmi3GetFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
-    return fmi3Error; // unsupportedFunction(instance, "fmi3GetFMUState", MASK_fmi3GetFMUState);
+    
+    ASSERT_STATE(GetFMUState)
+
+    ModelData *modelData = (ModelData *)calloc(1, sizeof(ModelData));
+    memcpy(modelData, S->modelData, sizeof(ModelData));
+    *FMUState = modelData;
+    
+    return fmi3OK;
 }
+
 fmi3Status fmi3SetFMUState(fmi3Instance instance, fmi3FMUState FMUState) {
-    return fmi3Error; // unsupportedFunction(instance, "fmi3SetFMUState", MASK_fmi3SetFMUState);
+    
+    ASSERT_STATE(SetFMUState)
+
+    ModelData *modelData = FMUState;
+    memcpy(S->modelData, modelData, sizeof(ModelData));
+    
+    return fmi3OK;
 }
+
 fmi3Status fmi3FreeFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
-    return fmi3Error; // unsupportedFunction(instance, "fmi3FreeFMUState", MASK_fmi3FreeFMUState);
+    
+    ASSERT_STATE(FreeFMUState)
+
+    ModelData *modelData = *FMUState;
+    free(modelData);
+    *FMUState = NULL;
+
+    return fmi3OK;
 }
+
 fmi3Status fmi3SerializedFMUStateSize(fmi3Instance instance, fmi3FMUState FMUState, size_t *size) {
-    return fmi3Error; // unsupportedFunction(instance, "fmi3SerializedFMUStateSize", MASK_fmi3SerializedFMUStateSize);
+
+     UNUSED(instance)
+     UNUSED(FMUState)
+     ASSERT_STATE(SerializedFMUStateSize)
+
+     *size = sizeof(ModelData);
+    
+     return fmi3OK;
 }
+
 fmi3Status fmi3SerializeFMUState(fmi3Instance instance, fmi3FMUState FMUState, fmi3Byte serializedState[], size_t size) {
-    return fmi3Error; // unsupportedFunction(instance, "fmi3SerializeFMUState", MASK_fmi3SerializeFMUState);
+
+    ASSERT_STATE(SerializeFMUState)
+
+    if (nullPointer(S, "fmi3SerializeFMUState", "FMUstate", FMUState)) {
+        return fmi3Error;
+    }
+    
+    if (invalidNumber(S, "fmi3SerializeFMUState", "size", size, sizeof(ModelData))) {
+        return fmi3Error;
+    }
+    
+    memcpy(serializedState, FMUState, sizeof(ModelData));
+
+    return fmi3OK;
 }
+
 fmi3Status fmi3DeSerializeFMUState (fmi3Instance instance, const fmi3Byte serializedState[], size_t size,
                                     fmi3FMUState* FMUState) {
-    return fmi3Error; // unsupportedFunction(instance, "fmi3DeSerializeFMUState", MASK_fmi3DeSerializeFMUState);
+    ASSERT_STATE(DeSerializeFMUState)
+
+    if (*FMUState == NULL) {
+        *FMUState = (fmi3FMUState *)calloc(1, sizeof(ModelData));
+    }
+
+    if (invalidNumber(S, "fmi3DeSerializeFMUState", "size", size, sizeof(ModelData)))
+        return fmi3Error;
+
+    memcpy(*FMUState, serializedState, sizeof(ModelData));
+
+    return fmi3OK;
 }
 
 fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance, const fmi3ValueReference unknowns[], size_t nUnknowns, const fmi3ValueReference knowns[], size_t nKnowns, const fmi3Float64 deltaKnowns[], size_t nDeltaKnowns, fmi3Float64 deltaUnknowns[], size_t nDeltaOfUnknowns) {
