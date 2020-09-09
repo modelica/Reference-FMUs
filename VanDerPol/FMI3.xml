@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription fmiVersion="3.0-alpha.5" modelName="van der Pol oscillator" instantiationToken="{8c4e810f-3da3-4a00-8276-176fa3c9f000}">
 
-  <ModelExchange modelIdentifier="VanDerPol"/>
+  <ModelExchange
+    modelIdentifier="VanDerPol"
+    canGetAndSetFMUState="true"
+    canSerializeFMUState="true"/>
 
-  <CoSimulation modelIdentifier="VanDerPol" canHandleVariableCommunicationStepSize="true"/>
+  <CoSimulation
+    modelIdentifier="VanDerPol"
+    canGetAndSetFMUState="true"
+    canSerializeFMUState="true"
+    canHandleVariableCommunicationStepSize="true"
+    providesIntermediateVariableAccess="true"
+    canReturnEarlyAfterIntermediateUpdate="true"
+    fixedInternalStepSize="1e-2"/>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>

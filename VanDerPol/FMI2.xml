@@ -6,13 +6,22 @@
   guid="{8c4e810f-3da3-4a00-8276-176fa3c9f000}"
   numberOfEventIndicators="0">
 
-  <ModelExchange modelIdentifier="VanDerPol" canNotUseMemoryManagementFunctions="true">
+  <ModelExchange
+    modelIdentifier="VanDerPol"
+    canNotUseMemoryManagementFunctions="true"
+    canGetAndSetFMUstate="true"
+    canSerializeFMUstate="true">
     <SourceFiles>
       <File name="all.c"/>
     </SourceFiles>
   </ModelExchange>
 
-  <CoSimulation modelIdentifier="VanDerPol" canHandleVariableCommunicationStepSize="true" canNotUseMemoryManagementFunctions="true">
+  <CoSimulation
+    modelIdentifier="VanDerPol"
+    canHandleVariableCommunicationStepSize="true"
+    canNotUseMemoryManagementFunctions="true"
+    canGetAndSetFMUstate="true"
+    canSerializeFMUstate="true">
     <SourceFiles>
       <File name="all.c"/>
     </SourceFiles>

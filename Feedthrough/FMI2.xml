@@ -6,13 +6,22 @@
   guid="{8c4e810f-3df3-4a00-8276-176fa3c9f004}"
   numberOfEventIndicators="0">
 
-  <ModelExchange modelIdentifier="Feedthrough" canNotUseMemoryManagementFunctions="true">
+  <ModelExchange
+    modelIdentifier="Feedthrough"
+    canNotUseMemoryManagementFunctions="true"
+    canGetAndSetFMUstate="true"
+    canSerializeFMUstate="true">
     <SourceFiles>
       <File name="all.c"/>
     </SourceFiles>
   </ModelExchange>
 
-  <CoSimulation modelIdentifier="Feedthrough" canHandleVariableCommunicationStepSize="true" canNotUseMemoryManagementFunctions="true">
+  <CoSimulation
+    modelIdentifier="Feedthrough"
+    canHandleVariableCommunicationStepSize="true"
+    canNotUseMemoryManagementFunctions="true"
+    canGetAndSetFMUstate="true"
+    canSerializeFMUstate="true">
     <SourceFiles>
       <File name="all.c"/>
     </SourceFiles>

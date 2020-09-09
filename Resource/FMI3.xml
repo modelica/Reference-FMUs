@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription fmiVersion="3.0-alpha.5" modelName="Resource" instantiationToken="{7b9c2114-2ce5-4076-a138-2cbc69e069e5}">
 
-  <ModelExchange modelIdentifier="Resource"/>
+  <ModelExchange
+    modelIdentifier="Resource"
+    canGetAndSetFMUState="true"
+    canSerializeFMUState="true"/>
 
-  <CoSimulation modelIdentifier="Resource" canHandleVariableCommunicationStepSize="true"/>
+  <CoSimulation
+    modelIdentifier="Resource"
+    canGetAndSetFMUState="true"
+    canSerializeFMUState="true"
+    canHandleVariableCommunicationStepSize="true"
+    providesIntermediateVariableAccess="true"
+    canReturnEarlyAfterIntermediateUpdate="true"
+    fixedInternalStepSize="1"/>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>
