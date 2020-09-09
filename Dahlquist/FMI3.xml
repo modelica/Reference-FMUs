@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription fmiVersion="3.0-alpha.5" modelName="Dahlquist" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f000}">
 
-  <ModelExchange modelIdentifier="Dahlquist"/>
+  <ModelExchange
+    modelIdentifier="Dahlquist"
+    canGetAndSetFMUState="true"
+    canSerializeFMUState="true"/>
 
-  <CoSimulation modelIdentifier="Dahlquist" canHandleVariableCommunicationStepSize="true"/>
+  <CoSimulation
+    modelIdentifier="Dahlquist"
+    canGetAndSetFMUState="true"
+    canSerializeFMUState="true"
+    canHandleVariableCommunicationStepSize="true"
+    providesIntermediateVariableAccess="true"
+    canReturnEarlyAfterIntermediateUpdate="true"
+    fixedInternalStepSize="0.1"/>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>

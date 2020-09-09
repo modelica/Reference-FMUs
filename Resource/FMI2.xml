@@ -6,13 +6,22 @@
   guid="{7b9c2114-2ce5-4076-a138-2cbc69e069e5}"
   numberOfEventIndicators="0">
 
-  <ModelExchange modelIdentifier="Resource" canNotUseMemoryManagementFunctions="true">
+  <ModelExchange
+    modelIdentifier="Resource"
+    canNotUseMemoryManagementFunctions="true"
+    canGetAndSetFMUstate="true"
+    canSerializeFMUstate="true">
     <SourceFiles>
       <File name="all.c"/>
     </SourceFiles>
   </ModelExchange>
 
-  <CoSimulation modelIdentifier="Resource" canHandleVariableCommunicationStepSize="true" canNotUseMemoryManagementFunctions="true">
+  <CoSimulation
+    modelIdentifier="Resource"
+    canHandleVariableCommunicationStepSize="true"
+    canNotUseMemoryManagementFunctions="true"
+    canGetAndSetFMUstate="true"
+    canSerializeFMUstate="true">
     <SourceFiles>
       <File name="all.c"/>
     </SourceFiles>

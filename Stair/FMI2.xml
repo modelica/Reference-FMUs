@@ -6,13 +6,22 @@
   guid="{8c4e810f-3df3-4a00-8276-176fa3c9f008}"
   numberOfEventIndicators="0">
 
-  <ModelExchange modelIdentifier="Stair" canNotUseMemoryManagementFunctions="true">
+  <ModelExchange
+    modelIdentifier="Stair"
+    canNotUseMemoryManagementFunctions="true"
+    canGetAndSetFMUstate="true"
+    canSerializeFMUstate="true">
     <SourceFiles>
       <File name="all.c"/>
     </SourceFiles>
   </ModelExchange>
 
-  <CoSimulation modelIdentifier="Stair" canHandleVariableCommunicationStepSize="true" canNotUseMemoryManagementFunctions="true">
+  <CoSimulation
+    modelIdentifier="Stair"
+    canHandleVariableCommunicationStepSize="true"
+    canNotUseMemoryManagementFunctions="true"
+    canGetAndSetFMUstate="true"
+    canSerializeFMUstate="true">
     <SourceFiles>
       <File name="all.c"/>
     </SourceFiles>

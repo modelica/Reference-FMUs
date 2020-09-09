@@ -6,13 +6,22 @@
   guid="{8c4e810f-3df3-4a00-8276-176fa3c9f000}"
   numberOfEventIndicators="0">
 
-  <ModelExchange modelIdentifier="Dahlquist" canNotUseMemoryManagementFunctions="true">
+  <ModelExchange
+    modelIdentifier="Dahlquist"
+    canNotUseMemoryManagementFunctions="true"
+    canGetAndSetFMUstate="true"
+    canSerializeFMUstate="true">
     <SourceFiles>
       <File name="all.c"/>
     </SourceFiles>
   </ModelExchange>
 
-  <CoSimulation modelIdentifier="Dahlquist" canHandleVariableCommunicationStepSize="true" canNotUseMemoryManagementFunctions="true">
+  <CoSimulation
+    modelIdentifier="Dahlquist"
+    canHandleVariableCommunicationStepSize="true"
+    canNotUseMemoryManagementFunctions="true"
+    canGetAndSetFMUstate="true"
+    canSerializeFMUstate="true">
     <SourceFiles>
       <File name="all.c"/>
     </SourceFiles>
