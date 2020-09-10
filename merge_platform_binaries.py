@@ -35,7 +35,7 @@ def merge(fmi_version, fmi_types):
                 with zipfile.ZipFile(platform_fmu, 'r') as archive:
                     archive.extractall(path=tempdir)
 
-            if len(fmi_types) > 1:
+            if fmi_version == '1.0':
                 merged_fmu = os.path.join(repo_dir, 'merged', fmi_version, fmi_type, model_name + '.fmu')
             else:
                 merged_fmu = os.path.join(repo_dir, 'merged', fmi_version, model_name + '.fmu')
@@ -51,6 +51,6 @@ def merge(fmi_version, fmi_types):
 
 merge('1.0', ['cs', 'me'])
 merge('2.0', ['cs'])
-merge('3.0', ['cs'])
+merge('3.0', ['cs', 'se'])
 
 shutil.make_archive(os.path.join(repo_dir, 'merged_fmus'), 'zip', os.path.join(repo_dir, 'merged'))
