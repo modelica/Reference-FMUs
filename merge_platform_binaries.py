@@ -51,6 +51,6 @@ def merge(fmi_version, fmi_types):
 
 merge('1.0', ['cs', 'me'])
 merge('2.0', ['cs'])
-merge('3.0', ['cs'])
+merge('3.0', ['cs', 'se'])
 
 shutil.make_archive(os.path.join(repo_dir, 'merged_fmus'), 'zip', os.path.join(repo_dir, 'merged'))

@@ -171,6 +171,7 @@ class BuildTest(unittest.TestCase):
         self.validate(build_dir, models=models, compile=True)
 
         copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='3.0', fmi_types=['cs', 'me'])
+        copy_to_cross_check(build_dir=build_dir, model_names=['Clocks'], fmi_version='3.0', fmi_types=['se'])
 
 
 if __name__ == '__main__':
