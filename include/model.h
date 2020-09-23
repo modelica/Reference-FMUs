@@ -132,6 +132,7 @@ typedef struct {
     bool nextEventTimeDefined;
     double nextEventTime;
     bool clocksTicked;
+    bool timeEvent;
 
     bool isDirtyValues;
     bool isNewEventIteration;

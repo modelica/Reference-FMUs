@@ -358,6 +358,7 @@ fmi3Status fmi3EnterEventMode(fmi3Instance instance,
 
     S->state = EventMode;
     S->isNewEventIteration = true;
+    S->timeEvent = timeEvent;
 
     return fmi3OK;
 }
