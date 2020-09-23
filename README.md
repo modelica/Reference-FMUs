@@ -24,12 +24,10 @@ A set of hand-coded FMUs for development, testing and debugging of the [Function
 - `cosimulation.h` - generic co-simulation interface
 
 `src`
-
 - `fmi{1|2|3}Functions.c` - FMI implementations
 - `cosimulation.c` - generic co-simulation
 
-`examples` 
-
+`examples`
 - `<example>.c` - Standalone c code example that uses one or more model sources directly.
 - `Examples.cmake` - CMake file that creates and configures a project for each example, compiling it with its dependencies. For instance, `model_exchange.c` gets compiled with `BouncingBall/model.c`.
 
@@ -62,12 +60,10 @@ The FMUs will be in the `dist` folder inside the selected build folder.
 First you need to follow the instructions in [Build the FMUs](#build-the-fmus) and build the project.
 
 From the command line:
-
 1. Inside the folder where the FMUs will be built, you should find an executable file corresponding to the example c file. For instance, `model_exchange.exe`.
 2. Run it.
 
 From Visual Studio:
-
 1. Set the example project as starting project.
 2. Run it.
 
