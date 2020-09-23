@@ -13,7 +13,7 @@
 
 #define FIXED_STEP 1e-2
 #define STOP_TIME 3
-#define OUTPUT_FILE_HEADER "time,h,v\n"
+#define OUTPUT_FILE_HEADER "time,h,v,ground\n"
 
 fmi3Status recordVariables(FILE* outputFile, fmi3Instance s, fmi3Float64 time) {
     const fmi3ValueReference valueReferences[] = { vr_h, vr_v, vr_ground };
