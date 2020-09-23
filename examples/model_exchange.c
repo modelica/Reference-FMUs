@@ -15,11 +15,11 @@
 #define STOP_TIME 3
 #define OUTPUT_FILE_HEADER "time,h,v\n"
 
-fmi3Status recordVariables(FILE *outputFile, fmi3Instance s, fmi3Float64 time) {
-    const fmi3ValueReference valueReferences[2] = { vr_h, vr_v };
-    fmi3Float64 values[2] = { 0 };
-    fmi3Status status = M_fmi3GetFloat64(s, valueReferences, 2, values, 2);
-    fprintf(outputFile, "%g,%g,%g\n", time, values[0], values[1]);
+fmi3Status recordVariables(FILE* outputFile, fmi3Instance s, fmi3Float64 time) {
+    const fmi3ValueReference valueReferences[] = { vr_h, vr_v, vr_ground };
+    fmi3Float64 values[] = { 0.0, 0.0, 0.0 };
+    fmi3Status status = M_fmi3GetFloat64(s, valueReferences, 3, values, 3);
+    fprintf(outputFile, "%g,%g,%g,%g\n", time, values[0], values[1], values[2]);
     return status;
 }
 

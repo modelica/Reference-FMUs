@@ -122,6 +122,7 @@ void eventUpdate(ModelInstance *comp) {
         comp->valuesOfContinuousStatesChanged = true;
 
         // Each time a bounce occurs, we schedule an event to move the ground shortly after.
+        printf("Scheduling event for time %lf\n", comp->time + 0.2);
         comp->nextEventTimeDefined = true;
         comp->nextEventTime = comp->time + 0.2;
     }
