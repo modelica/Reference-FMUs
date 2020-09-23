@@ -130,14 +130,14 @@ set_target_properties(jacobian PROPERTIES
 )
 
 # model exchange
-add_library(model STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c Stair/model.c src/cosimulation.c)
+add_library(model STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBallStairs/model.c src/cosimulation.c)
 set_target_properties(model PROPERTIES FOLDER examples)
 target_compile_definitions(model PRIVATE FMI3_FUNCTION_PREFIX=M_)
-target_include_directories(model PRIVATE include Stair)
+target_include_directories(model PRIVATE include BouncingBallStairs)
 
-add_executable (model_exchange ${EXAMPLE_SOURCES} src/fmi3Functions.c Stair/model.c src/cosimulation.c examples/model_exchange.c)
+add_executable (model_exchange ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBallStairs/model.c src/cosimulation.c examples/model_exchange.c)
 set_target_properties(model_exchange PROPERTIES FOLDER examples)
-target_include_directories(model_exchange PRIVATE include Stair)
+target_include_directories(model_exchange PRIVATE include BouncingBallStairs)
 target_link_libraries(model_exchange model)
 target_compile_definitions(model_exchange PRIVATE DISABLE_PREFIX)
 set_target_properties(model_exchange PROPERTIES
