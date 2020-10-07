@@ -1086,6 +1086,9 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
         return fmi3Error;
     }
 
+	// TODO: pass to doStep()
+	*terminate = fmi3False;
+
     return (fmi3Status)doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, earlyReturn, lastSuccessfulTime);
 }
 
