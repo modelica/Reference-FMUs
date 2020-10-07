@@ -242,7 +242,9 @@ fmi3Instance fmi3InstantiateCoSimulation(
         false
     );
 
-    instance->state = Instantiated;
+	if (instance) {
+		instance->state = Instantiated;
+	}
 
     return instance;
 }
