@@ -5,6 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef _WIN32
+#include "shlwapi.h"
+#pragma comment(lib, "shlwapi.lib")
+#endif
+
+#define MAX_PATH_LENGTH 4096
+
 void setStartValues(ModelInstance *comp) {
     M(y) = 0;
 }
@@ -13,39 +20,45 @@ void calculateValues(ModelInstance *comp) {
     // load the file
 
     FILE *file = NULL;
-    char *path = NULL;
+    char path[MAX_PATH_LENGTH] = "";
     char c = '\0';
     const char *scheme1 = "file:///";
     const char *scheme2 = "file:/";
-#if FMI_VERSION < 2
-    const char *resourcePath = "/resources/y.txt";
-#else
-    const char *resourcePath = "/y.txt";
-#endif
 
     if (!comp->resourceLocation) {
         // FMI 1.0 for Model Exchange doesn't have a resource location
         return;
     }
 
+#ifdef _WIN32
+	DWORD pathLen = MAX_PATH_LENGTH;
+	if (PathCreateFromUrl(comp->resourceLocation, path, &pathLen, NULL) != S_OK) {
+		return;
+	}
+
+#if FMI_VERSION < 2
+	if (!PathAppend(path, "resources")) return;
+#endif
+
+	if (!PathAppend(path, "y.txt")) return;
+
+#else
+
     if (strncmp(comp->resourceLocation, scheme1, strlen(scheme1)) == 0) {
-        path = malloc(strlen(comp->resourceLocation) + strlen(resourcePath) + 1);
         strcpy(path, &comp->resourceLocation[strlen(scheme1)] - 1);
     } else if (strncmp(comp->resourceLocation, scheme2, strlen(scheme2)) == 0) {
-        path = malloc(strlen(comp->resourceLocation) + strlen(resourcePath) + 1);
         strcpy(path, &comp->resourceLocation[strlen(scheme2) - 1]);
     } else {
         logError(comp, "The resourceLocation must start with \"file:/\" or \"file:///\"");
         return;
     }
 
-    strcat(path, resourcePath);
+#if FMI_VERSION < 2
+	strcat(path, "/resources/y.txt");
+#else
+	strcat(path, "/y.txt");
+#endif
 
-#ifdef _WIN32
-    // strip any leading slashes
-    while (path[0] == '/') {
-        strcpy(path, &path[1]);
-    }
 #endif
 
     // open the resource file
@@ -64,9 +77,6 @@ void calculateValues(ModelInstance *comp) {
 
     // close the file
     fclose(file);
-
-    // clean up
-    free(path);
 }
 
 Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
