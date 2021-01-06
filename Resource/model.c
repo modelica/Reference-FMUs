@@ -31,16 +31,17 @@ void calculateValues(ModelInstance *comp) {
     }
 
 #ifdef _WIN32
-	DWORD pathLen = MAX_PATH_LENGTH;
-	if (PathCreateFromUrl(comp->resourceLocation, path, &pathLen, NULL) != S_OK) {
-		return;
-	}
+    DWORD pathLen = MAX_PATH_LENGTH;
+
+    if (PathCreateFromUrl(comp->resourceLocation, path, &pathLen, NULL) != S_OK) {
+        return;
+    }
 
 #if FMI_VERSION < 2
-	if (!PathAppend(path, "resources")) return;
+    if (!PathAppend(path, "resources")) return;
 #endif
 
-	if (!PathAppend(path, "y.txt")) return;
+    if (!PathAppend(path, "y.txt")) return;
 
 #else
 
@@ -54,9 +55,9 @@ void calculateValues(ModelInstance *comp) {
     }
 
 #if FMI_VERSION < 2
-	strcat(path, "/resources/y.txt");
+    strcat(path, "/resources/y.txt");
 #else
-	strcat(path, "/y.txt");
+    strcat(path, "/y.txt");
 #endif
 
 #endif
