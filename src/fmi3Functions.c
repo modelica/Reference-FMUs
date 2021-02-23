@@ -77,7 +77,7 @@
 #define MASK_fmi3GetString                MASK_fmi3GetFloat32
 #define MASK_fmi3GetBinary                MASK_fmi3GetFloat32
 
-#define MASK_fmi3SetFloat32               (Instantiated | InitializationMode | EventMode | ContinuousTimeMode | StepMode | ClockActivationMode | IntermediateUpdateMode | Terminated)
+#define MASK_fmi3SetFloat32               (Instantiated | InitializationMode | ConfigurationMode | ReconfigurationMode | EventMode | ContinuousTimeMode | StepMode | ClockActivationMode | IntermediateUpdateMode | Terminated)
 #define MASK_fmi3SetFloat64               MASK_fmi3SetFloat32
 #define MASK_fmi3SetInt8                  (Instantiated | ConfigurationMode | ReconfigurationMode | InitializationMode | EventMode | StepMode | ClockActivationMode | Terminated)
 #define MASK_fmi3SetUInt8                 MASK_fmi3SetInt8
