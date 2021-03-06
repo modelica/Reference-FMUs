@@ -30,26 +30,43 @@ int main(int argc, char* argv[]) {
 ////////////////////////////
 // Initialization sub-phase
 
+
+	typedef fmi3Instance fmi3InstantiateCoSimulationTYPE(
+		fmi3String                     instanceName,
+		fmi3String                     instantiationToken,
+		fmi3String                     resourceLocation,
+		fmi3Boolean                    visible,
+		fmi3Boolean                    loggingOn,
+		fmi3Boolean                    eventModeUsed,
+		fmi3Boolean                    earlyReturnAllowed,
+		const fmi3ValueReference       requiredIntermediateVariables[],
+		size_t                         nRequiredIntermediateVariables,
+		fmi3InstanceEnvironment        instanceEnvironment,
+		fmi3CallbackLogMessage         logMessage,
+		fmi3CallbackIntermediateUpdate intermediateUpdate);
+
 // instantiate both FMUs
-s1 = s1_fmi3InstantiateCoSimulation("instance1",      // instanceName
+s1 = s1_fmi3InstantiateCoSimulation("instance1",   // instanceName
                                     guid,          // instantiationToken
                                     NULL,          // resourceLocation
                                     fmi3False,     // visible
                                     fmi3False,     // loggingOn
-                                    fmi3False,     // eventModeRequired
-                                    NULL,          // requiredIntermediateVariables
+									fmi3False,     // eventModeUsed
+									fmi3False,     // earlyReturnAllowed
+									NULL,          // requiredIntermediateVariables
                                     0,             // nRequiredIntermediateVariables
                                     NULL,          // instanceEnvironment
                                     cb_logMessage, // logMessage
                                     NULL);         // intermediateUpdate
 
-s2 = s2_fmi3InstantiateCoSimulation("instance1",      // instanceName
+s2 = s2_fmi3InstantiateCoSimulation("instance1",   // instanceName
                                     guid,          // instantiationToken
                                     NULL,          // resourceLocation
                                     fmi3False,     // visible
                                     fmi3False,     // loggingOn
-                                    fmi3False,     // eventModeRequired
-                                    NULL,          // requiredIntermediateVariables
+                                    fmi3False,     // eventModeUsed
+									fmi3False,     // earlyReturnAllowed
+									NULL,          // requiredIntermediateVariables
                                     0,             // nRequiredIntermediateVariables
                                     NULL,          // instanceEnvironment
                                     cb_logMessage, // logMessage
@@ -95,18 +112,18 @@ while ((tc < stopTime) && (status == fmi3OK)) {
     // fmi3SetReal(s2, ..., 1, &y1);
 
     // call instance s1 and check status
-    fmi3Boolean terminate, earlyReturn;
+    fmi3Boolean eventEncountered, terminateSimulation, earlyReturn;
     fmi3Float64 lastSuccessfulTime;
 
-    status = s1_fmi3DoStep(s1, tc, h, fmi3True, &terminate, &earlyReturn, &lastSuccessfulTime);
+    status = s1_fmi3DoStep(s1, tc, h, fmi3True, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime);
 
-    if (terminate) {
+    if (terminateSimulation) {
         printf("Instance s1 requested to terminate simulation.");
         break;
     }
 
     // call instance s2 and check status as above
-    status = s2_fmi3DoStep(s2, tc, h, fmi3True, &terminate, &earlyReturn, &lastSuccessfulTime);
+    status = s2_fmi3DoStep(s2, tc, h, fmi3True, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime);
 
     // ...
 

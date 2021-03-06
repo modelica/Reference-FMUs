@@ -4,8 +4,8 @@
 #include "fmi3PlatformTypes.h"
 
 /*
-This header file defines the data and function types of FMI 3.0-alpha.5.
-It must be used when compiling an FMU or an FMI master.
+This header file defines the data and function types of FMI 3.0-alpha.6.
+It must be used when compiling an FMU or an FMI importer.
 
 Copyright (C) 2011 MODELISAR consortium,
               2012-2020 Modelica Association Project "FMI"
@@ -61,14 +61,22 @@ typedef enum {
 
 /* tag::DependencyKind[] */
 typedef enum {
-    /* fmi3Independent = 0, not needed but reserved for future use */
-    fmi3Constant  = 1,
-    fmi3Fixed     = 2,
-    fmi3Tunable   = 3,
-    fmi3Discrete  = 4,
-    fmi3Dependent = 5
+    fmi3Independent = 0,
+    fmi3Constant    = 1,
+    fmi3Fixed       = 2,
+    fmi3Tunable     = 3,
+    fmi3Discrete    = 4,
+    fmi3Dependent   = 5
 } fmi3DependencyKind;
 /* end::DependencyKind[] */
+
+/* tag::IntervalQualifier[] */
+typedef enum {
+    fmi3NewInterval,
+    fmi3NoChange,
+    fmi3NotYetKnown,
+} fmi3IntervalQualifier;
+/* end::IntervalQualifier[] */
 
 /* tag::CallbackLogMessage[] */
 typedef void  (*fmi3CallbackLogMessage)     (fmi3InstanceEnvironment instanceEnvironment,
@@ -82,7 +90,6 @@ typedef void  (*fmi3CallbackLogMessage)     (fmi3InstanceEnvironment instanceEnv
 typedef void (*fmi3CallbackIntermediateUpdate) (
     fmi3InstanceEnvironment instanceEnvironment,
     fmi3Float64 intermediateUpdateTime,
-    fmi3Boolean eventOccurred,
     fmi3Boolean clocksTicked,
     fmi3Boolean intermediateVariableSetRequested,
     fmi3Boolean intermediateVariableGetAllowed,
@@ -132,7 +139,8 @@ typedef fmi3Instance fmi3InstantiateCoSimulationTYPE(
     fmi3String                     resourceLocation,
     fmi3Boolean                    visible,
     fmi3Boolean                    loggingOn,
-    fmi3Boolean                    eventModeRequired,
+    fmi3Boolean                    eventModeUsed,
+    fmi3Boolean                    earlyReturnAllowed,
     const fmi3ValueReference       requiredIntermediateVariables[],
     size_t                         nRequiredIntermediateVariables,
     fmi3InstanceEnvironment        instanceEnvironment,
@@ -175,6 +183,7 @@ typedef fmi3Status fmi3ExitInitializationModeTYPE(fmi3Instance instance);
 /* tag::EnterEventMode[] */
 typedef fmi3Status fmi3EnterEventModeTYPE(fmi3Instance instance,
                                           fmi3Boolean stepEvent,
+                                          fmi3Boolean stateEvent,
                                           const fmi3Int32 rootsFound[],
                                           size_t nEventIndicators,
                                           fmi3Boolean timeEvent);
@@ -270,6 +279,14 @@ typedef fmi3Status fmi3GetBinaryTYPE (fmi3Instance instance,
                                       size_t nValues);
 /* end::Getters[] */
 
+/* tag::GetClock[] */
+typedef fmi3Status fmi3GetClockTYPE  (fmi3Instance instance,
+                                      const fmi3ValueReference valueReferences[],
+                                      size_t nValueReferences,
+                                      fmi3Clock values[],
+                                      size_t nValues);
+/* end::GetClock[] */
+
 /* tag::Setters[] */
 typedef fmi3Status fmi3SetFloat32TYPE(fmi3Instance instance,
                                       const fmi3ValueReference valueReferences[],
@@ -350,6 +367,13 @@ typedef fmi3Status fmi3SetBinaryTYPE (fmi3Instance instance,
                                       const fmi3Binary values[],
                                       size_t nValues);
 /* end::Setters[] */
+/* tag::SetClock[] */
+typedef fmi3Status fmi3SetClockTYPE  (fmi3Instance instance,
+                                      const fmi3ValueReference valueReferences[],
+                                      size_t nValueReferences,
+                                      const fmi3Clock values[],
+                                      size_t nValues);
+/* end::SetClock[] */
 
 /* Getting Variable Dependency Information */
 /* tag::GetNumberOfVariableDependencies[] */
@@ -381,21 +405,25 @@ typedef fmi3Status fmi3SetFMUStateTYPE (fmi3Instance instance, fmi3FMUState  FMU
 typedef fmi3Status fmi3FreeFMUStateTYPE(fmi3Instance instance, fmi3FMUState* FMUState);
 /* end::FreeFMUState[] */
 
-/* tag::SerializedFMUState[] */
+/* tag::SerializedFMUStateSize[] */
 typedef fmi3Status fmi3SerializedFMUStateSizeTYPE(fmi3Instance instance,
                                                   fmi3FMUState  FMUState,
                                                   size_t* size);
+/* end::SerializedFMUStateSize[] */
 
+/* tag::SerializeFMUState[] */
 typedef fmi3Status fmi3SerializeFMUStateTYPE     (fmi3Instance instance,
                                                   fmi3FMUState  FMUState,
                                                   fmi3Byte serializedState[],
                                                   size_t size);
+/* end::SerializeFMUState[] */
 
+/* tag::DeSerializeFMUState[] */
 typedef fmi3Status fmi3DeSerializeFMUStateTYPE   (fmi3Instance instance,
                                                   const fmi3Byte serializedState[],
                                                   size_t size,
                                                   fmi3FMUState* FMUState);
-/* end::SerializedFMUState[] */
+/* end::DeSerializeFMUState[] */
 
 /* Getting partial derivatives */
 /* tag::GetDirectionalDerivative[] */
@@ -433,29 +461,12 @@ typedef fmi3Status fmi3EnterConfigurationModeTYPE(fmi3Instance instance);
 typedef fmi3Status fmi3ExitConfigurationModeTYPE(fmi3Instance instance);
 /* end::ExitConfigurationMode[] */
 
-/* Clock related functions */
-/* tag::GetClock[] */
-typedef fmi3Status fmi3GetClockTYPE(fmi3Instance instance,
-                                    const fmi3ValueReference valueReferences[],
-                                    size_t nValueReferences,
-                                    fmi3Clock values[],
-                                    size_t nValues);
-/* end::GetClock[] */
-
-/* tag::SetClock[] */
-typedef fmi3Status fmi3SetClockTYPE(fmi3Instance instance,
-                                    const fmi3ValueReference valueReferences[],
-                                    size_t nValueReferences,
-                                    const fmi3Clock values[],
-                                    const fmi3Boolean subactive[],
-                                    size_t nValues);
-/* end::SetClock[] */
-
 /* tag::GetIntervalDecimal[] */
 typedef fmi3Status fmi3GetIntervalDecimalTYPE(fmi3Instance instance,
                                               const fmi3ValueReference valueReferences[],
                                               size_t nValueReferences,
                                               fmi3Float64 interval[],
+                                              fmi3IntervalQualifier qualifier[],
                                               size_t nValues);
 /* end::GetIntervalDecimal[] */
 
@@ -465,8 +476,26 @@ typedef fmi3Status fmi3GetIntervalFractionTYPE(fmi3Instance instance,
                                                size_t nValueReferences,
                                                fmi3UInt64 intervalCounter[],
                                                fmi3UInt64 resolution[],
+                                               fmi3IntervalQualifier qualifier[],
                                                size_t nValues);
 /* end::GetIntervalFraction[] */
+
+/* tag::GetShiftDecimal[] */
+typedef fmi3Status fmi3GetShiftDecimalTYPE(fmi3Instance instance,
+                                              const fmi3ValueReference valueReferences[],
+                                              size_t nValueReferences,
+                                              fmi3Float64 shift[],
+                                              size_t nValues);
+/* end::GetShiftDecimal[] */
+
+/* tag::GetShiftFraction[] */
+typedef fmi3Status fmi3GetShiftFractionTYPE(fmi3Instance instance,
+                                               const fmi3ValueReference valueReferences[],
+                                               size_t nValueReferences,
+                                               fmi3UInt64 shiftCounter[],
+                                               fmi3UInt64 resolution[],
+                                               size_t nValues);
+/* end::GetShiftFraction[] */
 
 /* tag::SetIntervalDecimal[] */
 typedef fmi3Status fmi3SetIntervalDecimalTYPE(fmi3Instance instance,
@@ -485,15 +514,15 @@ typedef fmi3Status fmi3SetIntervalFractionTYPE(fmi3Instance instance,
                                                size_t nValues);
 /* end::SetIntervalFraction[] */
 
-/* tag::NewDiscreteStates[] */
-typedef fmi3Status fmi3NewDiscreteStatesTYPE(fmi3Instance instance,
-                                             fmi3Boolean *newDiscreteStatesNeeded,
+/* tag::UpdateDiscreteStates[] */
+typedef fmi3Status fmi3UpdateDiscreteStatesTYPE(fmi3Instance instance,
+                                             fmi3Boolean *discreteStatesNeedUpdate,
                                              fmi3Boolean *terminateSimulation,
                                              fmi3Boolean *nominalsOfContinuousStatesChanged,
                                              fmi3Boolean *valuesOfContinuousStatesChanged,
                                              fmi3Boolean *nextEventTimeDefined,
                                              fmi3Float64 *nextEventTime);
-/* end::NewDiscreteStates[] */
+/* end::UpdateDiscreteStates[] */
 
 /***************************************************
 Types for Functions for Model Exchange
@@ -525,7 +554,7 @@ typedef fmi3Status fmi3SetContinuousStatesTYPE(fmi3Instance instance,
 /* tag::GetDerivatives[] */
 typedef fmi3Status fmi3GetDerivativesTYPE(fmi3Instance instance,
                                           fmi3Float64 derivatives[],
-                                          size_t nCcontinuousStates);
+                                          size_t nContinuousStates);
 /* end::GetDerivatives[] */
 
 /* tag::GetEventIndicators[] */
@@ -560,7 +589,7 @@ typedef fmi3Status fmi3GetNumberOfContinuousStatesTYPE(fmi3Instance instance,
 Types for Functions for Co-Simulation
 ****************************************************/
 
-/* Simulating the slave */
+/* Simulating the FMU */
 
 /* tag::EnterStepMode[] */
 typedef fmi3Status fmi3EnterStepModeTYPE(fmi3Instance instance);
@@ -580,7 +609,8 @@ typedef fmi3Status fmi3DoStepTYPE(fmi3Instance instance,
                                   fmi3Float64 currentCommunicationPoint,
                                   fmi3Float64 communicationStepSize,
                                   fmi3Boolean noSetFMUStatePriorToCurrentPoint,
-                                  fmi3Boolean* terminate,
+                                  fmi3Boolean* eventEncountered,
+                                  fmi3Boolean* terminateSimulation,
                                   fmi3Boolean* earlyReturn,
                                   fmi3Float64* lastSuccessfulTime);
 /* end::DoStep[] */

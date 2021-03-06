@@ -93,13 +93,12 @@ typedef void (*unlockPreemptionType) ();
 
 typedef void (*intermediateUpdateType) (void *instanceEnvironment,
                                         double intermediateUpdateTime,
-                                        int eventOccurred,
-                                        int clocksTicked,
-                                        int intermediateVariableSetAllowed,
-                                        int intermediateVariableGetAllowed,
-                                        int intermediateStepFinished,
-                                        int canReturnEarly,
-                                        int *earlyReturnRequested,
+										bool clocksTicked,
+										bool intermediateVariableSetRequested,
+										bool intermediateVariableGetAllowed,
+										bool intermediateStepFinished,
+										bool canReturnEarly,
+										bool *earlyReturnRequested,
                                         double *earlyReturnTime);
 
 typedef struct {
@@ -180,7 +179,7 @@ Status setString  (ModelInstance* comp, ValueReference vr, const char *const *va
 Status setBinary  (ModelInstance* comp, ValueReference vr, const size_t size[], const char *const value[], size_t *index);
 
 Status activateClock(ModelInstance* comp, ValueReference vr);
-Status getClock(ModelInstance* comp, ValueReference vr, int* value);
+Status getClock(ModelInstance* comp, ValueReference vr, _Bool *value);
 
 Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime);
 

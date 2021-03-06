@@ -80,13 +80,14 @@ int main(int argc, char* argv[]) {
 
     // Instantiate the FMU
     fmi3Instance s = fmi3InstantiateCoSimulation(
-        "instance1",               // instanceName
+        "instance1",            // instanceName
         INSTANTIATION_TOKEN,    // instantiationToken
         NULL,                   // resourceLocation
         fmi3False,              // visible
         fmi3False,              // loggingOn
-        fmi3False,              // eventModeRequired
-        NULL,                   // requiredIntermediateVariables
+		fmi3False,              // eventModeUsed
+		fmi3False,              // earlyReturnAllowed
+		NULL,                   // requiredIntermediateVariables
         0,                      // nRequiredIntermediateVariables
         NULL,                   // instanceEnvironment
         cb_logMessage,          // logMessage
@@ -119,16 +120,16 @@ int main(int argc, char* argv[]) {
 
         if (step > 0) {
             // Continuous mode (default mode)
-            fmi3Boolean terminate, earlyReturn;
+            fmi3Boolean eventEncountered, terminate, earlyReturn;
             fmi3Float64 lastSuccessfulTime;
 
-            status = fmi3DoStep(s, tc, step, fmi3False, &terminate, &earlyReturn, &lastSuccessfulTime);
+            status = fmi3DoStep(s, tc, step, fmi3False, &eventEncountered, &terminate, &earlyReturn, &lastSuccessfulTime);
 
             switch (status) {
                 case fmi3OK:
                     if (earlyReturn) {
                         // TODO: pass reasons
-                        CHECK_STATUS(fmi3EnterEventMode(s, fmi3False, NULL, 0, fmi3False));
+                        CHECK_STATUS(fmi3EnterEventMode(s, fmi3False, fmi3False, NULL, 0, fmi3False));
                         step = 0;
                         tc = instanceEnvironment.intermediateUpdateTime;
                     } else {
@@ -144,7 +145,7 @@ int main(int argc, char* argv[]) {
                     break;
             };
         } else {
-            fmi3Boolean newDiscreteStatesNeeded = fmi3True;
+            fmi3Boolean discreteStatesNeedUpdate = fmi3True;
             fmi3Boolean terminateSimulation;
             fmi3Boolean nominalsOfContinuousStatesChanged;
             fmi3Boolean valuesOfContinuousStatesChanged;
@@ -152,9 +153,9 @@ int main(int argc, char* argv[]) {
             fmi3Float64 nextEventTime;
 
             // Event mode
-            CHECK_STATUS(fmi3NewDiscreteStates(s, &newDiscreteStatesNeeded, &terminateSimulation, &nominalsOfContinuousStatesChanged, &valuesOfContinuousStatesChanged, &nextEventTimeDefined, &nextEventTime))
+            CHECK_STATUS(fmi3UpdateDiscreteStates(s, &discreteStatesNeedUpdate, &terminateSimulation, &nominalsOfContinuousStatesChanged, &valuesOfContinuousStatesChanged, &nextEventTimeDefined, &nextEventTime))
 
-            if (!newDiscreteStatesNeeded) {
+            if (!discreteStatesNeedUpdate) {
                 CHECK_STATUS(fmi3EnterContinuousTimeMode(s))
                 step = h - fmod(tc, h);  // finish the step
             };

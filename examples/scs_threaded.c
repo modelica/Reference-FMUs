@@ -21,14 +21,15 @@ fmi3Status initializeOutputFiles();
 unsigned __stdcall thr_activateModelPartition(void *args);
 static bool setAndCheckInputClocks(fmi3Instance s, fmi3Float64 time);
 static bool checkOutputClocks(fmi3Instance s);
-fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
-    fmi3Float64 intermediateUpdateTime,
-    fmi3Boolean eventOccurred,
-    fmi3Boolean clocksTicked,
-    fmi3Boolean intermediateVariableSetAllowed,
-    fmi3Boolean intermediateVariableGetAllowed,
-    fmi3Boolean intermediateStepFinished,
-    fmi3Boolean canReturnEarly);
+void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
+	fmi3Float64 intermediateUpdateTime,
+	fmi3Boolean clocksTicked,
+	fmi3Boolean intermediateVariableSetRequested,
+	fmi3Boolean intermediateVariableGetAllowed,
+	fmi3Boolean intermediateStepFinished,
+	fmi3Boolean canReturnEarly,
+	fmi3Boolean *earlyReturnRequested,
+	fmi3Float64 *earlyReturnTime);
 void cb_lockPreemption();
 void cb_unlockPreemption();
 fmi3Status setDebugLogging(fmi3Instance* comp, bool loggingOn, size_t nCategories, const char* const categories[]);
@@ -303,14 +304,15 @@ fmi3Status recordVariables(fmi3Instance s, fmi3Float64 time, int modelPart) {
  *
  * returns always fmi3OK (practically a void funtion)
  */
-fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
-    fmi3Float64 intermediateUpdateTime,
-    fmi3Boolean eventOccurred,
-    fmi3Boolean clocksTicked,
-    fmi3Boolean intermediateVariableSetAllowed,
-    fmi3Boolean intermediateVariableGetAllowed,
-    fmi3Boolean intermediateStepFinished,
-    fmi3Boolean canReturnEarly) {
+void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
+	fmi3Float64 intermediateUpdateTime,
+	fmi3Boolean clocksTicked,
+	fmi3Boolean intermediateVariableSetRequested,
+	fmi3Boolean intermediateVariableGetAllowed,
+	fmi3Boolean intermediateStepFinished,
+	fmi3Boolean canReturnEarly,
+	fmi3Boolean *earlyReturnRequested,
+	fmi3Float64 *earlyReturnTime) {
 
     fmi3Instance *fmu = ((fmi3Instance*)instanceEnvironment);
 
@@ -323,7 +325,7 @@ fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     // In this example we only check for ticking output clocks.
     if (!clocksTicked) {
         logEvent(fmu, "No clock active in intermediateUpdate callback");
-        return fmi3OK;
+        return;
     }
 
     // In order to be threadsafe we have to check the clocks under lock
@@ -332,7 +334,7 @@ fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     if (!checkOutputClocks(fmu)) {
         GlobalUnlock(globalLockVar);
         logEvent(fmu, "No clock active in intermediateUpdate callback");
-        return fmi3OK;
+        return;
     }
     for (int oc = 0; oc < N_OUTPUT_CLOCKS; oc++) {
         localOutputClocks[oc] = outputClocks[oc];
@@ -367,8 +369,6 @@ fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
         //  so far, no other action but a log message
         logEvent(instanceEnvironment, "Detected ticking of output clock 2 (time=%g)", time);
     }
-    return fmi3OK;
-
 }
 /*
  * cb_lockPreemption()

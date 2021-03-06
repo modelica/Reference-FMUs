@@ -21,15 +21,14 @@ fmi3Status recordVariables(InstanceEnvironment instanceEnvironment, fmi3Float64 
 }
 
 void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
-                           fmi3Float64 intermediateUpdateTime,
-                           fmi3Boolean eventOccurred,
-                           fmi3Boolean clocksTicked,
-                           fmi3Boolean intermediateVariableSetAllowed,
-                           fmi3Boolean intermediateVariableGetAllowed,
-                           fmi3Boolean intermediateStepFinished,
-                           fmi3Boolean canReturnEarly,
-                           fmi3Boolean *earlyReturnRequested,
-                           fmi3Float64 *earlyReturnTime) {
+						   fmi3Float64 intermediateUpdateTime,
+						   fmi3Boolean clocksTicked,
+						   fmi3Boolean intermediateVariableSetRequested,
+						   fmi3Boolean intermediateVariableGetAllowed,
+						   fmi3Boolean intermediateStepFinished,
+						   fmi3Boolean canReturnEarly,
+						   fmi3Boolean *earlyReturnRequested,
+						   fmi3Float64 *earlyReturnTime) {
 
     if (!instanceEnvironment) {
         return;
@@ -78,8 +77,9 @@ int main(int argc, char* argv[]) {
         NULL,                   // resourceLocation
         fmi3False,              // visible
         fmi3False,              // loggingOn
-        fmi3False,              // eventModeRequired
-        NULL,                   // requiredIntermediateVariables
+		fmi3False,              // eventModeUsed
+		fmi3False,              // earlyReturnAllowed
+		NULL,                   // requiredIntermediateVariables
         0,                      // nRequiredIntermediateVariables
         &instanceEnvironment,   // instanceEnvironment
         cb_logMessage,          // logMessage
@@ -114,10 +114,10 @@ int main(int argc, char* argv[]) {
         // Get outputs with fmi3Get{VariableType}()
         CHECK_STATUS(recordVariables(instanceEnvironment, tc))
 
-        fmi3Boolean terminate, earlyReturn;
+        fmi3Boolean eventEncountered, terminateSimulation, earlyReturn;
         fmi3Float64 lastSuccessfulTime;
 
-        CHECK_STATUS(fmi3DoStep(s, tc, step, fmi3False, &terminate, &earlyReturn, &lastSuccessfulTime))
+        CHECK_STATUS(fmi3DoStep(s, tc, step, fmi3False, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime))
 
         if (earlyReturn) {
             tc = instanceEnvironment.intermediateUpdateTime;

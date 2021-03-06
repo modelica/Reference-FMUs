@@ -3,6 +3,10 @@
 #include <stdlib.h>  // for free()
 #include <string.h>  // for strcmp()
 
+#ifdef _MSC_VER 
+#define strdup _strdup
+#endif
+
 
 const char *STRING_START = "Set me!";
 const char *BINARY_START = "Set me, too!";

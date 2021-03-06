@@ -2,7 +2,7 @@
 #define fmi3Functions_h
 
 /*
-This header file declares the functions of FMI 3.0-alpha.5.
+This header file declares the functions of FMI 3.0-alpha.6.
 It must be used when compiling an FMU.
 
 In order to have unique function names even if several FMUs
@@ -93,7 +93,7 @@ it may be set to __declspec(dllimport).
 #endif
 
 /* FMI version */
-#define fmi3Version "3.0-alpha.5"
+#define fmi3Version "3.0-alpha.6"
 
 /***************************************************
 Common Functions
@@ -171,7 +171,7 @@ Common Functions
 #define fmi3GetIntervalFraction      fmi3FullName(fmi3GetIntervalFraction)
 #define fmi3SetIntervalDecimal       fmi3FullName(fmi3SetIntervalDecimal)
 #define fmi3SetIntervalFraction      fmi3FullName(fmi3SetIntervalFraction)
-#define fmi3NewDiscreteStates        fmi3FullName(fmi3NewDiscreteStates)
+#define fmi3UpdateDiscreteStates     fmi3FullName(fmi3UpdateDiscreteStates)
 
 /***************************************************
 Functions for Model Exchange
@@ -196,7 +196,7 @@ Functions for Model Exchange
 Functions for Co-Simulation
 ****************************************************/
 
-/* Simulating the slave */
+/* Simulating the FMU */
 #define fmi3EnterStepMode            fmi3FullName(fmi3EnterStepMode)
 #define fmi3GetOutputDerivatives     fmi3FullName(fmi3GetOutputDerivatives)
 #define fmi3DoStep                   fmi3FullName(fmi3DoStep)
@@ -272,13 +272,13 @@ FMI3_Export fmi3EnterConfigurationModeTYPE fmi3EnterConfigurationMode;
 FMI3_Export fmi3ExitConfigurationModeTYPE  fmi3ExitConfigurationMode;
 
 /* Clock related functions */
-FMI3_Export fmi3GetClockTYPE            fmi3GetClock;
-FMI3_Export fmi3SetClockTYPE            fmi3SetClock;
-FMI3_Export fmi3GetIntervalDecimalTYPE  fmi3GetIntervalDecimal;
-FMI3_Export fmi3GetIntervalFractionTYPE fmi3GetIntervalFraction;
-FMI3_Export fmi3SetIntervalDecimalTYPE  fmi3SetIntervalDecimal;
-FMI3_Export fmi3SetIntervalFractionTYPE fmi3SetIntervalFraction;
-FMI3_Export fmi3NewDiscreteStatesTYPE   fmi3NewDiscreteStates;
+FMI3_Export fmi3GetClockTYPE             fmi3GetClock;
+FMI3_Export fmi3SetClockTYPE             fmi3SetClock;
+FMI3_Export fmi3GetIntervalDecimalTYPE   fmi3GetIntervalDecimal;
+FMI3_Export fmi3GetIntervalFractionTYPE  fmi3GetIntervalFraction;
+FMI3_Export fmi3SetIntervalDecimalTYPE   fmi3SetIntervalDecimal;
+FMI3_Export fmi3SetIntervalFractionTYPE  fmi3SetIntervalFraction;
+FMI3_Export fmi3UpdateDiscreteStatesTYPE fmi3UpdateDiscreteStates;
 
 /***************************************************
 Functions for Model Exchange
@@ -303,7 +303,7 @@ FMI3_Export fmi3GetNumberOfContinuousStatesTYPE   fmi3GetNumberOfContinuousState
 Functions for Co-Simulation
 ****************************************************/
 
-/* Simulating the slave */
+/* Simulating the FMU */
 FMI3_Export fmi3EnterStepModeTYPE          fmi3EnterStepMode;
 FMI3_Export fmi3GetOutputDerivativesTYPE   fmi3GetOutputDerivatives;
 FMI3_Export fmi3ActivateModelPartitionTYPE fmi3ActivateModelPartition;

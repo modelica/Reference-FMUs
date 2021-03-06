@@ -105,13 +105,14 @@ int main(int argc, char* argv[]) {
 
     // Instantiate the FMU
     fmi3Instance s = fmi3InstantiateCoSimulation(
-        "instance1",               // instanceName
+        "instance1",            // instanceName
         INSTANTIATION_TOKEN,    // instantiationToken
         NULL,                   // resourceLocation
         fmi3False,              // visible
         fmi3False,              // loggingOn
-        fmi3False,              // eventModeRequired
-        NULL,                   // requiredIntermediateVariables
+		fmi3False,              // eventModeUsed
+		fmi3False,              // earlyReturnAllowed
+		NULL,                   // requiredIntermediateVariables
         0,                      // nRequiredIntermediateVariables
         &instanceEnvironment,   // instanceEnvironment
         cb_logMessage,          // logMessage
@@ -136,10 +137,10 @@ int main(int argc, char* argv[]) {
 
     while (time < stopTime) {
 
-        fmi3Boolean terminate, earlyReturn;
+        fmi3Boolean eventEncountered, terminateSimulation, earlyReturn;
         fmi3Float64 lastSuccessfulTime;
 
-        CHECK_STATUS(fmi3DoStep(s, time, h, fmi3False, &terminate, &earlyReturn, &lastSuccessfulTime))
+        CHECK_STATUS(fmi3DoStep(s, time, h, fmi3False, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime))
 
         time += h;
     };
