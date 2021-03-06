@@ -3,7 +3,7 @@
 #include <stdlib.h>  // for free()
 #include <string.h>  // for strcmp()
 
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #define strdup _strdup
 #endif
 

@@ -22,14 +22,14 @@ unsigned __stdcall thr_activateModelPartition(void *args);
 static bool setAndCheckInputClocks(fmi3Instance s, fmi3Float64 time);
 static bool checkOutputClocks(fmi3Instance s);
 void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
-	fmi3Float64 intermediateUpdateTime,
-	fmi3Boolean clocksTicked,
-	fmi3Boolean intermediateVariableSetRequested,
-	fmi3Boolean intermediateVariableGetAllowed,
-	fmi3Boolean intermediateStepFinished,
-	fmi3Boolean canReturnEarly,
-	fmi3Boolean *earlyReturnRequested,
-	fmi3Float64 *earlyReturnTime);
+    fmi3Float64 intermediateUpdateTime,
+    fmi3Boolean clocksTicked,
+    fmi3Boolean intermediateVariableSetRequested,
+    fmi3Boolean intermediateVariableGetAllowed,
+    fmi3Boolean intermediateStepFinished,
+    fmi3Boolean canReturnEarly,
+    fmi3Boolean *earlyReturnRequested,
+    fmi3Float64 *earlyReturnTime);
 void cb_lockPreemption();
 void cb_unlockPreemption();
 fmi3Status setDebugLogging(fmi3Instance* comp, bool loggingOn, size_t nCategories, const char* const categories[]);
@@ -305,14 +305,14 @@ fmi3Status recordVariables(fmi3Instance s, fmi3Float64 time, int modelPart) {
  * returns always fmi3OK (practically a void funtion)
  */
 void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
-	fmi3Float64 intermediateUpdateTime,
-	fmi3Boolean clocksTicked,
-	fmi3Boolean intermediateVariableSetRequested,
-	fmi3Boolean intermediateVariableGetAllowed,
-	fmi3Boolean intermediateStepFinished,
-	fmi3Boolean canReturnEarly,
-	fmi3Boolean *earlyReturnRequested,
-	fmi3Float64 *earlyReturnTime) {
+    fmi3Float64 intermediateUpdateTime,
+    fmi3Boolean clocksTicked,
+    fmi3Boolean intermediateVariableSetRequested,
+    fmi3Boolean intermediateVariableGetAllowed,
+    fmi3Boolean intermediateStepFinished,
+    fmi3Boolean canReturnEarly,
+    fmi3Boolean *earlyReturnRequested,
+    fmi3Float64 *earlyReturnTime) {
 
     fmi3Instance *fmu = ((fmi3Instance*)instanceEnvironment);
 

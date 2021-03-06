@@ -497,7 +497,7 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn, dou
                                           comp->time,         // intermediateUpdateTime
                                           comp->clocksTicked, // clocksTicked
                                           false,              // intermediateVariableSetRequested
-										  true,               // intermediateVariableGetAllowed
+                                          true,               // intermediateVariableGetAllowed
                                           false,              // intermediateStepFinished
                                           true,               // canReturnEarly
                                           &earlyReturnRequested,

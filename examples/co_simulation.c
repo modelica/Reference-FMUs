@@ -29,21 +29,19 @@ int main(int argc, char* argv[]) {
 // tag::CoSimulation[]
 ////////////////////////////
 // Initialization sub-phase
-
-
-	typedef fmi3Instance fmi3InstantiateCoSimulationTYPE(
-		fmi3String                     instanceName,
-		fmi3String                     instantiationToken,
-		fmi3String                     resourceLocation,
-		fmi3Boolean                    visible,
-		fmi3Boolean                    loggingOn,
-		fmi3Boolean                    eventModeUsed,
-		fmi3Boolean                    earlyReturnAllowed,
-		const fmi3ValueReference       requiredIntermediateVariables[],
-		size_t                         nRequiredIntermediateVariables,
-		fmi3InstanceEnvironment        instanceEnvironment,
-		fmi3CallbackLogMessage         logMessage,
-		fmi3CallbackIntermediateUpdate intermediateUpdate);
+typedef fmi3Instance fmi3InstantiateCoSimulationTYPE(
+    fmi3String                     instanceName,
+    fmi3String                     instantiationToken,
+    fmi3String                     resourceLocation,
+    fmi3Boolean                    visible,
+    fmi3Boolean                    loggingOn,
+    fmi3Boolean                    eventModeUsed,
+    fmi3Boolean                    earlyReturnAllowed,
+    const fmi3ValueReference       requiredIntermediateVariables[],
+    size_t                         nRequiredIntermediateVariables,
+    fmi3InstanceEnvironment        instanceEnvironment,
+    fmi3CallbackLogMessage         logMessage,
+    fmi3CallbackIntermediateUpdate intermediateUpdate);
 
 // instantiate both FMUs
 s1 = s1_fmi3InstantiateCoSimulation("instance1",   // instanceName
@@ -51,9 +49,9 @@ s1 = s1_fmi3InstantiateCoSimulation("instance1",   // instanceName
                                     NULL,          // resourceLocation
                                     fmi3False,     // visible
                                     fmi3False,     // loggingOn
-									fmi3False,     // eventModeUsed
-									fmi3False,     // earlyReturnAllowed
-									NULL,          // requiredIntermediateVariables
+                                    fmi3False,     // eventModeUsed
+                                    fmi3False,     // earlyReturnAllowed
+                                    NULL,          // requiredIntermediateVariables
                                     0,             // nRequiredIntermediateVariables
                                     NULL,          // instanceEnvironment
                                     cb_logMessage, // logMessage
@@ -65,8 +63,8 @@ s2 = s2_fmi3InstantiateCoSimulation("instance1",   // instanceName
                                     fmi3False,     // visible
                                     fmi3False,     // loggingOn
                                     fmi3False,     // eventModeUsed
-									fmi3False,     // earlyReturnAllowed
-									NULL,          // requiredIntermediateVariables
+                                    fmi3False,     // earlyReturnAllowed
+                                    NULL,          // requiredIntermediateVariables
                                     0,             // nRequiredIntermediateVariables
                                     NULL,          // instanceEnvironment
                                     cb_logMessage, // logMessage

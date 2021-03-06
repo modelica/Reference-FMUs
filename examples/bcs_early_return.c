@@ -21,14 +21,14 @@ fmi3Status recordVariables(InstanceEnvironment instanceEnvironment, fmi3Float64 
 }
 
 void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
-						   fmi3Float64 intermediateUpdateTime,
-						   fmi3Boolean clocksTicked,
-						   fmi3Boolean intermediateVariableSetRequested,
-						   fmi3Boolean intermediateVariableGetAllowed,
-						   fmi3Boolean intermediateStepFinished,
-						   fmi3Boolean canReturnEarly,
-						   fmi3Boolean *earlyReturnRequested,
-						   fmi3Float64 *earlyReturnTime) {
+                           fmi3Float64 intermediateUpdateTime,
+                           fmi3Boolean clocksTicked,
+                           fmi3Boolean intermediateVariableSetRequested,
+                           fmi3Boolean intermediateVariableGetAllowed,
+                           fmi3Boolean intermediateStepFinished,
+                           fmi3Boolean canReturnEarly,
+                           fmi3Boolean *earlyReturnRequested,
+                           fmi3Float64 *earlyReturnTime) {
 
     if (!instanceEnvironment) {
         return;
@@ -77,9 +77,9 @@ int main(int argc, char* argv[]) {
         NULL,                   // resourceLocation
         fmi3False,              // visible
         fmi3False,              // loggingOn
-		fmi3False,              // eventModeUsed
-		fmi3False,              // earlyReturnAllowed
-		NULL,                   // requiredIntermediateVariables
+        fmi3False,              // eventModeUsed
+        fmi3False,              // earlyReturnAllowed
+        NULL,                   // requiredIntermediateVariables
         0,                      // nRequiredIntermediateVariables
         &instanceEnvironment,   // instanceEnvironment
         cb_logMessage,          // logMessage

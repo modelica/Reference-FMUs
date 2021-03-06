@@ -223,9 +223,9 @@ fmi3Instance fmi3InstantiateCoSimulation(
     fmi3String                     resourceLocation,
     fmi3Boolean                    visible,
     fmi3Boolean                    loggingOn,
-	fmi3Boolean                    eventModeUsed,
-	fmi3Boolean                    earlyReturnAllowed,
-	const fmi3ValueReference       requiredIntermediateVariables[],
+    fmi3Boolean                    eventModeUsed,
+    fmi3Boolean                    earlyReturnAllowed,
+    const fmi3ValueReference       requiredIntermediateVariables[],
     size_t                         nRequiredIntermediateVariables,
     fmi3InstanceEnvironment        instanceEnvironment,
     fmi3CallbackLogMessage         logMessage,
@@ -353,7 +353,7 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
 
 fmi3Status fmi3EnterEventMode(fmi3Instance instance,
     fmi3Boolean stepEvent,
-	fmi3Boolean stateEvent,
+    fmi3Boolean stateEvent,
     const fmi3Int32 rootsFound[],
     size_t nEventIndicators,
     fmi3Boolean timeEvent) {
@@ -820,10 +820,10 @@ fmi3Status fmi3ExitConfigurationMode(fmi3Instance instance) {
 }
 
 fmi3Status fmi3SetClock(fmi3Instance instance,
-						const fmi3ValueReference valueReferences[],
-						size_t nValueReferences,
-						const fmi3Clock values[],
-						size_t nValues) {
+                        const fmi3ValueReference valueReferences[],
+                        size_t nValueReferences,
+                        const fmi3Clock values[],
+                        size_t nValues) {
 
     ASSERT_STATE(SetClock)
 
@@ -841,10 +841,10 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
 }
 
 fmi3Status fmi3GetClock(fmi3Instance instance,
-						const fmi3ValueReference valueReferences[],
-						size_t nValueReferences,
-						fmi3Clock values[],
-						size_t nValues) {
+                        const fmi3ValueReference valueReferences[],
+                        size_t nValueReferences,
+                        fmi3Clock values[],
+                        size_t nValues) {
 
     ASSERT_STATE(GetClock)
 
@@ -863,7 +863,7 @@ fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
                                   const fmi3ValueReference valueReferences[],
                                   size_t nValueReferences,
                                   fmi3Float64 interval[],
-								  fmi3IntervalQualifier qualifier[],
+                                  fmi3IntervalQualifier qualifier[],
                                   size_t nValues) {
     NOT_IMPLEMENTED
 }
@@ -881,7 +881,7 @@ fmi3Status fmi3GetIntervalFraction(fmi3Instance instance,
                                    size_t nValueReferences,
                                    fmi3UInt64 intervalCounter[],
                                    fmi3UInt64 resolution[],
-							       fmi3IntervalQualifier qualifier[],
+                                   fmi3IntervalQualifier qualifier[],
                                    size_t nValues) {
     NOT_IMPLEMENTED
 }
@@ -896,7 +896,7 @@ fmi3Status fmi3SetIntervalFraction(fmi3Instance instance,
 }
 
 fmi3Status fmi3UpdateDiscreteStates(fmi3Instance instance,
-	                                fmi3Boolean *discreteStatesNeedUpdate,
+                                    fmi3Boolean *discreteStatesNeedUpdate,
                                     fmi3Boolean *terminateSimulation,
                                     fmi3Boolean *nominalsOfContinuousStatesChanged,
                                     fmi3Boolean *valuesOfContinuousStatesChanged,
@@ -1077,8 +1077,8 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
                       fmi3Float64 currentCommunicationPoint,
                       fmi3Float64 communicationStepSize,
                       fmi3Boolean noSetFMUStatePriorToCurrentPoint,
-					  fmi3Boolean* eventEncountered,
-					  fmi3Boolean* terminateSimulation,
+                      fmi3Boolean* eventEncountered,
+                      fmi3Boolean* terminateSimulation,
                       fmi3Boolean* earlyReturn,
                       fmi3Float64* lastSuccessfulTime) {
 
@@ -1093,13 +1093,13 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
     // TODO: pass to doStep()
     *terminateSimulation = fmi3False;
 
-	int earlyReturn_;
+    int earlyReturn_;
 
     Status status = doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &earlyReturn_, lastSuccessfulTime);
 
-	*earlyReturn = earlyReturn_;
+    *earlyReturn = earlyReturn_;
 
-	return (fmi3Status)status;
+    return (fmi3Status)status;
 }
 
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,

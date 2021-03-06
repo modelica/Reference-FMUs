@@ -85,9 +85,9 @@ int main(int argc, char* argv[]) {
         NULL,                   // resourceLocation
         fmi3False,              // visible
         fmi3False,              // loggingOn
-		fmi3False,              // eventModeUsed
-		fmi3False,              // earlyReturnAllowed
-		NULL,                   // requiredIntermediateVariables
+        fmi3False,              // eventModeUsed
+        fmi3False,              // earlyReturnAllowed
+        NULL,                   // requiredIntermediateVariables
         0,                      // nRequiredIntermediateVariables
         NULL,                   // instanceEnvironment
         cb_logMessage,          // logMessage

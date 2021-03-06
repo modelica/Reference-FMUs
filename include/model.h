@@ -93,12 +93,12 @@ typedef void (*unlockPreemptionType) ();
 
 typedef void (*intermediateUpdateType) (void *instanceEnvironment,
                                         double intermediateUpdateTime,
-										bool clocksTicked,
-										bool intermediateVariableSetRequested,
-										bool intermediateVariableGetAllowed,
-										bool intermediateStepFinished,
-										bool canReturnEarly,
-										bool *earlyReturnRequested,
+                                        bool clocksTicked,
+                                        bool intermediateVariableSetRequested,
+                                        bool intermediateVariableGetAllowed,
+                                        bool intermediateStepFinished,
+                                        bool canReturnEarly,
+                                        bool *earlyReturnRequested,
                                         double *earlyReturnTime);
 
 typedef struct {
