@@ -17,9 +17,8 @@ static fmi3Status recordVariables(fmi3Instance s, fmi3Float64 time) {
 
 static void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
                                   fmi3Float64 intermediateUpdateTime,
-                                  fmi3Boolean eventOccurred,
                                   fmi3Boolean clocksTicked,
-                                  fmi3Boolean intermediateVariableSetAllowed,
+                                  fmi3Boolean intermediateVariableSetRequested,
                                   fmi3Boolean intermediateVariableGetAllowed,
                                   fmi3Boolean intermediateStepFinished,
                                   fmi3Boolean canReturnEarly,

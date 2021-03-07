@@ -515,7 +515,7 @@ fmi3Status fmi3GetBinary(fmi3Instance instance, const fmi3ValueReference vr[], s
 
     for (int i = 0; i < nvr; i++) {
         size_t index = 0;
-        Status s = getBinary(S, vr[i], size, value, &index);
+        Status s = getBinary(S, vr[i], size, (const char**)value, &index);
         status = max(status, s);
         if (status > Warning) return (fmi3Status)status;
     }
@@ -633,7 +633,7 @@ fmi3Status fmi3SetBinary(fmi3Instance instance, const fmi3ValueReference vr[], s
 
     for (int i = 0; i < nvr; i++) {
         size_t index = 0;
-        Status s = setBinary(S, vr[i], size, value, &index);
+        Status s = setBinary(S, vr[i], size, (const char* const*)value, &index);
         status = max(status, s);
         if (status > Warning) return (fmi3Status)status;
     }

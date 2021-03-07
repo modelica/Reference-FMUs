@@ -23,9 +23,8 @@ fmi3Status recordVariables(InstanceEnvironment *instanceEnvironment, fmi3Float64
 
 void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
                            fmi3Float64 intermediateUpdateTime,
-                           fmi3Boolean eventOccurred,
                            fmi3Boolean clocksTicked,
-                           fmi3Boolean intermediateVariableSetAllowed,
+                           fmi3Boolean intermediateVariableSetRequested,
                            fmi3Boolean intermediateVariableGetAllowed,
                            fmi3Boolean intermediateStepFinished,
                            fmi3Boolean canReturnEarly,
@@ -45,10 +44,6 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
 
     fmi3Status status = fmi3OK;
 
-    if (eventOccurred) {
-        return; // don't record events
-    }
-
     // if getting intermediate output variables is allowed
     if (intermediateVariableGetAllowed) {
 
@@ -63,7 +58,7 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     }
 
     // if setting intermediate output variables is allowed
-    if (intermediateVariableSetAllowed) {
+    if (intermediateVariableSetRequested) {
         // Compute intermediate input variables from output variables and
         // variables from other FMUs. Use latest available output
         // variables, possibly from get functions above.
