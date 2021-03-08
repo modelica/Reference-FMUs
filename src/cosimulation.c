@@ -371,7 +371,7 @@ Status activateClock(ModelInstance* comp, ValueReference vr) {
 #endif
 
 #ifndef GET_CLOCK
-Status getClock(ModelInstance* comp, ValueReference vr, _Bool *value) {
+Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
     UNUSED(comp)
     UNUSED(vr)
     UNUSED(value)

@@ -896,12 +896,12 @@ fmi3Status fmi3SetIntervalFraction(fmi3Instance instance,
 }
 
 fmi3Status fmi3UpdateDiscreteStates(fmi3Instance instance,
-                                    fmi3Boolean *discreteStatesNeedUpdate,
-                                    fmi3Boolean *terminateSimulation,
-                                    fmi3Boolean *nominalsOfContinuousStatesChanged,
-                                    fmi3Boolean *valuesOfContinuousStatesChanged,
-                                    fmi3Boolean *nextEventTimeDefined,
-                                    fmi3Float64 *nextEventTime) {
+                                    fmi3Boolean* discreteStatesNeedUpdate,
+                                    fmi3Boolean* terminateSimulation,
+                                    fmi3Boolean* nominalsOfContinuousStatesChanged,
+                                    fmi3Boolean* valuesOfContinuousStatesChanged,
+                                    fmi3Boolean* nextEventTimeDefined,
+                                    fmi3Float64* nextEventTime) {
 
     ASSERT_STATE(NewDiscreteStates)
 
