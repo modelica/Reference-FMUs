@@ -6,7 +6,7 @@ import os
 
 repo_dir = os.path.dirname(__file__)
 
-test_fmus_version = '0.0.4'
+test_fmus_version = '0.0.5'
 
 
 def merge(fmi_version, fmi_types):
