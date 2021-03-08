@@ -4,6 +4,7 @@ set(EXAMPLE_SOURCES
   include/fmi3Functions.h
   include/fmi3FunctionTypes.h
   include/fmi3PlatformTypes.h
+  include/model.h
   examples/util.h
 )
 

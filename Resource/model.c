@@ -33,7 +33,7 @@ void calculateValues(ModelInstance *comp) {
 #ifdef _WIN32
     DWORD pathLen = MAX_PATH_LENGTH;
 
-    if (PathCreateFromUrl(comp->resourceLocation, path, &pathLen, NULL) != S_OK) {
+    if (PathCreateFromUrl(comp->resourceLocation, path, &pathLen, 0) != S_OK) {
         return;
     }
 

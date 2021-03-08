@@ -223,7 +223,8 @@ fmi3Instance fmi3InstantiateCoSimulation(
     fmi3String                     resourceLocation,
     fmi3Boolean                    visible,
     fmi3Boolean                    loggingOn,
-    fmi3Boolean                    eventModeRequired,
+    fmi3Boolean                    eventModeUsed,
+    fmi3Boolean                    earlyReturnAllowed,
     const fmi3ValueReference       requiredIntermediateVariables[],
     size_t                         nRequiredIntermediateVariables,
     fmi3InstanceEnvironment        instanceEnvironment,
@@ -352,6 +353,7 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
 
 fmi3Status fmi3EnterEventMode(fmi3Instance instance,
     fmi3Boolean stepEvent,
+    fmi3Boolean stateEvent,
     const fmi3Int32 rootsFound[],
     size_t nEventIndicators,
     fmi3Boolean timeEvent) {
@@ -513,7 +515,7 @@ fmi3Status fmi3GetBinary(fmi3Instance instance, const fmi3ValueReference vr[], s
 
     for (int i = 0; i < nvr; i++) {
         size_t index = 0;
-        Status s = getBinary(S, vr[i], size, value, &index);
+        Status s = getBinary(S, vr[i], size, (const char**)value, &index);
         status = max(status, s);
         if (status > Warning) return (fmi3Status)status;
     }
@@ -631,7 +633,7 @@ fmi3Status fmi3SetBinary(fmi3Instance instance, const fmi3ValueReference vr[], s
 
     for (int i = 0; i < nvr; i++) {
         size_t index = 0;
-        Status s = setBinary(S, vr[i], size, value, &index);
+        Status s = setBinary(S, vr[i], size, (const char* const*)value, &index);
         status = max(status, s);
         if (status > Warning) return (fmi3Status)status;
     }
@@ -821,7 +823,6 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
                         const fmi3ValueReference valueReferences[],
                         size_t nValueReferences,
                         const fmi3Clock values[],
-                        const fmi3Boolean subactive[],
                         size_t nValues) {
 
     ASSERT_STATE(SetClock)
@@ -862,6 +863,7 @@ fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
                                   const fmi3ValueReference valueReferences[],
                                   size_t nValueReferences,
                                   fmi3Float64 interval[],
+                                  fmi3IntervalQualifier qualifier[],
                                   size_t nValues) {
     NOT_IMPLEMENTED
 }
@@ -879,6 +881,7 @@ fmi3Status fmi3GetIntervalFraction(fmi3Instance instance,
                                    size_t nValueReferences,
                                    fmi3UInt64 intervalCounter[],
                                    fmi3UInt64 resolution[],
+                                   fmi3IntervalQualifier qualifier[],
                                    size_t nValues) {
     NOT_IMPLEMENTED
 }
@@ -892,13 +895,13 @@ fmi3Status fmi3SetIntervalFraction(fmi3Instance instance,
     NOT_IMPLEMENTED
 }
 
-fmi3Status fmi3NewDiscreteStates(fmi3Instance instance,
-                                 fmi3Boolean *newDiscreteStatesNeeded,
-                                 fmi3Boolean *terminateSimulation,
-                                 fmi3Boolean *nominalsOfContinuousStatesChanged,
-                                 fmi3Boolean *valuesOfContinuousStatesChanged,
-                                 fmi3Boolean *nextEventTimeDefined,
-                                 fmi3Float64 *nextEventTime) {
+fmi3Status fmi3UpdateDiscreteStates(fmi3Instance instance,
+                                    fmi3Boolean* discreteStatesNeedUpdate,
+                                    fmi3Boolean* terminateSimulation,
+                                    fmi3Boolean* nominalsOfContinuousStatesChanged,
+                                    fmi3Boolean* valuesOfContinuousStatesChanged,
+                                    fmi3Boolean* nextEventTimeDefined,
+                                    fmi3Float64* nextEventTime) {
 
     ASSERT_STATE(NewDiscreteStates)
 
@@ -912,7 +915,7 @@ fmi3Status fmi3NewDiscreteStates(fmi3Instance instance,
     S->isNewEventIteration = false;
 
     // copy internal eventInfo of component to output arguments
-    if (newDiscreteStatesNeeded)           *newDiscreteStatesNeeded           = S->newDiscreteStatesNeeded;
+    if (discreteStatesNeedUpdate)          *discreteStatesNeedUpdate          = S->newDiscreteStatesNeeded;
     if (terminateSimulation)               *terminateSimulation               = S->terminateSimulation;
     if (nominalsOfContinuousStatesChanged) *nominalsOfContinuousStatesChanged = S->nominalsOfContinuousStatesChanged;
     if (valuesOfContinuousStatesChanged)   *valuesOfContinuousStatesChanged   = S->valuesOfContinuousStatesChanged;
@@ -978,17 +981,17 @@ fmi3Status fmi3SetContinuousStates(fmi3Instance instance, const fmi3Float64 x[],
 }
 
 /* Evaluation of the model equations */
-fmi3Status fmi3GetDerivatives(fmi3Instance instance, fmi3Float64 derivatives[], size_t nx) {
+fmi3Status fmi3GetDerivatives(fmi3Instance instance, fmi3Float64 derivatives[], size_t nContinuousStates) {
 
     ASSERT_STATE(GetDerivatives)
 
-    if (invalidNumber(S, "fmi3GetDerivatives", "nx", nx, NX))
+    if (invalidNumber(S, "fmi3GetDerivatives", "nContinuousStates", nContinuousStates, NX))
         return fmi3Error;
 
     if (nullPointer(S, "fmi3GetDerivatives", "derivatives[]", derivatives))
         return fmi3Error;
 
-    getDerivatives(S, derivatives, nx);
+    getDerivatives(S, derivatives, nContinuousStates);
 
     return fmi3OK;
 }
@@ -1074,7 +1077,8 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
                       fmi3Float64 currentCommunicationPoint,
                       fmi3Float64 communicationStepSize,
                       fmi3Boolean noSetFMUStatePriorToCurrentPoint,
-                      fmi3Boolean* terminate,
+                      fmi3Boolean* eventEncountered,
+                      fmi3Boolean* terminateSimulation,
                       fmi3Boolean* earlyReturn,
                       fmi3Float64* lastSuccessfulTime) {
 
@@ -1087,9 +1091,15 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
     }
 
     // TODO: pass to doStep()
-    *terminate = fmi3False;
+    *terminateSimulation = fmi3False;
 
-    return (fmi3Status)doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, earlyReturn, lastSuccessfulTime);
+    int earlyReturn_;
+
+    Status status = doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &earlyReturn_, lastSuccessfulTime);
+
+    *earlyReturn = earlyReturn_;
+
+    return (fmi3Status)status;
 }
 
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,

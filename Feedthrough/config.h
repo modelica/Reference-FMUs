@@ -55,12 +55,12 @@ typedef struct {
     double      real_discrete;
     int         integer;
     bool        boolean;
-    const char *string;
+    const char* string;
     size_t      binary_size;
-    const char *binary;
+    const char* binary;
 } ModelData;
 
-extern const char *STRING_START;
-extern const char *BINARY_START;
+extern const char* STRING_START;
+extern const char* BINARY_START;
 
 #endif /* config_h */

@@ -36,19 +36,18 @@ static void activateModelPartition1(ModelInstance *comp, double time) {
 
     comp->unlockPreemtion();
 
-    int earlyReturnRequested;
+    bool earlyReturnRequested;
     double earlyReturnTime;
 
     if (M(outClock1) || M(outClock2)) {
         comp->intermediateUpdate(
-            comp, // fmu instance
-            time, // intermediateUpdateTime
-            0,    // eventOccurred
-            1,    // clocksTicked
-            0,    // intermediateVariableSetAllowed
-            0,    // intermediateVariableGetAllowed
-            1,    // intermediateStepFinished
-            0,     // canReturnEarly
+            comp,   // fmu instance
+            time,   // intermediateUpdateTime
+            true,   // clocksTicked
+            false,  // intermediateVariableSetAllowed
+            false,  // intermediateVariableGetAllowed
+            true,   // intermediateStepFinished
+            false,  // canReturnEarly
             &earlyReturnRequested,
             &earlyReturnTime
         );
@@ -78,19 +77,18 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
     M(outClock2) = ((M(outClock2) == false) && (M(totalInClockTicks) % 5 == 0));
     comp->unlockPreemtion();
 
-    int earlyReturnRequested;
+    bool earlyReturnRequested;
     double earlyReturnTime;
 
-    if (M(outClock2)) {
+    if (M(outClock1) || M(outClock2)) {
         comp->intermediateUpdate(
-            comp,  // fmu instance
-            time,  // intermediateUpdateTime
-            0,     // eventOccurred
-            1,     // clocksTicked
-            0,     // intermediateVariableSetAllowed
-            0,     // intermediateVariableGetAllowed
-            1,     // intermediateStepFinished
-            0,     // canReturnEarly
+            comp,   // fmu instance
+            time,   // intermediateUpdateTime
+            true,   // clocksTicked
+            false,  // intermediateVariableSetAllowed
+            false,  // intermediateVariableGetAllowed
+            true,   // intermediateStepFinished
+            false,  // canReturnEarly
             &earlyReturnRequested,
             &earlyReturnTime
         );
@@ -124,21 +122,22 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
     M(outClock2) = ((M(outClock2) == false) && (M(totalInClockTicks) % 5 == 0));
     if (M(outClock2)) {
 
-        int earlyReturnRequested;
+        bool earlyReturnRequested;
         double earlyReturnTime;
 
-        comp->intermediateUpdate(
-            comp,  // fmu instance
-            time,  // intermediateUpdateTime
-            0,     // eventOccurred
-            1,     // clocksTicked
-            0,     // intermediateVariableSetAllowed
-            0,     // intermediateVariableGetAllowed
-            1,     // intermediateStepFinished
-            0,     // canReturnEarly
-            &earlyReturnRequested,
-            &earlyReturnTime
-        );
+        if (M(outClock1) || M(outClock2)) {
+            comp->intermediateUpdate(
+                comp,   // fmu instance
+                time,   // intermediateUpdateTime
+                true,   // clocksTicked
+                false,  // intermediateVariableSetAllowed
+                false,  // intermediateVariableGetAllowed
+                true,   // intermediateStepFinished
+                false,  // canReturnEarly
+                &earlyReturnRequested,
+                &earlyReturnTime
+            );
+        }
     }
 }
 
@@ -202,7 +201,7 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *inde
     }
 }
 
-Status getClock(ModelInstance* comp, ValueReference vr, int* value) {
+Status getClock(ModelInstance* comp, ValueReference vr, _Bool *value) {
 
     switch (vr) {
     case vr_outClock1:
