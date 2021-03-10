@@ -2,7 +2,7 @@ import unittest
 import subprocess
 import os
 import shutil
-from fmpy import simulate_fmu, platform
+from fmpy import simulate_fmu, platform, read_model_description
 from fmpy.util import compile_platform_binary
 
 
@@ -71,6 +71,8 @@ class BuildTest(unittest.TestCase):
 
                 if compile:
                     compile_platform_binary(fmu_filename)
+
+                read_model_description(fmu_filename, validate_variable_names=True, validate_model_structure=True)
 
                 result = simulate_fmu(fmu_filename,
                                       fmi_type=fmi_type,
