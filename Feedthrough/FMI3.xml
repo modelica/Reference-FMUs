@@ -46,7 +46,11 @@
     <Output valueReference="7"/>
     <Output valueReference="9"/>
     <Output valueReference="12"/>
-    <InitialUnknown valueReference="3"/>
+    <InitialUnknown valueReference="3" dependencies="2" dependenciesKind="constant"/>
+    <InitialUnknown valueReference="5" dependencies="4" dependenciesKind="constant"/>
+    <InitialUnknown valueReference="7" dependencies="6" dependenciesKind="constant"/>
+    <InitialUnknown valueReference="9" dependencies="8" dependenciesKind="constant"/>
+    <InitialUnknown valueReference="12" dependencies="11" dependenciesKind="constant"/>
   </ModelStructure>
 
 </fmiModelDescription>
