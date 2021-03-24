@@ -20,13 +20,17 @@
   <Int32 name="output3" valueReference="2007" causality="output"/>
  </ModelVariables>
  <ModelStructure>
-  <Output valueReference="1005"/>
+  <Output valueReference="1005" dependencies="1001 1002 1003"/>
   <Output valueReference="2001" dependencies="1001"/>
   <Output valueReference="2002" dependencies="1002"/>
   <Output valueReference="2003" dependencies="1003"/>
   <Output valueReference="2004" dependencies="1001 1002 1003"/>
-  <Output valueReference="2005"/>
-  <Output valueReference="2007"/>
+  <Output valueReference="2005" dependencies="1002 2006"/>
+  <Output valueReference="2007" dependencies="1003"/>
+  <Clock valueReference="1001" clockedVariables="1005 2001 2004"/>
+  <Clock valueReference="1002" clockedVariables="1005 2002 2005"/>
+  <Clock valueReference="1003" clockedVariables="1005 2004 2007"/>
+  <Clock valueReference="1005"/> 
  </ModelStructure>
 <!--
 time        0 1 2 3 4 5 6 7 8 9

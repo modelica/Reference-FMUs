@@ -115,7 +115,7 @@ fmi3Int32 inputClockPrio[N_INPUT_CLOCKS] = { 2, 1, -1 };
 
 /* *****************  Output clocks ***************** */
 fmi3Clock outputClocks[N_OUTPUT_CLOCKS] = { fmi3ClockInactive };
-const fmi3ValueReference vrOutputClocks[N_OUTPUT_CLOCKS] = { vr_outClock1, vr_outClock2 };
+const fmi3ValueReference vrOutputClocks[N_OUTPUT_CLOCKS] = { vr_outClock1, vr_outClock };
 /* ********************************************************* */
 
 /* *****************  Misc ***************** */
@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
     // Initialize logging
     char* const categories[1] = { "logEvents" };
     setDebugLogging(s, true, 1, categories);
-    logEvent(s, "Running Scheduled Execution Co-Simulation example...\n");
+    logEvent(s, "Running Scheduled Execution example...\n");
 
     // Get a global lock
     globalLockVar = GlobalAlloc(GMEM_FIXED, sizeof(globalLockVar));

@@ -31,7 +31,7 @@ typedef enum {
     vr_inClock2          = 1002,
     vr_inClock3          = 1003,
     vr_outClock1         = 1004,
-    vr_outClock2         = 1005,
+    vr_outClock          = 1005,
     vr_inClock1Ticks     = 2001,
     vr_inClock2Ticks     = 2002,
     vr_inClock3Ticks     = 2003,
@@ -43,7 +43,7 @@ typedef enum {
 
 typedef struct {
     int outClock1;
-    int outClock2;
+    int outClock;
     int inClock1Ticks;
     int inClock2Ticks;
     int inClock3Ticks;
