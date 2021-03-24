@@ -53,7 +53,7 @@ static void cb_unlockPreemption() {
 
 int main(int argc, char* argv[]) {
 
-    printf("Running synchronous Scheduled Co-Simulation example... ");
+    printf("Running synchronous Scheduled Execution example... ");
     printf("\n");
 
     fmi3Status status = fmi3OK;
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
 
     int time = 0;
 
-    fmi3ValueReference outClockVRs[2] = { vr_outClock1, vr_outClock2 };
+    fmi3ValueReference outClockVRs[2] = { vr_outClock1, vr_outClock };
     fmi3Clock outClockValues[2];
 
     // simulation loop
