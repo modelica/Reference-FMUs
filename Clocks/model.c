@@ -9,7 +9,6 @@ time        0 1 2 3 4 5 6 7 8 9
 inClock1    + + + + + + + + + +   t % 4 == 0
 inClock2    + +             + +   t % 8 == 0 || (t - 1) % 8 == 0
 inClock3          +               depends on outClock1
-outClock1         +               time == 3 (triggered by inClock1)
 outClock    ? ? ? ? ? ? ? ? ? ?   totalInTicks % 5 == 0 (triggered by all inClocks)
 time        0 1 2 3 4 5 6 7 8 9
 

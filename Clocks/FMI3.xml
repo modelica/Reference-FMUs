@@ -30,7 +30,7 @@
   <Clock valueReference="1001" clockedVariables="1005 2001 2004"/>
   <Clock valueReference="1002" clockedVariables="1005 2002 2005"/>
   <Clock valueReference="1003" clockedVariables="1005 2004 2007"/>
-  <Clock valueReference="1005"/> 
+  <Clock valueReference="1005"/>
  </ModelStructure>
 <!--
 time        0 1 2 3 4 5 6 7 8 9
