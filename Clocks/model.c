@@ -18,10 +18,10 @@ time        0 1 2 3 4 5 6 7 8 9
 ModelPartition 1 does the following:
   - increments the clock tick counters
   - resets that value
-  - if time is 4, output clock 1 is triggered (which will trigger Model Partition 3)
+  - if time is 4, countdown clock inClock3's interval is set (which will trigger Model Partition 3)
   - triggers outClock, if the number of totalInTicks is a multiple of 5
 **************************************/
-static void activateModelPartition1(ModelInstance *comp, double time) {
+static void activateModelPartition1(ModelInstance* comp, double time) {
 
     comp->lockPreemtion();
 
@@ -29,8 +29,11 @@ static void activateModelPartition1(ModelInstance *comp, double time) {
     M(inClock1Ticks)++;
     M(totalInClockTicks)++;
 
-    // set the output clocks
-    M(outClock1) = ((M(outClock1) == false) && (((int)time) == 4));
+    // set countdown and output clocks
+	if ((int)time == 4) {
+        M(inClock3_qualifier)= 2; // fmi3IntervalChanged
+        M(inClock3_interval) = 0.0;
+    }
     M(outClock) = ((M(outClock) == false) && (M(totalInClockTicks) % 5 == 0));
 
     comp->unlockPreemtion();
@@ -38,7 +41,7 @@ static void activateModelPartition1(ModelInstance *comp, double time) {
     bool earlyReturnRequested;
     double earlyReturnTime;
 
-    if (M(outClock1) || M(outClock)) {
+    if (M(inClock3_qualifier) == 2 || M(outClock)) {
         comp->intermediateUpdate(
             comp,   // fmu instance
             time,   // intermediateUpdateTime
@@ -79,7 +82,7 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
     bool earlyReturnRequested;
     double earlyReturnTime;
 
-    if (M(outClock1) || M(outClock)) {
+    if (M(outClock)) {
         comp->intermediateUpdate(
             comp,   // fmu instance
             time,   // intermediateUpdateTime
@@ -124,7 +127,7 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
         bool earlyReturnRequested;
         double earlyReturnTime;
 
-        if (M(outClock1) || M(outClock)) {
+        if (M(outClock)) {
             comp->intermediateUpdate(
                 comp,   // fmu instance
                 time,   // intermediateUpdateTime
@@ -141,7 +144,8 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
 }
 
 void setStartValues(ModelInstance *comp) {
-    M(outClock1)         = 0;
+    M(inClock3_interval) = 0.0;
+    M(inClock3_qualifier)= 0; // fmi3IntervalNotYetKnown
     M(outClock)          = 0;
     M(inClock1Ticks)     = 0;
     M(inClock2Ticks)     = 0;
@@ -203,15 +207,28 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *inde
 Status getClock(ModelInstance* comp, ValueReference vr, _Bool *value) {
 
     switch (vr) {
-    case vr_outClock1:
-        *value = M(outClock1);
-        return OK;
     case vr_outClock:
         *value = M(outClock);
+        M(outClock) = false;
         return OK;
     default:
         return Error;
     }
+}
+
+Status getInterval(ModelInstance* comp, ValueReference vr, float* interval, int* qualifier) {
+
+	switch (vr) {
+	case vr_inClock3:
+		*qualifier = M(inClock3_qualifier);
+		if (*qualifier == 2) {                  // fmi3IntervalChanged
+			*interval = M(inClock3_interval);
+			M(inClock3_qualifier) = 1;          // fmi3IntervalUnchanged
+		}
+		return OK;
+	default:
+		return Error;
+	}
 }
 
 Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime) {

@@ -825,7 +825,7 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
                         const fmi3Clock values[],
                         size_t nValues) {
 
-    ASSERT_STATE(SetClock)
+    // ASSERT_STATE(SetClock)
 
     Status status = OK;
 
@@ -846,7 +846,7 @@ fmi3Status fmi3GetClock(fmi3Instance instance,
                         fmi3Clock values[],
                         size_t nValues) {
 
-    ASSERT_STATE(GetClock)
+    // ASSERT_STATE(GetClock)
 
     Status status = OK;
 
@@ -865,7 +865,17 @@ fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
                                   fmi3Float64 interval[],
                                   fmi3IntervalQualifier qualifier[],
                                   size_t nValues) {
-    NOT_IMPLEMENTED
+
+    // ? Check nValueReferences != nValues
+    Status status = OK;
+
+    for (size_t i = 0; i < nValueReferences; i++) {
+        Status s = getInterval(instance, valueReferences[i], &interval[i], &qualifier[i]);
+        status = max(status, s);
+        if (status > Warning) return (fmi3Status)status;
+    }
+
+    return (fmi3Status)status;
 }
 
 fmi3Status fmi3SetIntervalDecimal(fmi3Instance instance,

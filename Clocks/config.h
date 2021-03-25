@@ -22,7 +22,6 @@
 #define GET_CLOCK
 #define ACTIVATE_MODEL_PARTITION
 #define N_INPUT_CLOCKS 3
-#define N_OUTPUT_CLOCKS 2
 
 #define FIXED_SOLVER_STEP 1
 
@@ -42,7 +41,8 @@ typedef enum {
 } ValueReference;
 
 typedef struct {
-    int outClock1;
+    float inClock3_interval;
+    int inClock3_qualifier;
     int outClock;
     int inClock1Ticks;
     int inClock2Ticks;
