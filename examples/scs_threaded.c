@@ -78,6 +78,7 @@ typedef struct threadArgs_t {
     ValueReference clockRef;
     unsigned int* retval;
     double activationTime;
+    double delay;
 } ThreadArgs;
 
 ThreadArgs iu_arguments;
@@ -187,7 +188,7 @@ int main(int argc, char* argv[]) {
     HANDLE thrHandle[N_INPUT_CLOCKS];
 
     // Need a set of arguments for every Inputclock. otherwise the arguments will be overwritten
-    ThreadArgs thrArguments[N_INPUT_CLOCKS];
+    ThreadArgs thrArguments[2];
     int curThrHandle;
 
     DWORD_PTR processorNumber = GetCurrentProcessorNumber();
@@ -202,7 +203,7 @@ int main(int argc, char* argv[]) {
             logEvent(s, "==========> time =%g", time);
 
             curThrHandle = 0; // Number of threads that have been fired at this particular point in time
-            for (int i = 0; i < N_INPUT_CLOCKS; i++)
+            for (int i = 0; i < 2; i++)
             {
                 if (inputClocks[i] == fmi3ClockActive) {
                     logEvent(s, "starting thread for clock %s (vr=%d)", i == IDX_IN_CLOCK1 ? "InClock_1" : "InClock_2", vrInputClocks[i]);
@@ -210,7 +211,6 @@ int main(int argc, char* argv[]) {
                     thrArguments[i].clockRef = vrInputClocks[i];
                     thrArguments[i].retval = &returnval[i];
                     thrArguments[i].activationTime = time;
-
                     thrHandle[curThrHandle] = (HANDLE)_beginthreadex(NULL, 0, thr_activateModelPartition, &thrArguments[i], 0, NULL);
                     if (thrHandle[curThrHandle] != NULL) {
                         SetThreadAffinityMask(thrHandle[curThrHandle], processorMask);
@@ -336,7 +336,7 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     // In order to be threadsafe we have to check the clocks under lock
     // and copy their states
     GlobalLock(globalLockVar);
-    if (!checkOutputClocks(fmu) && !checkCountdownClocks(fmu)) {
+    if (!checkOutputClocks(fmu) & !checkCountdownClocks(fmu)) {
         GlobalUnlock(globalLockVar);
         logEvent(fmu, "No clock active in intermediateUpdate callback");
         return;
@@ -344,11 +344,7 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     localOutputClocks[0] = outputClocks[0];
     GlobalUnlock(globalLockVar);
 
-
-    // Some output clock ticked, check for dependend input clocks and, if there are any, fire them
-    // input clock 3 depends on output clock 1
-    // This dependency is taken from ModelDescription.xml
-    if (countdownClocksQualifier == fmi3IntervalChanged) {
+    if (countdownClocksQualifier[0] == fmi3IntervalChanged) {
         // create a thread that will run the model partition for input clock 3
         logEvent(instanceEnvironment, "cb_intermediateUpdate starting thread for input clock 3 (vr=%d)", vr_inClock3);
 
@@ -356,6 +352,7 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
         iu_arguments.clockRef = vr_inClock3;
         iu_arguments.retval = &returnval;
         iu_arguments.activationTime = time;
+        iu_arguments.delay = countdownClockIntervals[0];
         thr_handle = (HANDLE)_beginthreadex(NULL, 0, thr_activateModelPartition, &iu_arguments, 0, NULL);
         if (thr_handle != NULL) {
             // Bind the thread to the designated processor
