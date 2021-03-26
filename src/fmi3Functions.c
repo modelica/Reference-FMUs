@@ -825,7 +825,7 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
                         const fmi3Clock values[],
                         size_t nValues) {
 
-    // ASSERT_STATE(SetClock)
+    ASSERT_STATE(SetClock)
 
     Status status = OK;
 
@@ -846,7 +846,7 @@ fmi3Status fmi3GetClock(fmi3Instance instance,
                         fmi3Clock values[],
                         size_t nValues) {
 
-    // ASSERT_STATE(GetClock)
+    ASSERT_STATE(GetClock)
 
     Status status = OK;
 
