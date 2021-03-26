@@ -39,7 +39,6 @@ void logEvent(fmi3Instance* comp, const char* message, ...);
 
 /* *****************  Misc defines ***************** */
 
-#define CHECK_STATUS(S) status = S; if (status != fmi3OK) goto out;
 #define START_TIME 0
 #define STOP_TIME 10
 // defines for the indexes of the clocks into the inputClocks[] array
@@ -156,7 +155,7 @@ int main(int argc, char* argv[]) {
 
     if (s == NULL) {
         status = fmi3Error;
-        goto out;
+        goto TERMINATE;
     }
 
     // Initialize logging
@@ -169,7 +168,7 @@ int main(int argc, char* argv[]) {
     if (globalLockVar == NULL) {
         status = fmi3Error;
         logEvent(s, "Allocating the global lock failed: %ld", GetLastError());
-        goto out;
+        goto TERMINATE;
     }
 
     CHECK_STATUS(initializeOutputFiles());
@@ -219,7 +218,7 @@ int main(int argc, char* argv[]) {
                     else {
                         logEvent(s, "Could not create thread in main loop");
                         status = fmi3Fatal;
-                        goto out;
+                        goto TERMINATE;
                     }
                     curThrHandle++;
                     inputClocks[i] = fmi3ClockInactive;
@@ -234,7 +233,7 @@ int main(int argc, char* argv[]) {
     }
 
 
-out:
+TERMINATE:
 
 
     if (s && status != fmi3Error && status != fmi3Fatal) {
