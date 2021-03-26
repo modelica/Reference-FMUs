@@ -29,7 +29,7 @@ static void activateModelPartition1(ModelInstance* comp, double time) {
     M(totalInClockTicks)++;
 
     // set countdown and output clocks
-	if ((int)time == 4) {
+    if ((int)time == 4) {
         M(inClock3_qualifier)= 2; // fmi3IntervalChanged
         M(inClock3_interval) = 0.0;
     }
@@ -215,18 +215,18 @@ Status getClock(ModelInstance* comp, ValueReference vr, _Bool *value) {
 }
 
 Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier) {
-
-	switch (vr) {
-	case vr_inClock3:
-		*qualifier = M(inClock3_qualifier);
-		if (*qualifier == 2) {                  // fmi3IntervalChanged
-			*interval = M(inClock3_interval);
-			M(inClock3_qualifier) = 1;          // fmi3IntervalUnchanged
-		}
-		return OK;
-	default:
-		return Error;
-	}
+    
+    switch (vr) {
+    case vr_inClock3:
+        *qualifier = M(inClock3_qualifier);
+        if (*qualifier == 2) {                  // fmi3IntervalChanged
+            *interval = M(inClock3_interval);
+            M(inClock3_qualifier) = 1;          // fmi3IntervalUnchanged
+        }
+        return OK;
+    default:
+        return Error;
+    }
 }
 
 Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime) {

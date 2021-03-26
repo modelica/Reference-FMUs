@@ -381,11 +381,11 @@ Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
 
 #ifndef GET_INTERVAL
 Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier) {
-	UNUSED(comp)
-    UNUSED(vr)
-	UNUSED(interval)
-	UNUSED(qualifier)
-	return Error;
+    UNUSED(comp)
+        UNUSED(vr)
+        UNUSED(interval)
+        UNUSED(qualifier)
+        return Error;
 }
 #endif
 
