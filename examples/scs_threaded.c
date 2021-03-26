@@ -246,7 +246,7 @@ TERMINATE:
         fclose(outputFile[part]);
     }
 
-    logEvent(s, "... finished Scheduled Execution Co-Simulation example.\n");
+    logEvent(s, "... finished Scheduled Execution example.\n");
     if (s && status != fmi3Fatal && terminateStatus != fmi3Fatal) {
         fmi3FreeInstance(s); // After this point, logEvent is no longer possible
     }

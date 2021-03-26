@@ -17,7 +17,6 @@ time        0 1 2 3 4 5 6 7 8 9
 /**************************************
 ModelPartition 1 does the following:
   - increments the clock tick counters
-  - resets that value
   - if time is 4, countdown clock inClock3's interval is set (which will trigger Model Partition 3)
   - triggers outClock, if the number of totalInTicks is a multiple of 5
 **************************************/
@@ -60,7 +59,6 @@ static void activateModelPartition1(ModelInstance* comp, double time) {
 ModelPartition 2 does the following:
   - increments the clock tick counters
   - gets an input value (from ModelPartition3)
-  - resets that value
   - triggers outClock, if the number of totalInTicks is a multiple of 5
 **************************************/
 static void activateModelPartition2(ModelInstance* comp, double time) {
@@ -70,12 +68,11 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
     // increment the counters
     M(inClock2Ticks)++;
     M(totalInClockTicks)++;
-    // Every time the input value is set, we sum it up
 
     M(result2) += M(input2);  // add the output from mp3
     M(input2) = 0;    // then reset the value
 
-    // Due to some conditions, trigger output clock 2
+    // set output clocks
     M(outClock) = ((M(outClock) == false) && (M(totalInClockTicks) % 5 == 0));
     comp->unlockPreemtion();
 
@@ -121,6 +118,7 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
     M(output3) = 1000;   // this is suposed to find its way into mp2
     M(totalInClockTicks)++;
 
+    // set output clocks
     M(outClock) = ((M(outClock) == false) && (M(totalInClockTicks) % 5 == 0));
     if (M(outClock)) {
 
