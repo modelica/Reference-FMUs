@@ -215,7 +215,6 @@ Status getClock(ModelInstance* comp, ValueReference vr, _Bool *value) {
 }
 
 Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier) {
-    
     switch (vr) {
     case vr_inClock3:
         *qualifier = M(inClock3_qualifier);
