@@ -865,7 +865,17 @@ fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
                                   fmi3Float64 interval[],
                                   fmi3IntervalQualifier qualifier[],
                                   size_t nValues) {
-    NOT_IMPLEMENTED
+
+    // ? Check nValueReferences != nValues
+    Status status = OK;
+
+    for (size_t i = 0; i < nValueReferences; i++) {
+        Status s = getInterval(instance, valueReferences[i], &interval[i], (int*)&qualifier[i]);
+        status = max(status, s);
+        if (status > Warning) return (fmi3Status)status;
+    }
+
+    return (fmi3Status)status;
 }
 
 fmi3Status fmi3SetIntervalDecimal(fmi3Instance instance,

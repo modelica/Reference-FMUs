@@ -379,6 +379,16 @@ Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
 }
 #endif
 
+#ifndef GET_INTERVAL
+Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier) {
+    UNUSED(comp)
+    UNUSED(vr)
+    UNUSED(interval)
+    UNUSED(qualifier)
+    return Error;
+}
+#endif
+
 #ifndef ACTIVATE_MODEL_PARTITION
 Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime) {
     UNUSED(comp)

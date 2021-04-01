@@ -21,6 +21,7 @@ fmi3Status initializeOutputFiles();
 unsigned __stdcall thr_activateModelPartition(void *args);
 static bool setAndCheckInputClocks(fmi3Instance s, fmi3Float64 time);
 static bool checkOutputClocks(fmi3Instance s);
+static bool checkCountdownClocks(fmi3Instance s);
 void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     fmi3Float64 intermediateUpdateTime,
     fmi3Boolean clocksTicked,
@@ -38,7 +39,6 @@ void logEvent(fmi3Instance* comp, const char* message, ...);
 
 /* *****************  Misc defines ***************** */
 
-#define CHECK_STATUS(S) status = S; if (status != fmi3OK) goto out;
 #define START_TIME 0
 #define STOP_TIME 10
 // defines for the indexes of the clocks into the inputClocks[] array
@@ -47,9 +47,10 @@ void logEvent(fmi3Instance* comp, const char* message, ...);
 #define IDX_IN_CLOCK2 1
 #define IDX_IN_CLOCK3 2
 
+#define ID_COUNTDOWN_CLOCK IDX_IN_CLOCK3
+
 // defines for the indexes of the clocks into the outputClocks[] array
-#define IDX_OUT_CLOCK1 0
-#define IDX_OUT_CLOCK2 1
+#define IDX_OUT_CLOCK 0
 
 /* ********************************************************* */
 
@@ -76,6 +77,7 @@ typedef struct threadArgs_t {
     ValueReference clockRef;
     unsigned int* retval;
     double activationTime;
+    double delay;
 } ThreadArgs;
 
 ThreadArgs iu_arguments;
@@ -102,6 +104,9 @@ const fmi3ValueReference vrOutputs_c3[3] = { vr_inClock3Ticks, vr_totalInClockTi
 /* *****************  Input clocks ***************** */
 fmi3Clock inputClocks[N_INPUT_CLOCKS] = { fmi3ClockInactive };
 const fmi3ValueReference vrInputClocks[N_INPUT_CLOCKS] = { vr_inClock1, vr_inClock2, vr_inClock3 };
+const fmi3ValueReference vrCountdownClocks[1] = { vr_inClock3 };
+fmi3Float64 countdownClockIntervals[1] = { 0.0 };
+fmi3IntervalQualifier countdownClocksQualifier[1] = { fmi3IntervalNotYetKnown };
 
 /*
  * For FMI3.0 lower priority value  means higher priority
@@ -114,8 +119,8 @@ fmi3Int32 inputClockPrio[N_INPUT_CLOCKS] = { 2, 1, -1 };
 /* ********************************************************* */
 
 /* *****************  Output clocks ***************** */
-fmi3Clock outputClocks[N_OUTPUT_CLOCKS] = { fmi3ClockInactive };
-const fmi3ValueReference vrOutputClocks[N_OUTPUT_CLOCKS] = { vr_outClock1, vr_outClock2 };
+fmi3Clock outputClocks[1] = { fmi3ClockInactive };
+const fmi3ValueReference vrOutputClocks[1] = { vr_outClock };
 /* ********************************************************* */
 
 /* *****************  Misc ***************** */
@@ -150,20 +155,20 @@ int main(int argc, char* argv[]) {
 
     if (s == NULL) {
         status = fmi3Error;
-        goto out;
+        goto TERMINATE;
     }
 
     // Initialize logging
     char* const categories[1] = { "logEvents" };
     setDebugLogging(s, true, 1, categories);
-    logEvent(s, "Running Scheduled Execution Co-Simulation example...\n");
+    logEvent(s, "Running Scheduled Execution example...\n");
 
     // Get a global lock
     globalLockVar = GlobalAlloc(GMEM_FIXED, sizeof(globalLockVar));
     if (globalLockVar == NULL) {
         status = fmi3Error;
         logEvent(s, "Allocating the global lock failed: %ld", GetLastError());
-        goto out;
+        goto TERMINATE;
     }
 
     CHECK_STATUS(initializeOutputFiles());
@@ -173,7 +178,7 @@ int main(int argc, char* argv[]) {
     CHECK_STATUS(fmi3ExitInitializationMode(s))
 
     // update clocks
-    CHECK_STATUS(fmi3GetClock(s, vrOutputClocks, N_OUTPUT_CLOCKS, outputClocks, N_OUTPUT_CLOCKS));
+    CHECK_STATUS(fmi3GetClock(s, vrOutputClocks, 1, outputClocks, 1));
 
     /*
      * Thread related stuff below
@@ -182,7 +187,7 @@ int main(int argc, char* argv[]) {
     HANDLE thrHandle[N_INPUT_CLOCKS];
 
     // Need a set of arguments for every Inputclock. otherwise the arguments will be overwritten
-    ThreadArgs thrArguments[N_INPUT_CLOCKS];
+    ThreadArgs thrArguments[2];
     int curThrHandle;
 
     DWORD_PTR processorNumber = GetCurrentProcessorNumber();
@@ -197,7 +202,7 @@ int main(int argc, char* argv[]) {
             logEvent(s, "==========> time =%g", time);
 
             curThrHandle = 0; // Number of threads that have been fired at this particular point in time
-            for (int i = 0; i < N_INPUT_CLOCKS; i++)
+            for (int i = 0; i < 2; i++)
             {
                 if (inputClocks[i] == fmi3ClockActive) {
                     logEvent(s, "starting thread for clock %s (vr=%d)", i == IDX_IN_CLOCK1 ? "InClock_1" : "InClock_2", vrInputClocks[i]);
@@ -205,7 +210,6 @@ int main(int argc, char* argv[]) {
                     thrArguments[i].clockRef = vrInputClocks[i];
                     thrArguments[i].retval = &returnval[i];
                     thrArguments[i].activationTime = time;
-
                     thrHandle[curThrHandle] = (HANDLE)_beginthreadex(NULL, 0, thr_activateModelPartition, &thrArguments[i], 0, NULL);
                     if (thrHandle[curThrHandle] != NULL) {
                         SetThreadAffinityMask(thrHandle[curThrHandle], processorMask);
@@ -214,7 +218,7 @@ int main(int argc, char* argv[]) {
                     else {
                         logEvent(s, "Could not create thread in main loop");
                         status = fmi3Fatal;
-                        goto out;
+                        goto TERMINATE;
                     }
                     curThrHandle++;
                     inputClocks[i] = fmi3ClockInactive;
@@ -229,7 +233,7 @@ int main(int argc, char* argv[]) {
     }
 
 
-out:
+TERMINATE:
 
 
     if (s && status != fmi3Error && status != fmi3Fatal) {
@@ -242,7 +246,7 @@ out:
         fclose(outputFile[part]);
     }
 
-    logEvent(s, "... finished Scheduled Execution Co-Simulation example.\n");
+    logEvent(s, "... finished Scheduled Execution example.\n");
     if (s && status != fmi3Fatal && terminateStatus != fmi3Fatal) {
         fmi3FreeInstance(s); // After this point, logEvent is no longer possible
     }
@@ -319,7 +323,7 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     HANDLE thr_handle;
     int returnval;
     // Local copy for this thread of the states of the output clocks
-    fmi3Clock localOutputClocks[N_OUTPUT_CLOCKS];
+    fmi3Clock localOutputClocks[1];
 
 
     // In this example we only check for ticking output clocks.
@@ -331,21 +335,15 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     // In order to be threadsafe we have to check the clocks under lock
     // and copy their states
     GlobalLock(globalLockVar);
-    if (!checkOutputClocks(fmu)) {
+    if (!checkOutputClocks(fmu) & !checkCountdownClocks(fmu)) {
         GlobalUnlock(globalLockVar);
         logEvent(fmu, "No clock active in intermediateUpdate callback");
         return;
     }
-    for (int oc = 0; oc < N_OUTPUT_CLOCKS; oc++) {
-        localOutputClocks[oc] = outputClocks[oc];
-    }
+    localOutputClocks[0] = outputClocks[0];
     GlobalUnlock(globalLockVar);
 
-
-    // Some output clock ticked, check for dependend input clocks and, if there are any, fire them
-    // input clock 3 depends on output clock 1
-    // This dependency is taken from ModelDescription.xml
-    if (localOutputClocks[IDX_OUT_CLOCK1]) {
+    if (countdownClocksQualifier[0] == fmi3IntervalChanged) {
         // create a thread that will run the model partition for input clock 3
         logEvent(instanceEnvironment, "cb_intermediateUpdate starting thread for input clock 3 (vr=%d)", vr_inClock3);
 
@@ -353,6 +351,7 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
         iu_arguments.clockRef = vr_inClock3;
         iu_arguments.retval = &returnval;
         iu_arguments.activationTime = time;
+        iu_arguments.delay = countdownClockIntervals[0];
         thr_handle = (HANDLE)_beginthreadex(NULL, 0, thr_activateModelPartition, &iu_arguments, 0, NULL);
         if (thr_handle != NULL) {
             // Bind the thread to the designated processor
@@ -365,9 +364,9 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
         }
 
     }
-    if (localOutputClocks[IDX_OUT_CLOCK2]) {
+    if (localOutputClocks[IDX_OUT_CLOCK]) {
         //  so far, no other action but a log message
-        logEvent(instanceEnvironment, "Detected ticking of output clock 2 (time=%g)", time);
+        logEvent(instanceEnvironment, "Detected ticking of output clock (time=%g)", time);
     }
 }
 /*
@@ -420,17 +419,26 @@ static bool setAndCheckInputClocks(fmi3Instance s, fmi3Float64 time) {
 }
 
 /*
- * This function retrieves the state of the output clocks of all partitions of the FMU
+ * This function retrieves the state of the output clock of all partitions of the FMU
  * outputClocks[] is set accordingly
  * returns true if any of the outputClocks is actually set
  */
 static bool checkOutputClocks(fmi3Instance s) {
-    int cl;
-    for (cl=0; cl< N_OUTPUT_CLOCKS; cl++)
-        outputClocks[cl] = fmi3ClockInactive;
+    outputClocks[0] = fmi3ClockInactive;
+    fmi3GetClock(s, vrOutputClocks, 1, outputClocks, 1);
+    return outputClocks[0];
+}
 
-    fmi3GetClock(s, vrOutputClocks, N_OUTPUT_CLOCKS, outputClocks, N_OUTPUT_CLOCKS);
-    return outputClocks[IDX_OUT_CLOCK1] || outputClocks[IDX_OUT_CLOCK2];
+/*
+ * This function retrieves the state of the countdown clock of all partitions of the FMU
+ * outputClocks[] is set accordingly
+ * returns true if interval changed set
+ */
+static bool checkCountdownClocks(fmi3Instance s) {
+    countdownClockIntervals[0] = 0.0;
+    countdownClocksQualifier[0] = fmi3IntervalNotYetKnown;
+    fmi3GetIntervalDecimal(s, vrCountdownClocks, 1, countdownClockIntervals, countdownClocksQualifier, 1);
+    return countdownClocksQualifier[0] == fmi3IntervalChanged;
 }
 
 /*
