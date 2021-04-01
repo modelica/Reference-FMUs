@@ -870,7 +870,7 @@ fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
     Status status = OK;
 
     for (size_t i = 0; i < nValueReferences; i++) {
-        Status s = getInterval(instance, valueReferences[i], &interval[i], &qualifier[i]);
+        Status s = getInterval(instance, valueReferences[i], &interval[i], (int*)&qualifier[i]);
         status = max(status, s);
         if (status > Warning) return (fmi3Status)status;
     }
