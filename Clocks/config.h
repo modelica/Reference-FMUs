@@ -42,7 +42,7 @@ typedef enum {
 } ValueReference;
 
 typedef struct {
-    float inClock3_interval;
+    double inClock3_interval;
     int inClock3_qualifier;
     int outClock;
     int inClock1Ticks;
