@@ -165,7 +165,7 @@ while (!terminateSimulation) {
     }
 
     // compute derivatives
-    CHECK_STATUS(M_fmi3GetDerivatives(m, der_x, NX));
+    CHECK_STATUS(M_fmi3GetContinuousStateDerivatives(m, der_x, NX));
 
     // advance time
     h = min(fixedStep, tNext - time);
