@@ -131,12 +131,12 @@
 #define MASK_fmi3SetContinuousStates           ContinuousTimeMode
 
 /* Evaluation of the model equations */
-#define MASK_fmi3GetDerivatives                (InitializationMode | EventMode | ContinuousTimeMode | Terminated)
-#define MASK_fmi3GetEventIndicators            MASK_fmi3GetDerivatives
-#define MASK_fmi3GetContinuousStates           MASK_fmi3GetDerivatives
-#define MASK_fmi3GetNominalsOfContinuousStates MASK_fmi3GetDerivatives
-#define MASK_fmi3GetNumberOfEventIndicators    MASK_fmi3GetDerivatives
-#define MASK_fmi3GetNumberOfContinuousStates   MASK_fmi3GetDerivatives
+#define MASK_fmi3GetContinuousStateDerivatives (InitializationMode | EventMode | ContinuousTimeMode | Terminated)
+#define MASK_fmi3GetEventIndicators            MASK_fmi3GetContinuousStateDerivatives
+#define MASK_fmi3GetContinuousStates           MASK_fmi3GetContinuousStateDerivatives
+#define MASK_fmi3GetNominalsOfContinuousStates MASK_fmi3GetContinuousStateDerivatives
+#define MASK_fmi3GetNumberOfEventIndicators    MASK_fmi3GetContinuousStateDerivatives
+#define MASK_fmi3GetNumberOfContinuousStates   MASK_fmi3GetContinuousStateDerivatives
 
 /* Functions for Co-Simulation */
 
@@ -991,14 +991,14 @@ fmi3Status fmi3SetContinuousStates(fmi3Instance instance, const fmi3Float64 x[],
 }
 
 /* Evaluation of the model equations */
-fmi3Status fmi3GetDerivatives(fmi3Instance instance, fmi3Float64 derivatives[], size_t nContinuousStates) {
+fmi3Status fmi3GetContinuousStateDerivatives(fmi3Instance instance, fmi3Float64 derivatives[], size_t nContinuousStates) {
 
-    ASSERT_STATE(GetDerivatives)
+    ASSERT_STATE(GetContinuousStateDerivatives)
 
-    if (invalidNumber(S, "fmi3GetDerivatives", "nContinuousStates", nContinuousStates, NX))
+    if (invalidNumber(S, "fmi3GetContinuousStateDerivatives", "nContinuousStates", nContinuousStates, NX))
         return fmi3Error;
 
-    if (nullPointer(S, "fmi3GetDerivatives", "derivatives[]", derivatives))
+    if (nullPointer(S, "fmi3GetContinuousStateDerivatives", "derivatives[]", derivatives))
         return fmi3Error;
 
     getDerivatives(S, derivatives, nContinuousStates);

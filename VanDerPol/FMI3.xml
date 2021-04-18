@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fmiModelDescription fmiVersion="3.0-alpha.6" modelName="van der Pol oscillator" instantiationToken="{8c4e810f-3da3-4a00-8276-176fa3c9f000}">
+<fmiModelDescription fmiVersion="3.0-beta.1" modelName="van der Pol oscillator" instantiationToken="{8c4e810f-3da3-4a00-8276-176fa3c9f000}">
 
   <ModelExchange
     modelIdentifier="VanDerPol"
@@ -33,8 +33,8 @@
   <ModelStructure>
     <Output valueReference="0"/>
     <Output valueReference="2"/>
-    <StateDerivative valueReference="1"/>
-    <StateDerivative valueReference="3"/>
+    <ContinuousStateDerivative valueReference="1"/>
+    <ContinuousStateDerivative valueReference="3"/>
     <InitialUnknown valueReference="1"/>
     <InitialUnknown valueReference="3"/>
   </ModelStructure>
