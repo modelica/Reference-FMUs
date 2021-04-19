@@ -175,6 +175,9 @@ class BuildTest(unittest.TestCase):
         copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='3.0', fmi_types=['cs', 'me'])
         copy_to_cross_check(build_dir=build_dir, model_names=['Clocks'], fmi_version='3.0', fmi_types=['se'])
 
+        read_model_description(filename=os.path.join(build_dir, 'dist', 'Clocks.fmu'),
+                               validate_variable_names=True, validate_model_structure=True)
+
 
 if __name__ == '__main__':
     unittest.main()
