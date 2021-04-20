@@ -1,5 +1,5 @@
 variables:
-  fmpy: https://github.com/CATIA-Systems/FMPy/archive/3993b05922b6d49a6935c6ddb5575b721eeb85ad.zip
+  fmpy: https://github.com/CATIA-Systems/FMPy/archive/dc19f5a1f3a90c75c9a221c8b18f72153d257a7b.zip
   conda.packages: python=3.7 dask lark-parser lxml numpy pathlib pip pytest requests scipy
 
 jobs:
