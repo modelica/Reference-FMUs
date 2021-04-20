@@ -27,13 +27,7 @@
   <Output valueReference="2004" dependencies="1001 1002 1003"/>
   <Output valueReference="2005" dependencies="1002 2006"/>
   <Output valueReference="2007" dependencies="1003"/>
-  <InitialUnknown valueReference="2001"/>
-  <InitialUnknown valueReference="2002"/>
   <InitialUnknown valueReference="2003"/>
-  <InitialUnknown valueReference="1005"/>
-  <InitialUnknown valueReference="2007"/>
-  <InitialUnknown valueReference="2005"/>
-  <InitialUnknown valueReference="2004"/>
  </ModelStructure>
 <!--
 time        0 1 2 3 4 5 6 7 8 9
