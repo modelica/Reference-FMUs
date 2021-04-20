@@ -7,7 +7,7 @@ from fmpy.util import compile_platform_binary
 
 
 fmus_dir = os.path.join(os.path.dirname(__file__), 'fmus')  # /path/to/fmi-cross-check/fmus
-test_fmus_version = '0.0.6'
+test_fmus_version = '0.0.7'
 
 test_fmus_dir = os.path.dirname(__file__)
 
