@@ -11,7 +11,7 @@ test_fmus_version = '0.0.7'
 
 test_fmus_dir = os.path.dirname(__file__)
 
-models = ['BouncingBall', 'BouncingBallStairs', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
+models = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
 
 if os.name == 'nt':
     generator = 'Visual Studio 15 2017 Win64'
