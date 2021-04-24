@@ -100,7 +100,7 @@ void eventUpdate(ModelInstance *comp) {
 
     // Check for previously scheduled time events
     if (comp->timeEvent) {
-        printf("Executed timed event at time %lf\n", comp->time);
+        logEvent(comp, "Executed timed event at time %lf\n", comp->time);
         // Move the ground
         M(ground) = M(ground) - 0.1;
         // Prevent the ground from being moved in subsequent event iterations (there are none, but just to make the point).
