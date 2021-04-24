@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiBuildDescription fmiVersion="3.0-alpha.3">
 
-  <BuildConfiguration modelIdentifier="PingPongBall">
+  <BuildConfiguration modelIdentifier="BouncingBallStairs">
     <SourceFileSet language="C99">
       <SourceFile name="fmi3Functions.c"/>
       <SourceFile name="model.c"/>

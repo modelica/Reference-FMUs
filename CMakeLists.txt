@@ -70,7 +70,7 @@ if (${FMI_VERSION} LESS 3)
 ")
 endif ()
 
-set (MODEL_NAMES BouncingBall Dahlquist Stair Feedthrough VanDerPol)
+set (MODEL_NAMES BouncingBall BouncingBallStairs Dahlquist Stair Feedthrough VanDerPol)
 
 if (${FMI_VERSION} GREATER 1 OR "${FMI_TYPE}" STREQUAL "CS")
   set (MODEL_NAMES ${MODEL_NAMES} Resource)

@@ -11,7 +11,7 @@ test_fmus_version = '0.0.7'
 
 test_fmus_dir = os.path.dirname(__file__)
 
-models = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
+models = ['BouncingBall', 'BouncingBallStairs', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
 
 if os.name == 'nt':
     generator = 'Visual Studio 15 2017 Win64'
@@ -94,7 +94,7 @@ class BuildTest(unittest.TestCase):
         subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=1', '-DFMI_TYPE=ME', '..'], cwd=build_dir)
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
-        model_names = ['BouncingBall', 'Dahlquist', 'Stair', 'VanDerPol']
+        model_names = ['BouncingBall', 'BouncingBallStairs', 'Dahlquist', 'Stair', 'VanDerPol']
 
         self.validate(build_dir,
                       fmi_types=['ModelExchange'],
@@ -112,7 +112,7 @@ class BuildTest(unittest.TestCase):
         subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=1', '-DFMI_TYPE=CS', '..'], cwd=build_dir)
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
-        model_names = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol']
+        model_names = ['BouncingBall', 'BouncingBallStairs', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol']
 
         self.validate(build_dir,
                       fmi_types=['CoSimulation'],
@@ -168,7 +168,7 @@ class BuildTest(unittest.TestCase):
             filename = os.path.join(build_dir, 'temp', example)
             subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
 
-        models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
+        models = ['BouncingBall', 'BouncingBallStairs', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
         self.validate(build_dir, models=models)
         self.validate(build_dir, models=models, compile=True)
 

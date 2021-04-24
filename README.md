@@ -5,6 +5,7 @@
 A set of hand-coded FMUs for development, testing and debugging of the [Functional Mock-up Interface](https://fmi-standard.org/).
 
 - [BouncingBall](BouncingBall) - a bouncing ball model with state events
+- [BouncingBallStairs](BouncingBallStairs) - a bouncing ball model with state and time events
 - [Dahlquist](Dahlquist) - Dahlquist test equation
 - [Feedthrough](Feedthrough) - all variable types
 - [Resource](Resource) - load data from a file

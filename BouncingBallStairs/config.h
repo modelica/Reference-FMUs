@@ -2,7 +2,7 @@
 #define config_h
 
 // define class name and unique id
-#define MODEL_IDENTIFIER PingPongBall
+#define MODEL_IDENTIFIER BouncingBallStairs
 #define INSTANTIATION_TOKEN "{8c4e810f-3df3-4a00-8276-176fa3c9f003}"
 
 #define CO_SIMULATION
