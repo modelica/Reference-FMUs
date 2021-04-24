@@ -9,16 +9,7 @@
     modelIdentifier="BouncingBallStairs"
     canGetAndSetFMUState="true"
     canSerializeFMUState="true"/>
-
-  <CoSimulation
-    modelIdentifier="BouncingBallStairs"
-    canGetAndSetFMUState="true"
-    canSerializeFMUState="true"
-    canHandleVariableCommunicationStepSize="true"
-    providesIntermediateUpdate="true"
-    canReturnEarlyAfterIntermediateUpdate="true"
-    fixedInternalStepSize="1e-3"/>
-
+  
   <UnitDefinitions>
     <Unit name="m">
       <BaseUnit m="1"/>
