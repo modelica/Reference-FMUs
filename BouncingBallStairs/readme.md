@@ -10,8 +10,7 @@ when h <= s(t)    then h := s(t) and v := -e * v
 when v < v_min then h := s(t) and v := 0
 ```
 
-where `s(t)` denotes a stair case function, returning the height of the stair for time `t` and 
-with the variables
+where `s(t)` denotes a stair case function, returning the height of the stair for time `t` and with the variables:
 
 | Variable | Start | Unit | Causality | Variability | Description
 |:---------|------:|:-----|-----------|-------------|:---------------
