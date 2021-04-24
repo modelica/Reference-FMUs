@@ -99,7 +99,7 @@ CHECK_STATUS(M_fmi3GetNominalsOfContinuousStates(m, x_nominal, NX));
 tNextEvent = tEnd + (10.0 * fixedStep); // Make sure this points to a time after the simulation ends.
 
 while (!terminateSimulation) {
-    
+
     // handle events
     if (enterEventMode || stateEvent || timeEvent) {
 
@@ -125,7 +125,7 @@ while (!terminateSimulation) {
 
             // update discrete states
             CHECK_STATUS(M_fmi3UpdateDiscreteStates(m, &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime));
-            
+
             if (nextEventTimeDefined) {
                 assert(nextEventTime > time);
             }
@@ -162,7 +162,7 @@ while (!terminateSimulation) {
             } else {
                 printf("Time event detected at time %lf but ignored because it is scheduled for after end of simulation.\n", time);
             }
-            
+
         }
 
         initialEventMode = fmi3False;

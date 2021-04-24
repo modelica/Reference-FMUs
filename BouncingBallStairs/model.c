@@ -95,7 +95,7 @@ void eventUpdate(ModelInstance *comp) {
     then the time event takes priority and that means that the zero crossing event will not occurr.
     This is a good example of an importer going into event mode for two events, and only finding one.
     */
-    
+
     comp->nextEventTimeDefined = false;
 
     // Check for previously scheduled time events
