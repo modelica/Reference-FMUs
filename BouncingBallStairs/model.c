@@ -96,8 +96,6 @@ void eventUpdate(ModelInstance *comp) {
     This is a good example of an importer going into event mode for two events, and only finding one.
     */
 
-    comp->nextEventTimeDefined = false;
-
     // Check for previously scheduled time events
     if (comp->timeEvent) {
         logEvent(comp, "Executed timed event at time %lf\n", comp->time);
@@ -105,10 +103,13 @@ void eventUpdate(ModelInstance *comp) {
         M(ground) = M(ground) - 0.1;
         // Prevent the ground from being moved in subsequent event iterations (there are none, but just to make the point).
         comp->timeEvent = false;
+        // Signal Importer that there is not next time event.
+        comp->nextEventTimeDefined = false;
     }
 
     // Check for bouncing on the ground.
     if (M(h) <= M(ground) && M(v) < 0) {
+        logEvent(comp, "Bounce detected at %lf\n", comp->time);
 
         M(h) = M(ground);
         M(v) = -M(v) * M(e);
@@ -119,11 +120,12 @@ void eventUpdate(ModelInstance *comp) {
             M(g) = 0;
         }
 
-        comp->valuesOfContinuousStatesChanged = true;
-
         // Each time a bounce occurs, we schedule an event to move the ground shortly after.
         comp->nextEventTimeDefined = true;
         comp->nextEventTime = comp->time + 0.2;
+        logEvent(comp, "Scheduled next stair drop to: %lf\n", comp->nextEventTime);
+
+        comp->valuesOfContinuousStatesChanged = true;
     }
 
     comp->nominalsOfContinuousStatesChanged = false;
