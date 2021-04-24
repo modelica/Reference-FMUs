@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription
-  fmiVersion="3.0-alpha.5"
+  fmiVersion="3.0-beta.1"
   modelName="PingPongBall"
   description="This model calculates the trajectory, over time, of a ball dropped from a height of 1 m."
   instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f003}">
@@ -15,7 +15,7 @@
     canGetAndSetFMUState="true"
     canSerializeFMUState="true"
     canHandleVariableCommunicationStepSize="true"
-    providesIntermediateVariableAccess="true"
+    providesIntermediateUpdate="true"
     canReturnEarlyAfterIntermediateUpdate="true"
     fixedInternalStepSize="1e-3"/>
 
@@ -56,8 +56,8 @@
   <ModelStructure>
     <Output valueReference="1"/>
     <Output valueReference="3"/>
-    <Derivative valueReference="2"/>
-    <Derivative valueReference="4"/>
+    <ContinuousStateDerivative valueReference="2"/>
+    <ContinuousStateDerivative valueReference="4"/>
     <InitialUnknown valueReference="2" dependencies="3" dependenciesKind="constant"/>
     <InitialUnknown valueReference="4" dependencies="5" dependenciesKind="constant"/>
     <EventIndicator valueReference="1"/>

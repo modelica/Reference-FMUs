@@ -2,12 +2,12 @@ import unittest
 import subprocess
 import os
 import shutil
-from fmpy import simulate_fmu, platform
+from fmpy import simulate_fmu, platform, read_model_description
 from fmpy.util import compile_platform_binary
 
 
 fmus_dir = os.path.join(os.path.dirname(__file__), 'fmus')  # /path/to/fmi-cross-check/fmus
-test_fmus_version = '0.0.4'
+test_fmus_version = '0.0.7'
 
 test_fmus_dir = os.path.dirname(__file__)
 
@@ -71,6 +71,8 @@ class BuildTest(unittest.TestCase):
 
                 if compile:
                     compile_platform_binary(fmu_filename)
+
+                read_model_description(fmu_filename, validate_variable_names=True, validate_model_structure=True)
 
                 result = simulate_fmu(fmu_filename,
                                       fmi_type=fmi_type,
@@ -172,6 +174,9 @@ class BuildTest(unittest.TestCase):
 
         copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='3.0', fmi_types=['cs', 'me'])
         copy_to_cross_check(build_dir=build_dir, model_names=['Clocks'], fmi_version='3.0', fmi_types=['se'])
+
+        read_model_description(filename=os.path.join(build_dir, 'dist', 'Clocks.fmu'),
+                               validate_variable_names=True, validate_model_structure=True)
 
 
 if __name__ == '__main__':

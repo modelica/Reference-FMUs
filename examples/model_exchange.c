@@ -104,18 +104,18 @@ while (!terminateSimulation) {
     if (enterEventMode || stateEvent || timeEvent) {
 
         if (!initialEventMode) {
-            CHECK_STATUS(M_fmi3EnterEventMode(m, fmi3False, rootsFound, NZ, timeEvent));
+            CHECK_STATUS(M_fmi3EnterEventMode(m, enterEventMode, stateEvent, rootsFound, NZ, timeEvent));
         }
 
         // event iteration
-        fmi3Boolean newDiscreteStatesNeeded           = fmi3True;
+        fmi3Boolean discreteStatesNeedUpdate          = fmi3True;
         fmi3Boolean terminateSimulation               = fmi3False;
         fmi3Boolean nominalsOfContinuousStatesChanged = fmi3False;
         fmi3Boolean valuesOfContinuousStatesChanged   = fmi3False;
         fmi3Boolean nextEventTimeDefined              = fmi3False;
         fmi3Float64 nextEventTime                     = 0;
 
-        while (newDiscreteStatesNeeded) {
+        while (discreteStatesNeedUpdate) {
 
             // set inputs at super dense time point
             // M_fmi3SetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
@@ -124,7 +124,7 @@ while (!terminateSimulation) {
             fmi3Boolean statesChanged   = fmi3False;
 
             // update discrete states
-            CHECK_STATUS(M_fmi3NewDiscreteStates(m, &newDiscreteStatesNeeded, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime));
+            CHECK_STATUS(M_fmi3UpdateDiscreteStates(m, &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime));
             
             if (nextEventTimeDefined) {
                 assert(nextEventTime > time);
@@ -173,7 +173,7 @@ while (!terminateSimulation) {
     }
 
     // compute derivatives
-    CHECK_STATUS(M_fmi3GetDerivatives(m, der_x, NX));
+    CHECK_STATUS(M_fmi3GetContinuousStateDerivatives(m, der_x, NX));
 
     // advance time
     if (fixedStep < tNextEvent - time) {

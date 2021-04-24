@@ -3,6 +3,10 @@
 #include <stdlib.h>  // for free()
 #include <string.h>  // for strcmp()
 
+#ifdef _MSC_VER
+#define strdup _strdup
+#endif
+
 
 const char *STRING_START = "Set me!";
 const char *BINARY_START = "Set me, too!";
@@ -73,7 +77,7 @@ Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *i
     }
 }
 
-Status getBinary(ModelInstance* comp, ValueReference vr, size_t size[], const char *value[], size_t *index) {
+Status getBinary(ModelInstance* comp, ValueReference vr, size_t size[], const char* value[], size_t* index) {
     calculateValues(comp);
     switch (vr) {
         case vr_binary_in:
@@ -177,7 +181,7 @@ Status setString(ModelInstance* comp, ValueReference vr, const char *const *valu
     }
 }
 
-Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], const char *const value[], size_t *index) {
+Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], const char* const value[], size_t* index) {
     switch (vr) {
         case vr_binary_in:
             if (M(binary) != BINARY_START) {
