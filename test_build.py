@@ -94,7 +94,7 @@ class BuildTest(unittest.TestCase):
         subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=1', '-DFMI_TYPE=ME', '..'], cwd=build_dir)
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
-        model_names = ['BouncingBall', 'BouncingBallStairs', 'Dahlquist', 'Stair', 'VanDerPol']
+        model_names = ['BouncingBall', 'Dahlquist', 'Stair', 'VanDerPol']
 
         self.validate(build_dir,
                       fmi_types=['ModelExchange'],
@@ -112,7 +112,7 @@ class BuildTest(unittest.TestCase):
         subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=1', '-DFMI_TYPE=CS', '..'], cwd=build_dir)
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
-        model_names = ['BouncingBall', 'BouncingBallStairs', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol']
+        model_names = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol']
 
         self.validate(build_dir,
                       fmi_types=['CoSimulation'],
