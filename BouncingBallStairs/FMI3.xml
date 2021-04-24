@@ -9,7 +9,7 @@
     modelIdentifier="BouncingBallStairs"
     canGetAndSetFMUState="true"
     canSerializeFMUState="true"/>
-  
+
   <UnitDefinitions>
     <Unit name="m">
       <BaseUnit m="1"/>
