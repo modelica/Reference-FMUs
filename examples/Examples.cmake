@@ -158,6 +158,23 @@ set_target_properties(scs_synchronous PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
 )
 
+# Synchronous Supervisory Control
+add_library(plant STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c examples/SynchronousSupervisoryControl/submodels/Plant/model.c src/cosimulation.c)
+set_target_properties(plant PROPERTIES FOLDER examples)
+target_compile_definitions(plant PRIVATE FMI3_FUNCTION_PREFIX=plant_)
+target_include_directories(plant PRIVATE include examples/SynchronousSupervisoryControl/submodels/Plant)
+
+add_executable(supervisory_me ${EXAMPLE_SOURCES} examples/SynchronousSupervisoryControl/importers/me/synchronous_control_me.c)
+set_target_properties(supervisory_me PROPERTIES FOLDER examples)
+target_compile_definitions(supervisory_me PRIVATE DISABLE_PREFIX)
+target_include_directories(supervisory_me PRIVATE include examples)
+target_link_libraries(supervisory_me plant)
+set_target_properties(supervisory_me PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY         temp
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+)
+
 if (WIN32)
   add_executable(scs_threaded ${EXAMPLE_SOURCES} src/fmi3Functions.c Clocks/model.c src/cosimulation.c examples/scs_threaded.c Clocks/FMI3.xml Clocks/config.h)
   set_target_properties(scs_threaded PROPERTIES FOLDER examples)
