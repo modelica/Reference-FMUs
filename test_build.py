@@ -169,7 +169,7 @@ class BuildTest(unittest.TestCase):
             subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
 
         # Validate and copy FMUs to cross check.
-        models_cs_me = ['BouncingBall', 'BouncingBallStairs', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
+        models_cs_me = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
         models_types = {
             'cs': models_cs_me,
             'me': models_cs_me + ['BouncingBallStairs'],
