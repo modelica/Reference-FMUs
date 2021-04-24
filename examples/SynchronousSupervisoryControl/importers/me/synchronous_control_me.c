@@ -12,23 +12,28 @@
 
 
 #define INSTANTIATION_TOKEN "{00000000-0000-0000-0000-000000000000}"
+// Plant model size
 #define Plant_NX 1
 #define Plant_NZ 0
-#define Plant_Token 1
+#define Plant_NU 1
+
+// Plan vrefs
+#define Plant_U_ref 3
+#define Plant_X_ref 1
+
 
 #define FIXED_STEP 1e-2
-#define STOP_TIME 3
+#define STOP_TIME 10
 #define OUTPUT_FILE_HEADER "time,x\n"
 
 
 fmi3Status recordVariables(FILE* outputFile, fmi3Instance plant, fmi3Float64 time) {
-    const fmi3ValueReference valueReferences[Plant_NX] = { 1 };
+    const fmi3ValueReference valueReferences[Plant_NX] = { Plant_X_ref };
     fmi3Float64 values[Plant_NX] = { 0 };
-    fmi3Status status = Plant_fmi3GetFloat64(plant, valueReferences, 2, values, 2);
+    fmi3Status status = Plant_fmi3GetFloat64(plant, valueReferences, Plant_NX, values, Plant_NX);
     fprintf(outputFile, "%g,%g\n", time, values[0]);
     return status;
 }
-
 
 int main(int argc, char *argv[])
 {
@@ -46,6 +51,8 @@ int main(int argc, char *argv[])
 
     fmi3Int32 rootsFound[1] = { 0 };
     fmi3Float64 x[Plant_NX] = { 0 };
+    const fmi3ValueReference plant_u_refs[Plant_NU] = { Plant_U_ref };
+    fmi3Float64 plant_u[Plant_NU] = { 1.0 };
     fmi3Float64 der_x[Plant_NX] = { 0 };
     FILE* outputFile = NULL;
 
@@ -57,7 +64,7 @@ int main(int argc, char *argv[])
         puts("Failed to open output file.");
         return EXIT_FAILURE;
     }
-
+    
     fputs(OUTPUT_FILE_HEADER, outputFile);
 
     m = Plant_fmi3InstantiateModelExchange("m", INSTANTIATION_TOKEN, NULL, fmi3False, fmi3True, NULL, cb_logMessage);
@@ -162,7 +169,7 @@ int main(int argc, char *argv[])
         CHECK_STATUS(Plant_fmi3SetTime(m, time));
 
         // set continuous inputs at t = time
-        // Plant_fmi3SetFloat*(m, ...)
+        Plant_fmi3SetFloat64(m, plant_u_refs, Plant_NU, plant_u, Plant_NU);
 
         // set states at t = time and perform one step
         for (size_t i = 0; i < Plant_NX; i++) {

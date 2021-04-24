@@ -9,7 +9,7 @@ void setStartValues(ModelInstance *comp) {
 }
 
 void calculateValues(ModelInstance *comp) {
-    UNUSED(comp)
+    M(der_x) = - M(x) + M(u);
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
@@ -21,7 +21,7 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
             value[(*index)++] = M(der_x);
             return OK;
         default:
-            logError(comp, "Unexpected value reference: %.", vr);
+            logError(comp, "Unexpected value reference: %d.", vr);
             return Error;
     }
 }
@@ -32,7 +32,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
             M(u) = value[(*index)++];
             return OK;
         default:
-            logError(comp, "Unexpected value reference: %.", vr);
+            logError(comp, "Unexpected value reference: %d.", vr);
             return Error;
     }
 }
