@@ -131,15 +131,9 @@ set_target_properties(jacobian PROPERTIES
 )
 
 # model exchange
-add_library(BouncingBall_static STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c)
-set_target_properties(BouncingBall_static PROPERTIES FOLDER examples)
-target_compile_definitions(BouncingBall_static PRIVATE FMI3_FUNCTION_PREFIX=M_)
-target_include_directories(BouncingBall_static PRIVATE include BouncingBall)
-
-add_executable (BouncingBall_me ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c examples/model_exchange.c)
+add_executable (BouncingBall_me ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c examples/BouncingBall_me.c)
 set_target_properties(BouncingBall_me PROPERTIES FOLDER examples)
 target_include_directories(BouncingBall_me PRIVATE include BouncingBall)
-target_link_libraries(BouncingBall_me BouncingBall_static)
 target_compile_definitions(BouncingBall_me PRIVATE DISABLE_PREFIX)
 set_target_properties(BouncingBall_me PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
