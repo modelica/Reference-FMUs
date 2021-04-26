@@ -1,24 +1,11 @@
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
+#include "FMU.h"
 #include "fmi3Functions.h"
 #include "config.h"
 #include "util.h"
 
-
-typedef struct {
-    fmi3Instance instance;
-    FILE* outputFile;
-    fmi3Float64 intermediateUpdateTime;
-} InstanceEnvironment;
-
-fmi3Status recordVariables(InstanceEnvironment instanceEnvironment, fmi3Float64 time) {
-    fmi3ValueReference outputsVRs[2] = { vr_h, vr_v };
-    fmi3Float64 y[2];
-    fmi3Status status = fmi3GetFloat64(instanceEnvironment.instance, outputsVRs, 2, y, 2);
-    fprintf(instanceEnvironment.outputFile, "%g,%g,%g\n", time, y[0], y[1]);
-    return status;
-}
 
 void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
                            fmi3Float64 intermediateUpdateTime,
@@ -30,58 +17,45 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
                            fmi3Boolean *earlyReturnRequested,
                            fmi3Float64 *earlyReturnTime) {
 
-    if (!instanceEnvironment) {
-        return;
-    }
-
-    InstanceEnvironment* env = (InstanceEnvironment*)instanceEnvironment;
-
-    // remember the intermediateUpdateTime
-    env->intermediateUpdateTime = intermediateUpdateTime;
-
     // stop here
-    *earlyReturnRequested = fmi3True;
+    *earlyReturnRequested = fmi3False;
     *earlyReturnTime = intermediateUpdateTime;
 }
 
-int main(int argc, char* argv[]) {
 
-    puts("Running BouncingBall test... ");
+int main(int argc, char* argv[]) {
 
     // Start and stop time
     const fmi3Float64 startTime = 0;
-    const fmi3Float64 stopTime = 3;
+    const fmi3Float64 stopTime = DEFAULT_STOP_TIME;
     // Communication constant step size
-    const fmi3Float64 h = 0.01;
+    const fmi3Float64 h = 10 * FIXED_SOLVER_STEP;
 
-    InstanceEnvironment instanceEnvironment = {
-        .instance               = NULL,
-        .outputFile             = NULL,
-        .intermediateUpdateTime = startTime
-    };
+    FMU *S = loadFMU(PLATFORM_BINARY);
+    
+    if (!S) {
+        return EXIT_FAILURE;
+    }
 
-    instanceEnvironment.outputFile = fopen("BouncingBall_out.csv", "w");
+    FILE *outputFile = openOutputFile("cs_early_return.csv");
 
-    if (!instanceEnvironment.outputFile) {
+    if (!outputFile) {
         puts("Failed to open output file.");
         return EXIT_FAILURE;
     }
 
-    // Write the header of the CSV
-    fputs("\"time\",\"h\",\"v\"\n", instanceEnvironment.outputFile);
-
     // Instantiate the FMU
-    fmi3Instance s = fmi3InstantiateCoSimulation(
+    fmi3Instance s = S->fmi3InstantiateCoSimulation(
         "instance1",            // instanceName
         INSTANTIATION_TOKEN,    // instantiationToken
         NULL,                   // resourceLocation
         fmi3False,              // visible
         fmi3False,              // loggingOn
         fmi3False,              // eventModeUsed
-        fmi3False,              // earlyReturnAllowed
+        fmi3True,               // earlyReturnAllowed
         NULL,                   // requiredIntermediateVariables
         0,                      // nRequiredIntermediateVariables
-        &instanceEnvironment,   // instanceEnvironment
+        NULL,                   // instanceEnvironment
         cb_logMessage,          // logMessage
         cb_intermediateUpdate); // intermediateUpdate
 
@@ -90,40 +64,38 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    instanceEnvironment.instance = s;
-
     // Set all start values
     // fmi3Set{VariableType}()
 
     fmi3Status status = fmi3OK;
 
     // Initialize the model
-    CHECK_STATUS(fmi3EnterInitializationMode(s, fmi3False, 0.0, startTime, fmi3True, stopTime))
+    CHECK_STATUS(S->fmi3EnterInitializationMode(s, fmi3False, 0.0, startTime, fmi3True, stopTime))
     // Set the input values at time = startTime
     // fmi3Set{VariableType}()
-    CHECK_STATUS(fmi3ExitInitializationMode(s))
+    CHECK_STATUS(S->fmi3ExitInitializationMode(s))
 
-    fmi3Float64 tc = startTime; // current time
+    fmi3Float64 time = startTime; // current time
     fmi3Float64 step = h;       // non-zero step size
 
-    while (tc < stopTime) {
+    while (time < stopTime) {
 
         // Set inputs
         // fmi3Set{VariableType}()
 
         // Get outputs with fmi3Get{VariableType}()
-        CHECK_STATUS(recordVariables(instanceEnvironment, tc))
+        CHECK_STATUS(recordVariables(outputFile, S, s, time))
 
         fmi3Boolean eventEncountered, terminateSimulation, earlyReturn;
         fmi3Float64 lastSuccessfulTime;
 
-        CHECK_STATUS(fmi3DoStep(s, tc, step, fmi3False, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime))
+        CHECK_STATUS(S->fmi3DoStep(s, time, step, fmi3False, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime))
 
         if (earlyReturn) {
-            tc = instanceEnvironment.intermediateUpdateTime;
-            step = h - fmod(tc, h); // finish the step
+            time = lastSuccessfulTime;
+            step = h - fmod(time, h);  // finish the step
         } else {
-            tc += step;
+            time += step;
             step = h;
         }
 
@@ -133,15 +105,13 @@ int main(int argc, char* argv[]) {
 
 TERMINATE:
 
-    if (s && status != fmi3Error && status != fmi3Fatal) {
-        terminateStatus = fmi3Terminate(s);
+    if (status != fmi3Error && status != fmi3Fatal) {
+        terminateStatus = S->fmi3Terminate(s);
     }
 
-    if (s && status != fmi3Fatal && terminateStatus != fmi3Fatal) {
-        fmi3FreeInstance(s);
+    if (status != fmi3Fatal && terminateStatus != fmi3Fatal) {
+        S->fmi3FreeInstance(s);
     }
-
-    puts("done.");
 
     return status == fmi3OK ? EXIT_SUCCESS : EXIT_FAILURE;
 }

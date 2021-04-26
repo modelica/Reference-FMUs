@@ -35,85 +35,64 @@ set_target_properties(import_shared_library PROPERTIES
 )
 target_link_libraries(import_shared_library ${CMAKE_DL_LIBS})
 
-# bcs_early_return
-add_executable(bcs_early_return
+# cs_early_return
+add_executable(cs_early_return
   ${EXAMPLE_SOURCES}
   BouncingBall/config.h
-  BouncingBall/model.c
-  src/fmi3Functions.c
-  src/cosimulation.c
-  examples/bcs_early_return.c
+  examples/BouncingBall.c
+  examples/cs_early_return.c
+  examples/FMU.h
+  examples/FMU.c
 )
-set_target_properties(bcs_early_return PROPERTIES FOLDER examples)
-target_compile_definitions(bcs_early_return PRIVATE DISABLE_PREFIX)
-target_include_directories(bcs_early_return PRIVATE include BouncingBall)
+set_target_properties(cs_early_return PROPERTIES FOLDER examples)
+target_compile_definitions(cs_early_return PRIVATE DISABLE_PREFIX)
+target_include_directories(cs_early_return PRIVATE include BouncingBall)
 if(UNIX AND NOT APPLE)
-  target_link_libraries(bcs_early_return m)
+  target_link_libraries(cs_early_return m)
 endif()
-set_target_properties(bcs_early_return PROPERTIES
+set_target_properties(cs_early_return PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
 )
 
-# bcs_intermediate_update
-add_executable(bcs_intermediate_update
+# cs_event_mode
+add_executable(cs_event_mode
   ${EXAMPLE_SOURCES}
   BouncingBall/config.h
-  BouncingBall/model.c
-  src/fmi3Functions.c
-  src/cosimulation.c
-  examples/bcs_intermediate_update.c
+  examples/BouncingBall.c
+  examples/cs_event_mode.c
+  examples/FMU.h
+  examples/FMU.c
 )
-set_target_properties(bcs_intermediate_update PROPERTIES FOLDER examples)
-target_compile_definitions(bcs_intermediate_update PRIVATE DISABLE_PREFIX)
-target_include_directories(bcs_intermediate_update PRIVATE include BouncingBall)
+set_target_properties(cs_event_mode PROPERTIES FOLDER examples)
+target_compile_definitions(cs_event_mode PRIVATE DISABLE_PREFIX)
+target_include_directories(cs_event_mode PRIVATE include BouncingBall)
 if(UNIX AND NOT APPLE)
-  target_link_libraries(bcs_intermediate_update m)
+  target_link_libraries(cs_event_mode m)
 endif()
-set_target_properties(bcs_intermediate_update PROPERTIES
+set_target_properties(cs_event_mode PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
 )
 
-# hcs_early_return
-add_executable(hcs_early_return
+# cs_intermediate_update
+add_executable(cs_intermediate_update
   ${EXAMPLE_SOURCES}
   BouncingBall/config.h
-  BouncingBall/model.c
-  src/fmi3Functions.c
-  src/cosimulation.c
-  examples/hcs_early_return.c
+  examples/BouncingBall.c
+  examples/cs_intermediate_update.c
+  examples/FMU.h
+  examples/FMU.c
 )
-set_target_properties(hcs_early_return PROPERTIES FOLDER examples)
-target_compile_definitions(hcs_early_return PRIVATE DISABLE_PREFIX)
-target_include_directories(hcs_early_return PRIVATE include BouncingBall)
+set_target_properties(cs_intermediate_update PROPERTIES FOLDER examples)
+target_compile_definitions(cs_intermediate_update PRIVATE DISABLE_PREFIX)
+target_include_directories(cs_intermediate_update PRIVATE include BouncingBall)
 if(UNIX AND NOT APPLE)
-  target_link_libraries(hcs_early_return m)
+  target_link_libraries(cs_intermediate_update m)
 endif()
-set_target_properties(hcs_early_return PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY         temp
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
-)
-
-# co_simulation
-add_library(model1 STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c VanDerPol/model.c src/cosimulation.c)
-set_target_properties(model1 PROPERTIES FOLDER examples)
-target_compile_definitions(model1 PRIVATE FMI3_FUNCTION_PREFIX=s1_)
-target_include_directories(model1 PRIVATE include VanDerPol)
-
-add_library(model2 STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c VanDerPol/model.c src/cosimulation.c)
-set_target_properties(model2 PROPERTIES FOLDER examples)
-target_compile_definitions(model2 PRIVATE FMI3_FUNCTION_PREFIX=s2_)
-target_include_directories(model2 PRIVATE include VanDerPol)
-
-add_executable(co_simulation ${EXAMPLE_SOURCES} examples/co_simulation.c)
-set_target_properties(co_simulation PROPERTIES FOLDER examples)
-target_include_directories(co_simulation PRIVATE include)
-target_link_libraries(co_simulation model1 model2)
-set_target_properties(co_simulation PROPERTIES
+set_target_properties(cs_intermediate_update PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
@@ -130,18 +109,41 @@ set_target_properties(jacobian PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
 )
 
-# model exchange
-add_library(model STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c)
-set_target_properties(model PROPERTIES FOLDER examples)
-target_compile_definitions(model PRIVATE FMI3_FUNCTION_PREFIX=M_)
-target_include_directories(model PRIVATE include BouncingBall)
+# Examples
+foreach (MODEL_NAME BouncingBall Stair)
+    foreach (INTERFACE_TYPE me cs)
+        set(TARGET_NAME ${MODEL_NAME}_${INTERFACE_TYPE})
+        add_executable (${TARGET_NAME}
+            ${EXAMPLE_SOURCES}
+            ${MODEL_NAME}/config.h
+            examples/FMU.h
+            examples/FMU.c
+            examples/simulate_${INTERFACE_TYPE}.c
+            examples/${MODEL_NAME}.c
+        )
+        set_target_properties(${TARGET_NAME} PROPERTIES FOLDER examples)
+        target_include_directories(${TARGET_NAME} PRIVATE include ${MODEL_NAME})
+        target_compile_definitions(${TARGET_NAME} PRIVATE DISABLE_PREFIX)
+        if (UNIX)
+            target_link_libraries(${TARGET_NAME} dl)
+        endif (UNIX)
+        set_target_properties(${TARGET_NAME} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY         temp
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+            RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+        )
+    endforeach(INTERFACE_TYPE)
+endforeach(MODEL_NAME)
 
-add_executable (model_exchange ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c examples/model_exchange.c)
-set_target_properties(model_exchange PROPERTIES FOLDER examples)
-target_include_directories(model_exchange PRIVATE include BouncingBall)
-target_link_libraries(model_exchange model)
-target_compile_definitions(model_exchange PRIVATE DISABLE_PREFIX)
-set_target_properties(model_exchange PROPERTIES
+# Connected CS
+add_executable (connected_cs ${EXAMPLE_SOURCES} src/fmi3Functions.c Feedthrough/model.c src/cosimulation.c examples/FMU.h examples/FMU.c examples/connected_cs.c examples/Feedthrough.c)
+set_target_properties(connected_cs PROPERTIES FOLDER examples)
+target_include_directories(connected_cs PRIVATE include Feedthrough)
+target_compile_definitions(connected_cs PRIVATE DISABLE_PREFIX)
+if (UNIX)
+    target_link_libraries(connected_cs dl)
+endif (UNIX)
+set_target_properties(connected_cs PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
