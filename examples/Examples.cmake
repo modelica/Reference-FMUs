@@ -130,12 +130,23 @@ set_target_properties(jacobian PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
 )
 
-# model exchange
+# BouncingBall ME
 add_executable (BouncingBall_me ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c examples/BouncingBall_me.c)
 set_target_properties(BouncingBall_me PROPERTIES FOLDER examples)
 target_include_directories(BouncingBall_me PRIVATE include BouncingBall)
 target_compile_definitions(BouncingBall_me PRIVATE DISABLE_PREFIX)
 set_target_properties(BouncingBall_me PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY         temp
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+)
+
+# Stair ME
+add_executable (Stair_me ${EXAMPLE_SOURCES} src/fmi3Functions.c Stair/model.c src/cosimulation.c examples/Stair_me.c)
+set_target_properties(Stair_me PROPERTIES FOLDER examples)
+target_include_directories(Stair_me PRIVATE include Stair)
+target_compile_definitions(Stair_me PRIVATE DISABLE_PREFIX)
+set_target_properties(Stair_me PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp

@@ -307,13 +307,23 @@ int main(int argc, char* argv[]) {
     const fmi3Float64 stopTime = STOP_TIME;
     fmi3Float64 time = 0;
     const fmi3Float64 tStart = 0;
+
+#if NZ > 0
     fmi3Int32 rootsFound[NZ] = { 0 };
+    fmi3Float64 z[NZ] = { 0 };
+    fmi3Float64 previous_z[NZ] = { 0 };
+#else
+    fmi3Int32 *rootsFound = NULL;
+#endif
+
     fmi3Instance m = NULL;
+
+#if NX > 0
     fmi3Float64 x[NX] = { 0 };
     fmi3Float64 x_nominal[NX] = { 0 };
     fmi3Float64 der_x[NX] = { 0 };
-    fmi3Float64 z[NZ] = { 0 };
-    fmi3Float64 previous_z[NZ] = { 0 };
+#endif
+
     FILE *outputFile = NULL;
 
     printf("Running " xstr(MODEL_IDENTIFIER) " as Model Exchange... \n");
@@ -384,13 +394,17 @@ int main(int argc, char* argv[]) {
 
     CHECK_STATUS(S->fmi3EnterContinuousTimeMode(m));
 
+#if NZ > 0
     // initialize previous event indicators
     CHECK_STATUS(S->fmi3GetEventIndicators(m, previous_z, NZ));
+#endif
 
+#if NX > 0
     // retrieve initial state x and
     // nominal values of x (if absolute tolerance is needed)
     CHECK_STATUS(S->fmi3GetContinuousStates(m, x, NX));
     CHECK_STATUS(S->fmi3GetNominalsOfContinuousStates(m, x_nominal, NX));
+#endif
 
     // retrieve solution at t=Tstart, for example, for outputs
     // S->fmi3SetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
@@ -437,6 +451,7 @@ int main(int argc, char* argv[]) {
             // retrieve solution at simulation (re)start
             CHECK_STATUS(recordVariables(outputFile, S, m, time));
 
+#if NX > 0
             if (valuesOfContinuousStatesChanged) {
                 // the model signals a value change of states, retrieve them
                 CHECK_STATUS(S->fmi3GetContinuousStates(m, x, NX));
@@ -446,16 +461,17 @@ int main(int argc, char* argv[]) {
                 // the meaning of states has changed; retrieve new nominal values
                 CHECK_STATUS(S->fmi3GetNominalsOfContinuousStates(m, x_nominal, NX));
             }
-
+#endif
         }
 
         if (time >= stopTime) {
             goto TERMINATE;
         }
 
+#if NX > 0
         // compute derivatives
         CHECK_STATUS(S->fmi3GetContinuousStateDerivatives(m, der_x, NX));
-
+#endif
         // advance time
         time += fixedStep;
 
@@ -464,13 +480,16 @@ int main(int argc, char* argv[]) {
         // set continuous inputs at t = time
         // S->fmi3SetFloat*(m, ...)
 
+#if NX > 0
         // set states at t = time and perform one step
         for (size_t i = 0; i < NX; i++) {
             x[i] += fixedStep * der_x[i]; // forward Euler method
         }
 
         CHECK_STATUS(S->fmi3SetContinuousStates(m, x, NX));
+#endif
 
+#if NZ > 0
         // get event indicators at t = time
         CHECK_STATUS(S->fmi3GetEventIndicators(m, z, NZ));
 
@@ -491,6 +510,7 @@ int main(int argc, char* argv[]) {
 
             previous_z[i] = z[i]; // remember the current value
         }
+#endif
 
         // inform the model about an accepted step
         CHECK_STATUS(S->fmi3CompletedIntegratorStep(m, fmi3True, &stepEvent, &terminateSimulation));
