@@ -27,12 +27,9 @@ int main(int argc, char* argv[]) {
 
 fmi3Status status = fmi3OK;
 const fmi3Float64 fixedStep = FIXED_STEP;
-fmi3Float64 h = fixedStep;
-fmi3Float64 tNext = h;
-const fmi3Float64 tEnd = STOP_TIME;
+const fmi3Float64 stopTime = STOP_TIME;
 fmi3Float64 time = 0;
 const fmi3Float64 tStart = 0;
-fmi3Boolean timeEvent, stateEvent, enterEventMode, terminateSimulation = fmi3False, initialEventMode;
 fmi3Int32 rootsFound[NZ] = { 0 };
 fmi3Instance m = NULL;
 fmi3Float64 x[NX] = { 0 };
@@ -42,7 +39,7 @@ fmi3Float64 z[NZ] = { 0 };
 fmi3Float64 previous_z[NZ] = { 0 };
 FILE *outputFile = NULL;
 
-printf("Running model_exchange example... ");
+printf("Running model_exchange example... \n");
 
 outputFile = fopen("model_exchange_out.csv", "w");
 
@@ -73,20 +70,45 @@ time  = tStart;
 
 // initialize
 // determine continuous and discrete states
-CHECK_STATUS(M_fmi3EnterInitializationMode(m, fmi3False, 0.0, tStart, fmi3True, tEnd));
+CHECK_STATUS(M_fmi3EnterInitializationMode(m, fmi3False, 0.0, tStart, fmi3True, stopTime));
+
+// TODO: apply input
+
 CHECK_STATUS(M_fmi3ExitInitializationMode(m));
 
-initialEventMode = fmi3True;
-enterEventMode   = fmi3False;
-timeEvent        = fmi3False;
-stateEvent       = fmi3False;
+fmi3Boolean inputEvent = fmi3False;
+fmi3Boolean timeEvent  = fmi3False;
+fmi3Boolean stateEvent = fmi3False;
+fmi3Boolean stepEvent  = fmi3False;
+
+fmi3Boolean discreteStatesNeedUpdate          = fmi3True;
+fmi3Boolean terminateSimulation               = fmi3False;
+fmi3Boolean nominalsOfContinuousStatesChanged = fmi3False;
+fmi3Boolean valuesOfContinuousStatesChanged   = fmi3False;
+fmi3Boolean nextEventTimeDefined              = fmi3False;
+fmi3Float64 nextEventTime                     = INFINITY;
+
+// intial event iteration
+while (discreteStatesNeedUpdate) {
+
+    CHECK_STATUS(M_fmi3UpdateDiscreteStates(
+        m, 
+        &discreteStatesNeedUpdate,
+        &terminateSimulation,
+        &nominalsOfContinuousStatesChanged,
+        &valuesOfContinuousStatesChanged,
+        &nextEventTimeDefined,
+        &nextEventTime));
+
+    if (terminateSimulation) {
+        goto TERMINATE;
+    }
+}
+
+CHECK_STATUS(M_fmi3EnterContinuousTimeMode(m));
 
 // initialize previous event indicators
 CHECK_STATUS(M_fmi3GetEventIndicators(m, previous_z, NZ));
-
-initialEventMode = fmi3False;
-
-CHECK_STATUS(M_fmi3EnterContinuousTimeMode(m));
 
 // retrieve initial state x and
 // nominal values of x (if absolute tolerance is needed)
@@ -98,25 +120,19 @@ CHECK_STATUS(M_fmi3GetNominalsOfContinuousStates(m, x_nominal, NX));
 
 while (!terminateSimulation) {
 
-    tNext = time + h;
+    // detect time event
+    timeEvent = nextEventTimeDefined && time >= nextEventTime;
 
     // handle events
-    if (enterEventMode || stateEvent || timeEvent) {
+    if (inputEvent || timeEvent || stateEvent || stepEvent) {
 
-        if (!initialEventMode) {
-            CHECK_STATUS(M_fmi3EnterEventMode(m, enterEventMode, stateEvent, rootsFound, NZ, timeEvent));
-        }
+        CHECK_STATUS(M_fmi3EnterEventMode(m, stepEvent, stateEvent, rootsFound, NZ, timeEvent))
+
+        nominalsOfContinuousStatesChanged = fmi3False;
+        valuesOfContinuousStatesChanged   = fmi3False;
 
         // event iteration
-        fmi3Boolean discreteStatesNeedUpdate          = fmi3True;
-        fmi3Boolean terminateSimulation               = fmi3False;
-        fmi3Boolean nominalsOfContinuousStatesChanged = fmi3False;
-        fmi3Boolean valuesOfContinuousStatesChanged   = fmi3False;
-        fmi3Boolean nextEventTimeDefined              = fmi3False;
-        fmi3Float64 nextEventTime                     = 0;
-
-        while (discreteStatesNeedUpdate) {
-
+        do {
             // set inputs at super dense time point
             // M_fmi3SetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
 
@@ -126,14 +142,17 @@ while (!terminateSimulation) {
             // update discrete states
             CHECK_STATUS(M_fmi3UpdateDiscreteStates(m, &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime));
 
-            // getOutput at super dense time point
+            // get output at super dense time point
             // M_fmi3GetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
 
             nominalsOfContinuousStatesChanged |= nominalsChanged;
             valuesOfContinuousStatesChanged   |= statesChanged;
 
-            if (terminateSimulation) goto TERMINATE;
-        }
+            if (terminateSimulation) {
+                goto TERMINATE;
+            }
+
+        } while (discreteStatesNeedUpdate);
 
         // enter Continuous-Time Mode
         CHECK_STATUS(M_fmi3EnterContinuousTimeMode(m));
@@ -141,26 +160,19 @@ while (!terminateSimulation) {
         // retrieve solution at simulation (re)start
         CHECK_STATUS(recordVariables(outputFile, m, time));
 
-        if (initialEventMode || valuesOfContinuousStatesChanged) {
+        if (valuesOfContinuousStatesChanged) {
             // the model signals a value change of states, retrieve them
             CHECK_STATUS(M_fmi3GetContinuousStates(m, x, NX));
         }
 
-        if (initialEventMode || nominalsOfContinuousStatesChanged) {
+        if (nominalsOfContinuousStatesChanged) {
             // the meaning of states has changed; retrieve new nominal values
             CHECK_STATUS(M_fmi3GetNominalsOfContinuousStates(m, x_nominal, NX));
         }
 
-        if (nextEventTimeDefined) {
-            tNext = min(nextEventTime, tEnd);
-        } else {
-            tNext = tEnd;
-        }
-
-        initialEventMode = fmi3False;
     }
 
-    if (time >= tEnd) {
+    if (time >= stopTime) {
         goto TERMINATE;
     }
 
@@ -168,8 +180,8 @@ while (!terminateSimulation) {
     CHECK_STATUS(M_fmi3GetContinuousStateDerivatives(m, der_x, NX));
 
     // advance time
-    h = min(fixedStep, tNext - time);
-    time += h;
+    time += fixedStep;
+
     CHECK_STATUS(M_fmi3SetTime(m, time));
 
     // set continuous inputs at t = time
@@ -177,7 +189,7 @@ while (!terminateSimulation) {
 
     // set states at t = time and perform one step
     for (size_t i = 0; i < NX; i++) {
-        x[i] += h * der_x[i]; // forward Euler method
+        x[i] += fixedStep * der_x[i]; // forward Euler method
     }
 
     CHECK_STATUS(M_fmi3SetContinuousStates(m, x, NX));
@@ -204,7 +216,7 @@ while (!terminateSimulation) {
     }
 
     // inform the model about an accepted step
-    CHECK_STATUS(M_fmi3CompletedIntegratorStep(m, fmi3True, &enterEventMode, &terminateSimulation));
+    CHECK_STATUS(M_fmi3CompletedIntegratorStep(m, fmi3True, &stepEvent, &terminateSimulation));
 
     // get continuous output
     // M_fmi3GetFloat*(m, ...)
