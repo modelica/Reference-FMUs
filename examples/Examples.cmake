@@ -131,17 +131,17 @@ set_target_properties(jacobian PROPERTIES
 )
 
 # model exchange
-add_library(model STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c)
-set_target_properties(model PROPERTIES FOLDER examples)
-target_compile_definitions(model PRIVATE FMI3_FUNCTION_PREFIX=M_)
-target_include_directories(model PRIVATE include BouncingBall)
+add_library(BouncingBall_static STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c)
+set_target_properties(BouncingBall_static PROPERTIES FOLDER examples)
+target_compile_definitions(BouncingBall_static PRIVATE FMI3_FUNCTION_PREFIX=M_)
+target_include_directories(BouncingBall_static PRIVATE include BouncingBall)
 
-add_executable (model_exchange ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c examples/model_exchange.c)
-set_target_properties(model_exchange PROPERTIES FOLDER examples)
-target_include_directories(model_exchange PRIVATE include BouncingBall)
-target_link_libraries(model_exchange model)
-target_compile_definitions(model_exchange PRIVATE DISABLE_PREFIX)
-set_target_properties(model_exchange PROPERTIES
+add_executable (BouncingBall_me ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c examples/model_exchange.c)
+set_target_properties(BouncingBall_me PROPERTIES FOLDER examples)
+target_include_directories(BouncingBall_me PRIVATE include BouncingBall)
+target_link_libraries(BouncingBall_me BouncingBall_static)
+target_compile_definitions(BouncingBall_me PRIVATE DISABLE_PREFIX)
+set_target_properties(BouncingBall_me PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
