@@ -41,15 +41,15 @@
   </ModelVariables>
 
   <ModelStructure>
-    <Output valueReference="3"/>
-    <Output valueReference="5"/>
-    <Output valueReference="7"/>
-    <Output valueReference="9"/>
-    <Output valueReference="12"/>
-    <InitialUnknown valueReference="3" dependencies="2" dependenciesKind="constant"/>
+    <Output valueReference="3" dependencies="0 1 2" dependenciesKind="constant constant constant"/>
+    <Output valueReference="5" dependencies="4" dependenciesKind="constant"/>
+    <Output valueReference="7" dependencies="6" dependenciesKind="constant"/>
+    <Output valueReference="9" dependencies="8 10" dependenciesKind="constant constant"/>
+    <Output valueReference="12" dependencies="11" dependenciesKind="constant"/>
+    <InitialUnknown valueReference="3" dependencies="0 1 2" dependenciesKind="constant constant constant"/>
     <InitialUnknown valueReference="5" dependencies="4" dependenciesKind="constant"/>
     <InitialUnknown valueReference="7" dependencies="6" dependenciesKind="constant"/>
-    <InitialUnknown valueReference="9" dependencies="8" dependenciesKind="constant"/>
+    <InitialUnknown valueReference="9" dependencies="8 10" dependenciesKind="constant constant"/>
     <InitialUnknown valueReference="12" dependencies="11" dependenciesKind="constant"/>
   </ModelStructure>
 
