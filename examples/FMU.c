@@ -1,10 +1,13 @@
 #include "FMU.h"
 
+#ifndef _WIN32
+#include <dlfcn.h>
+#endif
 
 #ifdef _WIN32
 #define LOAD_SYMBOL(f) if (!(S->##f = (f##TYPE *)GetProcAddress(S->libraryHandle, #f))) goto FAIL;
 #else
-#define LOAD_SYMBOL(f) if (!(S->##f = (f##TYPE *)dlsym(S->libraryHandle, #f))) goto FAIL;
+#define LOAD_SYMBOL(f) if (!(S->f = (f##TYPE *)dlsym(S->libraryHandle, #f))) goto FAIL;
 #endif
 
 

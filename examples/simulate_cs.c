@@ -18,9 +18,9 @@ int main(int argc, char* argv[]) {
 #if defined(_WIN32)
     const char *sharedLibrary = xstr(MODEL_IDENTIFIER) "\\binaries\\x86_64-windows\\" xstr(MODEL_IDENTIFIER) ".dll";
 #elif defined(__APPLE__)
-    const char *sharedLibrary1 = xstr(MODEL_IDENTIFIER) "/binaries/x86_64-darwin/" xstr(MODEL_IDENTIFIER) ".dylib", RTLD_LAZY);
+    const char *sharedLibrary = xstr(MODEL_IDENTIFIER) "/binaries/x86_64-darwin/" xstr(MODEL_IDENTIFIER) ".dylib";
 #else
-    const char *sharedLibrary1 = xstr(MODEL_IDENTIFIER) "/binaries/x86_64-linux/" xstr(MODEL_IDENTIFIER) ".so", RTLD_LAZY);
+    const char *sharedLibrary = xstr(MODEL_IDENTIFIER) "/binaries/x86_64-linux/" xstr(MODEL_IDENTIFIER) ".so";
 #endif
 
     FILE *outputFile = openOutputFile("BouncingBall_cs.csv");

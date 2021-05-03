@@ -16,7 +16,7 @@ typedef struct {
 #if defined(_WIN32)
     HMODULE libraryHandle;
 #else
-    void *libraryHandle
+    void *libraryHandle;
 #endif
 
     /***************************************************
