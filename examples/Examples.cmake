@@ -152,23 +152,23 @@ set_target_properties(BouncingBall_cs PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
 )
 
+# Stair ME
+add_executable (Stair_me ${EXAMPLE_SOURCES} src/fmi3Functions.c Stair/model.c Stair/config.h src/cosimulation.c examples/FMU.h examples/FMU.c examples/simulate_me.c examples/Stair.c)
+set_target_properties(Stair_me PROPERTIES FOLDER examples)
+target_include_directories(Stair_me PRIVATE include Stair)
+target_compile_definitions(Stair_me PRIVATE DISABLE_PREFIX)
+set_target_properties(Stair_me PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY         temp
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+)
+
 # Connected CS
 add_executable (connected_cs ${EXAMPLE_SOURCES} src/fmi3Functions.c Feedthrough/model.c src/cosimulation.c examples/FMU.h examples/FMU.c examples/connected_cs.c examples/Feedthrough.c)
 set_target_properties(connected_cs PROPERTIES FOLDER examples)
 target_include_directories(connected_cs PRIVATE include Feedthrough)
 target_compile_definitions(connected_cs PRIVATE DISABLE_PREFIX)
 set_target_properties(connected_cs PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY         temp
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
-)
-
-# Stair ME
-add_executable (Stair_me ${EXAMPLE_SOURCES} src/fmi3Functions.c Stair/model.c src/cosimulation.c examples/Stair_me.c)
-set_target_properties(Stair_me PROPERTIES FOLDER examples)
-target_include_directories(Stair_me PRIVATE include Stair)
-target_compile_definitions(Stair_me PRIVATE DISABLE_PREFIX)
-set_target_properties(Stair_me PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp

@@ -1,8 +1,19 @@
-#define FIXED_STEP 1e-2
-#define STOP_TIME 3
-#define OUTPUT_FILE_HEADER "time,counter\n"
+#include <stdio.h>
+#include "FMU.h"
+#include "config.h"
 
-#include "simulate_me.h"
+
+FILE *openOutputFile(const char *filename) {
+
+    FILE *file = fopen(filename, "w");
+
+    if (file) {
+        fputs("time,counter\n", file);
+    }
+
+    return file;
+}
+
 
 fmi3Status recordVariables(FILE *outputFile, FMU *S, fmi3Instance s, fmi3Float64 time) {
     const fmi3ValueReference valueReferences[1] = { vr_counter };
