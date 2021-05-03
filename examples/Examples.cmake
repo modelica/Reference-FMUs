@@ -131,7 +131,7 @@ set_target_properties(jacobian PROPERTIES
 )
 
 # BouncingBall ME
-add_executable (BouncingBall_me ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c examples/simulate_me.h examples/BouncingBall_me.c)
+add_executable (BouncingBall_me ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c examples/FMU.h examples/FMU.c examples/simulate_me.c examples/BouncingBall.c)
 set_target_properties(BouncingBall_me PROPERTIES FOLDER examples)
 target_include_directories(BouncingBall_me PRIVATE include BouncingBall)
 target_compile_definitions(BouncingBall_me PRIVATE DISABLE_PREFIX)
