@@ -127,14 +127,14 @@ foreach (MODEL_NAME BouncingBall Stair)
         set_target_properties(${TARGET_NAME} PROPERTIES FOLDER examples)
         target_include_directories(${TARGET_NAME} PRIVATE include ${MODEL_NAME})
         target_compile_definitions(${TARGET_NAME} PRIVATE DISABLE_PREFIX)
+        if (UNIX)
+            target_link_libraries(${TARGET_NAME} dl)
+        endif (UNIX)
         set_target_properties(${TARGET_NAME} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY         temp
             RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
             RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
         )
-        if (UNIX)
-            target_link_libraries(${TARGET_NAME} dl)
-        endif (UNIX)
     endforeach(INTERFACE_TYPE)
 endforeach(MODEL_NAME)
 
@@ -143,6 +143,9 @@ add_executable (connected_cs ${EXAMPLE_SOURCES} src/fmi3Functions.c Feedthrough/
 set_target_properties(connected_cs PROPERTIES FOLDER examples)
 target_include_directories(connected_cs PRIVATE include Feedthrough)
 target_compile_definitions(connected_cs PRIVATE DISABLE_PREFIX)
+if (UNIX)
+    target_link_libraries(connected_cs dl)
+endif (UNIX)
 set_target_properties(connected_cs PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
