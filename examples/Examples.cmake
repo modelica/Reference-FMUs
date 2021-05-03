@@ -98,27 +98,6 @@ set_target_properties(hcs_early_return PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
 )
 
-# co_simulation
-add_library(model1 STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c VanDerPol/model.c src/cosimulation.c)
-set_target_properties(model1 PROPERTIES FOLDER examples)
-target_compile_definitions(model1 PRIVATE FMI3_FUNCTION_PREFIX=s1_)
-target_include_directories(model1 PRIVATE include VanDerPol)
-
-add_library(model2 STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c VanDerPol/model.c src/cosimulation.c)
-set_target_properties(model2 PROPERTIES FOLDER examples)
-target_compile_definitions(model2 PRIVATE FMI3_FUNCTION_PREFIX=s2_)
-target_include_directories(model2 PRIVATE include VanDerPol)
-
-add_executable(co_simulation ${EXAMPLE_SOURCES} examples/co_simulation.c)
-set_target_properties(co_simulation PROPERTIES FOLDER examples)
-target_include_directories(co_simulation PRIVATE include)
-target_link_libraries(co_simulation model1 model2)
-set_target_properties(co_simulation PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY         temp
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
-)
-
 # jacobian
 add_executable(jacobian ${EXAMPLE_SOURCES} src/fmi3Functions.c VanDerPol/model.c src/cosimulation.c examples/jacobian.c)
 set_target_properties (jacobian PROPERTIES FOLDER examples)
@@ -130,38 +109,31 @@ set_target_properties(jacobian PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
 )
 
-# BouncingBall ME
-add_executable (BouncingBall_me ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c examples/FMU.h examples/FMU.c examples/simulate_me.c examples/BouncingBall.c)
-set_target_properties(BouncingBall_me PROPERTIES FOLDER examples)
-target_include_directories(BouncingBall_me PRIVATE include BouncingBall)
-target_compile_definitions(BouncingBall_me PRIVATE DISABLE_PREFIX)
-set_target_properties(BouncingBall_me PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY         temp
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
-)
-
-# BouncingBall CS
-add_executable (BouncingBall_cs ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c examples/FMU.h examples/FMU.c examples/simulate_cs.c examples/BouncingBall.c)
-set_target_properties(BouncingBall_cs PROPERTIES FOLDER examples)
-target_include_directories(BouncingBall_cs PRIVATE include BouncingBall)
-target_compile_definitions(BouncingBall_cs PRIVATE DISABLE_PREFIX)
-set_target_properties(BouncingBall_cs PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY         temp
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
-)
-
-# Stair ME
-add_executable (Stair_me ${EXAMPLE_SOURCES} src/fmi3Functions.c Stair/model.c Stair/config.h src/cosimulation.c examples/FMU.h examples/FMU.c examples/simulate_me.c examples/Stair.c)
-set_target_properties(Stair_me PROPERTIES FOLDER examples)
-target_include_directories(Stair_me PRIVATE include Stair)
-target_compile_definitions(Stair_me PRIVATE DISABLE_PREFIX)
-set_target_properties(Stair_me PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY         temp
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
-)
+# Examples
+foreach (MODEL_NAME BouncingBall Stair)
+    foreach (INTERFACE_TYPE me cs)
+        set(TARGET_NAME ${MODEL_NAME}_${INTERFACE_TYPE})
+        add_executable (${TARGET_NAME}
+            ${EXAMPLE_SOURCES}
+            ${MODEL_NAME}/config.h
+            ${MODEL_NAME}/model.c
+            examples/FMU.h
+            examples/FMU.c
+            examples/simulate_${INTERFACE_TYPE}.c
+            examples/${MODEL_NAME}.c
+            src/cosimulation.c
+            src/fmi3Functions.c
+        )
+        set_target_properties(${TARGET_NAME} PROPERTIES FOLDER examples)
+        target_include_directories(${TARGET_NAME} PRIVATE include ${MODEL_NAME})
+        target_compile_definitions(${TARGET_NAME} PRIVATE DISABLE_PREFIX)
+        set_target_properties(${TARGET_NAME} PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY         temp
+            RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+            RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+        )
+    endforeach(INTERFACE_TYPE)
+endforeach(MODEL_NAME)
 
 # Connected CS
 add_executable (connected_cs ${EXAMPLE_SOURCES} src/fmi3Functions.c Feedthrough/model.c src/cosimulation.c examples/FMU.h examples/FMU.c examples/connected_cs.c examples/Feedthrough.c)
