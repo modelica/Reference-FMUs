@@ -154,7 +154,7 @@ TERMINATE:
     if (status < fmi3Error) {
 
         fmi3Status s = S1->fmi3Terminate(s1);
-        
+
         status = max(status, s);
 
         if (s < fmi3Fatal) {
@@ -173,7 +173,7 @@ TERMINATE:
         }
     }
     // end::CoSimulation[]
-    
+
     freeFMU(S1);
     freeFMU(S2);
 
