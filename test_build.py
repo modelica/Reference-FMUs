@@ -149,13 +149,18 @@ class BuildTest(unittest.TestCase):
 
         # run examples
         examples = [
-            'import_shared_library',
-            'import_static_library',
-            'co_simulation',
             'bcs_early_return',
             'bcs_intermediate_update',
+            'BouncingBall_cs',
+            'BouncingBall_me',
+            'connected_cs',
+            'hcs_early_return',
+            'import_shared_library',
+            'import_static_library',
             'jacobian',
-            'scs_synchronous'
+            'scs_synchronous',
+            'Stair_cs',
+            'Stair_me'
         ]
 
         is_windows = os.name == 'nt'
