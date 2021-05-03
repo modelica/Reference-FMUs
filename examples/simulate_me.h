@@ -469,7 +469,7 @@ int main(int argc, char* argv[]) {
         }
 
 #if NX > 0
-        // compute derivatives
+        // compute continous state derivatives
         CHECK_STATUS(S->fmi3GetContinuousStateDerivatives(m, der_x, NX));
 #endif
         // advance time
