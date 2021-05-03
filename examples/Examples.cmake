@@ -131,11 +131,33 @@ set_target_properties(jacobian PROPERTIES
 )
 
 # BouncingBall ME
-add_executable (BouncingBall_me ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c examples/BouncingBall_me.c)
+add_executable (BouncingBall_me ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c examples/simulate_me.h examples/BouncingBall_me.c)
 set_target_properties(BouncingBall_me PROPERTIES FOLDER examples)
 target_include_directories(BouncingBall_me PRIVATE include BouncingBall)
 target_compile_definitions(BouncingBall_me PRIVATE DISABLE_PREFIX)
 set_target_properties(BouncingBall_me PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY         temp
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+)
+
+# BouncingBall CS
+add_executable (BouncingBall_cs ${EXAMPLE_SOURCES} src/fmi3Functions.c BouncingBall/model.c src/cosimulation.c examples/FMU.h examples/FMU.c examples/simulate_cs.c examples/BouncingBall.c)
+set_target_properties(BouncingBall_cs PROPERTIES FOLDER examples)
+target_include_directories(BouncingBall_cs PRIVATE include BouncingBall)
+target_compile_definitions(BouncingBall_cs PRIVATE DISABLE_PREFIX)
+set_target_properties(BouncingBall_cs PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY         temp
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+)
+
+# Connected CS
+add_executable (connected_cs ${EXAMPLE_SOURCES} src/fmi3Functions.c Feedthrough/model.c src/cosimulation.c examples/FMU.h examples/FMU.c examples/connected_cs.c examples/Feedthrough.c)
+set_target_properties(connected_cs PROPERTIES FOLDER examples)
+target_include_directories(connected_cs PRIVATE include Feedthrough)
+target_compile_definitions(connected_cs PRIVATE DISABLE_PREFIX)
+set_target_properties(connected_cs PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
