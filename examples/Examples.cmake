@@ -132,6 +132,9 @@ foreach (MODEL_NAME BouncingBall Stair)
             RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
             RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
         )
+        if (UNIX)
+            target_link_libraries(${TARGET_NAME} dl)
+        endif (UNIX)
     endforeach(INTERFACE_TYPE)
 endforeach(MODEL_NAME)
 
