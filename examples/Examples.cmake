@@ -116,13 +116,10 @@ foreach (MODEL_NAME BouncingBall Stair)
         add_executable (${TARGET_NAME}
             ${EXAMPLE_SOURCES}
             ${MODEL_NAME}/config.h
-            ${MODEL_NAME}/model.c
             examples/FMU.h
             examples/FMU.c
             examples/simulate_${INTERFACE_TYPE}.c
             examples/${MODEL_NAME}.c
-            src/cosimulation.c
-            src/fmi3Functions.c
         )
         set_target_properties(${TARGET_NAME} PROPERTIES FOLDER examples)
         target_include_directories(${TARGET_NAME} PRIVATE include ${MODEL_NAME})
