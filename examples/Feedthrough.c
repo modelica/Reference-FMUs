@@ -4,6 +4,7 @@
 
 
 FILE *openOutputFile(const char *filename) {
+
     FILE *outputFile = fopen(filename, "w");
 
     if (!outputFile) {

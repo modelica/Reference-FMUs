@@ -2,6 +2,7 @@
 #include "util.h"
 #include "config.h"
 
+
 int main(int argc, char* argv[]) {
 
     fmi3Status status = fmi3OK;
