@@ -16,21 +16,13 @@ int main(int argc, char* argv[]) {
     fmi3Boolean earlyReturn;
     fmi3Float64 lastSuccessfulTime;
 
-#if defined(_WIN32)
-    const char *sharedLibrary = xstr(MODEL_IDENTIFIER) "\\binaries\\x86_64-windows\\" xstr(MODEL_IDENTIFIER) ".dll";
-#elif defined(__APPLE__)
-    const char *sharedLibrary = xstr(MODEL_IDENTIFIER) "/binaries/x86_64-darwin/" xstr(MODEL_IDENTIFIER) ".dylib";
-#else
-    const char *sharedLibrary = xstr(MODEL_IDENTIFIER) "/binaries/x86_64-linux/" xstr(MODEL_IDENTIFIER) ".so";
-#endif
-
     FILE *outputFile = openOutputFile("BouncingBall_cs.csv");
 
     if (!outputFile) {
         return EXIT_FAILURE;
     }
 
-    FMU *S = loadFMU(sharedLibrary);
+    FMU *S = loadFMU(PLATFORM_BINARY);
 
     if (!S) {
         return EXIT_FAILURE;

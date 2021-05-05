@@ -35,22 +35,22 @@ set_target_properties(import_shared_library PROPERTIES
 )
 target_link_libraries(import_shared_library ${CMAKE_DL_LIBS})
 
-# bcs_early_return
-add_executable(bcs_early_return
+# cs_early_return
+add_executable(cs_early_return
   ${EXAMPLE_SOURCES}
   BouncingBall/config.h
-  BouncingBall/model.c
-  src/fmi3Functions.c
-  src/cosimulation.c
-  examples/bcs_early_return.c
+  examples/BouncingBall.c
+  examples/cs_early_return.c
+  examples/FMU.h
+  examples/FMU.c
 )
-set_target_properties(bcs_early_return PROPERTIES FOLDER examples)
-target_compile_definitions(bcs_early_return PRIVATE DISABLE_PREFIX)
-target_include_directories(bcs_early_return PRIVATE include BouncingBall)
+set_target_properties(cs_early_return PROPERTIES FOLDER examples)
+target_compile_definitions(cs_early_return PRIVATE DISABLE_PREFIX)
+target_include_directories(cs_early_return PRIVATE include BouncingBall)
 if(UNIX AND NOT APPLE)
-  target_link_libraries(bcs_early_return m)
+  target_link_libraries(cs_early_return m)
 endif()
-set_target_properties(bcs_early_return PROPERTIES
+set_target_properties(cs_early_return PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp

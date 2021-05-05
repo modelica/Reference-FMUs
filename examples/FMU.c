@@ -28,6 +28,10 @@ FMU *loadFMU(const char *filename) {
     S->libraryHandle = dlopen(filename, RTLD_LAZY);
 #endif
 
+    if (!S->libraryHandle) {
+        goto FAIL;
+    }
+
     /***************************************************
     Common Functions
     ****************************************************/
