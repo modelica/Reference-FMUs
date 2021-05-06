@@ -92,7 +92,7 @@ fmi3Float64 nextEventTime                     = INFINITY;
 while (discreteStatesNeedUpdate) {
 
     CHECK_STATUS(M_fmi3UpdateDiscreteStates(
-        m, 
+        m,
         &discreteStatesNeedUpdate,
         &terminateSimulation,
         &nominalsOfContinuousStatesChanged,
