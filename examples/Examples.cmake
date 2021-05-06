@@ -77,22 +77,22 @@ set_target_properties(cs_event_mode PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
 )
 
-# bcs_intermediate_update
-add_executable(bcs_intermediate_update
+# cs_intermediate_update
+add_executable(cs_intermediate_update
   ${EXAMPLE_SOURCES}
   BouncingBall/config.h
-  BouncingBall/model.c
-  src/fmi3Functions.c
-  src/cosimulation.c
-  examples/bcs_intermediate_update.c
+  examples/BouncingBall.c
+  examples/cs_intermediate_update.c
+  examples/FMU.h
+  examples/FMU.c
 )
-set_target_properties(bcs_intermediate_update PROPERTIES FOLDER examples)
-target_compile_definitions(bcs_intermediate_update PRIVATE DISABLE_PREFIX)
-target_include_directories(bcs_intermediate_update PRIVATE include BouncingBall)
+set_target_properties(cs_intermediate_update PROPERTIES FOLDER examples)
+target_compile_definitions(cs_intermediate_update PRIVATE DISABLE_PREFIX)
+target_include_directories(cs_intermediate_update PRIVATE include BouncingBall)
 if(UNIX AND NOT APPLE)
-  target_link_libraries(bcs_intermediate_update m)
+  target_link_libraries(cs_intermediate_update m)
 endif()
-set_target_properties(bcs_intermediate_update PROPERTIES
+set_target_properties(cs_intermediate_update PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
