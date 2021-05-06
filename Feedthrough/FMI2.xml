@@ -72,16 +72,16 @@
 
   <ModelStructure>
     <Outputs>
-      <Unknown index="4" dependencies="1" dependenciesKind="constant"/>
+      <Unknown index="4" dependencies="1 2 3" dependenciesKind="constant constant constant"/>
       <Unknown index="6" dependencies="5" dependenciesKind="constant"/>
       <Unknown index="8" dependencies="7" dependenciesKind="constant"/>
-      <Unknown index="10" dependencies="9" dependenciesKind="constant"/>
+      <Unknown index="10" dependencies="9 11" dependenciesKind="constant constant"/>
     </Outputs>
     <InitialUnknowns>
       <Unknown index="4" dependencies="1 2 3" dependenciesKind="constant constant constant"/>
       <Unknown index="6" dependencies="5" dependenciesKind="constant"/>
       <Unknown index="8" dependencies="7" dependenciesKind="constant"/>
-      <Unknown index="10" dependencies="9" dependenciesKind="constant"/>
+      <Unknown index="10" dependencies="9 11" dependenciesKind="constant constant"/>
     </InitialUnknowns>
   </ModelStructure>
 
