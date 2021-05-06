@@ -56,6 +56,27 @@ set_target_properties(cs_early_return PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
 )
 
+# cs_event_mode
+add_executable(cs_event_mode
+  ${EXAMPLE_SOURCES}
+  BouncingBall/config.h
+  examples/BouncingBall.c
+  examples/cs_event_mode.c
+  examples/FMU.h
+  examples/FMU.c
+)
+set_target_properties(cs_event_mode PROPERTIES FOLDER examples)
+target_compile_definitions(cs_event_mode PRIVATE DISABLE_PREFIX)
+target_include_directories(cs_event_mode PRIVATE include BouncingBall)
+if(UNIX AND NOT APPLE)
+  target_link_libraries(cs_event_mode m)
+endif()
+set_target_properties(cs_event_mode PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY         temp
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+)
+
 # bcs_intermediate_update
 add_executable(bcs_intermediate_update
   ${EXAMPLE_SOURCES}
@@ -72,27 +93,6 @@ if(UNIX AND NOT APPLE)
   target_link_libraries(bcs_intermediate_update m)
 endif()
 set_target_properties(bcs_intermediate_update PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY         temp
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
-)
-
-# hcs_early_return
-add_executable(hcs_early_return
-  ${EXAMPLE_SOURCES}
-  BouncingBall/config.h
-  BouncingBall/model.c
-  src/fmi3Functions.c
-  src/cosimulation.c
-  examples/hcs_early_return.c
-)
-set_target_properties(hcs_early_return PROPERTIES FOLDER examples)
-target_compile_definitions(hcs_early_return PRIVATE DISABLE_PREFIX)
-target_include_directories(hcs_early_return PRIVATE include BouncingBall)
-if(UNIX AND NOT APPLE)
-  target_link_libraries(hcs_early_return m)
-endif()
-set_target_properties(hcs_early_return PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp

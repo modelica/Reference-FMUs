@@ -1,24 +1,11 @@
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
+#include "FMU.h"
 #include "fmi3Functions.h"
 #include "config.h"
 #include "util.h"
 
-
-typedef struct {
-    fmi3Instance instance;
-    FILE* outputFile;
-    fmi3Float64 intermediateUpdateTime;
-} InstanceEnvironment;
-
-fmi3Status recordVariables(InstanceEnvironment instanceEnvironment, fmi3Float64 time) {
-    fmi3ValueReference outputsVRs[2] = { vr_h, vr_v };
-    fmi3Float64 y[2];
-    fmi3Status status = fmi3GetFloat64(instanceEnvironment.instance, outputsVRs, 2, y, 2);
-    fprintf(instanceEnvironment.outputFile, "%g,%g,%g\n", time, y[0], y[1]);
-    return status;
-}
 
 //////////////////////////
 // Define callback
@@ -35,15 +22,6 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
                        fmi3Boolean *earlyReturnRequested,
                        fmi3Float64 *earlyReturnTime) {
 
-    if (!instanceEnvironment) {
-        return;
-    }
-
-    InstanceEnvironment* env = (InstanceEnvironment*)instanceEnvironment;
-
-    // remember intermediateUpdateTime
-    env->intermediateUpdateTime = intermediateUpdateTime;
-
     // stop here
     *earlyReturnRequested = fmi3True;
     *earlyReturnTime = intermediateUpdateTime;
@@ -59,27 +37,24 @@ int main(int argc, char* argv[]) {
     // Communication constant step size
     const fmi3Float64 h = 0.01;
 
-    InstanceEnvironment instanceEnvironment = {
-        .instance               = NULL,
-        .outputFile             = NULL,
-        .intermediateUpdateTime = startTime
-    };
+    FMU *S = loadFMU(PLATFORM_BINARY);
 
-    instanceEnvironment.outputFile = fopen("BouncingBall_out.csv", "w");
-
-    if (!instanceEnvironment.outputFile) {
-        puts("Failed to open output file.");
+    if (!S) {
         return EXIT_FAILURE;
     }
 
-    // write the header of the CSV
-    fputs("time,h,v\n", instanceEnvironment.outputFile);
+    FILE *outputFile = openOutputFile("cs_early_return.csv");
+
+    if (!outputFile) {
+        puts("Failed to open output file.");
+        return EXIT_FAILURE;
+    }
 
     //////////////////////////
     // Initialization sub-phase
 
     // Instantiate the FMU
-    fmi3Instance s = fmi3InstantiateCoSimulation(
+    fmi3Instance s = S->fmi3InstantiateCoSimulation(
         "instance1",            // instanceName
         INSTANTIATION_TOKEN,    // instantiationToken
         NULL,                   // resourceLocation
@@ -98,42 +73,40 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    instanceEnvironment.instance = s;
-
     // Set all variable start values (of "ScalarVariable / <type> / start")
     // fmi3SetReal/Integer/Boolean/String(s, ...);
 
     fmi3Status status = fmi3OK;
 
     // Initialize the FMU instance
-    CHECK_STATUS(fmi3EnterInitializationMode(s, fmi3False, 0.0, startTime, fmi3True, stopTime))
+    CHECK_STATUS(S->fmi3EnterInitializationMode(s, fmi3False, 0.0, startTime, fmi3True, stopTime))
     // Set the input values at time = startTime
     // fmi3SetReal/Integer/Boolean/String(s, ...);
-    CHECK_STATUS(fmi3ExitInitializationMode(s))
+    CHECK_STATUS(S->fmi3ExitInitializationMode(s))
 
     //////////////////////////
     // Simulation sub-phase
-    fmi3Float64 tc = startTime; // current time
-    fmi3Float64 step = h;       // non-zero step size
+    fmi3Float64 time = startTime; // current time
+    fmi3Float64 step = h;         // non-zero step size
 
-    while (tc < stopTime) {
+    while (time < stopTime) {
 
         if (step > 0) {
             // Continuous mode (default mode)
             fmi3Boolean eventEncountered, terminate, earlyReturn;
             fmi3Float64 lastSuccessfulTime;
 
-            status = fmi3DoStep(s, tc, step, fmi3False, &eventEncountered, &terminate, &earlyReturn, &lastSuccessfulTime);
+            CHECK_STATUS(S->fmi3DoStep(s, time, step, fmi3False, &eventEncountered, &terminate, &earlyReturn, &lastSuccessfulTime))
 
             switch (status) {
                 case fmi3OK:
                     if (earlyReturn) {
                         // TODO: pass reasons
-                        CHECK_STATUS(fmi3EnterEventMode(s, fmi3False, fmi3False, NULL, 0, fmi3False));
+                        CHECK_STATUS(S->fmi3EnterEventMode(s, fmi3False, fmi3False, NULL, 0, fmi3False));
                         step = 0;
-                        tc = instanceEnvironment.intermediateUpdateTime;
+                        //tc = instanceEnvironment.intermediateUpdateTime;
                     } else {
-                        tc += step;
+                        time += step;
                         step = h;
                     }
                     break;
@@ -141,7 +114,7 @@ int main(int argc, char* argv[]) {
                     // TODO: handle discard
                     break;
                 default:
-                    CHECK_STATUS(status)
+                    //CHECK_STATUS(status)
                     break;
             };
         } else {
@@ -153,17 +126,17 @@ int main(int argc, char* argv[]) {
             fmi3Float64 nextEventTime;
 
             // Event mode
-            CHECK_STATUS(fmi3UpdateDiscreteStates(s, &discreteStatesNeedUpdate, &terminateSimulation, &nominalsOfContinuousStatesChanged, &valuesOfContinuousStatesChanged, &nextEventTimeDefined, &nextEventTime))
+            CHECK_STATUS(S->fmi3UpdateDiscreteStates(s, &discreteStatesNeedUpdate, &terminateSimulation, &nominalsOfContinuousStatesChanged, &valuesOfContinuousStatesChanged, &nextEventTimeDefined, &nextEventTime))
 
             if (!discreteStatesNeedUpdate) {
-                CHECK_STATUS(fmi3EnterContinuousTimeMode(s))
-                step = h - fmod(tc, h);  // finish the step
+                CHECK_STATUS(S->fmi3EnterContinuousTimeMode(s))
+                step = h - fmod(time, h);  // finish the step
             };
         };
 
         // Get outputs
         // fmi3GetReal/Integer/Boolean/String(s, ...);
-        CHECK_STATUS(recordVariables(instanceEnvironment, tc))
+        CHECK_STATUS(recordVariables(outputFile, S, s, time))
 
         // Set inputs
         // fmi3SetReal/Integer/Boolean/String(s, ...);
@@ -175,15 +148,15 @@ int main(int argc, char* argv[]) {
 
 TERMINATE:
 
-    if (s && status != fmi3Error && status != fmi3Fatal) {
-        terminateStatus = fmi3Terminate(s);
+    if (status < fmi3Fatal) {
+        terminateStatus = S->fmi3Terminate(s);
     }
 
-    if (s && status != fmi3Fatal && terminateStatus != fmi3Fatal) {
-        fmi3FreeInstance(s);
+    if (status < fmi3Fatal && terminateStatus < fmi3Fatal) {
+        S->fmi3FreeInstance(s);
     }
 
-    puts("done.");
+    freeFMU(S);
 
     return status == fmi3OK ? EXIT_SUCCESS : EXIT_FAILURE;
 }
