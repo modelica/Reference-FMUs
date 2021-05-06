@@ -67,7 +67,6 @@ src_dir = os.path.dirname(__file__)
 
 info = [
     ('BouncingBall', {}, 0.01),
-    ('BouncingBallStairs', {}, 0.01),
     ('Dahlquist',    {}, 0.2),
     ('Feedthrough',  {'real_fixed_param': 1}, 0.2),
     ('Resource',     {}, 0.2),

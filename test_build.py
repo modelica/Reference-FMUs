@@ -168,25 +168,15 @@ class BuildTest(unittest.TestCase):
             filename = os.path.join(build_dir, 'temp', example)
             subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
 
-        # Validate and copy FMUs to cross check.
-        models_cs_me = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
-        models_types = {
-            'cs': models_cs_me,
-            'me': models_cs_me + ['BouncingBallStairs'],
-        }
-        cs_type_name = {
-            'cs': 'CoSimulation',
-            'me': 'ModelExchange'
-        }
-        for mtype in models_types:
-            self.validate(build_dir, models=models_types[mtype], fmi_types=[cs_type_name[mtype]])
-            self.validate(build_dir, models=models_types[mtype], fmi_types=[cs_type_name[mtype]], compile=True)
-            copy_to_cross_check(build_dir=build_dir, model_names=models_cs_me, fmi_version='3.0', fmi_types=[mtype])
+        models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
+        self.validate(build_dir, models=models)
+        self.validate(build_dir, models=models, compile=True)
 
+        copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='3.0', fmi_types=['cs', 'me'])
         copy_to_cross_check(build_dir=build_dir, model_names=['Clocks'], fmi_version='3.0', fmi_types=['se'])
 
         read_model_description(filename=os.path.join(build_dir, 'dist', 'Clocks.fmu'),
-                            validate_variable_names=True, validate_model_structure=True)
+                               validate_variable_names=True, validate_model_structure=True)
 
 
 if __name__ == '__main__':
