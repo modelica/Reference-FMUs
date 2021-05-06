@@ -149,12 +149,12 @@ class BuildTest(unittest.TestCase):
 
         # run examples
         examples = [
-            'bcs_early_return',
-            'bcs_intermediate_update',
+            'cs_early_return',
+            'cs_event_mode',
+            'cs_intermediate_update',
             'BouncingBall_cs',
             'BouncingBall_me',
             'connected_cs',
-            'hcs_early_return',
             'import_shared_library',
             'import_static_library',
             'jacobian',
