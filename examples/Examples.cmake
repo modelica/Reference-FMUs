@@ -154,11 +154,11 @@ set_target_properties(connected_cs PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
 )
 
-# Scheduled Co-Simulation
-add_executable(scs_synchronous ${EXAMPLE_SOURCES} src/fmi3Functions.c Clocks/model.c src/cosimulation.c examples/scs_synchronous.c Clocks/FMI3.xml Clocks/config.h)
+# scs_synchronous
+add_executable (scs_synchronous ${EXAMPLE_SOURCES} Clocks/config.h examples/FMU.h examples/FMU.c examples/scs_synchronous.c)
 set_target_properties(scs_synchronous PROPERTIES FOLDER examples)
 target_include_directories(scs_synchronous PRIVATE include Clocks)
-target_compile_definitions(scs_synchronous PRIVATE DISABLE_PREFIX)
+target_link_libraries(scs_synchronous ${LIBRARIES})
 set_target_properties(scs_synchronous PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
