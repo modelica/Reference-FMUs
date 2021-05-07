@@ -47,9 +47,7 @@ add_executable(cs_early_return
 set_target_properties(cs_early_return PROPERTIES FOLDER examples)
 target_compile_definitions(cs_early_return PRIVATE DISABLE_PREFIX)
 target_include_directories(cs_early_return PRIVATE include BouncingBall)
-if(UNIX AND NOT APPLE)
-  target_link_libraries(cs_early_return m)
-endif()
+target_link_libraries(cs_early_return ${CMAKE_DL_LIBS})
 set_target_properties(cs_early_return PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
@@ -68,9 +66,7 @@ add_executable(cs_event_mode
 set_target_properties(cs_event_mode PROPERTIES FOLDER examples)
 target_compile_definitions(cs_event_mode PRIVATE DISABLE_PREFIX)
 target_include_directories(cs_event_mode PRIVATE include BouncingBall)
-if(UNIX AND NOT APPLE)
-  target_link_libraries(cs_event_mode m)
-endif()
+target_link_libraries(cs_event_mode ${CMAKE_DL_LIBS})
 set_target_properties(cs_event_mode PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
@@ -90,7 +86,9 @@ set_target_properties(cs_intermediate_update PROPERTIES FOLDER examples)
 target_compile_definitions(cs_intermediate_update PRIVATE DISABLE_PREFIX)
 target_include_directories(cs_intermediate_update PRIVATE include BouncingBall)
 if(UNIX AND NOT APPLE)
-  target_link_libraries(cs_intermediate_update m)
+    target_link_libraries(cs_intermediate_update ${CMAKE_DL_LIBS} m)
+else ()
+    target_link_libraries(cs_intermediate_update ${CMAKE_DL_LIBS})
 endif()
 set_target_properties(cs_intermediate_update PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
@@ -124,9 +122,7 @@ foreach (MODEL_NAME BouncingBall Stair)
         set_target_properties(${TARGET_NAME} PROPERTIES FOLDER examples)
         target_include_directories(${TARGET_NAME} PRIVATE include ${MODEL_NAME})
         target_compile_definitions(${TARGET_NAME} PRIVATE DISABLE_PREFIX)
-        if (UNIX)
-            target_link_libraries(${TARGET_NAME} dl)
-        endif (UNIX)
+        target_link_libraries(${TARGET_NAME} ${CMAKE_DL_LIBS})
         set_target_properties(${TARGET_NAME} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY         temp
             RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
@@ -140,9 +136,7 @@ add_executable (connected_cs ${EXAMPLE_SOURCES} src/fmi3Functions.c Feedthrough/
 set_target_properties(connected_cs PROPERTIES FOLDER examples)
 target_include_directories(connected_cs PRIVATE include Feedthrough)
 target_compile_definitions(connected_cs PRIVATE DISABLE_PREFIX)
-if (UNIX)
-    target_link_libraries(connected_cs dl)
-endif (UNIX)
+target_link_libraries(connected_cs ${CMAKE_DL_LIBS})
 set_target_properties(connected_cs PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
