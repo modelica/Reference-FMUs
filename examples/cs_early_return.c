@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
     const fmi3Float64 h = 10 * FIXED_SOLVER_STEP;
 
     FMU *S = loadFMU(PLATFORM_BINARY);
-    
+
     if (!S) {
         return EXIT_FAILURE;
     }
