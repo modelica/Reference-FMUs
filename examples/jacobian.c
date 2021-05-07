@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
-#include "fmi3Functions.h"
+#include "FMU.h"
 #include "config.h"
 #include "util.h"
 
@@ -16,26 +16,29 @@ int main(int argc, char* argv[]) {
     fmi3ValueReference vr_dx[] = { vr_der_x0, vr_der_x1 };
 
     // variables:
-    fmi3Instance m;
     fmi3Float64 x[NX];
     fmi3Float64 dk = 1;
     fmi3Float64 J[NX][NX];
     fmi3Float64 c[NX];
+    
+    FMU *S = loadFMU(PLATFORM_BINARY);
 
-    printf("Running Jacobian example... ");
-
-    m = fmi3InstantiateModelExchange("jacobian", INSTANTIATION_TOKEN, NULL, fmi3False, fmi3False, NULL, cb_logMessage);
-
-    if (!m) {
+    if (!S) {
         return EXIT_FAILURE;
     }
 
-    CHECK_STATUS(fmi3EnterInitializationMode(m, fmi3False, 0, 0, fmi3False, 0))
-    CHECK_STATUS(fmi3ExitInitializationMode(m))
+    fmi3Instance s = S->fmi3InstantiateModelExchange("jacobian", INSTANTIATION_TOKEN, NULL, fmi3False, fmi3False, NULL, cb_logMessage);
 
-    CHECK_STATUS(fmi3EnterContinuousTimeMode(m))
+    if (!s) {
+        return EXIT_FAILURE;
+    }
 
-    CHECK_STATUS(fmi3GetContinuousStates(m, x, nx))
+    CHECK_STATUS(S->fmi3EnterInitializationMode(s, fmi3False, 0, 0, fmi3False, 0))
+    CHECK_STATUS(S->fmi3ExitInitializationMode(s))
+
+    CHECK_STATUS(S->fmi3EnterContinuousTimeMode(s))
+
+    CHECK_STATUS(S->fmi3GetContinuousStates(s, x, nx))
 
     // tag::JacobianVariables[]
     // from the XML file:
@@ -44,7 +47,7 @@ int main(int argc, char* argv[]) {
     //   vr_xd[]  value references of state derivatives
     //
     // variables:
-    //   m        model instance
+    //   s        model instance
     //   x[]      continuous states
     //   dk = 1   delta knowns
     //   J[][]    Jacobian
@@ -54,14 +57,14 @@ int main(int argc, char* argv[]) {
     //   c[]      column vector
 
     // set time, states and inputs
-    CHECK_STATUS(fmi3SetTime(m, time))
-    CHECK_STATUS(fmi3SetContinuousStates(m, x, nx))
-    // fmi3Set{VariableType}(m, ...)
+    CHECK_STATUS(S->fmi3SetTime(s, time))
+    CHECK_STATUS(S->fmi3SetContinuousStates(s, x, nx))
+    // fmi3Set{VariableType}(s, ...)
 
     // if required at this step, compute the Jacobian as a dense matrix
     for (i = 0; i < nx; i++) {
         // construct the Jacobian matrix column wise
-        CHECK_STATUS(fmi3GetDirectionalDerivative(m, vr_dx, nx, &vr_x[i], 1, &dk, 1, c, nx))
+        CHECK_STATUS(S->fmi3GetDirectionalDerivative(s, vr_dx, nx, &vr_x[i], 1, &dk, 1, c, nx))
         for (j = 0; j < nx; j++) {
             J[j][i] = c[j];
         }
@@ -76,7 +79,7 @@ int main(int argc, char* argv[]) {
     // tag::GetJacobianAdjoint[]
     for (i = 0; i < nx; i++) {
         // construct the Jacobian matrix column wise
-        CHECK_STATUS(fmi3GetAdjointDerivative(m, &vr_dx[i], 1, vr_x, nx, &dk, 1, &J[i][0], nx))
+        CHECK_STATUS(S->fmi3GetAdjointDerivative(s, &vr_dx[i], 1, vr_x, nx, &dk, 1, &J[i][0], nx))
     }
     // end::GetJacobianAdjoint[]
 
@@ -87,16 +90,16 @@ int main(int argc, char* argv[]) {
 
 TERMINATE:
 
-    if (status != fmi3Error && status != fmi3Fatal) {
-        fmi3Status s = fmi3Terminate(m);
-        status = max(status, s);
+    if (status < fmi3Fatal) {
+        fmi3Status terminateStatus = S->fmi3Terminate(s);
+        status = max(status, terminateStatus);
     }
 
-    if (status != fmi3Fatal) {
-        fmi3FreeInstance(m);
+    if (status < fmi3Fatal) {
+        S->fmi3FreeInstance(s);
     }
 
-    printf("done.\n");
+    freeFMU(S);
 
     return status == fmi3OK ? EXIT_SUCCESS : EXIT_FAILURE;
 }

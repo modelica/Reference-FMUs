@@ -101,10 +101,17 @@ set_target_properties(cs_intermediate_update PROPERTIES
 )
 
 # jacobian
-add_executable(jacobian ${EXAMPLE_SOURCES} src/fmi3Functions.c VanDerPol/model.c src/cosimulation.c examples/jacobian.c)
-set_target_properties (jacobian PROPERTIES FOLDER examples)
-target_include_directories(jacobian PRIVATE include VanDerPol)
+add_executable(jacobian
+  ${EXAMPLE_SOURCES}
+  VanDerPol/config.h
+  examples/jacobian.c
+  examples/FMU.h
+  examples/FMU.c
+)
+set_target_properties(jacobian PROPERTIES FOLDER examples)
 target_compile_definitions(jacobian PRIVATE DISABLE_PREFIX)
+target_include_directories(jacobian PRIVATE include VanDerPol)
+target_link_libraries(jacobian ${LIBRARIES})
 set_target_properties(jacobian PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
