@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
     fmi3Float64 dk = 1;
     fmi3Float64 J[NX][NX];
     fmi3Float64 c[NX];
-    
+
     FMU *S = loadFMU(PLATFORM_BINARY);
 
     if (!S) {
