@@ -166,14 +166,13 @@ set_target_properties(scs_synchronous PROPERTIES
 )
 
 if (WIN32)
-  add_executable(scs_threaded ${EXAMPLE_SOURCES} src/fmi3Functions.c Clocks/model.c src/cosimulation.c examples/scs_threaded.c Clocks/FMI3.xml Clocks/config.h)
-  set_target_properties(scs_threaded PROPERTIES FOLDER examples)
-  target_compile_definitions(scs_threaded PRIVATE DISABLE_PREFIX)
-  target_include_directories(scs_threaded PRIVATE include Clocks)
-  target_compile_definitions(scs_threaded PRIVATE DISABLE_PREFIX)
-  set_target_properties(scs_threaded PROPERTIES
-      RUNTIME_OUTPUT_DIRECTORY         temp
-      RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
-      RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
-  )
+    add_executable (scs_threaded ${EXAMPLE_SOURCES} Clocks/config.h examples/FMU.h examples/FMU.c examples/scs_threaded.c)
+    set_target_properties(scs_threaded PROPERTIES FOLDER examples)
+    target_include_directories(scs_threaded PRIVATE include Clocks)
+    target_link_libraries(scs_threaded ${LIBRARIES})
+    set_target_properties(scs_threaded PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY         temp
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+    )
 endif ()
