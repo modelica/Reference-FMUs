@@ -11,6 +11,8 @@
 
 #define SCHEDULED_CO_SIMULATION
 
+#define DEFAULT_STOP_TIME 3
+
 // define model size
 #define NX 0
 #define NZ 0
