@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fmiModelDescription fmiVersion="3.0-alpha.5" modelName="Feedthrough" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f004}">
+<fmiModelDescription fmiVersion="3.0-beta.1" modelName="Feedthrough" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f004}">
 
   <ModelExchange
     modelIdentifier="Feedthrough"
@@ -11,7 +11,7 @@
     canGetAndSetFMUState="true"
     canSerializeFMUState="true"
     canHandleVariableCommunicationStepSize="true"
-    providesIntermediateVariableAccess="true"
+    providesIntermediateUpdate="true"
     canReturnEarlyAfterIntermediateUpdate="true"
     fixedInternalStepSize="1"/>
 
@@ -41,12 +41,16 @@
   </ModelVariables>
 
   <ModelStructure>
-    <Output valueReference="3"/>
-    <Output valueReference="5"/>
-    <Output valueReference="7"/>
-    <Output valueReference="9"/>
-    <Output valueReference="12"/>
-    <InitialUnknown valueReference="3"/>
+    <Output valueReference="3" dependencies="0 1 2" dependenciesKind="constant constant constant"/>
+    <Output valueReference="5" dependencies="4" dependenciesKind="constant"/>
+    <Output valueReference="7" dependencies="6" dependenciesKind="constant"/>
+    <Output valueReference="9" dependencies="8 10" dependenciesKind="constant constant"/>
+    <Output valueReference="12" dependencies="11" dependenciesKind="constant"/>
+    <InitialUnknown valueReference="3" dependencies="0 1 2" dependenciesKind="constant constant constant"/>
+    <InitialUnknown valueReference="5" dependencies="4" dependenciesKind="constant"/>
+    <InitialUnknown valueReference="7" dependencies="6" dependenciesKind="constant"/>
+    <InitialUnknown valueReference="9" dependencies="8 10" dependenciesKind="constant constant"/>
+    <InitialUnknown valueReference="12" dependencies="11" dependenciesKind="constant"/>
   </ModelStructure>
 
 </fmiModelDescription>

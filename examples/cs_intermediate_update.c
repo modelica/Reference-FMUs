@@ -1,31 +1,24 @@
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
+#include "FMU.h"
 #include "fmi3Functions.h"
 #include "config.h"
 #include "util.h"
 
 
 typedef struct {
+    FMU *fmu;
     fmi3Instance instance;
     FILE* outputFile;
     fmi3Float64 intermediateUpdateTime;
 } InstanceEnvironment;
 
 // tag::IntermediateUpdateCallback[]
-fmi3Status recordVariables(InstanceEnvironment *instanceEnvironment, fmi3Float64 time) {
-    fmi3ValueReference outputsVRs[2] = { vr_h, vr_v };
-    fmi3Float64 y[2];
-    fmi3Status status = fmi3GetFloat64(instanceEnvironment->instance, outputsVRs, 2, y, 2);
-    fprintf(instanceEnvironment->outputFile, "%g,%g,%g\n", time, y[0], y[1]);
-    return status;
-}
-
 void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
                            fmi3Float64 intermediateUpdateTime,
-                           fmi3Boolean eventOccurred,
                            fmi3Boolean clocksTicked,
-                           fmi3Boolean intermediateVariableSetAllowed,
+                           fmi3Boolean intermediateVariableSetRequested,
                            fmi3Boolean intermediateVariableGetAllowed,
                            fmi3Boolean intermediateStepFinished,
                            fmi3Boolean canReturnEarly,
@@ -45,16 +38,12 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
 
     fmi3Status status = fmi3OK;
 
-    if (eventOccurred) {
-        return; // don't record events
-    }
-
     // if getting intermediate output variables is allowed
     if (intermediateVariableGetAllowed) {
 
         // Get the output variables at time == intermediateUpdateTime
         // fmi3Get{VariableType}();
-        status = recordVariables(env, intermediateUpdateTime);
+        status = recordVariables(env->outputFile, env->fmu, env->instance, intermediateUpdateTime);
 
         // If integration step in FMU solver is finished
         if (intermediateStepFinished) {
@@ -63,7 +52,7 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     }
 
     // if setting intermediate output variables is allowed
-    if (intermediateVariableSetAllowed) {
+    if (intermediateVariableSetRequested) {
         // Compute intermediate input variables from output variables and
         // variables from other FMUs. Use latest available output
         // variables, possibly from get functions above.
@@ -74,6 +63,8 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     }
 
     // Internal execution in FMU will now continue
+
+    // TODO: handle status
 }
 // end::IntermediateUpdateCallback[]
 
@@ -87,30 +78,35 @@ int main(int argc, char* argv[]) {
     // Communication constant step size
     const fmi3Float64 h = 0.1;
 
-    InstanceEnvironment instanceEnvironment = {
-        .instance               = NULL,
-        .outputFile             = NULL,
-        .intermediateUpdateTime = startTime
-    };
+    FMU *S = loadFMU(PLATFORM_BINARY);
 
-    instanceEnvironment.outputFile = fopen("BouncingBall_iav.csv", "w");
+    if (!S) {
+        return EXIT_FAILURE;
+    }
 
-    if (!instanceEnvironment.outputFile) {
+    FILE *outputFile = openOutputFile("cs_intermediate_update.csv");
+
+    if (!outputFile) {
         puts("Failed to open output file.");
         return EXIT_FAILURE;
     }
 
-    // write the header of the CSV
-    fputs("\"time\",\"h\",\"v\"\n", instanceEnvironment.outputFile);
+    InstanceEnvironment instanceEnvironment = {
+        .fmu                    = S,
+        .instance               = NULL,
+        .outputFile             = outputFile,
+        .intermediateUpdateTime = startTime
+    };
 
     // Instantiate the FMU
-    fmi3Instance s = fmi3InstantiateCoSimulation(
-        "instance1",               // instanceName
+    fmi3Instance s = S->fmi3InstantiateCoSimulation(
+        "instance1",            // instanceName
         INSTANTIATION_TOKEN,    // instantiationToken
         NULL,                   // resourceLocation
         fmi3False,              // visible
         fmi3False,              // loggingOn
-        fmi3False,              // eventModeRequired
+        fmi3False,              // eventModeUsed
+        fmi3False,              // earlyReturnAllowed
         NULL,                   // requiredIntermediateVariables
         0,                      // nRequiredIntermediateVariables
         &instanceEnvironment,   // instanceEnvironment
@@ -129,17 +125,17 @@ int main(int argc, char* argv[]) {
 
     fmi3Status status = fmi3OK;
 
-    CHECK_STATUS(fmi3EnterInitializationMode(s, fmi3False, 0.0, startTime, fmi3True, stopTime))
-    CHECK_STATUS(fmi3ExitInitializationMode(s))
+    CHECK_STATUS(S->fmi3EnterInitializationMode(s, fmi3False, 0.0, startTime, fmi3True, stopTime))
+    CHECK_STATUS(S->fmi3ExitInitializationMode(s))
 
     fmi3Float64 time = startTime;
 
     while (time < stopTime) {
 
-        fmi3Boolean terminate, earlyReturn;
+        fmi3Boolean eventEncountered, terminateSimulation, earlyReturn;
         fmi3Float64 lastSuccessfulTime;
 
-        CHECK_STATUS(fmi3DoStep(s, time, h, fmi3False, &terminate, &earlyReturn, &lastSuccessfulTime))
+        CHECK_STATUS(S->fmi3DoStep(s, time, h, fmi3False, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime))
 
         time += h;
     };
@@ -148,12 +144,12 @@ int main(int argc, char* argv[]) {
 
 TERMINATE:
 
-    if (s && status != fmi3Error && status != fmi3Fatal) {
-        terminateStatus = fmi3Terminate(s);
+    if (status < fmi3Fatal) {
+        terminateStatus = S->fmi3Terminate(s);
     }
 
-    if (s && status != fmi3Fatal && terminateStatus != fmi3Fatal) {
-        fmi3FreeInstance(s);
+    if (status < fmi3Fatal && terminateStatus < fmi3Fatal) {
+        S->fmi3FreeInstance(s);
     }
 
     puts("done.");

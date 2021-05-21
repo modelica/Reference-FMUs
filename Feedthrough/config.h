@@ -31,6 +31,7 @@
 #define EVENT_UPDATE
 
 #define FIXED_SOLVER_STEP 1
+#define DEFAULT_STOP_TIME 2
 
 typedef enum {
     vr_fixed_real_parameter,
@@ -55,12 +56,12 @@ typedef struct {
     double      real_discrete;
     int         integer;
     bool        boolean;
-    const char *string;
+    const char* string;
     size_t      binary_size;
-    const char *binary;
+    const char* binary;
 } ModelData;
 
-extern const char *STRING_START;
-extern const char *BINARY_START;
+extern const char* STRING_START;
+extern const char* BINARY_START;
 
 #endif /* config_h */

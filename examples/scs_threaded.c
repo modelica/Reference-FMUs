@@ -1,6 +1,8 @@
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include <assert.h>
 #include <stdio.h>
-#include <stdbool.h>
-#include "config.h"
+#include <stdarg.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -10,34 +12,51 @@
 #error This example can only be compiled on Windows
 #endif
 
-#define _USE_MATH_DEFINES
-#include <math.h>
-#include <assert.h>
-#include "fmi3Functions.h"
+#include "FMU.h"
 #include "util.h"
+#include "config.h"
+
+
+typedef struct {
+
+    FMU *S;
+    fmi3Instance s;
+
+} InstanceEnvironment;
 
 /* *****************  Forward declarations ***************** */
 fmi3Status initializeOutputFiles();
 unsigned __stdcall thr_activateModelPartition(void *args);
 static bool setAndCheckInputClocks(fmi3Instance s, fmi3Float64 time);
-static bool checkOutputClocks(fmi3Instance s);
-fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
+static bool checkOutputClocks(FMU *S, fmi3Instance s);
+static bool checkCountdownClocks(FMU *S, fmi3Instance s);
+void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     fmi3Float64 intermediateUpdateTime,
-    fmi3Boolean eventOccurred,
     fmi3Boolean clocksTicked,
-    fmi3Boolean intermediateVariableSetAllowed,
+    fmi3Boolean intermediateVariableSetRequested,
     fmi3Boolean intermediateVariableGetAllowed,
     fmi3Boolean intermediateStepFinished,
-    fmi3Boolean canReturnEarly);
+    fmi3Boolean canReturnEarly,
+    fmi3Boolean *earlyReturnRequested,
+    fmi3Float64 *earlyReturnTime);
 void cb_lockPreemption();
 void cb_unlockPreemption();
-fmi3Status setDebugLogging(fmi3Instance* comp, bool loggingOn, size_t nCategories, const char* const categories[]);
-void logEvent(fmi3Instance* comp, const char* message, ...);
+
+void logEvent(const char* message, ...) {
+
+    va_list args;
+    va_start(args, message);
+
+    vprintf(message, args);
+    printf("\n");
+
+    va_end(args);
+}
+
 /* ********************************************************* */
 
 /* *****************  Misc defines ***************** */
 
-#define CHECK_STATUS(S) status = S; if (status != fmi3OK) goto out;
 #define START_TIME 0
 #define STOP_TIME 10
 // defines for the indexes of the clocks into the inputClocks[] array
@@ -46,9 +65,10 @@ void logEvent(fmi3Instance* comp, const char* message, ...);
 #define IDX_IN_CLOCK2 1
 #define IDX_IN_CLOCK3 2
 
+#define ID_COUNTDOWN_CLOCK IDX_IN_CLOCK3
+
 // defines for the indexes of the clocks into the outputClocks[] array
-#define IDX_OUT_CLOCK1 0
-#define IDX_OUT_CLOCK2 1
+#define IDX_OUT_CLOCK 0
 
 /* ********************************************************* */
 
@@ -71,10 +91,12 @@ fmi3Float64 stepSize = FIXED_SOLVER_STEP;  // => 1
 
 // global arguments for intermediate update operation
 typedef struct threadArgs_t {
-    void* comp;
+    FMU *S;
+    fmi3Instance s;
     ValueReference clockRef;
     unsigned int* retval;
     double activationTime;
+    double delay;
 } ThreadArgs;
 
 ThreadArgs iu_arguments;
@@ -101,6 +123,9 @@ const fmi3ValueReference vrOutputs_c3[3] = { vr_inClock3Ticks, vr_totalInClockTi
 /* *****************  Input clocks ***************** */
 fmi3Clock inputClocks[N_INPUT_CLOCKS] = { fmi3ClockInactive };
 const fmi3ValueReference vrInputClocks[N_INPUT_CLOCKS] = { vr_inClock1, vr_inClock2, vr_inClock3 };
+const fmi3ValueReference vrCountdownClocks[1] = { vr_inClock3 };
+fmi3Float64 countdownClockIntervals[1] = { 0.0 };
+fmi3IntervalQualifier countdownClocksQualifier[1] = { fmi3IntervalNotYetKnown };
 
 /*
  * For FMI3.0 lower priority value  means higher priority
@@ -113,8 +138,8 @@ fmi3Int32 inputClockPrio[N_INPUT_CLOCKS] = { 2, 1, -1 };
 /* ********************************************************* */
 
 /* *****************  Output clocks ***************** */
-fmi3Clock outputClocks[N_OUTPUT_CLOCKS] = { fmi3ClockInactive };
-const fmi3ValueReference vrOutputClocks[N_OUTPUT_CLOCKS] = { vr_outClock1, vr_outClock2 };
+fmi3Clock outputClocks[1] = { fmi3ClockInactive };
+const fmi3ValueReference vrOutputClocks[1] = { vr_outClock };
 /* ********************************************************* */
 
 /* *****************  Misc ***************** */
@@ -131,8 +156,18 @@ int main(int argc, char* argv[]) {
     fmi3Status terminateStatus = fmi3OK;
     unsigned int returnval[N_INPUT_CLOCKS]; // return values of all possible threads
 
+    InstanceEnvironment env;
+
+    FMU *S = loadFMU(PLATFORM_BINARY);
+
+    if (!S) {
+        return EXIT_FAILURE;
+    }
+
+    env.S = S;
+
     // Instantiate the FMU
-    const fmi3Instance s = fmi3InstantiateScheduledExecution(
+    const fmi3Instance s = S->fmi3InstantiateScheduledExecution(
         "scs_threaded",        // instanceName,
         INSTANTIATION_TOKEN,   // instantiationToken,
         "unknown",             // resourceLocation,
@@ -140,7 +175,7 @@ int main(int argc, char* argv[]) {
         true,                  // loggingOn,
         NULL,                  // requiredIntermediateVariables,
         0,                     // nRequiredIntermediateVariables,
-        NULL,                  // instanceEnvironment,
+        &env,                  // instanceEnvironment,
         cb_logMessage,         // logMessage,
         cb_intermediateUpdate, // intermediateUpdate,
         cb_lockPreemption,     // lockPreemption,
@@ -149,30 +184,34 @@ int main(int argc, char* argv[]) {
 
     if (s == NULL) {
         status = fmi3Error;
-        goto out;
+        goto TERMINATE;
     }
 
+    env.s = s;
+
     // Initialize logging
-    char* const categories[1] = { "logEvents" };
-    setDebugLogging(s, true, 1, categories);
-    logEvent(s, "Running Scheduled Execution Co-Simulation example...\n");
+    fmi3String logCategory = "logEvents";
+
+    CHECK_STATUS(S->fmi3SetDebugLogging(s, fmi3True, 1, &logCategory))
+
+    logEvent("Running Scheduled Execution example...");
 
     // Get a global lock
     globalLockVar = GlobalAlloc(GMEM_FIXED, sizeof(globalLockVar));
     if (globalLockVar == NULL) {
         status = fmi3Error;
-        logEvent(s, "Allocating the global lock failed: %ld", GetLastError());
-        goto out;
+        logEvent("Allocating the global lock failed: %ld", GetLastError());
+        goto TERMINATE;
     }
 
     CHECK_STATUS(initializeOutputFiles());
 
     // Initialize the instance
-    CHECK_STATUS(fmi3EnterInitializationMode(s, fmi3False, 0.0, time, fmi3True, stopTime))
-    CHECK_STATUS(fmi3ExitInitializationMode(s))
+    CHECK_STATUS(S->fmi3EnterInitializationMode(s, fmi3False, 0.0, time, fmi3True, stopTime))
+    CHECK_STATUS(S->fmi3ExitInitializationMode(s))
 
     // update clocks
-    CHECK_STATUS(fmi3GetClock(s, vrOutputClocks, N_OUTPUT_CLOCKS, outputClocks, N_OUTPUT_CLOCKS));
+    CHECK_STATUS(S->fmi3GetClock(s, vrOutputClocks, 1, outputClocks, 1));
 
     /*
      * Thread related stuff below
@@ -181,39 +220,39 @@ int main(int argc, char* argv[]) {
     HANDLE thrHandle[N_INPUT_CLOCKS];
 
     // Need a set of arguments for every Inputclock. otherwise the arguments will be overwritten
-    ThreadArgs thrArguments[N_INPUT_CLOCKS];
+    ThreadArgs thrArguments[2];
     int curThrHandle;
 
     DWORD_PTR processorNumber = GetCurrentProcessorNumber();
     processorMask = (((DWORD_PTR)1 )<< processorNumber);
-    logEvent(s, "GetCurrentProcessorNumber() => %lx (Mask = %lx)", processorNumber, processorMask);
+    logEvent("GetCurrentProcessorNumber() => %lx (Mask = %lx)", processorNumber, processorMask);
 
     while (time < stopTime) {
 
         // According to the current time, the non-dependent input clocks are set
         // the call below returns true, if at least one of the clocks is ticking
         if (setAndCheckInputClocks(s, time)) {
-            logEvent(s, "==========> time =%g", time);
+            logEvent("==========> time = %g", time);
 
             curThrHandle = 0; // Number of threads that have been fired at this particular point in time
-            for (int i = 0; i < N_INPUT_CLOCKS; i++)
+            for (int i = 0; i < 2; i++)
             {
                 if (inputClocks[i] == fmi3ClockActive) {
-                    logEvent(s, "starting thread for clock %s (vr=%d)", i == IDX_IN_CLOCK1 ? "InClock_1" : "InClock_2", vrInputClocks[i]);
-                    thrArguments[i].comp = s;
+                    logEvent("Starting thread for clock %s (vr=%d)", i == IDX_IN_CLOCK1 ? "InClock_1" : "InClock_2", vrInputClocks[i]);
+                    thrArguments[i].S = S;
+                    thrArguments[i].s = s;
                     thrArguments[i].clockRef = vrInputClocks[i];
                     thrArguments[i].retval = &returnval[i];
                     thrArguments[i].activationTime = time;
-
                     thrHandle[curThrHandle] = (HANDLE)_beginthreadex(NULL, 0, thr_activateModelPartition, &thrArguments[i], 0, NULL);
                     if (thrHandle[curThrHandle] != NULL) {
                         SetThreadAffinityMask(thrHandle[curThrHandle], processorMask);
                         SetThreadPriority(thrHandle[curThrHandle], inputClockPrio[i]);
                     }
                     else {
-                        logEvent(s, "Could not create thread in main loop");
+                        logEvent("Could not create thread in main loop");
                         status = fmi3Fatal;
-                        goto out;
+                        goto TERMINATE;
                     }
                     curThrHandle++;
                     inputClocks[i] = fmi3ClockInactive;
@@ -228,11 +267,10 @@ int main(int argc, char* argv[]) {
     }
 
 
-out:
+TERMINATE:
 
-
-    if (s && status != fmi3Error && status != fmi3Fatal) {
-        terminateStatus = fmi3Terminate(s);
+    if (status < fmi3Fatal) {
+        terminateStatus = S->fmi3Terminate(s);
     }
 
     GlobalFree(globalLockVar);
@@ -241,9 +279,9 @@ out:
         fclose(outputFile[part]);
     }
 
-    logEvent(s, "... finished Scheduled Execution Co-Simulation example.\n");
-    if (s && status != fmi3Fatal && terminateStatus != fmi3Fatal) {
-        fmi3FreeInstance(s); // After this point, logEvent is no longer possible
+    logEvent("... finished Scheduled Execution example.");
+    if (s && status < fmi3Fatal && terminateStatus < fmi3Fatal) {
+        S->fmi3FreeInstance(s); // After this point, logEvent is no longer possible
     }
     return status == fmi3OK ? EXIT_SUCCESS : EXIT_FAILURE;
 
@@ -271,25 +309,25 @@ fmi3Status initializeOutputFiles() {
 }
 
 /*
- * recordVariables(s, time, modelPart)
+ * recordVariables2(s, time, modelPart)
  * writes the current values of the variables associated to modelPart into the outputFile
  * The status of the all clocks are always printed
  * returns fmi3OK on success
  * returns fmi3Error on failure
  */
-fmi3Status recordVariables(fmi3Instance s, fmi3Float64 time, int modelPart) {
+fmi3Status recordVariables2(fmi3Instance s, fmi3Float64 time, int modelPart) {
 
     if (modelPart == vr_inClock1) {
         fprintf(outputFile[0], "%g,%3d,%3d\n", time, outputs_c1[0], outputs_c1[1]);
-        logEvent(s, "%g,%3d,%3d", time, outputs_c1[0], outputs_c1[1]);
+        logEvent("%g,%3d,%3d", time, outputs_c1[0], outputs_c1[1]);
     }
     else if (modelPart == vr_inClock2) {
         fprintf(outputFile[1], "%g,%3d,%3d,%4d\n", time, outputs_c2[0], outputs_c2[1], outputs_c2[2]);
-        logEvent(s, "%g,%3d,%3d,%4d", time, outputs_c2[0], outputs_c2[1], outputs_c2[2]);
+        logEvent("%g,%3d,%3d,%4d", time, outputs_c2[0], outputs_c2[1], outputs_c2[2]);
     }
     else if (modelPart == vr_inClock3) {
         fprintf(outputFile[2], "%g,%3d,%3d,%4d\n", time, outputs_c3[0], outputs_c3[1], outputs_c3[2]);
-        logEvent(s, "%g,%3d,%3d,%4d", time, outputs_c3[0], outputs_c3[1], outputs_c3[2]);
+        logEvent("%g,%3d,%3d,%4d", time, outputs_c3[0], outputs_c3[1], outputs_c3[2]);
     }
     return fmi3OK;
 }
@@ -303,54 +341,53 @@ fmi3Status recordVariables(fmi3Instance s, fmi3Float64 time, int modelPart) {
  *
  * returns always fmi3OK (practically a void funtion)
  */
-fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
+void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     fmi3Float64 intermediateUpdateTime,
-    fmi3Boolean eventOccurred,
     fmi3Boolean clocksTicked,
-    fmi3Boolean intermediateVariableSetAllowed,
+    fmi3Boolean intermediateVariableSetRequested,
     fmi3Boolean intermediateVariableGetAllowed,
     fmi3Boolean intermediateStepFinished,
-    fmi3Boolean canReturnEarly) {
+    fmi3Boolean canReturnEarly,
+    fmi3Boolean *earlyReturnRequested,
+    fmi3Float64 *earlyReturnTime) {
 
-    fmi3Instance *fmu = ((fmi3Instance*)instanceEnvironment);
+    InstanceEnvironment *env = (InstanceEnvironment *)instanceEnvironment;
+
+    FMU *S = env->S;
+    fmi3Instance s = env->s;
 
     HANDLE thr_handle;
     int returnval;
     // Local copy for this thread of the states of the output clocks
-    fmi3Clock localOutputClocks[N_OUTPUT_CLOCKS];
-
+    fmi3Clock localOutputClocks[1];
 
     // In this example we only check for ticking output clocks.
     if (!clocksTicked) {
-        logEvent(fmu, "No clock active in intermediateUpdate callback");
-        return fmi3OK;
+        logEvent("No clock active in intermediateUpdate callback");
+        return;
     }
 
     // In order to be threadsafe we have to check the clocks under lock
     // and copy their states
     GlobalLock(globalLockVar);
-    if (!checkOutputClocks(fmu)) {
+    if (!checkOutputClocks(S, s) & !checkCountdownClocks(S, s)) {
         GlobalUnlock(globalLockVar);
-        logEvent(fmu, "No clock active in intermediateUpdate callback");
-        return fmi3OK;
+        logEvent("No clock active in intermediateUpdate callback");
+        return;
     }
-    for (int oc = 0; oc < N_OUTPUT_CLOCKS; oc++) {
-        localOutputClocks[oc] = outputClocks[oc];
-    }
+    localOutputClocks[0] = outputClocks[0];
     GlobalUnlock(globalLockVar);
 
-
-    // Some output clock ticked, check for dependend input clocks and, if there are any, fire them
-    // input clock 3 depends on output clock 1
-    // This dependency is taken from ModelDescription.xml
-    if (localOutputClocks[IDX_OUT_CLOCK1]) {
+    if (countdownClocksQualifier[0] == fmi3IntervalChanged) {
         // create a thread that will run the model partition for input clock 3
-        logEvent(instanceEnvironment, "cb_intermediateUpdate starting thread for input clock 3 (vr=%d)", vr_inClock3);
+        logEvent("cb_intermediateUpdate starting thread for input clock 3 (vr=%d)", vr_inClock3);
 
-        iu_arguments.comp = instanceEnvironment;
+        iu_arguments.S = S;
+        iu_arguments.s = s;
         iu_arguments.clockRef = vr_inClock3;
         iu_arguments.retval = &returnval;
         iu_arguments.activationTime = time;
+        iu_arguments.delay = countdownClockIntervals[0];
         thr_handle = (HANDLE)_beginthreadex(NULL, 0, thr_activateModelPartition, &iu_arguments, 0, NULL);
         if (thr_handle != NULL) {
             // Bind the thread to the designated processor
@@ -359,16 +396,14 @@ fmi3Status cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
             SetThreadPriority(thr_handle, inputClockPrio[IDX_IN_CLOCK3]);
         }
         else {
-            logEvent(instanceEnvironment, "Could not create thread in cb_intermediateUpdate");
+            logEvent("Could not create thread in cb_intermediateUpdate");
         }
 
     }
-    if (localOutputClocks[IDX_OUT_CLOCK2]) {
+    if (localOutputClocks[IDX_OUT_CLOCK]) {
         //  so far, no other action but a log message
-        logEvent(instanceEnvironment, "Detected ticking of output clock 2 (time=%g)", time);
+        logEvent("Detected ticking of output clock (time=%g)", time);
     }
-    return fmi3OK;
-
 }
 /*
  * cb_lockPreemption()
@@ -413,24 +448,33 @@ static bool setAndCheckInputClocks(fmi3Instance s, fmi3Float64 time) {
 
     bool retval = inputClocks[IDX_IN_CLOCK1] == fmi3ClockActive || inputClocks[IDX_IN_CLOCK2] == fmi3ClockActive;
     if (retval) {
-        logEvent(s, "setAndCheckInputClocks: time=%d, inputClocks[InClock1] = %d inputClocks[InClock2] = %d",
+        logEvent("setAndCheckInputClocks: time = %d, inputClocks[InClock1] = %d, inputClocks[InClock2] = %d",
             (int)time, inputClocks[IDX_IN_CLOCK1], inputClocks[IDX_IN_CLOCK2]);
     }
     return retval;
 }
 
 /*
- * This function retrieves the state of the output clocks of all partitions of the FMU
+ * This function retrieves the state of the output clock of all partitions of the FMU
  * outputClocks[] is set accordingly
  * returns true if any of the outputClocks is actually set
  */
-static bool checkOutputClocks(fmi3Instance s) {
-    int cl;
-    for (cl=0; cl< N_OUTPUT_CLOCKS; cl++)
-        outputClocks[cl] = fmi3ClockInactive;
+static bool checkOutputClocks(FMU *S, fmi3Instance s) {
+    outputClocks[0] = fmi3ClockInactive;
+    S->fmi3GetClock(s, vrOutputClocks, 1, outputClocks, 1);
+    return outputClocks[0];
+}
 
-    fmi3GetClock(s, vrOutputClocks, N_OUTPUT_CLOCKS, outputClocks, N_OUTPUT_CLOCKS);
-    return outputClocks[IDX_OUT_CLOCK1] || outputClocks[IDX_OUT_CLOCK2];
+/*
+ * This function retrieves the state of the countdown clock of all partitions of the FMU
+ * outputClocks[] is set accordingly
+ * returns true if interval changed set
+ */
+static bool checkCountdownClocks(FMU *S, fmi3Instance s) {
+    countdownClockIntervals[0] = 0.0;
+    countdownClocksQualifier[0] = fmi3IntervalNotYetKnown;
+    S->fmi3GetIntervalDecimal(s, vrCountdownClocks, 1, countdownClockIntervals, countdownClocksQualifier, 1);
+    return countdownClocksQualifier[0] == fmi3IntervalChanged;
 }
 
 /*
@@ -446,42 +490,47 @@ static bool checkOutputClocks(fmi3Instance s) {
  * 5. finally, the thread is ended, returning  fmi3Status (fmi3OK or fmi3Error)
  */
 unsigned __stdcall thr_activateModelPartition(void *args)  {
-    ThreadArgs* TA = args;
+
+    ThreadArgs* TA = (ThreadArgs *)args;
+
+    FMU *S = TA->S;
+    fmi3Instance s = TA->s;
+
     fmi3Status retval = fmi3OK;
 
     // Set Variables of appropriate partition
     switch (TA->clockRef) {
         case vr_inClock1: {
-            logEvent(TA->comp, "activateModelPartition calling fmi3ActivateModelPartition (%d)", TA->clockRef);
+            logEvent("activateModelPartition calling fmi3ActivateModelPartition (%d)", TA->clockRef);
             // No variables to set for this partition
-            retval = fmi3ActivateModelPartition(TA->comp, TA->clockRef, 0, TA->activationTime);
+            retval = S->fmi3ActivateModelPartition(s, TA->clockRef, 0, TA->activationTime);
             if (retval != fmi3OK)    break;
-            retval = fmi3GetInt32(TA->comp, vrOutputs_c1, 2, &outputs_c1[0], 2);
-            recordVariables(TA->comp, TA->activationTime, vr_inClock1);
+            retval = S->fmi3GetInt32(s, vrOutputs_c1, 2, &outputs_c1[0], 2);
+            recordVariables2(s, TA->activationTime, vr_inClock1);
         }
         break;
         case vr_inClock2: {
-            logEvent(TA->comp, "activateModelPartition calling fmi3ActivateModelPartition (%d)", TA->clockRef);
-            retval = fmi3SetInt32(TA->comp, vrInputs_c2, 1, inputs_c2, 1);
+            logEvent("activateModelPartition calling fmi3ActivateModelPartition (%d)", TA->clockRef);
+            retval = S->fmi3SetInt32(s, vrInputs_c2, 1, inputs_c2, 1);
             // Reset the source for the input again, so it is counted just once
             inputs_c2[0] = 0;
             if (retval != fmi3OK) break;
-            retval = fmi3ActivateModelPartition(TA->comp, TA->clockRef, 0, TA->activationTime);
+            retval = S->fmi3ActivateModelPartition(s, TA->clockRef, 0, TA->activationTime);
             if (retval != fmi3OK)    break;
-            retval = fmi3GetInt32(TA->comp, vrOutputs_c2, 3, outputs_c2, 3);
-            recordVariables(TA->comp, TA->activationTime, vr_inClock2);
+            retval = S->fmi3GetInt32(s, vrOutputs_c2, 3, outputs_c2, 3);
+            recordVariables2(s, TA->activationTime, vr_inClock2);
         }
         break;
         case vr_inClock3: {
-            logEvent(TA->comp, "activateModelPartition calling fmi3ActivateModelPartition (%d)", TA->clockRef);
+            logEvent("activateModelPartition calling fmi3ActivateModelPartition (%d)", TA->clockRef);
             // No variables to set for this partition
             if (retval != fmi3OK)    break;
-            retval = fmi3ActivateModelPartition(TA->comp, TA->clockRef, 0, TA->activationTime);
+            retval = S->fmi3ActivateModelPartition(s, TA->clockRef, 0, TA->activationTime);
             if (retval != fmi3OK)    break;
-            retval = fmi3GetInt32(TA->comp, vrOutputs_c3, 3, outputs_c3, 3);
+            retval = S->fmi3GetInt32(s, vrOutputs_c3, 3, outputs_c3, 3);
             // Use the output of model part 3 as input for model part 2
             inputs_c2[0] = outputs_c3[2];
-            recordVariables(TA->comp, TA->activationTime, vr_inClock3);
+            recordVariables2(s, TA->activationTime, vr_inClock3);
         }
         break;
         default:

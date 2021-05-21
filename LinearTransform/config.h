@@ -19,6 +19,7 @@
 #define EVENT_UPDATE
 
 #define FIXED_SOLVER_STEP 1
+#define DEFAULT_STOP_TIME 10
 
 #define M_MAX 5
 #define N_MAX 5

@@ -93,13 +93,12 @@ typedef void (*unlockPreemptionType) ();
 
 typedef void (*intermediateUpdateType) (void *instanceEnvironment,
                                         double intermediateUpdateTime,
-                                        int eventOccurred,
-                                        int clocksTicked,
-                                        int intermediateVariableSetAllowed,
-                                        int intermediateVariableGetAllowed,
-                                        int intermediateStepFinished,
-                                        int canReturnEarly,
-                                        int *earlyReturnRequested,
+                                        bool clocksTicked,
+                                        bool intermediateVariableSetRequested,
+                                        bool intermediateVariableGetAllowed,
+                                        bool intermediateStepFinished,
+                                        bool canReturnEarly,
+                                        bool *earlyReturnRequested,
                                         double *earlyReturnTime);
 
 typedef struct {
@@ -170,17 +169,19 @@ Status getInt32   (ModelInstance* comp, ValueReference vr, int32_t     *value, s
 Status getUInt16  (ModelInstance* comp, ValueReference vr, uint16_t    *value, size_t *index);
 Status getBoolean (ModelInstance* comp, ValueReference vr, bool        *value, size_t *index);
 Status getString  (ModelInstance* comp, ValueReference vr, const char **value, size_t *index);
-Status getBinary  (ModelInstance* comp, ValueReference vr, size_t size[], const char *value[], size_t *index);
+Status getBinary  (ModelInstance* comp, ValueReference vr, size_t size[], const char* value[], size_t *index);
 
 Status setFloat64 (ModelInstance* comp, ValueReference vr, const double      *value, size_t *index);
 Status setUInt16  (ModelInstance* comp, ValueReference vr, const uint16_t    *value, size_t *index);
 Status setInt32   (ModelInstance* comp, ValueReference vr, const int32_t     *value, size_t *index);
 Status setBoolean (ModelInstance* comp, ValueReference vr, const bool        *value, size_t *index);
-Status setString  (ModelInstance* comp, ValueReference vr, const char *const *value, size_t *index);
+Status setString  (ModelInstance* comp, ValueReference vr, const char* const *value, size_t *index);
 Status setBinary  (ModelInstance* comp, ValueReference vr, const size_t size[], const char *const value[], size_t *index);
 
 Status activateClock(ModelInstance* comp, ValueReference vr);
-Status getClock(ModelInstance* comp, ValueReference vr, int* value);
+Status getClock(ModelInstance* comp, ValueReference vr, bool* value);
+
+Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier);
 
 Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime);
 
