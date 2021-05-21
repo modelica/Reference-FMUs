@@ -28,8 +28,8 @@ A set of hand-coded FMUs for development, testing and debugging of the [Function
 - `cosimulation.c` - generic co-simulation
 
 `examples`
-- `<example>.c` - Standalone c code example that uses one or more model sources directly.
-- `Examples.cmake` - CMake file that creates and configures a project for each example, compiling it with its dependencies. For instance, `model_exchange.c` gets compiled with `BouncingBall/model.c`.
+- `*.c` - various FMI 3.0 import examples
+- `Examples.cmake` - CMake configuration for the example projects
 
 ## Build the FMUs
 
