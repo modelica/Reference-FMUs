@@ -183,8 +183,9 @@ class BuildTest(unittest.TestCase):
         copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='3.0', fmi_types=['cs', 'me'])
         copy_to_cross_check(build_dir=build_dir, model_names=['Clocks'], fmi_version='3.0', fmi_types=['se'])
 
-        validate_fmu(filename=os.path.join(build_dir, 'dist', 'LinearTransform.fmu'))
-        validate_fmu(filename=os.path.join(build_dir, 'dist', 'Clocks.fmu'))
+        for model in ['Clocks', 'LinearTransform']:
+            problems = validate_fmu(filename=os.path.join(build_dir, 'dist', model + '.fmu'))
+            self.assertTrue(not problems)
 
 
 if __name__ == '__main__':
