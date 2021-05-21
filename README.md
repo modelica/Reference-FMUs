@@ -55,18 +55,6 @@ To build the FMUs you need [CMake](https://cmake.org/) and a supported [build to
 
 The FMUs will be in the `dist` folder inside the selected build folder.
 
-## Running the Examples
-
-First you need to follow the instructions in [Build the FMUs](#build-the-fmus) and build the project.
-
-From the command line:
-1. Inside the folder where the FMUs will be built, you should find an executable file corresponding to the example c file. For instance, `model_exchange.exe`.
-2. Run it.
-
-From Visual Studio:
-1. Set the example project as starting project.
-2. Run it.
-
 ## License and attribution
 
 Copyright &copy; 2020 Modelica Association Project "FMI".
