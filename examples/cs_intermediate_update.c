@@ -1,26 +1,20 @@
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
+#include "FMU.h"
 #include "fmi3Functions.h"
 #include "config.h"
 #include "util.h"
 
 
 typedef struct {
+    FMU *fmu;
     fmi3Instance instance;
     FILE* outputFile;
     fmi3Float64 intermediateUpdateTime;
 } InstanceEnvironment;
 
 // tag::IntermediateUpdateCallback[]
-fmi3Status recordVariables(InstanceEnvironment *instanceEnvironment, fmi3Float64 time) {
-    fmi3ValueReference outputsVRs[2] = { vr_h, vr_v };
-    fmi3Float64 y[2];
-    fmi3Status status = fmi3GetFloat64(instanceEnvironment->instance, outputsVRs, 2, y, 2);
-    fprintf(instanceEnvironment->outputFile, "%g,%g,%g\n", time, y[0], y[1]);
-    return status;
-}
-
 void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
                            fmi3Float64 intermediateUpdateTime,
                            fmi3Boolean clocksTicked,
@@ -49,7 +43,7 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
 
         // Get the output variables at time == intermediateUpdateTime
         // fmi3Get{VariableType}();
-        status = recordVariables(env, intermediateUpdateTime);
+        status = recordVariables(env->outputFile, env->fmu, env->instance, intermediateUpdateTime);
 
         // If integration step in FMU solver is finished
         if (intermediateStepFinished) {
@@ -69,6 +63,8 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     }
 
     // Internal execution in FMU will now continue
+
+    // TODO: handle status
 }
 // end::IntermediateUpdateCallback[]
 
@@ -82,24 +78,28 @@ int main(int argc, char* argv[]) {
     // Communication constant step size
     const fmi3Float64 h = 0.1;
 
-    InstanceEnvironment instanceEnvironment = {
-        .instance               = NULL,
-        .outputFile             = NULL,
-        .intermediateUpdateTime = startTime
-    };
+    FMU *S = loadFMU(PLATFORM_BINARY);
 
-    instanceEnvironment.outputFile = fopen("BouncingBall_iav.csv", "w");
+    if (!S) {
+        return EXIT_FAILURE;
+    }
 
-    if (!instanceEnvironment.outputFile) {
+    FILE *outputFile = openOutputFile("cs_intermediate_update.csv");
+
+    if (!outputFile) {
         puts("Failed to open output file.");
         return EXIT_FAILURE;
     }
 
-    // write the header of the CSV
-    fputs("\"time\",\"h\",\"v\"\n", instanceEnvironment.outputFile);
+    InstanceEnvironment instanceEnvironment = {
+        .fmu                    = S,
+        .instance               = NULL,
+        .outputFile             = outputFile,
+        .intermediateUpdateTime = startTime
+    };
 
     // Instantiate the FMU
-    fmi3Instance s = fmi3InstantiateCoSimulation(
+    fmi3Instance s = S->fmi3InstantiateCoSimulation(
         "instance1",            // instanceName
         INSTANTIATION_TOKEN,    // instantiationToken
         NULL,                   // resourceLocation
@@ -125,8 +125,8 @@ int main(int argc, char* argv[]) {
 
     fmi3Status status = fmi3OK;
 
-    CHECK_STATUS(fmi3EnterInitializationMode(s, fmi3False, 0.0, startTime, fmi3True, stopTime))
-    CHECK_STATUS(fmi3ExitInitializationMode(s))
+    CHECK_STATUS(S->fmi3EnterInitializationMode(s, fmi3False, 0.0, startTime, fmi3True, stopTime))
+    CHECK_STATUS(S->fmi3ExitInitializationMode(s))
 
     fmi3Float64 time = startTime;
 
@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
         fmi3Boolean eventEncountered, terminateSimulation, earlyReturn;
         fmi3Float64 lastSuccessfulTime;
 
-        CHECK_STATUS(fmi3DoStep(s, time, h, fmi3False, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime))
+        CHECK_STATUS(S->fmi3DoStep(s, time, h, fmi3False, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime))
 
         time += h;
     };
@@ -144,12 +144,12 @@ int main(int argc, char* argv[]) {
 
 TERMINATE:
 
-    if (s && status != fmi3Error && status != fmi3Fatal) {
-        terminateStatus = fmi3Terminate(s);
+    if (status < fmi3Fatal) {
+        terminateStatus = S->fmi3Terminate(s);
     }
 
-    if (s && status != fmi3Fatal && terminateStatus != fmi3Fatal) {
-        fmi3FreeInstance(s);
+    if (status < fmi3Fatal && terminateStatus < fmi3Fatal) {
+        S->fmi3FreeInstance(s);
     }
 
     puts("done.");
