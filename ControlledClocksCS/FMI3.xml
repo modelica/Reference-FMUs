@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription  fmiVersion="3.0-beta.1" modelName="ControlledClocksCS" description="Demonstrate Single Clock CS FMU 3.0"  instantiationToken="{9c4e810f-3df3-4a00-8276-176fa3c9f000}">
+  <ModelExchange
+    modelIdentifier="ControlledClocksCS"
+    canGetAndSetFMUState="true"
+    canSerializeFMUState="true"/>
+
+  <CoSimulation
+    modelIdentifier="ControlledClocksCS"
+    canGetAndSetFMUState="true"
+    canSerializeFMUState="true"
+    canHandleVariableCommunicationStepSize="true"
+    providesIntermediateUpdate="true"
+    canReturnEarlyAfterIntermediateUpdate="true"
+    fixedInternalStepSize="1e-3"
+    hasEventMode="true"/>
+
+  <LogCategories>
+    <Category name="logEvents" description="Log events"/>
+    <Category name="logStatusError" description="Log error messages"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="3" stepSize="1e-3"/>
+
+<ModelVariables>
+  <Clock name="startTask1" valueReference="1001" causality="input" interval="triggered" start="0" />
+  <Clock name="endTask1" valueReference="1002" causality="input" interval="triggered" start="0"/>
+  <Clock name="startTask2" valueReference="1003" causality="input" interval="triggered" start="0"/>
+  <Clock name="endTask2" valueReference="1004" causality="input" interval="triggered" start="0"/>
+  <Clock name="startTask3" valueReference="1005" causality="input" interval="triggered" start="0"/>
+  <Clock name="endTask3" valueReference="1006" causality="input" interval="triggered" start="0"/>
+  <Clock name="startTask4" valueReference="1007" causality="input" interval="triggered" start="0"/>
+  <Clock name="endTask4" valueReference="1008" causality="input" interval="triggered" start="0"/>
+  <Clock name="startTask5" valueReference="1009" causality="input" interval="triggered" start="0"/>
+  <Clock name="endTask5" valueReference="1010" causality="input" interval="triggered" start="0"/>
+  
+
+  <Int32 name="output1" valueReference="2003" causality="output"  />
+  <Int32 name="output2" valueReference="2004" causality="output"  />
+
+</ModelVariables>
+
+<ModelStructure>
+  <Output valueReference="2003"/>
+  <Output valueReference="2004"/>
+  <ClockedState valueReference="1002" dependencies="2003"/>
+  <ClockedState valueReference="1004" dependencies="2003"/>
+  <ClockedState valueReference="1006" dependencies="2004"/>
+  <ClockedState valueReference="1008" dependencies="2003"/>
+  <ClockedState valueReference="1010" dependencies="2004"/>
+</ModelStructure>
+
+</fmiModelDescription>
