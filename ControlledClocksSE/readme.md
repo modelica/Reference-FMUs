@@ -7,6 +7,8 @@ The second model partition reads the computation results of the first model part
 The FMU is controlled from an FMPy simulation script.
 For timing and scheduling information, the script uses a pre-generated trace of communication events.
 
+For an implementation of the same functionality using the FMI for Co-Simulation with Event Mode, see the ControlledClocksCS FMU.
+
 The following plot visualizes the timing-accurate simulation results as annotation of the input trace.
 
 ![alt text](result.png "Reference Output")

@@ -362,13 +362,13 @@ Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], co
 }
 #endif
 
-#ifndef SET_CLOCK                                                //NEW
-Status setClock(ModelInstance* comp, ValueReference vr) {        //NEW
-    UNUSED(comp)                                                 //NEW
-    UNUSED(vr)                                                 //NEW
-    return Error;                                                 //NEW
-}                                                 //NEW
-#endif                                                 //NEW
+#ifndef SET_CLOCK
+Status setClock(ModelInstance* comp, ValueReference vr) {
+    UNUSED(comp)
+    UNUSED(vr)
+    return Error;
+}
+#endif
 
 #ifndef ACTIVATE_CLOCK
 Status activateClock(ModelInstance* comp, ValueReference vr) {
@@ -387,15 +387,15 @@ Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
 }
 #endif
 
-#ifndef GET_INTERVAL_DECIMAL                                                  //NEW
-Status getIntervalDecimal(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier) {                                                 //NEW
-    UNUSED(comp)                                                 //NEW
-    UNUSED(vr)                                                 //NEW
-    UNUSED(interval)                                                 //NEW
-    UNUSED(qualifier)                                                 //NEW
-    return Error;                                                 //NEW
+#ifndef GET_INTERVAL_DECIMAL
+Status getIntervalDecimal(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier) {
+    UNUSED(comp)
+    UNUSED(vr)
+    UNUSED(interval)
+    UNUSED(qualifier)
+    return Error;
 }
-#endif                                                 //NEW
+#endif
 
 #ifndef GET_INTERVAL
 Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier) {

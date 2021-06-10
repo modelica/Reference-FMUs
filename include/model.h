@@ -179,11 +179,11 @@ Status setString  (ModelInstance* comp, ValueReference vr, const char* const *va
 Status setBinary  (ModelInstance* comp, ValueReference vr, const size_t size[], const char *const value[], size_t *index);
 
 Status activateClock(ModelInstance* comp, ValueReference vr);
-Status setClock(ModelInstance* comp, ValueReference vr);  //NEW
+Status setClock(ModelInstance* comp, ValueReference vr);
 Status getClock(ModelInstance* comp, ValueReference vr, bool* value);
 
 Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier);
-Status getIntervalDecimal(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier); //NEW
+Status getIntervalDecimal(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier);
 Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime);
 
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx);

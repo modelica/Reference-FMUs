@@ -6,6 +6,9 @@ The second model partition reads the computation results of the first model part
 
 The FMU is controlled from an FMPy simulation script.
 For timing and scheduling information, the script uses a pre-generated trace of communication events.
+fmi3DoStep() is used only to advance time, it does not trigger any calculations.
+
+For an implementation of the same functionality using the FMI for Scheduled Execution, see the ControlledClocksSE FMU.
 
 The following plot visualizes the timing-accurate simulation results as annotation of the input trace.
 

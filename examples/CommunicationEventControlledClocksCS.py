@@ -89,12 +89,12 @@ for (commPointTime, commPointTarget, commPointEvent) in commPoints:
     
     dt = commPointTime/(10**9) - t
     if dt > 0:
-        fmu.doStep(t, dt, fmpy.fmi3.fmi3False)  # advance time, empty impl...
+        fmu.doStep(t, dt, fmpy.fmi3.fmi3False)  # only advance time (no calculations happen here)
         t = t + dt
 
     fmu.enterEventMode()
     fmu.setClock([vr[fmuClocks[commPointTarget][commPointEvent]]], [fmpy.fmi3.fmi3ClockActive])
-    fmu.updateDiscreteStates()
+    fmu.updateDiscreteStates()  # all calculations happen here (but time is not advanced)
     fmu.enterStepMode()
 
     results.append((commPointTime/(10**9), commPointTarget, commPointEvent, [fmu.getInt32([vr[i]])[0] for i in fmuOutputs]))
