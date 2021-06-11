@@ -18,6 +18,7 @@
 #define GET_PARTIAL_DERIVATIVE
 
 #define FIXED_SOLVER_STEP 1e-2
+#define DEFAULT_STOP_TIME 20
 
 typedef enum {
     vr_x0, vr_der_x0, vr_x1, vr_der_x1, vr_mu

@@ -4,6 +4,7 @@ import os
 import shutil
 from fmpy import simulate_fmu, platform, read_model_description
 from fmpy.util import compile_platform_binary
+from fmpy.validation import validate_fmu
 
 
 fmus_dir = os.path.join(os.path.dirname(__file__), 'fmus')  # /path/to/fmi-cross-check/fmus
@@ -55,6 +56,10 @@ class BuildTest(unittest.TestCase):
 
             fmu_filename = os.path.join(build_dir, 'dist', model + '.fmu')
 
+            problems = validate_fmu(fmu_filename)
+
+            self.assertTrue(not problems)
+
             if model == 'Feedthrough':
                 start_values = {'real_fixed_param': 1, 'string_param': "FMI is awesome!"}
                 in_csv = os.path.join(test_fmus_dir, model, model + '_in.csv')
@@ -71,8 +76,6 @@ class BuildTest(unittest.TestCase):
 
                 if compile:
                     compile_platform_binary(fmu_filename)
-
-                read_model_description(fmu_filename, validate_variable_names=True, validate_model_structure=True)
 
                 result = simulate_fmu(fmu_filename,
                                       fmi_type=fmi_type,
@@ -149,13 +152,18 @@ class BuildTest(unittest.TestCase):
 
         # run examples
         examples = [
+            'cs_early_return',
+            'cs_event_mode',
+            'cs_intermediate_update',
+            'BouncingBall_cs',
+            'BouncingBall_me',
+            'connected_cs',
             'import_shared_library',
             'import_static_library',
-            'co_simulation',
-            'bcs_early_return',
-            'bcs_intermediate_update',
             'jacobian',
-            'scs_synchronous'
+            'scs_synchronous',
+            'Stair_cs',
+            'Stair_me'
         ]
 
         is_windows = os.name == 'nt'
@@ -175,8 +183,9 @@ class BuildTest(unittest.TestCase):
         copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='3.0', fmi_types=['cs', 'me'])
         copy_to_cross_check(build_dir=build_dir, model_names=['Clocks'], fmi_version='3.0', fmi_types=['se'])
 
-        read_model_description(filename=os.path.join(build_dir, 'dist', 'Clocks.fmu'),
-                               validate_variable_names=True, validate_model_structure=True)
+        for model in ['Clocks', 'LinearTransform']:
+            problems = validate_fmu(filename=os.path.join(build_dir, 'dist', model + '.fmu'))
+            self.assertTrue(not problems)
 
 
 if __name__ == '__main__':
