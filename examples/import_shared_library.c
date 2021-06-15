@@ -37,14 +37,14 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    fmi3InstantiateModelExchangeTYPE *instantiateModelExchange =
+    fmi3InstantiateModelExchangeTYPE *instantiateModelExchange = (fmi3InstantiateModelExchangeTYPE *)
 #ifdef _WIN32
         GetProcAddress(libraryHandle, "fmi3InstantiateModelExchange");
 #else
         dlsym(libraryHandle, "fmi3InstantiateModelExchange");
 #endif
 
-    fmi3FreeInstanceTYPE *freeInstance =
+    fmi3FreeInstanceTYPE *freeInstance = (fmi3FreeInstanceTYPE *)
 #ifdef _WIN32
         GetProcAddress(libraryHandle, "fmi3FreeInstance");
 #else
