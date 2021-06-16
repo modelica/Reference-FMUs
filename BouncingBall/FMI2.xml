@@ -59,6 +59,9 @@
   <DefaultExperiment startTime="0" stopTime="3" stepSize="1e-3"/>
 
   <ModelVariables>
+    <ScalarVariable name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time">
+      <Real/>
+    </ScalarVariable>
     <ScalarVariable name="h" valueReference="1" causality="output" variability="continuous" initial="exact" description="Position of the ball">
       <Real start="1" declaredType="Position"/>
     </ScalarVariable>
@@ -84,16 +87,16 @@
 
   <ModelStructure>
     <Outputs>
-      <Unknown index="1"/>
-      <Unknown index="3"/>
-    </Outputs>
-    <Derivatives>
       <Unknown index="2"/>
       <Unknown index="4"/>
+    </Outputs>
+    <Derivatives>
+      <Unknown index="3"/>
+      <Unknown index="5"/>
     </Derivatives>
     <InitialUnknowns>
-      <Unknown index="2" dependencies="3" dependenciesKind="constant"/>
-      <Unknown index="4" dependencies="5" dependenciesKind="constant"/>
+      <Unknown index="3" dependencies="4" dependenciesKind="constant"/>
+      <Unknown index="5" dependencies="6" dependenciesKind="constant"/>
     </InitialUnknowns>
   </ModelStructure>
 
