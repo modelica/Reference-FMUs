@@ -2,6 +2,14 @@
 #define util_h
 
 
+#if defined(_WIN32)
+#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "\\binaries\\x86_64-windows\\" xstr(MODEL_IDENTIFIER) ".dll"
+#elif defined(__APPLE__)
+#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/x86_64-darwin/" xstr(MODEL_IDENTIFIER) ".dylib"
+#else
+#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/x86_64-linux/" xstr(MODEL_IDENTIFIER) ".so"
+#endif
+
 #ifndef min
 #define min(a,b) ({ __typeof__ (a) _a = (a); __typeof__ (b) _b = (b); _a < _b ? _a : _b; })
 #endif

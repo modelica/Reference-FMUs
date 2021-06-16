@@ -35,17 +35,20 @@
   <DefaultExperiment startTime="0" stopTime="1"/>
 
   <ModelVariables>
-    <ScalarVariable name="y" valueReference="0" description="Value of the first character in resources/y.txt" causality="output" variability="discrete">
+    <ScalarVariable name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="y" valueReference="1" description="Value of the first character in resources/y.txt" causality="output" variability="discrete">
       <Integer/>
     </ScalarVariable>
   </ModelVariables>
 
   <ModelStructure>
     <Outputs>
-      <Unknown index="1"/>
+      <Unknown index="2"/>
     </Outputs>
     <InitialUnknowns>
-      <Unknown index="1"/>
+      <Unknown index="2"/>
     </InitialUnknowns>
   </ModelStructure>
 

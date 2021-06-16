@@ -11,6 +11,8 @@
 
 #define SCHEDULED_CO_SIMULATION
 
+#define DEFAULT_STOP_TIME 3
+
 // define model size
 #define NX 0
 #define NZ 0
@@ -27,6 +29,7 @@
 #define FIXED_SOLVER_STEP 1
 
 typedef enum {
+    vr_time              = 0,
     vr_inClock1          = 1001,
     vr_inClock2          = 1002,
     vr_inClock3          = 1003,

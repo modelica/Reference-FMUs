@@ -17,12 +17,24 @@ void calculateValues(ModelInstance *comp) {
     UNUSED(comp)
 }
 
+Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
+    switch (vr) {
+    case vr_time:
+        value[(*index)++] = comp->time;
+        return OK;
+    default:
+        logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
+        return Error;
+    }
+}
+
 Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
     switch (vr) {
         case vr_counter:
             value[(*index)++] = M(counter);
             return OK;
         default:
+            logError(comp, "Get Int32 is not allowed for value reference %u.", vr);
             return Error;
     }
 }

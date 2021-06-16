@@ -12,19 +12,19 @@
 #define CO_SIMULATION
 #define MODEL_EXCHANGE
 
-#define GET_FLOAT64
 #define SET_FLOAT64
 #define GET_INT32
 #define SET_INT32
 #define EVENT_UPDATE
 
 #define FIXED_SOLVER_STEP 1
+#define DEFAULT_STOP_TIME 10
 
 #define M_MAX 5
 #define N_MAX 5
 
 typedef enum {
-    vr_m, vr_n, vr_u, vr_A, vr_y
+    vr_time, vr_m, vr_n, vr_u, vr_A, vr_y
 } ValueReference;
 
 typedef struct {

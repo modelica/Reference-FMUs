@@ -407,6 +407,13 @@ fmi3Status fmi3GetFloat64(fmi3Instance instance, const fmi3ValueReference vr[], 
         S->isDirtyValues = false;
     }
 
+    for (int i = 0; i < nvr; i++) {
+        if (vr[i] == 0) {
+            value[i] = S->time;
+            break;
+        }
+    }
+
     GET_VARIABLES(Float64)
 }
 

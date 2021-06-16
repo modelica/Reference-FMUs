@@ -16,9 +16,10 @@
 #define EVENT_UPDATE
 
 #define FIXED_SOLVER_STEP 0.2
+#define DEFAULT_STOP_TIME 10
 
 typedef enum {
-    vr_counter
+    vr_time, vr_counter
 } ValueReference;
 
 typedef struct {

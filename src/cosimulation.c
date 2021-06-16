@@ -240,16 +240,6 @@ void getEventIndicators(ModelInstance *comp, double z[], size_t nz) {
 }
 #endif
 
-#ifndef GET_FLOAT64
-Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
-    UNUSED(comp)
-    UNUSED(vr)
-    UNUSED(value)
-    UNUSED(index)
-    return Error;
-}
-#endif
-
 #ifndef GET_UINT16
 Status getUInt16(ModelInstance* comp, ValueReference vr, uint16_t *value, size_t *index) {
     UNUSED(comp)

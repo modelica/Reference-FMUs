@@ -23,12 +23,13 @@
   <DefaultExperiment startTime="0" stopTime="1"/>
 
   <ModelVariables>
-    <Int32 name="y" valueReference="0" description="Value of the first character in resources/y.txt" causality="output"/>
+    <Float64 name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time"/>
+    <Int32 name="y" valueReference="1" description="Value of the first character in resources/y.txt" causality="output"/>
   </ModelVariables>
 
   <ModelStructure>
-    <Output valueReference="0"/>
-    <InitialUnknown valueReference="0"/>
+    <Output valueReference="1"/>
+    <InitialUnknown valueReference="1"/>
   </ModelStructure>
 
 </fmiModelDescription>

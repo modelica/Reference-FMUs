@@ -80,12 +80,26 @@ void calculateValues(ModelInstance *comp) {
     fclose(file);
 }
 
+
+Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
+    switch (vr) {
+    case vr_time:
+        value[(*index)++] = comp->time;
+        return OK;
+    default:
+        logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
+        return Error;
+    }
+}
+
+
 Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
     switch (vr) {
         case vr_y:
             value[(*index)++] = M(y);
             return OK;
         default:
+            logError(comp, "Get Int32 is not allowed for value reference %u.", vr);
             return Error;
     }
 }

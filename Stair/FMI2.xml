@@ -35,14 +35,17 @@
   <DefaultExperiment startTime="0" stopTime="10" stepSize="0.2"/>
 
   <ModelVariables>
-    <ScalarVariable name="counter" valueReference="0" description="counts the seconds" causality="output" initial="exact">
+    <ScalarVariable name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="counter" valueReference="1" description="counts the seconds" causality="output" initial="exact">
       <Integer start="1"/>
     </ScalarVariable>
   </ModelVariables>
 
   <ModelStructure>
     <Outputs>
-      <Unknown index="1"/>
+      <Unknown index="2"/>
     </Outputs>
   </ModelStructure>
 

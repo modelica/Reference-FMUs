@@ -23,20 +23,21 @@
   <DefaultExperiment startTime="0" stopTime="20" stepSize="1e-2"/>
 
   <ModelVariables>
-    <Float64 name="x0" valueReference="0" description="the first state" causality="output" variability="continuous" initial="exact" start="2"/>
-    <Float64 name="der(x0)" valueReference="1" causality="local" variability="continuous" initial="calculated" derivative="1"/>
-    <Float64 name="x1" valueReference="2" description="the second state" causality="output" variability="continuous" initial="exact" start="0"/>
-    <Float64 name="der(x1)" valueReference="3" causality="local" variability="continuous" initial="calculated" derivative="3"/>
-    <Float64 name="mu" valueReference="4" causality="parameter" variability="fixed" initial="exact" start="1"/>
+    <Float64 name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time"/>
+    <Float64 name="x0" valueReference="1" description="the first state" causality="output" variability="continuous" initial="exact" start="2"/>
+    <Float64 name="der(x0)" valueReference="2" causality="local" variability="continuous" initial="calculated" derivative="1"/>
+    <Float64 name="x1" valueReference="3" description="the second state" causality="output" variability="continuous" initial="exact" start="0"/>
+    <Float64 name="der(x1)" valueReference="4" causality="local" variability="continuous" initial="calculated" derivative="3"/>
+    <Float64 name="mu" valueReference="5" causality="parameter" variability="fixed" initial="exact" start="1"/>
   </ModelVariables>
 
   <ModelStructure>
-    <Output valueReference="0"/>
-    <Output valueReference="2"/>
-    <ContinuousStateDerivative valueReference="1"/>
-    <ContinuousStateDerivative valueReference="3"/>
-    <InitialUnknown valueReference="1"/>
-    <InitialUnknown valueReference="3"/>
+    <Output valueReference="1"/>
+    <Output valueReference="3"/>
+    <ContinuousStateDerivative valueReference="2"/>
+    <ContinuousStateDerivative valueReference="4"/>
+    <InitialUnknown valueReference="2"/>
+    <InitialUnknown valueReference="4"/>
   </ModelStructure>
 
 </fmiModelDescription>

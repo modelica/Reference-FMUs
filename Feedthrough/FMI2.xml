@@ -35,53 +35,56 @@
   <DefaultExperiment stopTime="2"/>
 
   <ModelVariables>
-    <ScalarVariable name="real_fixed_param" valueReference="0" causality="parameter" variability="fixed">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable name="real_tunable_param" valueReference="1" causality="parameter" variability="tunable">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable name="real_continuous_in" valueReference="2" description="" causality="input">
-      <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable name="real_continuous_out" valueReference="3" description="" causality="output" initial="calculated">
+    <ScalarVariable name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time">
       <Real/>
     </ScalarVariable>
-    <ScalarVariable name="real_discrete_in" valueReference="4" description="" causality="input" variability="discrete">
+    <ScalarVariable name="real_fixed_param" valueReference="1" causality="parameter" variability="fixed">
       <Real start="0"/>
     </ScalarVariable>
-    <ScalarVariable name="real_discrete_out" valueReference="5" description="" causality="output" variability="discrete" initial="calculated">
+    <ScalarVariable name="real_tunable_param" valueReference="2" causality="parameter" variability="tunable">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable name="real_continuous_in" valueReference="3" description="" causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable name="real_continuous_out" valueReference="4" description="" causality="output" initial="calculated">
       <Real/>
     </ScalarVariable>
-    <ScalarVariable name="int_in" valueReference="6" description="" causality="input" variability="discrete">
+    <ScalarVariable name="real_discrete_in" valueReference="5" description="" causality="input" variability="discrete">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable name="real_discrete_out" valueReference="6" description="" causality="output" variability="discrete" initial="calculated">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="int_in" valueReference="7" description="" causality="input" variability="discrete">
       <Integer start="0"/>
     </ScalarVariable>
-    <ScalarVariable name="int_out" valueReference="7" description="" causality="output" variability="discrete" initial="calculated">
+    <ScalarVariable name="int_out" valueReference="8" description="" causality="output" variability="discrete" initial="calculated">
       <Integer/>
     </ScalarVariable>
-    <ScalarVariable name="bool_in" valueReference="8" description="boolean input" causality="input" variability="discrete">
+    <ScalarVariable name="bool_in" valueReference="9" description="boolean input" causality="input" variability="discrete">
       <Boolean start="false"/>
     </ScalarVariable>
-    <ScalarVariable name="bool_out" valueReference="9" description="boolean output" causality="output" variability="discrete" initial="calculated">
+    <ScalarVariable name="bool_out" valueReference="10" description="boolean output" causality="output" variability="discrete" initial="calculated">
       <Boolean/>
     </ScalarVariable>
-    <ScalarVariable name="string_param" valueReference="10" description="String parameter" causality="parameter" variability="fixed">
+    <ScalarVariable name="string_param" valueReference="11" description="String parameter" causality="parameter" variability="fixed">
       <String start="Set me!"/>
     </ScalarVariable>
   </ModelVariables>
 
   <ModelStructure>
     <Outputs>
-      <Unknown index="4" dependencies="1" dependenciesKind="constant"/>
-      <Unknown index="6" dependencies="5" dependenciesKind="constant"/>
-      <Unknown index="8" dependencies="7" dependenciesKind="constant"/>
-      <Unknown index="10" dependencies="9" dependenciesKind="constant"/>
+      <Unknown index="5" dependencies="2 3 4" dependenciesKind="constant constant constant"/>
+      <Unknown index="7" dependencies="6" dependenciesKind="constant"/>
+      <Unknown index="9" dependencies="8" dependenciesKind="constant"/>
+      <Unknown index="11" dependencies="10 12" dependenciesKind="constant constant"/>
     </Outputs>
     <InitialUnknowns>
-      <Unknown index="4" dependencies="1 2 3" dependenciesKind="constant constant constant"/>
-      <Unknown index="6" dependencies="5" dependenciesKind="constant"/>
-      <Unknown index="8" dependencies="7" dependenciesKind="constant"/>
-      <Unknown index="10" dependencies="9" dependenciesKind="constant"/>
+      <Unknown index="5" dependencies="2 3 4" dependenciesKind="constant constant constant"/>
+      <Unknown index="7" dependencies="6" dependenciesKind="constant"/>
+      <Unknown index="9" dependencies="8" dependenciesKind="constant"/>
+      <Unknown index="11" dependencies="10 12" dependenciesKind="constant constant"/>
     </InitialUnknowns>
   </ModelStructure>
 

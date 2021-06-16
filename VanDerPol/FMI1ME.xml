@@ -11,19 +11,22 @@
   <DefaultExperiment startTime="0" stopTime="20"/>
 
   <ModelVariables>
-    <ScalarVariable name="x0" valueReference="0" causality="output" description="the first state">
+    <ScalarVariable name="time" valueReference="0" causality="internal" variability="continuous" description="Simulation time">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="x0" valueReference="1" causality="output" description="the first state">
       <Real start="2" fixed="true"/>
     </ScalarVariable>
-    <ScalarVariable name="der(x0)" valueReference="1">
+    <ScalarVariable name="der(x0)" valueReference="2">
       <Real/>
     </ScalarVariable>
-    <ScalarVariable name="x1" valueReference="2" causality="output" description="the second state">
+    <ScalarVariable name="x1" valueReference="3" causality="output" description="the second state">
       <Real start="0" fixed="true"/>
     </ScalarVariable>
-    <ScalarVariable name="der(x1)" valueReference="3">
+    <ScalarVariable name="der(x1)" valueReference="4">
       <Real/>
     </ScalarVariable>
-    <ScalarVariable name="mu" valueReference="4" variability="parameter">
+    <ScalarVariable name="mu" valueReference="5" variability="parameter">
       <Real start="1" fixed="true"/>
     </ScalarVariable>
   </ModelVariables>
