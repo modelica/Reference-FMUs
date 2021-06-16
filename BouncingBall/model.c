@@ -21,6 +21,9 @@ void calculateValues(ModelInstance *comp) {
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
     switch (vr) {
+        case vr_time:
+            value[(*index)++] = comp->time;
+            return OK;
         case vr_h:
             value[(*index)++] = M(h);
             return OK;
@@ -39,6 +42,7 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
             value[(*index)++] = V_MIN;
             return OK;
         default:
+            logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
             return Error;
     }
 }
@@ -80,11 +84,11 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
             return OK;
 
         case vr_v_min:
-            logError(comp, "Variable v_min (value reference %d) is constant and cannot be set.", vr_v_min);
+            logError(comp, "Variable v_min (value reference %u) is constant and cannot be set.", vr_v_min);
             return Error;
 
         default:
-            logError(comp, "Unexpected value reference: %.", vr);
+            logError(comp, "Unexpected value reference: %u.", vr);
             return Error;
     }
 }

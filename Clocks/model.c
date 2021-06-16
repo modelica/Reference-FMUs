@@ -166,15 +166,28 @@ Status activateClock(ModelInstance* comp, ValueReference vr) {
     return OK;
 }
 
+Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
+    switch (vr) {
+    case vr_time:
+        value[(*index)++] = comp->time;
+        return OK;
+    default:
+        logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
+        return Error;
+    }
+}
+
 Status setInt32(ModelInstance* comp, ValueReference vr, const int* value, size_t* index) {
     switch (vr) {
     case vr_input2:
         M(input2) = value[(*index)++];
         return OK;
     default:
+        logError(comp, "Set Int32 is not allowed for value reference %u.", vr);
         return Error;
     }
 }
+
 Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
 
     switch (vr) {
@@ -196,8 +209,8 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *inde
     case vr_output3:
         value[(*index)++] = M(output3);
         return OK;
-
     default:
+        logError(comp, "Get Int32 is not allowed for value reference %u.", vr);
         return Error;
     }
 }
@@ -210,6 +223,7 @@ Status getClock(ModelInstance* comp, ValueReference vr, _Bool *value) {
         M(outClock) = false;
         return OK;
     default:
+        logError(comp, "Get Clock is not allowed for value reference %u.", vr);
         return Error;
     }
 }
@@ -224,6 +238,7 @@ Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int
         }
         return OK;
     default:
+        logError(comp, "Get Interval is not allowed for value reference %u.", vr);
         return Error;
     }
 }
@@ -241,6 +256,7 @@ Status activateModelPartition(ModelInstance* comp, ValueReference vr, double act
             activateModelPartition3(comp, activationTime);
             return OK;
         default:
+            logError(comp, "Activate model partition is not allowed for value reference %u.", vr);
             return Error;
     }
 }

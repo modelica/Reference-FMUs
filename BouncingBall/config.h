@@ -12,7 +12,6 @@
 #define NX 2
 #define NZ 1
 
-#define GET_FLOAT64
 #define SET_FLOAT64
 #define EVENT_UPDATE
 
@@ -20,7 +19,7 @@
 #define DEFAULT_STOP_TIME 3
 
 typedef enum {
-    vr_h = 1, vr_der_h, vr_v, vr_der_v, vr_g, vr_e, vr_v_min
+    vr_time, vr_h, vr_der_h, vr_v, vr_der_v, vr_g, vr_e, vr_v_min
 } ValueReference;
 
 typedef struct {

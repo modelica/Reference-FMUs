@@ -7,6 +7,7 @@
  </LogCategories>
  <DefaultExperiment stopTime="10" stepSize="1"/>
  <ModelVariables>
+  <Float64 name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time"/>
   <Clock name="inClock1" valueReference="1001" start="0" causality="input" interval="constant" intervalDecimal="1.0" priority="0"/>
   <Clock name="inClock2" valueReference="1002" start="0" causality="input" interval="triggered" priority="1"/>
   <Clock name="inClock3" valueReference="1003" start="0" causality="input" interval="countdown" priority="2" clocks="1001"/>
