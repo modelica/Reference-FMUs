@@ -15,6 +15,7 @@
 #define GET_INT32
 
 #define FIXED_SOLVER_STEP 1
+#define DEFAULT_STOP_TIME 1
 
 typedef enum {
     vr_y

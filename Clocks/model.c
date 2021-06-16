@@ -42,13 +42,13 @@ static void activateModelPartition1(ModelInstance* comp, double time) {
 
     if (M(inClock3_qualifier) == 2 || M(outClock)) {
         comp->intermediateUpdate(
-            comp,   // fmu instance
-            time,   // intermediateUpdateTime
-            true,   // clocksTicked
-            false,  // intermediateVariableSetAllowed
-            false,  // intermediateVariableGetAllowed
-            true,   // intermediateStepFinished
-            false,  // canReturnEarly
+            comp->componentEnvironment, // fmu instance
+            time,                       // intermediateUpdateTime
+            true,                       // clocksTicked
+            false,                      // intermediateVariableSetAllowed
+            false,                      // intermediateVariableGetAllowed
+            true,                       // intermediateStepFinished
+            false,                      // canReturnEarly
             &earlyReturnRequested,
             &earlyReturnTime
         );
@@ -81,13 +81,13 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
 
     if (M(outClock)) {
         comp->intermediateUpdate(
-            comp,   // fmu instance
-            time,   // intermediateUpdateTime
-            true,   // clocksTicked
-            false,  // intermediateVariableSetAllowed
-            false,  // intermediateVariableGetAllowed
-            true,   // intermediateStepFinished
-            false,  // canReturnEarly
+            comp->componentEnvironment, // fmu instance
+            time,                       // intermediateUpdateTime
+            true,                       // clocksTicked
+            false,                      // intermediateVariableSetAllowed
+            false,                      // intermediateVariableGetAllowed
+            true,                       // intermediateStepFinished
+            false,                      // canReturnEarly
             &earlyReturnRequested,
             &earlyReturnTime
         );
