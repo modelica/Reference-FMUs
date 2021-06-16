@@ -31,7 +31,7 @@ void calculateValues(ModelInstance *comp) {
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
 
     calculateValues(comp);
-    
+
     switch (vr) {
         case vr_time:
             value[(*index)++] = comp->time;
@@ -67,7 +67,7 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *inde
         case vr_int_out:
             value[(*index)++] = M(integer);
             return OK;
-        default: 
+        default:
             logError(comp, "Get Int32 is not allowed for value reference %u.", vr);
             return Error;
     }
@@ -82,7 +82,7 @@ Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *i
         case vr_bool_out:
             value[(*index)++] = M(boolean) && (strcmp(M(string), "FMI is awesome!") == 0);
             return OK;
-        default:             
+        default:
             logError(comp, "Get Boolean is not allowed for value reference %u.", vr);
             return Error;
     }
@@ -108,7 +108,7 @@ Status getString(ModelInstance* comp, ValueReference vr, const char **value, siz
         case vr_string:
             value[(*index)++] = M(string);
             return OK;
-        default: 
+        default:
             logError(comp, "Get String is not allowed for value reference %u.", vr);
             return Error;
     }
