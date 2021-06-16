@@ -208,6 +208,7 @@ void logError(ModelInstance *comp, const char *message, ...);
 size_t index = 0; \
 Status status = OK; \
 for (int i = 0; i < nvr; i++) { \
+    if (vr[i] == 0) continue; \
     Status s = get ## T((ModelInstance *)instance, vr[i], value, &index); \
     status = max(status, s); \
     if (status > Warning) return (FMI_STATUS)status; \

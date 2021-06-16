@@ -11,7 +11,10 @@
   <DefaultExperiment startTime="0" stopTime="1"/>
 
   <ModelVariables>
-    <ScalarVariable name="y" valueReference="0" description="Value of the first character in resources/y.txt" causality="output">
+    <ScalarVariable name="time" valueReference="0" causality="internal" variability="continuous" description="Simulation time">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="y" valueReference="1" description="Value of the first character in resources/y.txt" causality="output">
       <Integer/>
     </ScalarVariable>
   </ModelVariables>

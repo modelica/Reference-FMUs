@@ -16,7 +16,6 @@
 #define NX 0
 #define NZ 0
 
-#define GET_FLOAT64
 #define GET_INT32
 #define GET_BOOLEAN
 #define GET_STRING
@@ -34,6 +33,7 @@
 #define DEFAULT_STOP_TIME 2
 
 typedef enum {
+    vr_time,
     vr_fixed_real_parameter,
     vr_tunable_real_parameter,
     vr_continuous_real_in,

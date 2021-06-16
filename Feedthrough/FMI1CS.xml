@@ -11,37 +11,40 @@
   <DefaultExperiment startTime="0" stopTime="2"/>
 
   <ModelVariables>
-    <ScalarVariable name="real_fixed_param" valueReference="0" variability="parameter">
+    <ScalarVariable name="time" valueReference="0" causality="internal" variability="continuous" description="Simulation time">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="real_fixed_param" valueReference="1" variability="parameter">
       <Real start="0" fixed="true"/>
     </ScalarVariable>
-      <ScalarVariable name="real_tunable_param" valueReference="1" variability="parameter">
+      <ScalarVariable name="real_tunable_param" valueReference="2" variability="parameter">
     <Real start="0"/>
     </ScalarVariable>
-    <ScalarVariable name="real_continuous_in" valueReference="2" description="" causality="input">
+    <ScalarVariable name="real_continuous_in" valueReference="3" description="" causality="input">
       <Real start="0"/>
     </ScalarVariable>
-    <ScalarVariable name="real_continuous_out" valueReference="3" description="" causality="output">
+    <ScalarVariable name="real_continuous_out" valueReference="4" description="" causality="output">
       <Real/>
     </ScalarVariable>
-    <ScalarVariable name="real_discrete_in" valueReference="4" description="" causality="input" variability="discrete">
+    <ScalarVariable name="real_discrete_in" valueReference="5" description="" causality="input" variability="discrete">
       <Real start="0"/>
     </ScalarVariable>
-    <ScalarVariable name="real_discrete_out" valueReference="5" description="" causality="output" variability="discrete">
+    <ScalarVariable name="real_discrete_out" valueReference="6" description="" causality="output" variability="discrete">
       <Real/>
     </ScalarVariable>
-    <ScalarVariable name="int_in" valueReference="6" description="integer input" causality="input">
+    <ScalarVariable name="int_in" valueReference="7" description="integer input" causality="input">
       <Integer start="2"/>
     </ScalarVariable>
-    <ScalarVariable name="int_out" valueReference="7" description="index in string array 'month'" causality="output">
+    <ScalarVariable name="int_out" valueReference="8" description="index in string array 'month'" causality="output">
       <Integer start="0" fixed="true"/>
     </ScalarVariable>
-    <ScalarVariable name="bool_in" valueReference="8" description="boolean input" causality="input">
+    <ScalarVariable name="bool_in" valueReference="9" description="boolean input" causality="input">
       <Boolean start="true"/>
     </ScalarVariable>
-    <ScalarVariable name="bool_out" valueReference="9" description="boolean output" causality="output">
+    <ScalarVariable name="bool_out" valueReference="10" description="boolean output" causality="output">
       <Boolean/>
     </ScalarVariable>
-    <ScalarVariable name="string_param" valueReference="10" description="String parameter" variability="parameter">
+    <ScalarVariable name="string_param" valueReference="11" description="String parameter" variability="parameter">
       <String start="Set me!"/>
     </ScalarVariable>
   </ModelVariables>

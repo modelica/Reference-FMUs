@@ -16,6 +16,9 @@ void calculateValues(ModelInstance *comp) {
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
     calculateValues(comp);
     switch (vr) {
+        case vr_time:
+            value[(*index)++] = comp->time;
+            return OK;
         case vr_x0:
             value[(*index)++] = M(x0);
             return OK;
@@ -32,6 +35,7 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
             value[(*index)++] = M(mu);
             return OK;
         default:
+            logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
             return Error;
     }
 }
@@ -57,6 +61,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
             M(mu) = value[(*index)++];
             return OK;
         default:
+            logError(comp, "Set Float64 is not allowed for value reference %u.", vr);
             return Error;
     }
 }

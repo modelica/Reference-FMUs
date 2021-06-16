@@ -19,7 +19,7 @@
 #define DEFAULT_STOP_TIME 10
 
 typedef enum {
-    vr_counter
+    vr_time, vr_counter
 } ValueReference;
 
 typedef struct {

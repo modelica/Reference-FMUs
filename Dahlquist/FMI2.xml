@@ -35,26 +35,29 @@
   <DefaultExperiment startTime="0" stopTime="10" stepSize="0.1"/>
 
   <ModelVariables>
-    <ScalarVariable name="x" valueReference="0" description="the only state" causality="output" variability="continuous" initial="exact">
+    <ScalarVariable name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable name="x" valueReference="1" description="the only state" causality="output" variability="continuous" initial="exact">
       <Real start="1"/>
     </ScalarVariable>
-    <ScalarVariable name="der(x)" valueReference="1" causality="local" variability="continuous" initial="calculated">
+    <ScalarVariable name="der(x)" valueReference="2" causality="local" variability="continuous" initial="calculated">
       <Real derivative="1"/>
     </ScalarVariable>
-    <ScalarVariable name="k" valueReference="2" causality="parameter" variability="fixed" initial="exact">
+    <ScalarVariable name="k" valueReference="3" causality="parameter" variability="fixed" initial="exact">
       <Real start="1"/>
     </ScalarVariable>
   </ModelVariables>
 
   <ModelStructure>
     <Outputs>
-      <Unknown index="1" dependencies=""/>
+      <Unknown index="2" dependencies=""/>
     </Outputs>
     <Derivatives>
-      <Unknown index="2" dependencies="1" dependenciesKind="fixed"/>
+      <Unknown index="3" dependencies="2" dependenciesKind="fixed"/>
     </Derivatives>
     <InitialUnknowns>
-      <Unknown index="2" dependencies="1 3" dependenciesKind="dependent dependent"/>
+      <Unknown index="3" dependencies="2 4" dependenciesKind="dependent dependent"/>
     </InitialUnknowns>
   </ModelStructure>
 
