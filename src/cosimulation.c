@@ -18,6 +18,9 @@
 #include "fmi3Functions.h"
 #endif
 
+ // "stringification" macros
+#define xstr(s) str(s)
+#define str(s) #s
 
 ModelInstance *createModelInstance(
     loggerType cbLogger,
@@ -88,6 +91,8 @@ ModelInstance *createModelInstance(
         logError(comp, "Out of memory.");
         return NULL;
     }
+
+    logError(comp, "Instantiating %s with prefix " xstr(FMI3_FUNCTION_PREFIX), comp->instanceName);
 
     comp->time = 0; // overwrite in fmi*SetupExperiment, fmi*SetTime
     strcpy((char *)comp->instanceName, (char *)instanceName);

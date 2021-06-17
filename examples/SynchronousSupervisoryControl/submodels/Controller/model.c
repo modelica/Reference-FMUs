@@ -15,6 +15,7 @@ void calculateValues(ModelInstance *comp) {
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
+    logError(comp, "Get float on controller : %d.", vr);
     switch (vr) {
         case vr_xr:
             value[(*index)++] = M(xr);
