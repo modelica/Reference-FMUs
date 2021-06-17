@@ -21,6 +21,7 @@
 //#undef FMI3_FUNCTION_PREFIX
 //#define FMI3_FUNCTION_PREFIX Plant_
 //#include "fmi3Functions.h"
+//#undef FMI3_FUNCTION_PREFIX
 
 #include "util.h"
 
