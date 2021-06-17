@@ -10,15 +10,17 @@
 #include <dlfcn.h>
 #endif
 
-#undef fmi3Functions_h
-#define FMI3_FUNCTION_PREFIX Plant_
-#include "fmi3Functions.h"
-#undef FMI3_FUNCTION_PREFIX
 
 #undef fmi3Functions_h
+#undef FMI3_FUNCTION_PREFIX
 #define FMI3_FUNCTION_PREFIX Controller_
 #include "fmi3Functions.h"
 #undef FMI3_FUNCTION_PREFIX
+
+//#undef fmi3Functions_h
+//#undef FMI3_FUNCTION_PREFIX
+//#define FMI3_FUNCTION_PREFIX Plant_
+//#include "fmi3Functions.h"
 
 #include "util.h"
 
@@ -72,7 +74,7 @@ fmi3Status recordVariables(FILE *outputFile, fmi3Instance instances[], char *nam
 {
     const fmi3ValueReference plant_vref[Plant_NX] = {Plant_X_ref};
     fmi3Float64 plant_vals[Plant_NX] = {0};
-    Plant_fmi3GetFloat64(instances[PLANT_ID], plant_vref, Plant_NX, plant_vals, Plant_NX);
+    //Plant_fmi3GetFloat64(instances[PLANT_ID], plant_vref, Plant_NX, plant_vals, Plant_NX);
 
     const fmi3ValueReference controller_vref[Controller_NDX + Controller_NU] = {Controller_XR_ref, Controller_UR_ref};
     fmi3Float64 controller_vals[Controller_NDX + Controller_NU] = {0.0, 0.0};
@@ -103,12 +105,14 @@ fmi3Status instantiate_all(fmi3Instance instances[], char *names[], fmi3Instanti
 
         printf("Instantiating %s... ", names[i]);
 
-        instances[i] = instantiate[i](names[i], INSTANTIATION_TOKEN, NULL, fmi3False, fmi3True, NULL, cb_logMessage);
+        if (instantiate[i]) {
+            instances[i] = instantiate[i](names[i], INSTANTIATION_TOKEN, NULL, fmi3False, fmi3True, NULL, cb_logMessage);
 
-        if (instances[i] == NULL)
-        {
-            printf("Failed to instantiate %s. \n", names[i]);
-            return fmi3Fatal;
+            if (instances[i] == NULL)
+            {
+                printf("Failed to instantiate %s. \n", names[i]);
+                return fmi3Fatal;
+            }
         }
 
         printf("DONE. \n");
@@ -127,11 +131,13 @@ fmi3Status initialize_all(fmi3Instance instances[], fmi3Float64 tStart, fmi3Floa
     {
         printf("Entering init mode for %s... ", names[i]);
 
-        status = enterInit[i](instances[i], fmi3False, 0.0, tStart, fmi3True, tEnd);
-        if (status != fmi3OK)
-        {
-            printf("Failed to enter init mode for %s. \n", names[i]);
-            return fmi3Fatal;
+        if (enterInit[i]) {
+            status = enterInit[i](instances[i], fmi3False, 0.0, tStart, fmi3True, tEnd);
+            if (status != fmi3OK)
+            {
+                printf("Failed to enter init mode for %s. \n", names[i]);
+                return fmi3Fatal;
+            }
         }
 
         printf("DONE. \n");
@@ -141,11 +147,13 @@ fmi3Status initialize_all(fmi3Instance instances[], fmi3Float64 tStart, fmi3Floa
     {
         printf("Exiting init mode for %s... ", names[i]);
 
-        status = exitInit[i](instances[i]);
-        if (status != fmi3OK)
-        {
-            printf("Failed to enter init mode for %s. \n", names[i]);
-            return status;
+        if (exitInit[i]) {
+            status = exitInit[i](instances[i]);
+            if (status != fmi3OK)
+            {
+                printf("Failed to enter init mode for %s. \n", names[i]);
+                return status;
+            }
         }
 
         printf("DONE. \n");
@@ -162,11 +170,13 @@ fmi3Status enter_CT_mode_all(fmi3Instance instances[], char *names[], fmi3EnterC
     {
         printf("Entering CT mode for %s... ", names[i]);
 
-        status = enter_CT_mode[i](instances[i]);
-        if (status != fmi3OK)
-        {
-            printf("Failed to enter CT mode for %s. \n", names[i]);
-            return fmi3Fatal;
+        if (enter_CT_mode[i]) {
+            status = enter_CT_mode[i](instances[i]);
+            if (status != fmi3OK)
+            {
+                printf("Failed to enter CT mode for %s. \n", names[i]);
+                return fmi3Fatal;
+            }
         }
 
         printf("DONE. \n");
@@ -220,30 +230,30 @@ int main(int argc, char *argv[])
     // Instances
     fmi3Instance instances[N_INSTANCES] = {NULL}; // Remaining elements are implicitly NULL
 
-    char *names[N_INSTANCES] = {"plant", "controller"};
+    char* names[N_INSTANCES] = { "plant", "controller" };
 
     // Instance functions
     fmi3InstantiateModelExchangeTYPE *instantiate[N_INSTANCES] = {
-        Plant_fmi3InstantiateModelExchange,
+        NULL, //Plant_fmi3InstantiateModelExchange,
         Controller_fmi3InstantiateModelExchange};
     fmi3EnterInitializationModeTYPE *enterInit[N_INSTANCES] = {
-        Plant_fmi3EnterInitializationMode,
+        NULL, //Plant_fmi3EnterInitializationMode,
         Controller_fmi3EnterInitializationMode
     };
     fmi3ExitInitializationModeTYPE *exitInit[N_INSTANCES] = {
-        Plant_fmi3ExitInitializationMode,
+        NULL, //Plant_fmi3ExitInitializationMode,
         Controller_fmi3ExitInitializationMode
     };
     fmi3EnterConfigurationModeTYPE *enter_CT_mode[N_INSTANCES] = {
-        Plant_fmi3EnterConfigurationMode,
+        NULL, //Plant_fmi3EnterConfigurationMode,
         Controller_fmi3EnterConfigurationMode
     };
     fmi3TerminateTYPE *terminate[N_INSTANCES] = {
-        Plant_fmi3Terminate,
+        NULL, //Plant_fmi3Terminate,
         Controller_fmi3Terminate
     };
     fmi3FreeInstanceTYPE *freeInstance[N_INSTANCES] = {
-        Plant_fmi3FreeInstance,
+        NULL, //Plant_fmi3FreeInstance,
         Controller_fmi3FreeInstance
     };
 

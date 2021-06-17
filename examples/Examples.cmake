@@ -167,22 +167,23 @@ set_target_properties(scs_synchronous PROPERTIES
 
 # Synchronous Supervisory Control Example
 
-## Plant
-add_library(supervisory_plant STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c examples/SynchronousSupervisoryControl/submodels/Plant/model.c src/cosimulation.c)
-set_target_properties(supervisory_plant PROPERTIES FOLDER examples)
-target_compile_definitions(supervisory_plant PRIVATE FMI3_FUNCTION_PREFIX=Plant_)
-target_include_directories(supervisory_plant PRIVATE include examples/SynchronousSupervisoryControl/submodels/Plant)
-
 ## Controller
-add_library(supervisory_controller STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c examples/SynchronousSupervisoryControl/submodels/Controller/model.c src/cosimulation.c)
+add_library(supervisory_controller STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c src/cosimulation.c examples/SynchronousSupervisoryControl/submodels/Controller/model.c)
 set_target_properties(supervisory_controller PROPERTIES FOLDER examples)
 target_compile_definitions(supervisory_controller PRIVATE FMI3_FUNCTION_PREFIX=Controller_)
 target_include_directories(supervisory_controller PRIVATE include examples/SynchronousSupervisoryControl/submodels/Controller)
 
+## Plant
+add_library(supervisory_plant STATIC ${EXAMPLE_SOURCES} src/fmi3Functions.c src/cosimulation.c examples/SynchronousSupervisoryControl/submodels/Plant/model.c)
+set_target_properties(supervisory_plant PROPERTIES FOLDER examples)
+target_compile_definitions(supervisory_plant PRIVATE FMI3_FUNCTION_PREFIX=Plant_)
+target_include_directories(supervisory_plant PRIVATE include examples/SynchronousSupervisoryControl/submodels/Plant)
+
+
 ## ME Importer
 add_executable(supervisory_me ${EXAMPLE_SOURCES} examples/SynchronousSupervisoryControl/importers/me/synchronous_control_me.c)
 set_target_properties(supervisory_me PROPERTIES FOLDER examples)
-target_compile_definitions(supervisory_me PRIVATE DISABLE_PREFIX)
+# target_compile_definitions(supervisory_me PRIVATE DISABLE_PREFIX)
 target_include_directories(supervisory_me PRIVATE include examples)
 target_link_libraries(supervisory_me supervisory_plant supervisory_controller)
 set_target_properties(supervisory_me PROPERTIES
