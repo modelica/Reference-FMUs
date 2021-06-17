@@ -250,7 +250,7 @@ int main(int argc, char *argv[])
         Controller_fmi3EnterConfigurationMode
     };
     fmi3TerminateTYPE *terminate[N_INSTANCES] = {
-        NULL, //Plant_fmi3Terminate,
+        Plant_fmi3Terminate,
         Controller_fmi3Terminate
     };
     fmi3FreeInstanceTYPE *freeInstance[N_INSTANCES] = {
