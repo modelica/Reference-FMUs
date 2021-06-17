@@ -17,11 +17,11 @@
 #include "fmi3Functions.h"
 #undef FMI3_FUNCTION_PREFIX
 
-//#undef fmi3Functions_h
-//#undef FMI3_FUNCTION_PREFIX
-//#define FMI3_FUNCTION_PREFIX Plant_
-//#include "fmi3Functions.h"
-//#undef FMI3_FUNCTION_PREFIX
+#undef fmi3Functions_h
+#undef FMI3_FUNCTION_PREFIX
+#define FMI3_FUNCTION_PREFIX Plant_
+#include "fmi3Functions.h"
+#undef FMI3_FUNCTION_PREFIX
 
 #include "util.h"
 
@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
 
     // Instance functions
     fmi3InstantiateModelExchangeTYPE *instantiate[N_INSTANCES] = {
-        NULL, //Plant_fmi3InstantiateModelExchange,
+        Plant_fmi3InstantiateModelExchange,
         Controller_fmi3InstantiateModelExchange};
     fmi3EnterInitializationModeTYPE *enterInit[N_INSTANCES] = {
         NULL, //Plant_fmi3EnterInitializationMode,
@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
         Controller_fmi3Terminate
     };
     fmi3FreeInstanceTYPE *freeInstance[N_INSTANCES] = {
-        NULL, //Plant_fmi3FreeInstance,
+        Plant_fmi3FreeInstance,
         Controller_fmi3FreeInstance
     };
 

@@ -185,7 +185,7 @@ add_executable(supervisory_me ${EXAMPLE_SOURCES} examples/SynchronousSupervisory
 set_target_properties(supervisory_me PROPERTIES FOLDER examples)
 # target_compile_definitions(supervisory_me PRIVATE DISABLE_PREFIX)
 target_include_directories(supervisory_me PRIVATE include examples)
-# target_link_libraries(supervisory_me supervisory_plant supervisory_controller)
+target_link_libraries(supervisory_me supervisory_plant)
 target_link_libraries(supervisory_me supervisory_controller)
 set_target_properties(supervisory_me PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
