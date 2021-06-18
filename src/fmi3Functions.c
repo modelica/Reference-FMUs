@@ -30,6 +30,21 @@
 #endif
 #include "fmi3Functions.h"
 
+// Declaration of utility functions. These are prefixed to enable static linking.
+#define createModelInstance   fmi3FullName(createModelInstance)
+
+ModelInstance* createModelInstance(
+    loggerType cbLogger,
+    intermediateUpdateType intermediateUpdate,
+    void* componentEnvironment,
+    const char* instanceName,
+    const char* instantiationToken,
+    const char* resourceLocation,
+    bool loggingOn,
+    InterfaceType interfaceType,
+    bool returnEarly);
+
+
 #ifndef max
 #define max(a,b) ((a)>(b) ? (a) : (b))
 #endif
@@ -1127,4 +1142,115 @@ fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
     ASSERT_STATE(ActivateModelPartition)
 
     return (fmi3Status)activateModelPartition(S, clockReference, activationTime);
+}
+
+
+/***************************************************
+ Utility functions
+ ****************************************************/
+
+ // "stringification" macros
+#define xstr(s) str(s)
+#define str(s) #s
+
+
+ModelInstance* createModelInstance(
+    loggerType cbLogger,
+    intermediateUpdateType intermediateUpdate,
+    void* componentEnvironment,
+    const char* instanceName,
+    const char* instantiationToken,
+    const char* resourceLocation,
+    bool loggingOn,
+    InterfaceType interfaceType,
+    bool returnEarly) {
+
+    ModelInstance* comp = NULL;
+
+    if (!cbLogger) {
+        return NULL;
+    }
+
+    if (!instanceName || strlen(instanceName) == 0) {
+        cbLogger(componentEnvironment, "?", Error, "error", "Missing instance name.");
+        return NULL;
+    }
+
+    if (!instantiationToken || strlen(instantiationToken) == 0) {
+        cbLogger(componentEnvironment, instanceName, Error, "error", "Missing GUID.");
+        return NULL;
+    }
+
+    if (strcmp(instantiationToken, INSTANTIATION_TOKEN)) {
+        cbLogger(componentEnvironment, instanceName, Error, "error", "Wrong GUID.");
+        return NULL;
+    }
+
+    comp = (ModelInstance*)calloc(1, sizeof(ModelInstance));
+
+    if (comp) {
+
+        // set the callbacks
+        comp->componentEnvironment = componentEnvironment;
+        comp->logger = cbLogger;
+        comp->intermediateUpdate = intermediateUpdate;
+        comp->lockPreemtion = NULL;
+        comp->unlockPreemtion = NULL;
+
+        comp->instanceName = (char*)calloc(1 + strlen(instanceName), sizeof(char));
+
+        // resourceLocation is NULL for FMI 1.0 ME
+        if (resourceLocation) {
+            comp->resourceLocation = (char*)calloc(1 + strlen(resourceLocation), sizeof(char));
+            strcpy((char*)comp->resourceLocation, (char*)resourceLocation);
+        }
+        else {
+            comp->resourceLocation = NULL;
+        }
+
+        comp->status = OK;
+
+        comp->modelData = (ModelData*)calloc(1, sizeof(ModelData));
+
+        comp->logEvents = loggingOn;
+        comp->logErrors = true; // always log errors
+
+        comp->nSteps = 0;
+
+        comp->returnEarly = false;
+    }
+
+    if (!comp || !comp->modelData || !comp->instanceName) {
+        logError(comp, "Out of memory.");
+        return NULL;
+    }
+
+    logError(comp, "Instantiating %s with prefix " xstr(FMI3_FUNCTION_PREFIX), comp->instanceName);
+
+    comp->time = 0; // overwrite in fmi*SetupExperiment, fmi*SetTime
+    strcpy((char*)comp->instanceName, (char*)instanceName);
+    comp->type = interfaceType;
+
+    comp->state = Instantiated;
+    comp->isNewEventIteration = false;
+
+    comp->newDiscreteStatesNeeded = false;
+    comp->terminateSimulation = false;
+    comp->nominalsOfContinuousStatesChanged = false;
+    comp->valuesOfContinuousStatesChanged = false;
+    comp->nextEventTimeDefined = false;
+    comp->nextEventTime = 0;
+
+    setStartValues(comp); // to be implemented by the includer of this file
+    comp->isDirtyValues = true; // because we just called setStartValues
+
+#if NZ > 0
+    comp->z = calloc(sizeof(double), NZ);
+    comp->prez = calloc(sizeof(double), NZ);
+#else
+    comp->z = NULL;
+    comp->prez = NULL;
+#endif
+
+    return comp;
 }
