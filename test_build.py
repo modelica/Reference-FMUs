@@ -14,7 +14,7 @@ test_fmus_dir = os.path.dirname(__file__)
 
 models = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
 
-if os.environ['CMAKE_GENERATOR']:
+if 'CMAKE_GENERATOR' in os.environ:
     generator = os.environ['CMAKE_GENERATOR']
 else:
     if os.name == 'nt':
