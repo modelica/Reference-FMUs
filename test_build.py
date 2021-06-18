@@ -14,11 +14,14 @@ test_fmus_dir = os.path.dirname(__file__)
 
 models = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
 
-if os.name == 'nt':
-    generator = 'Visual Studio 15 2017 Win64'
+if os.environ['CMAKE_GENERATOR']:
+    generator = os.environ['CMAKE_GENERATOR']
 else:
-    generator = 'Unix Makefiles'
-
+    if os.name == 'nt':
+        generator = 'Visual Studio 15 2017 Win64'
+    else:
+        generator = 'Unix Makefiles'
+    
 
 def copy_to_cross_check(build_dir, model_names, fmi_version, fmi_types):
     if fmus_dir is None:
