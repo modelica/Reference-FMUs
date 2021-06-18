@@ -32,7 +32,7 @@
 #endif
 #include "fmi3Functions.h"
 
-// Internal functions that make up an FMI independent layer. 
+// Internal functions that make up an FMI independent layer.
 // These are prefixed to enable static linking.
 #define createModelInstance   fmi3FullName(createModelInstance)
 #define freeModelInstance   fmi3FullName(freeModelInstance)

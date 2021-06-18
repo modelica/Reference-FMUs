@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
 
     // Record initial outputs
     recordVariables(outputFile, instances, names, time);
-    
+
     // while (!plantD.terminateSimulation) {
 
     //     tNext = time + h;
