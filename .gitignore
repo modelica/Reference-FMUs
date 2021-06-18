@@ -11,3 +11,4 @@ fmus/
 *.fmu
 *.zip
 *_out.csv
+/venv/
