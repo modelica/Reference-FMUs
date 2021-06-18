@@ -75,7 +75,7 @@ fmi3Status recordVariables(FILE *outputFile, fmi3Instance instances[], char *nam
 {
     const fmi3ValueReference plant_vref[Plant_NX] = {Plant_X_ref};
     fmi3Float64 plant_vals[Plant_NX] = {0};
-    //Plant_fmi3GetFloat64(instances[PLANT_ID], plant_vref, Plant_NX, plant_vals, Plant_NX);
+    Plant_fmi3GetFloat64(instances[PLANT_ID], plant_vref, Plant_NX, plant_vals, Plant_NX);
 
     const fmi3ValueReference controller_vref[Controller_NDX + Controller_NU] = {Controller_XR_ref, Controller_UR_ref};
     fmi3Float64 controller_vals[Controller_NDX + Controller_NU] = {0.0, 0.0};
@@ -238,15 +238,15 @@ int main(int argc, char *argv[])
         Plant_fmi3InstantiateModelExchange,
         Controller_fmi3InstantiateModelExchange};
     fmi3EnterInitializationModeTYPE *enterInit[N_INSTANCES] = {
-        NULL, //Plant_fmi3EnterInitializationMode,
+        Plant_fmi3EnterInitializationMode,
         Controller_fmi3EnterInitializationMode
     };
     fmi3ExitInitializationModeTYPE *exitInit[N_INSTANCES] = {
-        NULL, //Plant_fmi3ExitInitializationMode,
+        Plant_fmi3ExitInitializationMode,
         Controller_fmi3ExitInitializationMode
     };
     fmi3EnterConfigurationModeTYPE *enter_CT_mode[N_INSTANCES] = {
-        NULL, //Plant_fmi3EnterConfigurationMode,
+        Plant_fmi3EnterConfigurationMode,
         Controller_fmi3EnterConfigurationMode
     };
     fmi3TerminateTYPE *terminate[N_INSTANCES] = {

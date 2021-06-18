@@ -37,7 +37,6 @@ void calculateValues(ModelInstance *comp) {
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
-    logError(comp, "getFloat64 on Plant");
     switch (vr) {
         case vr_x:
             value[(*index)++] = M(x);
