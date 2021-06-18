@@ -12,6 +12,8 @@
 
 #define MAX_PATH_LENGTH 4096
 
+void logError(ModelInstance *comp, const char *message, ...);
+
 void setStartValues(ModelInstance *comp) {
     M(y) = 0;
 }

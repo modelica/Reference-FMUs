@@ -13,6 +13,7 @@
 #define NZ 0
 
 #define SET_FLOAT64
+#define GET_FLOAT64
 
 #define GET_PARTIAL_DERIVATIVE
 

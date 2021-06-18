@@ -2,6 +2,30 @@
 #include "model.h"
 
 
+// C-code FMUs have functions names prefixed with MODEL_IDENTIFIER_.
+// Define DISABLE_PREFIX to build a binary FMU.
+#if !defined(DISABLE_PREFIX) && !defined(FMI3_FUNCTION_PREFIX)
+#define pasteA(a,b)          a ## b
+#define pasteB(a,b)          pasteA(a,b)
+#define FMI3_FUNCTION_PREFIX pasteB(MODEL_IDENTIFIER, _)
+#define fmi3FullName(name) pasteB(FMI3_FUNCTION_PREFIX, name)
+#else
+  #define fmi3FullName(name) name
+#endif
+
+#define setStartValues   fmi3FullName(setStartValues)
+#define calculateValues   fmi3FullName(calculateValues)
+#define getFloat64   fmi3FullName(getFloat64)
+#define setFloat64   fmi3FullName(setFloat64)
+#define getContinuousStates   fmi3FullName(getContinuousStates)
+#define setContinuousStates   fmi3FullName(setContinuousStates)
+#define getDerivatives   fmi3FullName(getDerivatives)
+#define getPartialDerivative   fmi3FullName(getPartialDerivative)
+#define eventUpdate   fmi3FullName(eventUpdate)
+#define logError   fmi3FullName(logError)
+
+void logError(ModelInstance *comp, const char *message, ...);
+
 void setStartValues(ModelInstance *comp) {
     M(x0) = 2;
     M(x1) = 0;

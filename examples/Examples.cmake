@@ -11,7 +11,6 @@ set(EXAMPLE_SOURCES
 set(MODEL_SOURCES
   VanDerPol/sources/fmi3Functions.c
   VanDerPol/sources/model.c
-  VanDerPol/sources/cosimulation.c
 )
 
 if (MSVC)
@@ -23,9 +22,14 @@ else ()
 endif()
 
 # import_static_library
-add_executable(import_static_library ${EXAMPLE_SOURCES} src/fmi3Functions.c VanDerPol/model.c src/cosimulation.c examples/import_static_library.c)
+add_library(vanderpol_lib STATIC src/fmi3Functions.c VanDerPol/model.c)
+set_target_properties(vanderpol_lib PROPERTIES FOLDER examples)
+target_include_directories(vanderpol_lib PRIVATE include VanDerPol)
+
+add_executable(import_static_library examples/import_static_library.c)
 set_target_properties (import_static_library PROPERTIES FOLDER examples)
-target_include_directories(import_static_library PRIVATE include VanDerPol)
+target_include_directories(import_static_library PRIVATE include examples)
+target_link_libraries(import_static_library vanderpol_lib)
 set_target_properties(import_static_library PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
@@ -33,8 +37,9 @@ set_target_properties(import_static_library PROPERTIES
 )
 
 # import_shared_library
-add_executable(import_shared_library ${EXAMPLE_SOURCES} src/fmi3Functions.c VanDerPol/model.c src/cosimulation.c examples/import_shared_library.c)
+add_executable(import_shared_library ${EXAMPLE_SOURCES} examples/import_shared_library.c)
 set_target_properties (import_shared_library PROPERTIES FOLDER examples)
+target_compile_definitions(import_shared_library PRIVATE DISABLE_PREFIX)
 target_include_directories(import_shared_library PRIVATE include VanDerPol)
 set_target_properties(import_shared_library PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
@@ -143,7 +148,7 @@ foreach (MODEL_NAME BouncingBall Stair)
 endforeach(MODEL_NAME)
 
 # Connected CS
-add_executable (connected_cs ${EXAMPLE_SOURCES} src/fmi3Functions.c Feedthrough/model.c src/cosimulation.c examples/FMU.h examples/FMU.c examples/connected_cs.c examples/Feedthrough.c)
+add_executable (connected_cs ${EXAMPLE_SOURCES} src/fmi3Functions.c Feedthrough/model.c examples/FMU.h examples/FMU.c examples/connected_cs.c examples/Feedthrough.c)
 set_target_properties(connected_cs PROPERTIES FOLDER examples)
 target_include_directories(connected_cs PRIVATE include Feedthrough)
 target_compile_definitions(connected_cs PRIVATE DISABLE_PREFIX)
@@ -168,21 +173,18 @@ set_target_properties(scs_synchronous PROPERTIES
 # Synchronous Supervisory Control Example
 
 ## Controller
-add_library(supervisory_controller STATIC src/fmi3Functions.c src/cosimulation.c examples/SynchronousSupervisoryControl/submodels/Controller/model.c)
+add_library(supervisory_controller STATIC src/fmi3Functions.c examples/SynchronousSupervisoryControl/submodels/Controller/model.c)
 set_target_properties(supervisory_controller PROPERTIES FOLDER examples)
-target_compile_definitions(supervisory_controller PRIVATE FMI3_FUNCTION_PREFIX=Controller_)
 target_include_directories(supervisory_controller PRIVATE include examples/SynchronousSupervisoryControl/submodels/Controller)
 
 ## Plant
-add_library(supervisory_plant STATIC src/fmi3Functions.c src/cosimulation.c examples/SynchronousSupervisoryControl/submodels/Plant/model.c)
+add_library(supervisory_plant STATIC src/fmi3Functions.c examples/SynchronousSupervisoryControl/submodels/Plant/model.c)
 set_target_properties(supervisory_plant PROPERTIES FOLDER examples)
-target_compile_definitions(supervisory_plant PRIVATE FMI3_FUNCTION_PREFIX=Plant_)
 target_include_directories(supervisory_plant PRIVATE include examples/SynchronousSupervisoryControl/submodels/Plant)
 
 ## ME Importer
 add_executable(supervisory_me examples/SynchronousSupervisoryControl/importers/me/synchronous_control_me.c)
 set_target_properties(supervisory_me PROPERTIES FOLDER examples)
-# target_compile_definitions(supervisory_me PRIVATE DISABLE_PREFIX)
 target_include_directories(supervisory_me PRIVATE include examples)
 target_link_libraries(supervisory_me supervisory_plant)
 target_link_libraries(supervisory_me supervisory_controller)

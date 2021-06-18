@@ -13,6 +13,7 @@
 #define NZ 0
 
 #define SET_FLOAT64
+#define GET_FLOAT64
 #define EVENT_UPDATE
 
 #define FIXED_SOLVER_STEP 0.1

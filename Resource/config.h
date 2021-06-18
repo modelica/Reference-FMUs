@@ -13,6 +13,7 @@
 #define NZ 0
 
 #define GET_INT32
+#define GET_FLOAT64
 
 #define FIXED_SOLVER_STEP 1
 #define DEFAULT_STOP_TIME 1

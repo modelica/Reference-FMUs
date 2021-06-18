@@ -17,6 +17,7 @@
 #define NZ 0
 
 #define GET_INT32
+#define GET_FLOAT64
 #define GET_BOOLEAN
 #define GET_STRING
 #define GET_BINARY

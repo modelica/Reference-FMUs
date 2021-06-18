@@ -19,6 +19,7 @@
 
 #define EVENT_UPDATE
 #define ACTIVATE_CLOCK
+#define GET_FLOAT64
 #define GET_INT32
 #define SET_INT32
 #define GET_CLOCK

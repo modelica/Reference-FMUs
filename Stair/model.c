@@ -3,6 +3,7 @@
 #include "config.h"
 #include "model.h"
 
+void logError(ModelInstance *comp, const char *message, ...);
 
 void setStartValues(ModelInstance *comp) {
     M(counter) = 1;

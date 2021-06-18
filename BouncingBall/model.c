@@ -2,6 +2,8 @@
 #include "config.h"
 #include "model.h"
 
+void logError(ModelInstance *comp, const char *message, ...);
+
 // shorthand to access the variables
 #define M(v) (comp->modelData->v)
 

@@ -66,7 +66,6 @@ if (${FMI_VERSION} LESS 3)
 
 #include \"fmi${FMI_VERSION}Functions.c\"
 #include \"model.c\"
-#include \"cosimulation.c\"
 ")
 endif ()
 
@@ -108,7 +107,6 @@ endif()
 SET(SOURCES
   ${MODEL_NAME}/model.c
   src/fmi${FMI_VERSION}Functions.c
-  src/cosimulation.c
 )
 
 add_library(${TARGET_NAME} SHARED
@@ -119,9 +117,7 @@ add_library(${TARGET_NAME} SHARED
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist)
 
-target_compile_definitions(${TARGET_NAME} PRIVATE
-  DISABLE_PREFIX
-)
+target_compile_definitions(${TARGET_NAME} PRIVATE DISABLE_PREFIX)
 
 if (${FMI_VERSION} EQUAL 1 AND "${FMI_TYPE}" STREQUAL CS)
   target_compile_definitions(${TARGET_NAME} PRIVATE FMI_COSIMULATION)
@@ -199,7 +195,7 @@ foreach (SOURCE_FILE model.h cosimulation.h)
 endforeach(SOURCE_FILE)
 
 # common sources
-foreach (SOURCE_FILE fmi${FMI_VERSION}Functions.c cosimulation.c)
+foreach (SOURCE_FILE fmi${FMI_VERSION}Functions.c)
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/src/${SOURCE_FILE}"
     "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"

@@ -7,6 +7,7 @@
 #define strdup _strdup
 #endif
 
+void logError(ModelInstance *comp, const char *message, ...);
 
 const char *STRING_START = "Set me!";
 const char *BINARY_START = "Set me, too!";

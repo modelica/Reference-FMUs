@@ -149,58 +149,6 @@ typedef struct {
 
 } ModelInstance;
 
-ModelInstance *createModelInstance(
-    loggerType logger,
-    intermediateUpdateType intermediateUpdate,
-    void *componentEnvironment,
-    const char *instanceName,
-    const char *instantiationToken,
-    const char *resourceLocation,
-    bool loggingOn,
-    InterfaceType interfaceType,
-    bool returnEarly);
-void freeModelInstance(ModelInstance *comp);
-
-void setStartValues(ModelInstance *comp);
-void calculateValues(ModelInstance *comp);
-
-Status getFloat64 (ModelInstance* comp, ValueReference vr, double      *value, size_t *index);
-Status getInt32   (ModelInstance* comp, ValueReference vr, int32_t     *value, size_t *index);
-Status getUInt16  (ModelInstance* comp, ValueReference vr, uint16_t    *value, size_t *index);
-Status getBoolean (ModelInstance* comp, ValueReference vr, bool        *value, size_t *index);
-Status getString  (ModelInstance* comp, ValueReference vr, const char **value, size_t *index);
-Status getBinary  (ModelInstance* comp, ValueReference vr, size_t size[], const char* value[], size_t *index);
-
-Status setFloat64 (ModelInstance* comp, ValueReference vr, const double      *value, size_t *index);
-Status setUInt16  (ModelInstance* comp, ValueReference vr, const uint16_t    *value, size_t *index);
-Status setInt32   (ModelInstance* comp, ValueReference vr, const int32_t     *value, size_t *index);
-Status setBoolean (ModelInstance* comp, ValueReference vr, const bool        *value, size_t *index);
-Status setString  (ModelInstance* comp, ValueReference vr, const char* const *value, size_t *index);
-Status setBinary  (ModelInstance* comp, ValueReference vr, const size_t size[], const char *const value[], size_t *index);
-
-Status activateClock(ModelInstance* comp, ValueReference vr);
-Status getClock(ModelInstance* comp, ValueReference vr, bool* value);
-
-Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier);
-
-Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime);
-
-void getContinuousStates(ModelInstance *comp, double x[], size_t nx);
-void setContinuousStates(ModelInstance *comp, const double x[], size_t nx);
-void getDerivatives(ModelInstance *comp, double dx[], size_t nx);
-Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative);
-void getEventIndicators(ModelInstance *comp, double z[], size_t nz);
-void eventUpdate(ModelInstance *comp);
-//void updateEventTime(ModelInstance *comp);
-
-bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected);
-bool invalidState(ModelInstance *comp, const char *f, int statesExpected);
-bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void *p);
-void logError(ModelInstance *comp, const char *message, ...);
-Status setDebugLogging(ModelInstance *comp, bool loggingOn, size_t nCategories, const char * const categories[]);
-void logEvent(ModelInstance *comp, const char *message, ...);
-void logError(ModelInstance *comp, const char *message, ...);
-
 // shorthand to access the variables
 #define M(v) (comp->modelData->v)
 
