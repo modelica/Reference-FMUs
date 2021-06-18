@@ -171,24 +171,22 @@ set_target_properties(scs_synchronous PROPERTIES
 )
 
 # Synchronous Supervisory Control Example
+set (SUPERVISOR_FMUS Controller Plant)
 
-## Controller
-add_library(supervisory_controller STATIC src/fmi3Functions.c src/model_common.c examples/SynchronousSupervisoryControl/submodels/Controller/model.c)
-set_target_properties(supervisory_controller PROPERTIES FOLDER examples)
-target_include_directories(supervisory_controller PRIVATE include examples/SynchronousSupervisoryControl/submodels/Controller)
-
-## Plant
-add_library(supervisory_plant STATIC src/fmi3Functions.c src/model_common.c examples/SynchronousSupervisoryControl/submodels/Plant/model.c)
-set_target_properties(supervisory_plant PROPERTIES FOLDER examples)
-target_include_directories(supervisory_plant PRIVATE include examples/SynchronousSupervisoryControl/submodels/Plant)
+foreach (SUBMODEL ${SUPERVISOR_FMUS})
+    add_library(Supervisory_${SUBMODEL} STATIC src/fmi3Functions.c src/model_common.c examples/SynchronousSupervisoryControl/submodels/${SUBMODEL}/model.c)
+    set_target_properties(Supervisory_${SUBMODEL} PROPERTIES FOLDER examples)
+    target_include_directories(Supervisory_${SUBMODEL} PRIVATE include examples/SynchronousSupervisoryControl/submodels/${SUBMODEL})
+endforeach(SUBMODEL)
 
 ## ME Importer
-add_executable(supervisory_me examples/SynchronousSupervisoryControl/importers/me/synchronous_control_me.c)
-set_target_properties(supervisory_me PROPERTIES FOLDER examples)
-target_include_directories(supervisory_me PRIVATE include examples)
-target_link_libraries(supervisory_me supervisory_plant)
-target_link_libraries(supervisory_me supervisory_controller)
-set_target_properties(supervisory_me PROPERTIES
+add_executable(Supervisory_me examples/SynchronousSupervisoryControl/importers/me/synchronous_control_me.c)
+set_target_properties(Supervisory_me PROPERTIES FOLDER examples)
+target_include_directories(Supervisory_me PRIVATE include examples)
+foreach (SUBMODEL ${SUPERVISOR_FMUS})
+    target_link_libraries(Supervisory_me Supervisory_${SUBMODEL})
+endforeach(SUBMODEL)
+set_target_properties(Supervisory_me PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         temp
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
