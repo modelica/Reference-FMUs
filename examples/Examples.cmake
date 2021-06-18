@@ -22,7 +22,7 @@ else ()
 endif()
 
 # import_static_library
-add_library(vanderpol_lib STATIC src/fmi3Functions.c VanDerPol/model.c)
+add_library(vanderpol_lib STATIC src/fmi3Functions.c src/model_common.c VanDerPol/model.c)
 set_target_properties(vanderpol_lib PROPERTIES FOLDER examples)
 target_include_directories(vanderpol_lib PRIVATE include VanDerPol)
 
@@ -148,7 +148,7 @@ foreach (MODEL_NAME BouncingBall Stair)
 endforeach(MODEL_NAME)
 
 # Connected CS
-add_executable (connected_cs ${EXAMPLE_SOURCES} src/fmi3Functions.c Feedthrough/model.c examples/FMU.h examples/FMU.c examples/connected_cs.c examples/Feedthrough.c)
+add_executable (connected_cs ${EXAMPLE_SOURCES} src/fmi3Functions.c src/model_common.c Feedthrough/model.c examples/FMU.h examples/FMU.c examples/connected_cs.c examples/Feedthrough.c)
 set_target_properties(connected_cs PROPERTIES FOLDER examples)
 target_include_directories(connected_cs PRIVATE include Feedthrough)
 target_compile_definitions(connected_cs PRIVATE DISABLE_PREFIX)
@@ -173,12 +173,12 @@ set_target_properties(scs_synchronous PROPERTIES
 # Synchronous Supervisory Control Example
 
 ## Controller
-add_library(supervisory_controller STATIC src/fmi3Functions.c examples/SynchronousSupervisoryControl/submodels/Controller/model.c)
+add_library(supervisory_controller STATIC src/fmi3Functions.c src/model_common.c examples/SynchronousSupervisoryControl/submodels/Controller/model.c)
 set_target_properties(supervisory_controller PROPERTIES FOLDER examples)
 target_include_directories(supervisory_controller PRIVATE include examples/SynchronousSupervisoryControl/submodels/Controller)
 
 ## Plant
-add_library(supervisory_plant STATIC src/fmi3Functions.c examples/SynchronousSupervisoryControl/submodels/Plant/model.c)
+add_library(supervisory_plant STATIC src/fmi3Functions.c src/model_common.c examples/SynchronousSupervisoryControl/submodels/Plant/model.c)
 set_target_properties(supervisory_plant PROPERTIES FOLDER examples)
 target_include_directories(supervisory_plant PRIVATE include examples/SynchronousSupervisoryControl/submodels/Plant)
 

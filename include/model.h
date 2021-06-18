@@ -12,6 +12,8 @@
 #include <stdint.h>
 
 #include "config.h"
+#include "namespace.h"
+#include "fmi3Functions.h"
 
 #if FMI_VERSION == 1
 
@@ -198,5 +200,85 @@ for (int i = 0; i < nvr; i++) { \
     if (status > Warning) return (FMI_STATUS)status; \
 } \
 return (FMI_STATUS)status;
+
+
+// Internal functions that make up an FMI independent layer.
+// These are prefixed to enable static linking.
+#define createModelInstance   fmi3FullName(createModelInstance)
+#define freeModelInstance   fmi3FullName(freeModelInstance)
+#define invalidNumber   fmi3FullName(invalidNumber)
+#define invalidState   fmi3FullName(invalidState)
+#define nullPointer   fmi3FullName(nullPointer)
+#define setDebugLogging   fmi3FullName(setDebugLogging)
+#define logMessage   fmi3FullName(logMessage)
+#define logEvent   fmi3FullName(logEvent)
+#define logError   fmi3FullName(logError)
+#define getEventIndicators   fmi3FullName(getEventIndicators)
+#define getUInt16   fmi3FullName(getUInt16)
+#define getFloat64   fmi3FullName(getFloat64)
+#define getInt32   fmi3FullName(getInt32)
+#define getBoolean   fmi3FullName(getBoolean)
+#define getString   fmi3FullName(getString)
+#define getBinary   fmi3FullName(getBinary)
+#define setFloat64   fmi3FullName(setFloat64)
+#define setUInt16   fmi3FullName(setUInt16)
+#define setInt32   fmi3FullName(setInt32)
+#define setBoolean   fmi3FullName(setBoolean)
+#define setString   fmi3FullName(setString)
+#define setBinary   fmi3FullName(setBinary)
+#define activateClock   fmi3FullName(activateClock)
+#define getClock   fmi3FullName(getClock)
+#define getInterval   fmi3FullName(getInterval)
+#define activateModelPartition   fmi3FullName(activateModelPartition)
+#define getContinuousStates   fmi3FullName(getContinuousStates)
+#define setContinuousStates   fmi3FullName(setContinuousStates)
+#define getDerivatives   fmi3FullName(getDerivatives)
+#define getPartialDerivative   fmi3FullName(getPartialDerivative)
+#define doStep   fmi3FullName(doStep)
+
+// Declarations of internal functions
+ModelInstance* createModelInstance( loggerType cbLogger, intermediateUpdateType intermediateUpdate, void* componentEnvironment, const char* instanceName, const char* instantiationToken, const char* resourceLocation, bool loggingOn, InterfaceType interfaceType, bool returnEarly);
+void freeModelInstance(ModelInstance *comp);
+bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected);
+bool invalidState(ModelInstance *comp, const char *f, int statesExpected);
+bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void *p);
+Status setDebugLogging(ModelInstance *comp, bool loggingOn, size_t nCategories, const char * const categories[]);
+static void logMessage(ModelInstance *comp, int status, const char *category, const char *message, va_list args);
+void logEvent(ModelInstance *comp, const char *message, ...);
+void logError(ModelInstance *comp, const char *message, ...);
+void getEventIndicators(ModelInstance *comp, double z[], size_t nz);
+Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index);
+Status getUInt16(ModelInstance* comp, ValueReference vr, uint16_t *value, size_t *index);
+Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index);
+Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *index);
+Status getString(ModelInstance* comp, ValueReference vr, const char **value, size_t *index);
+Status getBinary(ModelInstance* comp, ValueReference vr, size_t size[], const char *value[], size_t *index);
+Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index);
+Status setUInt16(ModelInstance* comp, ValueReference vr, const uint16_t *value, size_t *index);
+Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t *index);
+Status setBoolean(ModelInstance* comp, ValueReference vr, const bool *value, size_t *index);
+Status setString(ModelInstance* comp, ValueReference vr, const char *const *value, size_t *index);
+Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], const char *const value[], size_t *index);
+Status activateClock(ModelInstance* comp, ValueReference vr);
+Status getClock(ModelInstance* comp, ValueReference vr, bool* value);
+Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier);
+Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime);
+void getContinuousStates(ModelInstance *comp, double x[], size_t nx);
+void setContinuousStates(ModelInstance *comp, const double x[], size_t nx);
+void getDerivatives(ModelInstance *comp, double dx[], size_t nx);
+Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative);
+Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn, double* lastSuccessfulTime);
+
+
+// Functions to be implemented by the includer of this file:
+#define setStartValues   fmi3FullName(setStartValues)
+#define calculateValues   fmi3FullName(calculateValues)
+#define eventUpdate   fmi3FullName(eventUpdate)
+
+void setStartValues(ModelInstance *comp);
+void calculateValues(ModelInstance *comp);
+void eventUpdate(ModelInstance *comp);
+
+
 
 #endif  /* model_h */

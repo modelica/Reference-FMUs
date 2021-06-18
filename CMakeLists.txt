@@ -107,6 +107,7 @@ endif()
 SET(SOURCES
   ${MODEL_NAME}/model.c
   src/fmi${FMI_VERSION}Functions.c
+  src/model_common.c
 )
 
 add_library(${TARGET_NAME} SHARED
