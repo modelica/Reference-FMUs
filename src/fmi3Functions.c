@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "model.h"
-#include "cosimulation.h"
 
 #define FMI_STATUS fmi3Status
 

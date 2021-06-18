@@ -21,7 +21,6 @@ A set of hand-coded FMUs for development, testing and debugging of the [Function
 `include`
 - `fmi{|2|3}Functions.h` - FMI header files
 - `model.h` - generic model interface
-- `cosimulation.h` - generic co-simulation interface
 
 `src`
 - `fmi{1|2|3}Functions.c` - FMI implementations
