@@ -15,14 +15,15 @@
 #include <assert.h>
 
 #include "config.h"
-#include "model.h"
-
+#include "namespace.h"
 
 #ifdef FMI_COSIMULATION
 #include "fmiFunctions.h"
 #else
 #include "fmiModelFunctions.h"
 #endif
+
+#include "model.h"
 
 #define FMI_STATUS fmiStatus
 

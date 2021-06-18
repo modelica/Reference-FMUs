@@ -7,7 +7,6 @@
 
 #include "config.h"
 #include "namespace.h"
-#include "fmi3Functions.h"
 #include "model.h"
 
 

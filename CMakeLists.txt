@@ -66,6 +66,7 @@ if (${FMI_VERSION} LESS 3)
 
 #include \"fmi${FMI_VERSION}Functions.c\"
 #include \"model.c\"
+#include \"model_common.c\"
 ")
 endif ()
 
@@ -86,6 +87,7 @@ set(TARGET_NAME ${MODEL_NAME})
 SET(HEADERS
   ${MODEL_NAME}/config.h
   include/model.h
+  include/namespace.h
 )
 
 if (${FMI_VERSION} EQUAL 2)
@@ -188,7 +190,7 @@ add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E 
 )
 
 # common headers
-foreach (SOURCE_FILE model.h)
+foreach (SOURCE_FILE model.h namespace.h)
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/include/${SOURCE_FILE}"
     "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"
@@ -196,7 +198,7 @@ foreach (SOURCE_FILE model.h)
 endforeach(SOURCE_FILE)
 
 # common sources
-foreach (SOURCE_FILE fmi${FMI_VERSION}Functions.c)
+foreach (SOURCE_FILE fmi${FMI_VERSION}Functions.c model_common.c)
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/src/${SOURCE_FILE}"
     "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"

@@ -15,17 +15,9 @@
 #include <assert.h>
 
 #include "config.h"
-#include "model.h"
-
-
-// C-code FMUs have functions names prefixed with MODEL_IDENTIFIER_.
-// Define DISABLE_PREFIX to build a binary FMU.
-#ifndef DISABLE_PREFIX
-#define pasteA(a,b)     a ## b
-#define pasteB(a,b)    pasteA(a,b)
-#define FMI2_FUNCTION_PREFIX pasteB(MODEL_IDENTIFIER, _)
-#endif
+#include "namespace.h"
 #include "fmi2Functions.h"
+#include "model.h"
 
 #define FMI_STATUS fmi2Status
 
