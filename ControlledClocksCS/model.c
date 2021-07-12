@@ -24,16 +24,16 @@ void calculateValues(ModelInstance *comp) {
 }
 
 void eventUpdate(ModelInstance *comp) {
-    if (M(startTask1)==true)	global1_localcopy[0] = global1+1; // copy in and compute of Task1
-    if (M(endTask1)==true)	M(output1) = global1 = global1_localcopy[0]; // copy out of Task1
-    if (M(startTask2)==true)	global1_localcopy[1] = global1+5;   // copy in and compute of Task2
-    if (M(endTask2)==true)	M(output1) = global1 = global1_localcopy[1];  // copy out of Task2  
-    if (M(startTask3)==true)	global2_localcopy[2] = global2+1;    // copy in and compute of Task3
-    if (M(endTask3)==true)	M(output2) = global2 = global2_localcopy[2];  // copy out of Task3    
-    if (M(startTask4)==true)	global1_localcopy[3] = global1+3;   // copy in and compute of Task4
-    if (M(endTask4)==true)	M(output1) = global1 = global1_localcopy[3]; // copy out of Task4 
-    if (M(startTask5)==true)	global2_localcopy[4] = global2+3; // copy in and compute of Task5
-    if (M(endTask5)==true)	M(output2) = global2 = global2_localcopy[4]; // copy out of Task5
+    if (M(startTask1)==true)    global1_localcopy[0] = global1+1; // copy in and compute of Task1
+    if (M(endTask1)==true)    M(output1) = global1 = global1_localcopy[0]; // copy out of Task1
+    if (M(startTask2)==true)    global1_localcopy[1] = global1+5;  // copy in and compute of Task2
+    if (M(endTask2)==true)    M(output1) = global1 = global1_localcopy[1];  // copy out of Task2
+    if (M(startTask3)==true)    global2_localcopy[2] = global2+1;  // copy in and compute of Task3
+    if (M(endTask3)==true)    M(output2) = global2 = global2_localcopy[2];  // copy out of Task3
+    if (M(startTask4)==true)    global1_localcopy[3] = global1+3; // copy in and compute of Task4
+    if (M(endTask4)==true)    M(output1) = global1 = global1_localcopy[3]; // copy out of Task4
+    if (M(startTask5)==true)    global2_localcopy[4] = global2+3; // copy in and compute of Task5
+    if (M(endTask5)==true)    M(output2) = global2 = global2_localcopy[4]; // copy out of Task5
 
     M(startTask1)=false;
     M(endTask1)=false;

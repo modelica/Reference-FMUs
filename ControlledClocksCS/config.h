@@ -50,7 +50,7 @@ typedef struct {
     _Bool endTask5;
 
     int output1;
-    int output2;	
+    int output2;
 
 } ModelData;
 
