@@ -33,7 +33,7 @@
   <Clock name="endTask4" valueReference="1008" causality="input" interval="triggered" start="0"/>
   <Clock name="startTask5" valueReference="1009" causality="input" interval="triggered" start="0"/>
   <Clock name="endTask5" valueReference="1010" causality="input" interval="triggered" start="0"/>
-  
+
 
   <Int32 name="output1" valueReference="2003" causality="output"  />
   <Int32 name="output2" valueReference="2004" causality="output"  />

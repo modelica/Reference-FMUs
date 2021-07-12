@@ -25,26 +25,26 @@ static void activateModelPartitionTask1End(ModelInstance* comp, double time) {
 }
 
  static void activateModelPartitionTask2Start(ModelInstance *comp, double time) {
-	global1_localcopy[TASK2] = global1;  // copy-in
-	global1_localcopy[TASK2] = global1_localcopy[TASK2] + 5;  // compute
+    global1_localcopy[TASK2] = global1;  // copy-in
+    global1_localcopy[TASK2] = global1_localcopy[TASK2] + 5;  // compute
 }
 
 static void activateModelPartitionTask2End(ModelInstance *comp, double time) {
-	M(output1) = global1 = global1_localcopy[TASK2];  // copy-out
+    M(output1) = global1 = global1_localcopy[TASK2];  // copy-out
 }
 
 static void activateModelPartitionTask3Start(ModelInstance *comp, double time) {
-	global2_localcopy[TASK3] = global2;  // copy-in
-	global2_localcopy[TASK3] = global2_localcopy[TASK3] + 1;  // compute
+    global2_localcopy[TASK3] = global2;  // copy-in
+    global2_localcopy[TASK3] = global2_localcopy[TASK3] + 1;  // compute
 }
 
 static void activateModelPartitionTask3End(ModelInstance *comp, double time) {
-	M(output2) = global2 = global2_localcopy[TASK3];  // copy-out
+    M(output2) = global2 = global2_localcopy[TASK3];  // copy-out
 }
 
 static void activateModelPartitionTask4Start(ModelInstance *comp, double time) {
-	global1_localcopy[TASK4] = global1;  // copy-in
-	global1_localcopy[TASK4] = global1_localcopy[TASK4] + 3;  // compute
+    global1_localcopy[TASK4] = global1;  // copy-in
+    global1_localcopy[TASK4] = global1_localcopy[TASK4] + 3;  // compute
 }
 
 static void activateModelPartitionTask4End(ModelInstance *comp, double time) {
@@ -61,8 +61,8 @@ static void activateModelPartitionTask5End(ModelInstance *comp, double time) {
 }
 
 void setStartValues(ModelInstance *comp) {
-	global1 = 0;
-	global2 = 0;
+    global1 = 0;
+    global2 = 0;
 }
 
 void calculateValues(ModelInstance *comp) {
@@ -92,7 +92,7 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *inde
 }
 
 Status getClock(ModelInstance* comp, ValueReference vr, int* value) {
-	return OK;
+    return OK;
 }
 
 Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime) {
@@ -106,7 +106,7 @@ Status activateModelPartition(ModelInstance* comp, ValueReference vr, double act
         case vr_startTask2:
             activateModelPartitionTask2Start(comp, activationTime);
             return OK;
-		case vr_endTask2:
+        case vr_endTask2:
             activateModelPartitionTask2End(comp, activationTime);
             return OK;
         case vr_startTask3:
@@ -115,7 +115,7 @@ Status activateModelPartition(ModelInstance* comp, ValueReference vr, double act
         case vr_endTask3:
             activateModelPartitionTask3End(comp, activationTime);
             return OK;
-		case vr_startTask4:
+        case vr_startTask4:
             activateModelPartitionTask4Start(comp, activationTime);
             return OK;
         case vr_endTask4:
@@ -124,7 +124,7 @@ Status activateModelPartition(ModelInstance* comp, ValueReference vr, double act
         case vr_startTask5:
             activateModelPartitionTask5Start(comp, activationTime);
             return OK;
-		case vr_endTask5:
+        case vr_endTask5:
             activateModelPartitionTask5End(comp, activationTime);
             return OK;
         default:

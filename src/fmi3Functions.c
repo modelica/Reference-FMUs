@@ -831,7 +831,7 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
 
     for (size_t i = 0; i < nValueReferences; i++) {
         if (values[i]) {
-			  Status s = setClock(instance,  valueReferences[i]);
+            Status s = setClock(instance,  valueReferences[i]);
             status = max(status, s);
             if (status > Warning) return (fmi3Status)status;
         }

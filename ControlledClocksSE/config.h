@@ -29,21 +29,21 @@ typedef enum {
     vr_startTask1 = 1001,
     vr_endTask1 = 1002,
     vr_startTask2 = 1003,
-	vr_endTask2 = 1004,
+    vr_endTask2 = 1004,
     vr_startTask3 = 1005,
     vr_endTask3 = 1006,
-	vr_startTask4 = 1007,
+    vr_startTask4 = 1007,
     vr_endTask4 = 1008,
     vr_startTask5 = 1009,
-	vr_endTask5 = 1010,
-	vr_output1 = 2003,
-	vr_output2 = 2004,
+    vr_endTask5 = 1010,
+    vr_output1 = 2003,
+    vr_output2 = 2004,
 } ValueReference;
 
 typedef struct {
-	int output1;
+    int output1;
     int output2;
-    
+
 } ModelData;
 
 

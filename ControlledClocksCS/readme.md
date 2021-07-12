@@ -10,6 +10,6 @@ fmi3DoStep() is used only to advance time, it does not trigger any calculations.
 
 For an implementation of the same functionality using the FMI for Scheduled Execution, see the ControlledClocksSE FMU.
 
-The following plot visualizes the timing-accurate simulation results as annotation of the input trace. 
+The following plot visualizes the timing-accurate simulation results as annotation of the input trace.
 
 ![alt text](result.png "Reference Output")

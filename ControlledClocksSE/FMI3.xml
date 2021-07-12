@@ -35,7 +35,7 @@
   <ClockedState valueReference="1006" dependencies="2004"/>
   <ClockedState valueReference="1008" dependencies="2003"/>
   <ClockedState valueReference="1010" dependencies="2004"/>
-  
+
 </ModelStructure>
 
 </fmiModelDescription>

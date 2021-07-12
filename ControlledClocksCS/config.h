@@ -38,18 +38,18 @@ typedef enum {
 
 typedef struct {
 
-	_Bool startTask1;
-	_Bool endTask1;
-	_Bool startTask2;
-	_Bool endTask2;
-	_Bool startTask3;
-	_Bool endTask3;
-	_Bool startTask4;
-	_Bool endTask4;
-	_Bool startTask5;
-	_Bool endTask5;
+    _Bool startTask1;
+    _Bool endTask1;
+    _Bool startTask2;
+    _Bool endTask2;
+    _Bool startTask3;
+    _Bool endTask3;
+    _Bool startTask4;
+    _Bool endTask4;
+    _Bool startTask5;
+    _Bool endTask5;
 
-	int output1;
+    int output1;
     int output2;	
 
 } ModelData;
