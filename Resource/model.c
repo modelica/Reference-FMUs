@@ -49,19 +49,23 @@ void calculateValues(ModelInstance *comp) {
 
 #else
 
+#if FMI_VERSION < 3
     if (strncmp(comp->resourceLocation, scheme1, strlen(scheme1)) == 0) {
-        strcpy(path, &comp->resourceLocation[strlen(scheme1)] - 1);
+        strncpy(path, &comp->resourceLocation[strlen(scheme1)] - 1, MAX_PATH_LENGTH);
     } else if (strncmp(comp->resourceLocation, scheme2, strlen(scheme2)) == 0) {
-        strcpy(path, &comp->resourceLocation[strlen(scheme2) - 1]);
+        strncpy(path, &comp->resourceLocation[strlen(scheme2) - 1], MAX_PATH_LENGTH);
     } else {
         logError(comp, "The resourceLocation must start with \"file:/\" or \"file:///\"");
         return;
     }
+#else
+    strncpy(path, &comp->resourceLocation, MAX_PATH_LENGTH);
+#endif
 
 #if FMI_VERSION < 2
-    strcat(path, "/resources/y.txt");
+    strncat(path, "/resources/y.txt", MAX_PATH_LENGTH);
 #else
-    strcat(path, "/y.txt");
+    strncat(path, "/y.txt", MAX_PATH_LENGTH);
 #endif
 
 #endif
