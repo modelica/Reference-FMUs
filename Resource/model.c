@@ -33,9 +33,13 @@ void calculateValues(ModelInstance *comp) {
 #ifdef _WIN32
     DWORD pathLen = MAX_PATH_LENGTH;
 
+#if FMI_VERSION < 3
     if (PathCreateFromUrl(comp->resourceLocation, path, &pathLen, 0) != S_OK) {
         return;
     }
+#else
+    strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
+#endif
 
 #if FMI_VERSION < 2
     if (!PathAppend(path, "resources")) return;
