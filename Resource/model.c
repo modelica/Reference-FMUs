@@ -59,7 +59,7 @@ void calculateValues(ModelInstance *comp) {
         return;
     }
 #else
-    strncpy(path, &comp->resourceLocation, MAX_PATH_LENGTH);
+    strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
 #endif
 
 #if FMI_VERSION < 2
