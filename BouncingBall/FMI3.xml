@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription
-  fmiVersion="3.0-beta.1"
+  fmiVersion="3.0-beta.2"
   modelName="BouncingBall"
   description="This model calculates the trajectory, over time, of a ball dropped from a height of 1 m."
   instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f003}">
