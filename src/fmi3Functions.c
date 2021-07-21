@@ -903,6 +903,27 @@ fmi3Status fmi3GetIntervalFraction(fmi3Instance instance,
     NOT_IMPLEMENTED
 }
 
+fmi3Status fmi3GetShiftDecimal(fmi3Instance instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    fmi3Float64 shifts[],
+    size_t nShifts) {
+    NOT_IMPLEMENTED
+}
+
+fmi3Status fmi3GetShiftFraction(fmi3Instance instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    fmi3UInt64 shiftCounters[],
+    fmi3UInt64 resolutions[],
+    size_t nShifts) {
+    NOT_IMPLEMENTED
+}
+
+fmi3Status fmi3EvaluateDiscreteStates(fmi3Instance instance) {
+    NOT_IMPLEMENTED
+}
+
 fmi3Status fmi3SetIntervalFraction(fmi3Instance instance,
                                    const fmi3ValueReference valueReferences[],
                                    size_t nValueReferences,
