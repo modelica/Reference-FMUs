@@ -84,7 +84,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
     }
 }
 
-Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
+Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t *value, size_t *index) {
     calculateValues(comp);
     switch (vr) {
         case vr_m:
@@ -94,12 +94,12 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *inde
             value[(*index)++] = M(n);
             return OK;
         default:
-            logError(comp, "Get Int32 is not allowed for value reference %u.", vr);
+            logError(comp, "Get UInt64 is not allowed for value reference %u.", vr);
             return Error;
     }
 }
 
-Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t *index) {
+Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t *value, size_t *index) {
 
     if (comp->state != ConfigurationMode && comp->state != ReconfigurationMode) {
         return Error;
@@ -117,7 +117,7 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t
             M(n) = v;
             return OK;
         default:
-            logError(comp, "Set Int32 is not allowed for value reference %u.", vr);
+            logError(comp, "Set UInt64 is not allowed for value reference %u.", vr);
             return Error;
     }
 }
