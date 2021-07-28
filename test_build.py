@@ -61,7 +61,7 @@ class BuildTest(unittest.TestCase):
 
             problems = validate_fmu(fmu_filename)
 
-            self.assertTrue(not problems)
+            self.assertEqual([], problems)
 
             if model == 'Feedthrough':
                 start_values = {'real_fixed_param': 1, 'string_param': "FMI is awesome!"}
@@ -188,7 +188,7 @@ class BuildTest(unittest.TestCase):
 
         for model in ['Clocks', 'LinearTransform']:
             problems = validate_fmu(filename=os.path.join(build_dir, 'dist', model + '.fmu'))
-            self.assertTrue(not problems)
+            self.assertEqual([], problems)
 
 
 if __name__ == '__main__':
