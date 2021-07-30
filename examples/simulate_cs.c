@@ -1,77 +1,43 @@
-#include "FMU.h"
+#define OUTPUT_FILE  xstr(MODEL_IDENTIFIER) "_cs_out.csv"
+#define LOG_FILE     xstr(MODEL_IDENTIFIER) "_cs_log.txt"
+
 #include "util.h"
-#include "config.h"
 
 
 int main(int argc, char* argv[]) {
 
-    fmi3Status status = fmi3OK;
+    CALL(setUp());
 
-    const fmi3Float64 startTime = 0;
-    const fmi3Float64 stopTime = 3;
-    const fmi3Float64 h = 1e-2;
-
-    fmi3Boolean eventEncountered;
-    fmi3Boolean terminateSimulation;
-    fmi3Boolean earlyReturn;
-    fmi3Float64 lastSuccessfulTime;
-
-    FILE *outputFile = openOutputFile("BouncingBall_cs.csv");
-
-    if (!outputFile) {
-        return EXIT_FAILURE;
-    }
-
-    FMU *S = loadFMU(PLATFORM_BINARY);
-
-    if (!S) {
-        return EXIT_FAILURE;
-    }
-
-    // tag::CoSimulation[]
-    ////////////////////////////
-    // Initialization sub-phase
-
-    // instantiate both FMUs
-    const fmi3Instance s = S->fmi3InstantiateCoSimulation(
-        "s1",                // instanceName
+    CALL(FMI3InstantiateCoSimulation(S,
         INSTANTIATION_TOKEN, // instantiationToken
-        NULL,                // resourceLocation
+        RESOURCE_PATH,       // resourcePath
         fmi3False,           // visible
         fmi3False,           // loggingOn
         fmi3False,           // eventModeUsed
         fmi3False,           // earlyReturnAllowed
         NULL,                // requiredIntermediateVariables
         0,                   // nRequiredIntermediateVariables
-        NULL,                // instanceEnvironment
-        cb_logMessage,       // logMessage
-        NULL);               // intermediateUpdate
+        NULL                 // intermediateUpdate
+    ));
 
-    if (!s) {
-        return EXIT_FAILURE;
-    }
+    // initialize the FMU
+    CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, startTime, fmi3True, stopTime));
 
-    // initialize the FMUs
-    CHECK_STATUS(S->fmi3EnterInitializationMode(s, fmi3False, 0.0, startTime, fmi3True, stopTime))
-
-    CHECK_STATUS(S->fmi3ExitInitializationMode(s))
-
-    ////////////////////////
-    // Simulation sub-phase
+    CALL(FMI3ExitInitializationMode(S));
 
     for (int step = 0;; step++) {
 
         // calculate the current time
         const fmi3Float64 time = step * h;
 
-        CHECK_STATUS(recordVariables(outputFile, S, s, time));
+        CALL(recordVariables(S, outputFile));
 
         if (time >= stopTime) {
             break;
         }
 
         // call instance s1 and check status
-        CHECK_STATUS(S->fmi3DoStep(s, time, h, fmi3True, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime))
+        CALL(FMI3DoStep(S, time, h, fmi3True, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime));
 
         if (terminateSimulation) {
             printf("The FMU requested to terminate the simulation.");
@@ -80,24 +46,5 @@ int main(int argc, char* argv[]) {
     }
 
 TERMINATE:
-
-    //////////////////////////
-    // Shutdown sub-phase
-
-    if (status < fmi3Error) {
-
-        fmi3Status terminateStatus = S->fmi3Terminate(s);
-
-        status = max(status, terminateStatus);
-
-        if (status < fmi3Fatal) {
-            S->fmi3FreeInstance(s);
-        }
-    }
-
-    freeFMU(S);
-
-    fclose(outputFile);
-
-    return status == fmi3OK ? EXIT_SUCCESS : EXIT_FAILURE;
+    return tearDown();
 }

@@ -15,13 +15,13 @@ static void cb_logMessage(fmi3InstanceEnvironment instanceEnvironment, fmi3Strin
 int main(int argc, char* argv[]) {
 
     fmi3Instance m = VanDerPol_fmi3InstantiateModelExchange(
-        "instance1",             // instance name
-        INSTANTIATION_TOKEN,     // instantiation token (from XML)
-        "file:///tmp/VanDerPol", // resource location (extracted FMU)
-        fmi3False,               // visible
-        fmi3False,               // debug logging disabled
-        NULL,                    // instance environment
-        cb_logMessage);          // logger callback
+        "instance1",         // instance name
+        INSTANTIATION_TOKEN, // instantiation token (from XML)
+        NULL,                // resource location
+        fmi3False,           // visible
+        fmi3False,           // debug logging disabled
+        NULL,                // instance environment
+        cb_logMessage);      // logger callback
 
     // simulation ...
 
