@@ -160,7 +160,6 @@ class BuildTest(unittest.TestCase):
             'cs_intermediate_update',
             'BouncingBall_cs',
             'BouncingBall_me',
-            'connected_cs',
             'import_shared_library',
             'import_static_library',
             'jacobian',
