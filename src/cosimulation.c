@@ -260,6 +260,16 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *inde
 }
 #endif
 
+#ifndef GET_UINT64
+Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t *value, size_t *index) {
+    UNUSED(comp)
+    UNUSED(vr)
+    UNUSED(value)
+    UNUSED(index)
+    return Error;
+}
+#endif
+
 #ifndef GET_BOOLEAN
 Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *index) {
     UNUSED(comp)
@@ -313,6 +323,16 @@ Status setUInt16(ModelInstance* comp, ValueReference vr, const uint16_t *value, 
 
 #ifndef SET_INT32
 Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t *index) {
+    UNUSED(comp)
+    UNUSED(vr)
+    UNUSED(value)
+    UNUSED(index)
+    return Error;
+}
+#endif
+
+#ifndef SET_UINT64
+Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t *value, size_t *index) {
     UNUSED(comp)
     UNUSED(vr)
     UNUSED(value)
