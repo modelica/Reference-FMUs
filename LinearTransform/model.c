@@ -105,7 +105,7 @@ Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t *value, 
         return Error;
     }
 
-    int v = value[(*index)++];
+    const uint64_t v = value[(*index)++];
 
     switch (vr) {
         case vr_m:

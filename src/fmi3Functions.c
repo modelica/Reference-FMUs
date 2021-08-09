@@ -466,9 +466,23 @@ fmi3Status fmi3GetInt64(fmi3Instance instance,
 }
 
 fmi3Status fmi3GetUInt64(fmi3Instance instance,
-                         const fmi3ValueReference valueReferences[], size_t nValueReferences,
-                         fmi3UInt64 values[], size_t nValues) {
-    NOT_IMPLEMENTED
+                         const fmi3ValueReference vr[], size_t nvr,
+                         fmi3UInt64 value[], size_t nValues) {
+
+    ASSERT_STATE(GetUInt64)
+
+    if (nvr > 0 && nullPointer(S, "fmi3GetUInt64", "valueReferences", vr))
+        return fmi3Error;
+
+    if (nValues > 0 && nullPointer(S, "fmi3GetUInt64", "values", value))
+        return fmi3Error;
+
+    if (nvr > 0 && S->isDirtyValues) {
+        calculateValues(S);
+        S->isDirtyValues = false;
+    }
+
+    GET_VARIABLES(UInt64)
 }
 
 fmi3Status fmi3GetBoolean(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, fmi3Boolean value[], size_t nValues) {
@@ -594,9 +608,18 @@ fmi3Status fmi3SetInt64(fmi3Instance instance,
 }
 
 fmi3Status fmi3SetUInt64(fmi3Instance instance,
-                         const fmi3ValueReference valueReferences[], size_t nValueReferences,
-                         const fmi3UInt64 values[], size_t nValues) {
-    NOT_IMPLEMENTED
+                         const fmi3ValueReference vr[], size_t nvr,
+                         const fmi3UInt64 value[], size_t nValues) {
+
+    ASSERT_STATE(SetUInt64)
+
+    if (nvr > 0 && nullPointer(S, "fmi3SetUInt64", "vr[]", vr))
+        return fmi3Error;
+
+    if (nvr > 0 && nullPointer(S, "fmi3SetUInt64", "value[]", value))
+        return fmi3Error;
+
+    SET_VARIABLES(UInt64)
 }
 
 fmi3Status fmi3SetBoolean(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, const fmi3Boolean value[], size_t nValues) {
