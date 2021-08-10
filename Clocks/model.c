@@ -22,7 +22,9 @@ ModelPartition 1 does the following:
 **************************************/
 static void activateModelPartition1(ModelInstance* comp, double time) {
 
-    comp->lockPreemtion();
+    if (comp->lockPreemtion) {
+        comp->lockPreemtion();
+    }
 
     // increment the counters
     M(inClock1Ticks)++;
@@ -35,7 +37,9 @@ static void activateModelPartition1(ModelInstance* comp, double time) {
     }
     M(outClock) = ((M(outClock) == false) && (M(totalInClockTicks) % 5 == 0));
 
-    comp->unlockPreemtion();
+    if (comp->unlockPreemtion) {
+        comp->unlockPreemtion();
+    }
 
     bool earlyReturnRequested;
     double earlyReturnTime;
@@ -63,7 +67,9 @@ ModelPartition 2 does the following:
 **************************************/
 static void activateModelPartition2(ModelInstance* comp, double time) {
 
-    comp->lockPreemtion();
+    if (comp->lockPreemtion) {
+        comp->lockPreemtion();
+    }
 
     // increment the counters
     M(inClock2Ticks)++;
@@ -74,7 +80,10 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
 
     // set output clocks
     M(outClock) = ((M(outClock) == false) && (M(totalInClockTicks) % 5 == 0));
-    comp->unlockPreemtion();
+
+    if (comp->unlockPreemtion) {
+        comp->unlockPreemtion();
+    }
 
     bool earlyReturnRequested;
     double earlyReturnTime;
@@ -103,11 +112,16 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
  **************************************/
  static void activateModelPartition3(ModelInstance *comp, double time) {
 
-    comp->lockPreemtion();
+    if (comp->lockPreemtion) {
+        comp->lockPreemtion();
+    }
 
     // increment the counters
     M(inClock3Ticks)++;
-    comp->unlockPreemtion();
+
+    if (comp->unlockPreemtion) {
+        comp->unlockPreemtion();
+    }
 
     // This partition is supposed to consume a bit of time on a low prio ...
     unsigned long sum = 0;
