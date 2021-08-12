@@ -164,8 +164,8 @@ int main(int argc, char* argv[]) {
 
     // Instantiate the FMU
     CALL(FMI3InstantiateScheduledExecution(S,
-        INSTANTIATION_TOKEN, // instantiationToken
-        RESOURCE_PATH,       // resourcePath
+        INSTANTIATION_TOKEN,   // instantiationToken
+        NULL,                  // resourcePath
         fmi3True,              // visible,
         fmi3True,              // loggingOn,
         NULL,                  // requiredIntermediateVariables,

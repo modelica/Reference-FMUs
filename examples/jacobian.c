@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
 
     CALL(FMI3InstantiateModelExchange(S,
         INSTANTIATION_TOKEN, // instantiationToken
-        RESOURCE_PATH,       // resourceLocation
+        NULL,                // resourcePath
         fmi3False,           // visible
         fmi3False            // loggingOn
     ));

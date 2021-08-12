@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
     // Instantiate the FMU
     CALL(FMI3InstantiateCoSimulation(S,
         INSTANTIATION_TOKEN, // instantiationToken
-        RESOURCE_PATH,       // resourcePath
+        NULL,                // resourcePath
         fmi3False,           // visible
         fmi3False,           // loggingOn
         fmi3False,           // eventModeUsed

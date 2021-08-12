@@ -41,11 +41,13 @@ void calculateValues(ModelInstance *comp) {
     strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
 #endif
 
-#if FMI_VERSION < 2
-    if (!PathAppend(path, "resources")) return;
-#endif
-
+#if FMI_VERSION == 1
+    if (!PathAppend(path, "resources") || !PathAppend(path, "y.txt")) return;
+#elif FMI_VERSION == 2
     if (!PathAppend(path, "y.txt")) return;
+#else
+    if (!strncat(path, "y.txt", MAX_PATH_LENGTH)) return;
+#endif
 
 #else
 
@@ -62,10 +64,12 @@ void calculateValues(ModelInstance *comp) {
     strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
 #endif
 
-#if FMI_VERSION < 2
+#if FMI_VERSION == 1
     strncat(path, "/resources/y.txt", MAX_PATH_LENGTH);
-#else
+#elif FMI_VERSION == 2
     strncat(path, "/y.txt", MAX_PATH_LENGTH);
+#else
+    strncat(path, "y.txt", MAX_PATH_LENGTH);
 #endif
 
 #endif

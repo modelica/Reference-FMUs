@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
     // tag::ModelExchange[]
     CALL(FMI3InstantiateModelExchange(S,
         INSTANTIATION_TOKEN, // instantiationToken
-        NULL,                // resourceLocation
+        NULL,                // resourcePath
         fmi3False,           // visible
         fmi3False            // loggingOn
     ));
