@@ -18,6 +18,10 @@
 #include "fmi3Functions.h"
 #endif
 
+#ifdef _WIN32
+#define strdup _strdup
+#endif
+
 
 ModelInstance *createModelInstance(
     loggerType cbLogger,
@@ -56,33 +60,18 @@ ModelInstance *createModelInstance(
     comp = (ModelInstance *)calloc(1, sizeof(ModelInstance));
 
     if (comp) {
-
-        // set the callbacks
         comp->componentEnvironment = componentEnvironment;
         comp->logger = cbLogger;
         comp->intermediateUpdate = intermediateUpdate;
         comp->lockPreemtion = NULL;
         comp->unlockPreemtion = NULL;
-
-        comp->instanceName = (char *)calloc(1 + strlen(instanceName), sizeof(char));
-
-        // resourceLocation is NULL for FMI 1.0 ME
-        if (resourceLocation) {
-            comp->resourceLocation = (char *)calloc(1 + strlen(resourceLocation), sizeof(char));
-            strcpy((char *)comp->resourceLocation, (char *)resourceLocation);
-        } else {
-            comp->resourceLocation = NULL;
-        }
-
+        comp->instanceName = strdup(instanceName);
+        comp->resourceLocation = resourceLocation ? strdup(resourceLocation) : NULL;
         comp->status = OK;
-
         comp->modelData = (ModelData *)calloc(1, sizeof(ModelData));
-
         comp->logEvents = loggingOn;
         comp->logErrors = true; // always log errors
-
         comp->nSteps = 0;
-
         comp->returnEarly = false;
     }
 
@@ -92,7 +81,6 @@ ModelInstance *createModelInstance(
     }
 
     comp->time = 0; // overwrite in fmi*SetupExperiment, fmi*SetTime
-    strcpy((char *)comp->instanceName, (char *)instanceName);
     comp->type = interfaceType;
 
     comp->state = Instantiated;
