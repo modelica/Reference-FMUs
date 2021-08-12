@@ -32,22 +32,24 @@ ModelInstance *createModelInstance(
 
     ModelInstance *comp = NULL;
 
-    if (!cbLogger) {
-        return NULL;
-    }
-
     if (!instanceName || strlen(instanceName) == 0) {
-        cbLogger(componentEnvironment, "?", Error, "error", "Missing instance name.");
+        if (cbLogger) {
+            cbLogger(componentEnvironment, "?", Error, "error", "Missing instance name.");
+        }
         return NULL;
     }
 
     if (!instantiationToken || strlen(instantiationToken) == 0) {
-        cbLogger(componentEnvironment, instanceName, Error, "error", "Missing GUID.");
+        if (cbLogger) {
+            cbLogger(componentEnvironment, instanceName, Error, "error", "Missing GUID.");
+        }
         return NULL;
     }
 
     if (strcmp(instantiationToken, INSTANTIATION_TOKEN)) {
-        cbLogger(componentEnvironment, instanceName, Error, "error", "Wrong GUID.");
+        if (cbLogger) {
+            cbLogger(componentEnvironment, instanceName, Error, "error", "Wrong GUID.");
+        }
         return NULL;
     }
 
@@ -190,6 +192,10 @@ Status setDebugLogging(ModelInstance *comp, bool loggingOn, size_t nCategories, 
 }
 
 static void logMessage(ModelInstance *comp, int status, const char *category, const char *message, va_list args) {
+
+    if (!comp->logger) {
+        return;
+    }
 
     va_list args1;
     size_t len = 0;

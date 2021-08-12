@@ -235,7 +235,9 @@ fmi3Status FMI3InstantiateModelExchange(
 
     fmi3Status status = loadSymbols3(instance);
 
-    instance->component = instance->fmi3InstantiateModelExchange(instance->name, instantiationToken, resourcePath, visible, loggingOn, instance, cb_logMessage3);
+    fmi3CallbackLogMessage logMessage = instance->logMessage ? cb_logMessage3 : NULL;
+
+    instance->component = instance->fmi3InstantiateModelExchange(instance->name, instantiationToken, resourcePath, visible, loggingOn, instance, logMessage);
 
     if (instance->logFunctionCall) {
         instance->logFunctionCall(instance, instance->component ? FMIOK : FMIError,
@@ -253,7 +255,7 @@ fmi3Status FMI3InstantiateModelExchange(
             visible,
             loggingOn,
             instance,
-            cb_logMessage3
+            logMessage
         );
     }
 
@@ -283,6 +285,8 @@ fmi3Status FMI3InstantiateCoSimulation(
         return fmi3Error;
     }
 
+    fmi3CallbackLogMessage logMessage = instance->logMessage ? cb_logMessage3 : NULL;
+
     instance->component = instance->fmi3InstantiateCoSimulation(
         instance->name,
         instantiationToken,
@@ -294,7 +298,7 @@ fmi3Status FMI3InstantiateCoSimulation(
         requiredIntermediateVariables,
         nRequiredIntermediateVariables,
         instance,
-        cb_logMessage3,
+        logMessage,
         intermediateUpdate);
 
     if (instance->logFunctionCall) {
@@ -322,7 +326,7 @@ fmi3Status FMI3InstantiateCoSimulation(
             requiredIntermediateVariables,
             nRequiredIntermediateVariables,
             instance,
-            cb_logMessage3,
+            logMessage,
             intermediateUpdate
         );
     }
@@ -353,6 +357,8 @@ fmi3Status FMI3InstantiateScheduledExecution(
         return fmi3Error;
     }
 
+    fmi3CallbackLogMessage logMessage = instance->logMessage ? cb_logMessage3 : NULL;
+
     instance->component = instance->fmi3InstantiateScheduledExecution(
         instance->name,
         instantiationToken,
@@ -362,7 +368,7 @@ fmi3Status FMI3InstantiateScheduledExecution(
         requiredIntermediateVariables,
         nRequiredIntermediateVariables,
         instance,
-        cb_logMessage3,
+        logMessage,
         intermediateUpdate,
         lockPreemption,
         unlockPreemption);
@@ -390,7 +396,7 @@ fmi3Status FMI3InstantiateScheduledExecution(
             requiredIntermediateVariables,
             nRequiredIntermediateVariables,
             instance,
-            cb_logMessage3,
+            logMessage,
             intermediateUpdate,
             lockPreemption,
             unlockPreemption
