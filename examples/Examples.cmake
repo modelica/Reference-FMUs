@@ -53,6 +53,7 @@ add_executable(import_shared_library
     ${EXAMPLE_SOURCES}
     examples/import_shared_library.c
 )
+add_dependencies(import_shared_library VanDerPol)
 set_target_properties (import_shared_library PROPERTIES FOLDER examples)
 target_include_directories(import_shared_library PRIVATE include VanDerPol)
 set_target_properties(import_shared_library PROPERTIES
@@ -69,6 +70,7 @@ add_executable(cs_early_return
     examples/BouncingBall.c
     examples/cs_early_return.c
 )
+add_dependencies(cs_early_return BouncingBall)
 set_target_properties(cs_early_return PROPERTIES FOLDER examples)
 target_compile_definitions(cs_early_return PRIVATE DISABLE_PREFIX)
 target_include_directories(cs_early_return PRIVATE include BouncingBall)
@@ -86,6 +88,7 @@ add_executable(cs_event_mode
     examples/BouncingBall.c
     examples/cs_event_mode.c
 )
+add_dependencies(cs_event_mode BouncingBall)
 set_target_properties(cs_event_mode PROPERTIES FOLDER examples)
 target_compile_definitions(cs_event_mode PRIVATE DISABLE_PREFIX)
 target_include_directories(cs_event_mode PRIVATE include BouncingBall)
@@ -103,6 +106,7 @@ add_executable(cs_intermediate_update
     examples/BouncingBall.c
     examples/cs_intermediate_update.c
 )
+add_dependencies(cs_intermediate_update BouncingBall)
 set_target_properties(cs_intermediate_update PROPERTIES FOLDER examples)
 target_compile_definitions(cs_intermediate_update PRIVATE DISABLE_PREFIX)
 target_include_directories(cs_intermediate_update PRIVATE include BouncingBall)
@@ -119,6 +123,7 @@ add_executable(jacobian
     VanDerPol/config.h
     examples/jacobian.c
 )
+add_dependencies(jacobian VanDerPol)
 set_target_properties(jacobian PROPERTIES FOLDER examples)
 target_compile_definitions(jacobian PRIVATE DISABLE_PREFIX)
 target_include_directories(jacobian PRIVATE include VanDerPol)
@@ -139,6 +144,7 @@ foreach (MODEL_NAME BouncingBall Stair)
             examples/simulate_${INTERFACE_TYPE}.c
             examples/${MODEL_NAME}.c
         )
+        add_dependencies(${TARGET_NAME} ${MODEL_NAME})
         set_target_properties(${TARGET_NAME} PROPERTIES FOLDER examples)
         target_include_directories(${TARGET_NAME} PRIVATE include ${MODEL_NAME})
         target_compile_definitions(${TARGET_NAME} PRIVATE DISABLE_PREFIX)
@@ -158,6 +164,7 @@ add_executable (scs_synchronous
     examples/Clocks.c
     examples/scs_synchronous.c
 )
+add_dependencies(scs_synchronous Clocks)
 set_target_properties(scs_synchronous PROPERTIES FOLDER examples)
 target_include_directories(scs_synchronous PRIVATE include Clocks)
 target_link_libraries(scs_synchronous ${LIBRARIES})
@@ -173,6 +180,7 @@ if (WIN32)
         Clocks/config.h
         examples/scs_threaded.c
     )
+    add_dependencies(scs_threaded Clocks)
     set_target_properties(scs_threaded PROPERTIES FOLDER examples)
     target_include_directories(scs_threaded PRIVATE include Clocks)
     target_link_libraries(scs_threaded ${LIBRARIES})
