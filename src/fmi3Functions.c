@@ -194,7 +194,7 @@ fmi3Status fmi3SetDebugLogging(fmi3Instance instance, fmi3Boolean loggingOn, siz
 fmi3Instance fmi3InstantiateModelExchange(
     fmi3String                 instanceName,
     fmi3String                 instantiationToken,
-    fmi3String                 resourceLocation,
+    fmi3String                 resourcePath,
     fmi3Boolean                visible,
     fmi3Boolean                loggingOn,
     fmi3InstanceEnvironment    instanceEnvironment,
@@ -209,7 +209,7 @@ fmi3Instance fmi3InstantiateModelExchange(
         instanceEnvironment,
         instanceName,
         instantiationToken,
-        resourceLocation,
+        resourcePath,
         loggingOn,
         ModelExchange,
         false
@@ -220,7 +220,7 @@ fmi3Instance fmi3InstantiateModelExchange(
 fmi3Instance fmi3InstantiateCoSimulation(
     fmi3String                     instanceName,
     fmi3String                     instantiationToken,
-    fmi3String                     resourceLocation,
+    fmi3String                     resourcePath,
     fmi3Boolean                    visible,
     fmi3Boolean                    loggingOn,
     fmi3Boolean                    eventModeUsed,
@@ -237,7 +237,7 @@ fmi3Instance fmi3InstantiateCoSimulation(
         instanceEnvironment,
         instanceName,
         instantiationToken,
-        resourceLocation,
+        resourcePath,
         loggingOn,
         CoSimulation,
         false
@@ -253,7 +253,7 @@ fmi3Instance fmi3InstantiateCoSimulation(
 fmi3Instance fmi3InstantiateScheduledExecution(
     fmi3String                     instanceName,
     fmi3String                     instantiationToken,
-    fmi3String                     resourceLocation,
+    fmi3String                     resourcePath,
     fmi3Boolean                    visible,
     fmi3Boolean                    loggingOn,
     const fmi3ValueReference       requiredIntermediateVariables[],
@@ -273,7 +273,7 @@ fmi3Instance fmi3InstantiateScheduledExecution(
         instanceEnvironment,
         instanceName,
         instantiationToken,
-        resourceLocation,
+        resourcePath,
         loggingOn,
         ScheduledExecution,
         false
