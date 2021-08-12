@@ -253,6 +253,10 @@ fmiComponent fmiInstantiateSlave(fmiString  instanceName, fmiString GUID,
     fmiString fmuLocation, fmiString mimeType, fmiReal timeout, fmiBoolean visible,
     fmiBoolean interactive, fmiCallbackFunctions functions, fmiBoolean loggingOn) {
 
+    if (!functions.logger) {
+        return NULL;
+    }
+
     // ignoring arguments: mimeType, timeout, visible, interactive
     return createModelInstance(
         (loggerType)functions.logger,
@@ -387,6 +391,11 @@ const char* fmiGetModelTypesPlatform() {
 }
 
 fmiComponent fmiInstantiateModel(fmiString instanceName, fmiString GUID,  fmiCallbackFunctions functions, fmiBoolean loggingOn) {
+
+    if (!functions.logger) {
+        return NULL;
+    }
+
     return createModelInstance(
         (loggerType)functions.logger,
         NULL,

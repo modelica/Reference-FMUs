@@ -152,6 +152,10 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
 
     UNUSED(visible)
 
+    if (!functions || !functions->logger) {
+        return NULL;
+    }
+
     return createModelInstance(
         (loggerType)functions->logger,
         NULL,
