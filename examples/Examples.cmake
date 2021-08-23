@@ -5,14 +5,10 @@ set(EXAMPLE_SOURCES
     include/fmi3FunctionTypes.h
     include/fmi3PlatformTypes.h
     include/FMI.h
-    include/FMI1.h
-    include/FMI2.h
     include/FMI3.h
     include/model.h
     examples/util.h
     src/FMI.c
-    src/FMI1.c
-    src/FMI2.c
     src/FMI3.c
 )
 
