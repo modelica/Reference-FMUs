@@ -8,6 +8,10 @@
  *  in the project root for license information.              *
  **************************************************************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "FMI.h"
 
 
@@ -414,5 +418,9 @@ FMI_STATIC fmi3Status FMI3ActivateModelPartition(FMIInstance *instance,
     fmi3ValueReference clockReference,
     size_t clockElementIndex,
     fmi3Float64 activationTime);
+
+#ifdef __cplusplus
+}  /* end of extern "C" { */
+#endif
 
 #endif // FMI3_H
