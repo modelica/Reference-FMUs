@@ -8,6 +8,10 @@
  *  in the project root for license information.              *
  **************************************************************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef _WIN32
 #include <Windows.h>
 #endif
@@ -381,5 +385,9 @@ FMI_STATIC void FMIFreeInstance(FMIInstance *instance);
 FMI_STATIC const char* FMIValueReferencesToString(FMIInstance *instance, const FMIValueReference vr[], size_t nvr);
 
 FMI_STATIC const char* FMIValuesToString(FMIInstance *instance, size_t nvr, const void *value, FMIVariableType variableType);
+
+#ifdef __cplusplus
+}  /* end of extern "C" { */
+#endif
 
 #endif // FMI_H

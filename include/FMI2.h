@@ -8,6 +8,10 @@
  *  in the project root for license information.              *
  **************************************************************/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "FMI.h"
 
 
@@ -150,5 +154,9 @@ FMI_STATIC fmi2Status FMI2GetIntegerStatus(FMIInstance *instance, const fmi2Stat
 FMI_STATIC fmi2Status FMI2GetBooleanStatus(FMIInstance *instance, const fmi2StatusKind s, fmi2Boolean* value);
 
 FMI_STATIC fmi2Status FMI2GetStringStatus(FMIInstance *instance, const fmi2StatusKind s, fmi2String*  value);
+
+#ifdef __cplusplus
+}  /* end of extern "C" { */
+#endif
 
 #endif // FMI2_H
