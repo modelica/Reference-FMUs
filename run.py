@@ -66,12 +66,13 @@ dist_dir = os.path.join(dist_dir, 'build', 'dist')
 src_dir = os.path.dirname(__file__)
 
 info = [
-    ('BouncingBall', {}, 0.01),
-    ('Dahlquist',    {}, 0.2),
-    ('Feedthrough',  {'real_fixed_param': 1}, 0.2),
-    ('Resource',     {}, 0.2),
-    ('Stair',        {}, 10),
-    ('VanDerPol',    {}, 0.1),
+    ('BouncingBall',    {}, 0.01),
+    ('Dahlquist',       {}, 0.2),
+    ('LinearTransform', {}, 1),
+    ('Feedthrough',     {'real_fixed_param': 1}, 0.2),
+    ('Resource',        {}, 0.2),
+    ('Stair',           {}, 10),
+    ('VanDerPol',       {}, 0.1),
 ]
 
 for model_name, start_values, output_interval in info:
