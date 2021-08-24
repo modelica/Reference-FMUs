@@ -1147,13 +1147,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
     // TODO: pass to doStep()
     *terminateSimulation = fmi3False;
 
-    int earlyReturn_;
-
-    Status status = doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &earlyReturn_, lastSuccessfulTime);
-
-    *earlyReturn = earlyReturn_;
-
-    return (fmi3Status)status;
+    return (fmi3Status) doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, eventEncountered, earlyReturn, terminateSimulation, lastSuccessfulTime);
 }
 
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,

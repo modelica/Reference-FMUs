@@ -85,8 +85,9 @@ foreach (MODEL_NAME ${MODEL_NAMES})
 set(TARGET_NAME ${MODEL_NAME})
 
 SET(HEADERS
-  ${MODEL_NAME}/config.h
-  include/model.h
+    ${MODEL_NAME}/config.h
+    include/cosimulation.h
+    include/model.h
 )
 
 if (${FMI_VERSION} EQUAL 2)

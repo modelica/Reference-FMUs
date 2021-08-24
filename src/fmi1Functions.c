@@ -332,9 +332,11 @@ fmiStatus fmiCancelStep(fmiComponent c) {
 
 fmiStatus fmiDoStep(fmiComponent c, fmiReal currentCommunicationPoint, fmiReal communicationStepSize, fmiBoolean newStep) {
     ModelInstance* instance = (ModelInstance *)c;
-    int earlyReturn;
+
+    bool eventEncountered, terminateSimulation, earlyReturn;
     double lastSuccessfulTime;
-    return (fmiStatus)doStep(instance, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &earlyReturn, &lastSuccessfulTime);
+
+    return (fmiStatus)doStep(instance, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime);
 }
 
 static fmiStatus getStatus(char* fname, fmiComponent c, const fmiStatusKind s) {

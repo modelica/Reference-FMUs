@@ -570,10 +570,10 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
         return fmi2Error;
     }
 
-    int earlyReturn;
+    bool eventEncountered, terminateSimulation, earlyReturn;
     double lastSuccessfulTime;
 
-    return (fmi2Status)doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &earlyReturn, &lastSuccessfulTime);
+    return (fmi2Status)doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime);
 }
 
 /* Inquire slave status */
