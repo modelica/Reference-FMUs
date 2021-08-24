@@ -432,12 +432,23 @@ Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueRe
 }
 #endif
 
-Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn, double* lastSuccessfulTime) {
+Status doStep(ModelInstance *comp,
+    double t,
+    double tNext,
+    bool* eventEncountered,
+    bool* terminateSimulation,
+    bool* earlyReturn,
+    double* lastSuccessfulTime) {
 
-    UNUSED(t)  // TODO: check t == comp->time ?
+    UNUSED(t);  // TODO: check t == comp->time ?
 
-    bool stateEvent, timeEvent;
-    Status status = OK;
+    if (eventEncountered)    *eventEncountered    = false;
+    if (terminateSimulation) *terminateSimulation = false;
+    if (earlyReturn)         *earlyReturn         = false;
+
+    bool   stateEvent = false;
+    bool   timeEvent  = false;
+    Status status     = OK;
 
 #if NZ > 0
     double *temp = NULL;
@@ -520,7 +531,7 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn, dou
                 comp->state = StepMode;
 
                 if (earlyReturnRequested) {
-                    *earlyReturn = 1;
+                    *earlyReturn = true;
                     // TODO: continue to earlyReturnTime?
                     return status;
                 }
@@ -560,10 +571,6 @@ Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn, dou
             comp->state = StepMode;
         }
 #endif
-    }
-
-    if (earlyReturn) {
-        *earlyReturn = 0;
     }
 
     if (lastSuccessfulTime) {

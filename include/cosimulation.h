@@ -3,6 +3,12 @@
 
 #include "model.h"
 
-Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn, double* lastSuccessfulTime);
+Status doStep(ModelInstance *comp,
+              double t,
+              double tNext,
+              bool* eventEncountered,
+              bool* terminateSimulation,
+              bool* earlyReturn,
+              double* lastSuccessfulTime);
 
 #endif /* cosimulation_h */
