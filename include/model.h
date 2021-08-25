@@ -206,25 +206,44 @@ void logError(ModelInstance *comp, const char *message, ...);
 // shorthand to access the variables
 #define M(v) (comp->modelData->v)
 
+// "stringification" macros
+#define xstr(s) str(s)
+#define str(s) #s
+
+#define ASSERT_NOT_NULL(p) \
+if (!p) { \
+    logError(S, "Argument %s must not be NULL.", xstr(p)); \
+    S->state = modelError; \
+    return (FMI_STATUS)Error; \
+}
+
 #define GET_VARIABLES(T) \
+ASSERT_NOT_NULL(vr); \
+ASSERT_NOT_NULL(value); \
 size_t index = 0; \
 Status status = OK; \
 for (int i = 0; i < nvr; i++) { \
-    Status s = get ## T((ModelInstance *)instance, vr[i], value, &index); \
+    Status s = get ## T(S, vr[i], value, &index); \
     status = max(status, s); \
     if (status > Warning) return (FMI_STATUS)status; \
+} \
+if (nvr > 0 && S->isDirtyValues) { \
+    calculateValues(S); \
+    S->isDirtyValues = false; \
 } \
 return (FMI_STATUS)status;
 
 #define SET_VARIABLES(T) \
+ASSERT_NOT_NULL(vr); \
+ASSERT_NOT_NULL(value); \
 size_t index = 0; \
 Status status = OK; \
 for (int i = 0; i < nvr; i++) { \
-    Status s = set ## T((ModelInstance *)instance, vr[i], value, &index); \
+    Status s = set ## T(S, vr[i], value, &index); \
     status = max(status, s); \
     if (status > Warning) return (FMI_STATUS)status; \
 } \
-if (nvr > 0) ((ModelInstance *)instance)->isDirtyValues = true; \
+if (nvr > 0) S->isDirtyValues = true; \
 return (FMI_STATUS)status;
 
 // TODO: make this work with arrays
@@ -233,7 +252,7 @@ Status status = OK; \
 for (int i = 0; i < nvr; i++) { \
     bool v = false; \
     size_t index = 0; \
-    Status s = getBoolean((ModelInstance *)instance, vr[i], &v, &index); \
+    Status s = getBoolean(S, vr[i], &v, &index); \
     value[i] = v; \
     status = max(status, s); \
     if (status > Warning) return (FMI_STATUS)status; \
@@ -246,7 +265,7 @@ Status status = OK; \
 for (int i = 0; i < nvr; i++) { \
     bool v = value[i]; \
     size_t index = 0; \
-    Status s = setBoolean((ModelInstance *)instance, vr[i], &v, &index); \
+    Status s = setBoolean(S, vr[i], &v, &index); \
     status = max(status, s); \
     if (status > Warning) return (FMI_STATUS)status; \
 } \

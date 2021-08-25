@@ -35,6 +35,12 @@
 #define DT_EVENT_DETECT 1e-10
 #endif
 
+#define ASSERT_STATE(F, A) \
+    if (!c) return fmiError; \
+    ModelInstance* S = (ModelInstance *)c; \
+    if (invalidState(S, F, not_modelError)) \
+        return fmiError;
+
 // ---------------------------------------------------------------------------
 // Private helpers used below to implement functions
 // ---------------------------------------------------------------------------
@@ -70,173 +76,49 @@ const char* fmiGetVersion() {
 // ---------------------------------------------------------------------------
 
 fmiStatus fmiSetDebugLogging(fmiComponent c, fmiBoolean loggingOn) {
-
-    ModelInstance* instance = (ModelInstance *)c;
-
-    if (invalidState(instance, "fmiSetDebugLogging", not_modelError))
-         return fmiError;
-
-    return (fmiStatus)setDebugLogging(instance, loggingOn, 0, NULL);
+    ASSERT_STATE("fmiSetDebugLogging", not_modelError);
+    return (fmiStatus)setDebugLogging(S, loggingOn, 0, NULL);
 }
 
 fmiStatus fmiSetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiReal value[]) {
-
-    ModelInstance* instance = (ModelInstance *)c;
-
-    if (invalidState(instance, "fmiSetReal", Instantiated|Initialized))
-         return fmiError;
-
-    if (nvr>0 && nullPointer(instance, "fmiSetReal", "vr[]", vr))
-         return fmiError;
-
-    if (nvr>0 && nullPointer(instance, "fmiSetReal", "value[]", value))
-         return fmiError;
-
-#ifdef SET_FLOAT64
-    SET_VARIABLES(Float64)
-#else
-    return fmiError;  // not implemented
-#endif
+    ASSERT_STATE("fmiSetReal", Instantiated | Initialized);
+    SET_VARIABLES(Float64);
 }
 
 fmiStatus fmiSetInteger(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiInteger value[]) {
-
-    ModelInstance* instance = (ModelInstance *)c;
-
-    if (invalidState(instance, "fmiSetInteger", Instantiated|Initialized))
-         return fmiError;
-
-    if (nvr>0 && nullPointer(instance, "fmiSetInteger", "vr[]", vr))
-         return fmiError;
-
-    if (nvr>0 && nullPointer(instance, "fmiSetInteger", "value[]", value))
-         return fmiError;
-
-#ifdef SET_INT32
-    SET_VARIABLES(Int32)
-#else
-    return fmiError;  // not implemented
-#endif
+    ASSERT_STATE("fmiSetInteger", Instantiated | Initialized);
+    SET_VARIABLES(Int32);
 }
 
 fmiStatus fmiSetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiBoolean value[]){
-
-    ModelInstance* instance = (ModelInstance *)c;
-
-    if (invalidState(instance, "fmiSetBoolean", Instantiated|Initialized))
-         return fmiError;
-
-    if (nvr>0 && nullPointer(instance, "fmiSetBoolean", "vr[]", vr))
-         return fmiError;
-
-    if (nvr>0 && nullPointer(instance, "fmiSetBoolean", "value[]", value))
-         return fmiError;
-
-    SET_BOOLEAN_VARIABLES
+    ASSERT_STATE("fmiSetBoolean", Instantiated | Initialized);
+    SET_BOOLEAN_VARIABLES;
 }
 
 fmiStatus fmiSetString(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiString value[]){
-//    int i;
-//    ModelInstance* instance = (ModelInstance *)c;
-//    if (invalidState(instance, "fmiSetString", Instantiated|Initialized))
-//         return fmiError;
-//    if (nvr>0 && nullPointer(instance, "fmiSetString", "vr[]", vr))
-//         return fmiError;
-//    if (nvr>0 && nullPointer(instance, "fmiSetString", "value[]", value))
-//         return fmiError;
-//    if (instance->loggingOn)
-//        instance->functions.logger(c, instance->instanceName, fmiOK, "log", "fmiSetString: nvr = %d",  nvr);
-//    for (i=0; i<nvr; i++) {
-//        char *string = (char *)instance->s[vr[i]];
-//        if (vrOutOfRange(instance, "fmiSetString", vr[i], NUMBER_OF_STRINGS))
-//            return fmiError;
-//        if (instance->loggingOn) instance->functions.logger(c, instance->instanceName, fmiOK, "log",
-//            "fmiSetString: #s%d# = '%s'", vr[i], value[i]);
-//        if (value[i] == NULL) {
-//            if (string) instance->functions.freeMemory(string);
-//            instance->s[vr[i]] = NULL;
-//            instance->functions.logger(instance, instance->instanceName, fmiWarning, "warning",
-//                            "fmiSetString: string argument value[%d] = NULL.", i);
-//        } else {
-//            if (string==NULL || strlen(string) < strlen(value[i])) {
-//                if (string) instance->functions.freeMemory(string);
-//                instance->s[vr[i]] = (char *)instance->functions.allocateMemory(1+strlen(value[i]), sizeof(char));
-//                if (!instance->s[vr[i]]) {
-//                    instance->state = modelError;
-//                    instance->functions.logger(NULL, instance->instanceName, fmiError, "error", "fmiSetString: Out of memory.");
-//                    return fmiError;
-//                }
-//            }
-//            strcpy((char *)instance->s[vr[i]], (char *)value[i]);
-//        }
-//    }
+    ASSERT_STATE("fmiSetString", not_modelError);
+    // TODO
     return fmiOK;
 }
 
 fmiStatus fmiGetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, fmiReal value[]) {
-
-    ModelInstance* instance = (ModelInstance *)c;
-
-    if (invalidState(instance, "fmiGetReal", not_modelError))
-        return fmiError;
-
-    if (nvr > 0 && nullPointer(instance, "fmiGetReal", "vr[]", vr))
-         return fmiError;
-
-    if (nvr > 0 && nullPointer(instance, "fmiGetReal", "value[]", value))
-         return fmiError;
-
-    GET_VARIABLES(Float64)
+    ASSERT_STATE("fmiGetReal", not_modelError);
+    GET_VARIABLES(Float64);
 }
 
 fmiStatus fmiGetInteger(fmiComponent c, const fmiValueReference vr[], size_t nvr, fmiInteger value[]) {
-
-    ModelInstance* instance = (ModelInstance *)c;
-
-    if (invalidState(instance, "fmiGetInteger", not_modelError))
-        return fmiError;
-
-    if (nvr > 0 && nullPointer(instance, "fmiGetInteger", "vr[]", vr))
-         return fmiError;
-
-    if (nvr > 0 && nullPointer(instance, "fmiGetInteger", "value[]", value))
-         return fmiError;
-
-    GET_VARIABLES(Int32)
+    ASSERT_STATE("fmiGetInteger", not_modelError);
+    GET_VARIABLES(Int32);
 }
 
 fmiStatus fmiGetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr, fmiBoolean value[]) {
-
-    ModelInstance* instance = (ModelInstance *)c;
-
-    if (invalidState(instance, "fmiGetBoolean", not_modelError))
-        return fmiError;
-
-    if (nvr>0 && nullPointer(instance, "fmiGetBoolean", "vr[]", vr))
-         return fmiError;
-
-    if (nvr>0 && nullPointer(instance, "fmiGetBoolean", "value[]", value))
-         return fmiError;
-
-    GET_BOOLEAN_VARIABLES
+    ASSERT_STATE("fmiGetBoolean", not_modelError);
+    GET_BOOLEAN_VARIABLES;
 }
 
 fmiStatus fmiGetString(fmiComponent c, const fmiValueReference vr[], size_t nvr, fmiString  value[]) {
-//    int i;
-//    ModelInstance* instance = (ModelInstance *)c;
-//    if (invalidState(instance, "fmiGetString", not_modelError))
-//        return fmiError;
-//    if (nvr>0 && nullPointer(instance, "fmiGetString", "vr[]", vr))
-//         return fmiError;
-//    if (nvr>0 && nullPointer(instance, "fmiGetString", "value[]", value))
-//         return fmiError;
-//    for (i=0; i<nvr; i++) {
-//        if (vrOutOfRange(instance, "fmiGetString", vr[i], NUMBER_OF_STRINGS))
-//           return fmiError;
-//        value[i] = instance->s[vr[i]];
-//        if (instance->loggingOn) instance->functions.logger(c, instance->instanceName, fmiOK, "log",
-//                "fmiGetString: #s%u# = '%s'", vr[i], value[i]);
-//    }
+    ASSERT_STATE("fmiGetString", not_modelError);
+    // TODO
     return fmiOK;
 }
 
