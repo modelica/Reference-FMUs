@@ -1097,11 +1097,27 @@ fmi3Status fmi3GetNominalsOfContinuousStates(fmi3Instance instance, fmi3Float64 
 }
 
 fmi3Status fmi3GetNumberOfEventIndicators(fmi3Instance instance, size_t* nz) {
-    NOT_IMPLEMENTED
+    
+    ASSERT_STATE(GetNumberOfEventIndicators);
+
+    if (nullPointer(S, "fmi3GetNumberOfEventIndicators", "nz", nz))
+        return fmi3Error;
+
+    *nz = NZ;
+
+    return fmi3OK;
 }
 
 fmi3Status fmi3GetNumberOfContinuousStates(fmi3Instance instance, size_t* nx) {
-    NOT_IMPLEMENTED
+
+    ASSERT_STATE(GetNumberOfContinuousStates);
+
+    if (nullPointer(S, "fmi3GetNumberOfContinuousStates", "nx", nx))
+        return fmi3Error;
+
+    *nx = NX;
+
+    return fmi3OK;
 }
 
 /***************************************************
