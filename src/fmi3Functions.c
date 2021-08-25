@@ -76,6 +76,7 @@
 #define MASK_fmi3GetBoolean               MASK_fmi3GetFloat32
 #define MASK_fmi3GetString                MASK_fmi3GetFloat32
 #define MASK_fmi3GetBinary                MASK_fmi3GetFloat32
+#define MASK_fmi3GetClock                 MASK_AnyState
 
 #define MASK_fmi3SetFloat32               (Instantiated | InitializationMode | ConfigurationMode | ReconfigurationMode | EventMode | ContinuousTimeMode | StepMode | ClockActivationMode | IntermediateUpdateMode | Terminated)
 #define MASK_fmi3SetFloat64               MASK_fmi3SetFloat32
@@ -90,6 +91,7 @@
 #define MASK_fmi3SetBoolean               MASK_fmi3SetInt8
 #define MASK_fmi3SetString                MASK_fmi3SetInt8
 #define MASK_fmi3SetBinary                MASK_fmi3SetInt8
+#define MASK_fmi3SetClock                 MASK_AnyState
 
 /* Getting Variable Dependency Information */
 #define MASK_fmi3GetNumberOfVariableDependencies  MASK_AnyState
@@ -113,8 +115,6 @@
 
 /* Clock related functions */
 // TODO: fix masks
-#define MASK_fmi3GetClock                  MASK_AnyState
-#define MASK_fmi3SetClock                  MASK_AnyState
 #define MASK_fmi3GetIntervalDecimal        MASK_AnyState
 #define MASK_fmi3GetIntervalFraction       MASK_AnyState
 #define MASK_fmi3SetIntervalDecimal        MASK_AnyState
@@ -159,14 +159,6 @@
 // shorthand to access the model instance
 #define S ((ModelInstance *)instance)
 
-/***************************************************
- Common Functions
- ****************************************************/
-
-const char* fmi3GetVersion() {
-    return fmi3Version;
-}
-
 #define ASSERT_STATE(S) if(!allowedState(instance, MASK_fmi3##S, #S)) return fmi3Error;
 
 static bool allowedState(ModelInstance *instance, int statesExpected, char *name) {
@@ -182,6 +174,14 @@ static bool allowedState(ModelInstance *instance, int statesExpected, char *name
 
     return true;
 
+}
+
+/***************************************************
+ Common Functions
+ ****************************************************/
+
+const char* fmi3GetVersion() {
+    return fmi3Version;
 }
 
 fmi3Status fmi3SetDebugLogging(fmi3Instance instance, fmi3Boolean loggingOn, size_t nCategories, const fmi3String categories[]) {
@@ -537,12 +537,30 @@ fmi3Status fmi3GetBinary(fmi3Instance instance, const fmi3ValueReference vr[], s
     return (fmi3Status)status;
 }
 
+fmi3Status fmi3GetClock(fmi3Instance instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    fmi3Clock values[],
+    size_t nValues) {
+
+    ASSERT_STATE(GetClock)
+
+        Status status = OK;
+
+    for (size_t i = 0; i < nValueReferences; i++) {
+        Status s = getClock(instance, valueReferences[i], &values[i]);
+        status = max(status, s);
+        if (status > Warning) return (fmi3Status)status;
+    }
+
+    return (fmi3Status)status;
+}
+
 fmi3Status fmi3SetFloat32(fmi3Instance instance,
                           const fmi3ValueReference valueReferences[], size_t nValueReferences,
                           const fmi3Float32 values[], size_t nValues) {
     NOT_IMPLEMENTED
 }
-
 
 fmi3Status fmi3SetFloat64(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, const fmi3Float64 value[], size_t nValues) {
 
@@ -659,6 +677,27 @@ fmi3Status fmi3SetBinary(fmi3Instance instance, const fmi3ValueReference vr[], s
         Status s = setBinary(S, vr[i], size, (const char* const*)value, &index);
         status = max(status, s);
         if (status > Warning) return (fmi3Status)status;
+    }
+
+    return (fmi3Status)status;
+}
+
+fmi3Status fmi3SetClock(fmi3Instance instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    const fmi3Clock values[],
+    size_t nValues) {
+
+    ASSERT_STATE(SetClock)
+
+        Status status = OK;
+
+    for (size_t i = 0; i < nValueReferences; i++) {
+        if (values[i]) {
+            Status s = activateClock(instance, valueReferences[i]);
+            status = max(status, s);
+            if (status > Warning) return (fmi3Status)status;
+        }
     }
 
     return (fmi3Status)status;
@@ -842,46 +881,6 @@ fmi3Status fmi3ExitConfigurationMode(fmi3Instance instance) {
     return fmi3OK;
 }
 
-fmi3Status fmi3SetClock(fmi3Instance instance,
-                        const fmi3ValueReference valueReferences[],
-                        size_t nValueReferences,
-                        const fmi3Clock values[],
-                        size_t nValues) {
-
-    ASSERT_STATE(SetClock)
-
-    Status status = OK;
-
-    for (size_t i = 0; i < nValueReferences; i++) {
-        if (values[i]) {
-            Status s = activateClock(instance,  valueReferences[i]);
-            status = max(status, s);
-            if (status > Warning) return (fmi3Status)status;
-        }
-    }
-
-    return (fmi3Status)status;
-}
-
-fmi3Status fmi3GetClock(fmi3Instance instance,
-                        const fmi3ValueReference valueReferences[],
-                        size_t nValueReferences,
-                        fmi3Clock values[],
-                        size_t nValues) {
-
-    ASSERT_STATE(GetClock)
-
-    Status status = OK;
-
-    for (size_t i = 0; i < nValueReferences; i++) {
-        Status s = getClock(instance, valueReferences[i], &values[i]);
-        status = max(status, s);
-        if (status > Warning) return (fmi3Status)status;
-    }
-
-    return (fmi3Status)status;
-}
-
 fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
                                   const fmi3ValueReference valueReferences[],
                                   size_t nValueReferences,
@@ -901,21 +900,13 @@ fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
     return (fmi3Status)status;
 }
 
-fmi3Status fmi3SetIntervalDecimal(fmi3Instance instance,
-                                  const fmi3ValueReference valueReferences[],
-                                  size_t nValueReferences,
-                                  const fmi3Float64 interval[],
-                                  size_t nValues) {
-    NOT_IMPLEMENTED
-}
-
 fmi3Status fmi3GetIntervalFraction(fmi3Instance instance,
-                                   const fmi3ValueReference valueReferences[],
-                                   size_t nValueReferences,
-                                   fmi3UInt64 intervalCounter[],
-                                   fmi3UInt64 resolution[],
-                                   fmi3IntervalQualifier qualifier[],
-                                   size_t nValues) {
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    fmi3UInt64 intervalCounter[],
+    fmi3UInt64 resolution[],
+    fmi3IntervalQualifier qualifier[],
+    size_t nValues) {
     NOT_IMPLEMENTED
 }
 
@@ -936,16 +927,24 @@ fmi3Status fmi3GetShiftFraction(fmi3Instance instance,
     NOT_IMPLEMENTED
 }
 
-fmi3Status fmi3EvaluateDiscreteStates(fmi3Instance instance) {
+fmi3Status fmi3SetIntervalDecimal(fmi3Instance instance,
+                                  const fmi3ValueReference valueReferences[],
+                                  size_t nValueReferences,
+                                  const fmi3Float64 interval[],
+                                  size_t nValues) {
     NOT_IMPLEMENTED
 }
 
 fmi3Status fmi3SetIntervalFraction(fmi3Instance instance,
-                                   const fmi3ValueReference valueReferences[],
-                                   size_t nValueReferences,
-                                   const fmi3UInt64 intervalCounter[],
-                                   const fmi3UInt64 resolution[],
-                                   size_t nValues) {
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    const fmi3UInt64 intervalCounter[],
+    const fmi3UInt64 resolution[],
+    size_t nValues) {
+    NOT_IMPLEMENTED
+}
+
+fmi3Status fmi3EvaluateDiscreteStates(fmi3Instance instance) {
     NOT_IMPLEMENTED
 }
 
@@ -980,7 +979,7 @@ fmi3Status fmi3UpdateDiscreteStates(fmi3Instance instance,
 }
 
 /***************************************************
- Functions for FMI3 for Model Exchange
+ Functions for Model Exchange
  ****************************************************/
 
 fmi3Status fmi3EnterContinuousTimeMode(fmi3Instance instance) {
@@ -1106,7 +1105,7 @@ fmi3Status fmi3GetNumberOfContinuousStates(fmi3Instance instance, size_t* nx) {
 }
 
 /***************************************************
- Functions for FMI3 for Co-Simulation
+ Functions for Co-Simulation
  ****************************************************/
 
 fmi3Status fmi3EnterStepMode(fmi3Instance instance) {
