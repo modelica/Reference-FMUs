@@ -157,6 +157,8 @@ FMI_STATIC const char* FMIValueReferencesToString(FMIInstance *instance, const F
 
 FMI_STATIC const char* FMIValuesToString(FMIInstance *instance, size_t nvr, const void *value, FMIVariableType variableType);
 
+FMI_STATIC FMIStatus FMIURIToPath(const char *uri, char *path, size_t pathLength);
+
 #ifdef __cplusplus
 }  /* end of extern "C" { */
 #endif
