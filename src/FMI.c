@@ -162,3 +162,39 @@ const char* FMIValuesToString(FMIInstance *instance, size_t nvr, const void *val
 
     return instance->buf2;
 }
+
+FMIStatus FMIURIToPath(const char *uri, char *path, size_t pathLength) {
+
+#ifdef _WIN32
+    if (PathCreateFromUrlA(uri, path, &pathLength, 0) != S_OK) {
+        return FMIError;
+    }
+#else
+    const char *scheme1 = "file:///";
+    const char *scheme2 = "file:/";
+
+    strncpy(path, uri, pathLength);
+
+    if (strncmp(uri, scheme1, strlen(scheme1)) == 0) {
+        strncpy(path, &uri[strlen(scheme1)] - 1, pathLength);
+    } else if (strncmp(uri, scheme2, strlen(scheme2)) == 0) {
+        strncpy(path, &uri[strlen(scheme2) - 1], pathLength);
+    } else {
+        return FMIError;
+    }
+#endif
+
+    size_t length = strlen(path);
+
+#ifdef _WIN32
+    char sep = '\\';
+#else
+    char sep = '/';
+#endif
+
+    if (path[length] != sep) {
+        strncat(path, &sep, 1);
+    }
+
+    return FMIOK;
+}
