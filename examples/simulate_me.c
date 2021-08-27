@@ -95,6 +95,10 @@ int main(int argc, char* argv[]) {
     // retrieve solution at t=Tstart, for example, for outputs
     // S->fmi3SetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
 
+    CALL(recordVariables(S, outputFile));
+
+    int steps = 0;
+
     while (!terminateSimulation) {
 
         // detect time event
@@ -159,7 +163,7 @@ int main(int argc, char* argv[]) {
         CALL(FMI3GetContinuousStateDerivatives(S, der_x, NX));
 #endif
         // advance time
-        time += fixedStep;
+        time = ++steps * fixedStep;
 
         CALL(FMI3SetTime(S, time));
 
