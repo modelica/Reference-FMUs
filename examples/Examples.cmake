@@ -131,7 +131,7 @@ set_target_properties(jacobian PROPERTIES
 )
 
 # Examples
-foreach (MODEL_NAME BouncingBall Stair)
+foreach (MODEL_NAME BouncingBall Dahlquist Feedthrough LinearTransform Stair VanDerPol)
     foreach (INTERFACE_TYPE cs me)
         set(TARGET_NAME ${MODEL_NAME}_${INTERFACE_TYPE})
         add_executable (${TARGET_NAME}
