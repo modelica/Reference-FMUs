@@ -10,6 +10,8 @@
 #include <string.h>
 
 #ifdef _WIN32
+#include <shlwapi.h>
+#pragma comment(lib, "shlwapi.lib")
 #define strdup _strdup
 #else
 #include <stdarg.h>
@@ -166,7 +168,9 @@ const char* FMIValuesToString(FMIInstance *instance, size_t nvr, const void *val
 FMIStatus FMIURIToPath(const char *uri, char *path, size_t pathLength) {
 
 #ifdef _WIN32
-    if (PathCreateFromUrlA(uri, path, &pathLength, 0) != S_OK) {
+    DWORD pcchPath = (DWORD)pathLength;
+
+    if (PathCreateFromUrlA(uri, path, &pcchPath, 0) != S_OK) {
         return FMIError;
     }
 #else
