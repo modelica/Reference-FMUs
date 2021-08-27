@@ -913,6 +913,7 @@ fmi3Status FMI3CompletedIntegratorStep(FMIInstance *instance,
 
 /* Providing independent variables and re-initialization of caching */
 fmi3Status FMI3SetTime(FMIInstance *instance, fmi3Float64 time) {
+    instance->time = time;
     CALL_ARGS(SetTime, "time=%.16g", time);
 }
 
