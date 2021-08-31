@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
 
     CALL(FMI3InstantiateCoSimulation(S,
         INSTANTIATION_TOKEN, // instantiationToken
-        NULL,                // resourcePath
+        resourcePath(),      // resourcePath
         fmi3False,           // visible
         fmi3False,           // loggingOn
         fmi3False,           // eventModeUsed

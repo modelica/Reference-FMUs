@@ -310,10 +310,15 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
 
     ASSERT_STATE(ExitInitializationMode);
 
+    fmi3Status status = fmi3OK;
+
     // if values were set and no fmi3GetXXX triggered update before,
     // ensure calculated values are updated now
     if (S->isDirtyValues) {
-        calculateValues(S);
+        status = calculateValues(S);
+        if (status > fmi3Warning) {
+            return status;
+        }
         S->isDirtyValues = false;
     }
 
@@ -348,7 +353,7 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
             break;
     }
 
-    return fmi3OK;
+    return status;
 }
 
 fmi3Status fmi3EnterEventMode(fmi3Instance instance,
