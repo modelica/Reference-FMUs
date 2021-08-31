@@ -168,8 +168,9 @@ void setStartValues(ModelInstance *comp) {
     M(output3)           = 0;
 }
 
-void calculateValues(ModelInstance *comp) {
+Status calculateValues(ModelInstance *comp) {
     // nothing to do
+    return OK;
 }
 
 void eventUpdate(ModelInstance *comp) {

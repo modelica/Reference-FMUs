@@ -1,3 +1,5 @@
+#define NO_INPUTS
+
 #include "util.h"
 
 

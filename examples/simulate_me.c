@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
     CALL(setUp());
 
     const fmi3Float64 fixedStep = FIXED_SOLVER_STEP;
-    const fmi3Float64 stopTime = DEFAULT_STOP_TIME;
+    const fmi3Float64 stopTime  = DEFAULT_STOP_TIME;
 
 #if NZ > 0
     fmi3Int32 rootsFound[NZ] = { 0 };
@@ -30,21 +30,32 @@ int main(int argc, char* argv[]) {
     printf("Running " xstr(MODEL_IDENTIFIER) " as Model Exchange... \n");
 
     fmi3Boolean inputEvent = fmi3False;
-    fmi3Boolean timeEvent = fmi3False;
+    fmi3Boolean timeEvent  = fmi3False;
     fmi3Boolean stateEvent = fmi3False;
-    fmi3Boolean stepEvent = fmi3False;
+    fmi3Boolean stepEvent  = fmi3False;
 
-    fmi3Boolean discreteStatesNeedUpdate = fmi3True;
-    fmi3Boolean terminateSimulation = fmi3False;
+    fmi3Boolean discreteStatesNeedUpdate          = fmi3True;
+    fmi3Boolean terminateSimulation               = fmi3False;
     fmi3Boolean nominalsOfContinuousStatesChanged = fmi3False;
-    fmi3Boolean valuesOfContinuousStatesChanged = fmi3False;
-    fmi3Boolean nextEventTimeDefined = fmi3False;
-    fmi3Float64 nextEventTime = INFINITY;
+    fmi3Boolean valuesOfContinuousStatesChanged   = fmi3False;
+    fmi3Boolean nextEventTimeDefined              = fmi3False;
+    fmi3Float64 nextEventTime                     = INFINITY;
+    fmi3Float64 nextInputEvent                    = INFINITY;
+
+    char resourcePath[4096] = "";
+
+#ifdef _WIN32
+    _fullpath(resourcePath, xstr(MODEL_IDENTIFIER) "\\resources\\", 4096);
+#else
+    realpath(xstr(MODEL_IDENTIFIER) "/resources", resourcePath);
+#endif
+
+    puts(resourcePath);
 
     // tag::ModelExchange[]
     CALL(FMI3InstantiateModelExchange(S,
         INSTANTIATION_TOKEN, // instantiationToken
-        NULL,                // resourcePath
+        resourcePath,        // resourcePath
         fmi3False,           // visible
         fmi3False            // loggingOn
     ));
@@ -52,13 +63,15 @@ int main(int argc, char* argv[]) {
     // set the start time
     fmi3Float64 time = 0;
 
-    // TODO: set all variable start values (of "ScalarVariable / <type> / start")
+    // set start values
+    CALL(applyStartValues(S));
 
     // initialize
     // determine continuous and discrete states
     CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, time, fmi3True, stopTime));
 
-    // TODO: apply input
+    CALL(applyContinuousInputs(S, false));
+    CALL(applyDiscreteInputs(S));
 
     CALL(FMI3ExitInitializationMode(S));
 
@@ -101,7 +114,8 @@ int main(int argc, char* argv[]) {
 
     while (!terminateSimulation) {
 
-        // detect time event
+        // detect input and time events
+        inputEvent = time >= nextInputEventTime(time);
         timeEvent = nextEventTimeDefined && time >= nextEventTime;
 
         // handle events
@@ -109,8 +123,13 @@ int main(int argc, char* argv[]) {
 
             CALL(FMI3EnterEventMode(S, stepEvent, stateEvent, rootsFound, NZ, timeEvent));
 
+            if (inputEvent) {
+                CALL(applyContinuousInputs(S, true));
+                CALL(applyDiscreteInputs(S));
+            }
+
             nominalsOfContinuousStatesChanged = fmi3False;
-            valuesOfContinuousStatesChanged = fmi3False;
+            valuesOfContinuousStatesChanged   = fmi3False;
 
             // event iteration
             do {
@@ -118,7 +137,7 @@ int main(int argc, char* argv[]) {
                 // S->fmi3SetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
 
                 fmi3Boolean nominalsChanged = fmi3False;
-                fmi3Boolean statesChanged = fmi3False;
+                fmi3Boolean statesChanged   = fmi3False;
 
                 // update discrete states
                 CALL(FMI3UpdateDiscreteStates(S, &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime));
@@ -127,7 +146,7 @@ int main(int argc, char* argv[]) {
                 // S->fmi3GetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
 
                 nominalsOfContinuousStatesChanged |= nominalsChanged;
-                valuesOfContinuousStatesChanged |= statesChanged;
+                valuesOfContinuousStatesChanged   |= statesChanged;
 
                 if (terminateSimulation) {
                     goto TERMINATE;
@@ -167,8 +186,8 @@ int main(int argc, char* argv[]) {
 
         CALL(FMI3SetTime(S, time));
 
-        // set continuous inputs at t = time
-        // S->fmi3SetFloat*(m, ...)
+        // apply continuous inputs
+        CALL(applyContinuousInputs(S, false));
 
 #if NX > 0
         // set states at t = time and perform one step
@@ -206,7 +225,6 @@ int main(int argc, char* argv[]) {
         CALL(FMI3CompletedIntegratorStep(S, fmi3True, &stepEvent, &terminateSimulation));
 
         // get continuous output
-        // S->fmi3GetFloat*(m, ...)
         CALL(recordVariables(S, outputFile));
     }
 

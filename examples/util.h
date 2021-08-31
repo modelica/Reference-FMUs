@@ -1,6 +1,7 @@
 #ifndef util_h
 #define util_h
 
+#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include "FMI3.h"
@@ -53,6 +54,13 @@ static FILE *outputFile = NULL;
 static FMIInstance *S = NULL;
 static FILE *logFile = NULL;
 
+double nextInputEventTime(double time);
+
+FMIStatus applyStartValues(FMIInstance *S);
+
+FMIStatus applyContinuousInputs(FMIInstance *S, bool afterEvent);
+
+FMIStatus applyDiscreteInputs(FMIInstance *S);
 
 FMIStatus recordVariables(FMIInstance *S, FILE *outputFile);
 
@@ -174,5 +182,17 @@ static FMIStatus tearDown() {
 
     return status;
 }
+
+#ifdef NO_INPUTS
+
+double nextInputEventTime(double time) { return INFINITY; }
+
+FMIStatus applyStartValues(FMIInstance *S) { return FMIOK; }
+
+FMIStatus applyContinuousInputs(FMIInstance *S, bool afterEvent) { return FMIOK; }
+
+FMIStatus applyDiscreteInputs(FMIInstance *S) { return FMIOK; }
+
+#endif
 
 #endif /* util_h */

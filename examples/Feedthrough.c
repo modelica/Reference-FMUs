@@ -12,6 +12,66 @@ FILE *createOutputFile(const char *filename) {
     return file;
 }
 
+double nextInputEventTime(double time) {
+    if (time <= 0.5) {
+        return 0.5;
+    } else if (time <= 1.0) {
+        return 1.0;
+    } else if (time <= 1.5) {
+        return 1.0;
+    } else {
+        return INFINITY;
+    }
+}
+
+FMIStatus applyStartValues(FMIInstance *S) {
+
+    const fmi3ValueReference float64ValueReferences[1] = { vr_fixed_real_parameter };
+    const fmi3Float64 float64Values[1] = { 1.0 };
+    FMI3SetFloat64(S, float64ValueReferences, 1, float64Values, 1);
+
+    const fmi3ValueReference stringValueReferences[1] = { vr_string };
+    const fmi3String stringValues[1] = { "FMI is awesome!" };
+    FMI3SetString(S, stringValueReferences, 1, stringValues, 1);
+
+    return FMIOK;
+}
+
+FMIStatus applyContinuousInputs(FMIInstance *S, bool afterEvent) {
+
+    const fmi3ValueReference valueReferences[1] = { vr_continuous_real_in };
+    fmi3Float64 values[1];
+
+    if (S->time < 0.5) {
+        values[0] = 0.0;
+    } else if (S->time == 0.5) {
+        values[0] = afterEvent ? 2.0 : 0.0;
+    } else if (S->time >= 0.5 && S->time < 1.0) {
+        values[0] = 2.0 - 2.0 * (S->time - 0.5);
+    } else {
+        values[0] = 1.0;
+    }
+
+    return FMI3SetFloat64((FMIInstance *)S, valueReferences, 1, values, 1);
+}
+
+FMIStatus applyDiscreteInputs(FMIInstance *S) {
+
+    const fmi3ValueReference float64ValueReferences[2] = { vr_tunable_real_parameter, vr_discrete_real_in };
+    const fmi3Float64 float64Values[2] = { S->time < 1.5 ? 0.0 : -1.0, S->time < 1.0 ? 0 : 1.0 };
+    FMI3SetFloat64(S, float64ValueReferences, 1, float64Values, 1);
+
+    const fmi3ValueReference int32ValueReferences[1] = { vr_int_in };
+    const fmi3Int32 int32Values[1] = { S->time < 1.0 ? 0 : 1 };
+    FMI3SetInt32(S, int32ValueReferences, 1, int32Values, 1);
+
+    const fmi3ValueReference booleanValueReferences[1] = { vr_bool_in };
+    const fmi3Boolean booleanValues[1] = { S->time < 1.0 ? false : true };
+    FMI3SetBoolean(S, booleanValueReferences, 1, booleanValues, 1);
+
+    return FMIOK;
+}
+
 FMIStatus recordVariables(FMIInstance *S, FILE *outputFile) {
 
     const fmi3ValueReference float64ValueReferences[2] = { vr_continuous_real_out, vr_discrete_real_out };

@@ -8,9 +8,10 @@ void setStartValues(ModelInstance *comp) {
     M(mu) = 1;
 }
 
-void calculateValues(ModelInstance *comp) {
+Status calculateValues(ModelInstance *comp) {
     M(der_x0) = M(x1);
     M(der_x1) = M(mu) * ((1.0 - M(x0) * M(x0)) * M(x1)) - M(x0);
+    return OK;
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {

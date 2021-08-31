@@ -7,8 +7,9 @@ void setStartValues(ModelInstance *comp) {
     M(k) = 1;
 }
 
-void calculateValues(ModelInstance *comp) {
+Status calculateValues(ModelInstance *comp) {
     M(der_x) = -M(k) * M(x);
+    return OK;
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {

@@ -23,7 +23,7 @@ void setStartValues(ModelInstance *comp) {
 
 }
 
-void calculateValues(ModelInstance *comp) {
+Status calculateValues(ModelInstance *comp) {
 
     // y = A * u
     for (int i = 0; i < M(m); i++) {
@@ -32,6 +32,8 @@ void calculateValues(ModelInstance *comp) {
             M(y)[i] += M(A)[i][j] * M(u)[j];
         }
     }
+
+    return OK;
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
