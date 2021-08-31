@@ -16,9 +16,11 @@ void setStartValues(ModelInstance *comp) {
     M(y) = 0;
 }
 
-void calculateValues(ModelInstance *comp) {
-    // load the file
+Status calculateValues(ModelInstance *comp) {
 
+
+
+    // load the file
     FILE *file = NULL;
     char path[MAX_PATH_LENGTH] = "";
     char c = '\0';
@@ -26,8 +28,8 @@ void calculateValues(ModelInstance *comp) {
     const char *scheme2 = "file:/";
 
     if (!comp->resourceLocation) {
-        // FMI 1.0 for Model Exchange doesn't have a resource location
-        return;
+        logError(comp, "Resource location must not be NULL.");
+        return Error;
     }
 
 #ifdef _WIN32
@@ -35,18 +37,18 @@ void calculateValues(ModelInstance *comp) {
 
 #if FMI_VERSION < 3
     if (PathCreateFromUrl(comp->resourceLocation, path, &pathLen, 0) != S_OK) {
-        return;
+        return Error;
     }
 #else
     strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
 #endif
 
 #if FMI_VERSION == 1
-    if (!PathAppend(path, "resources") || !PathAppend(path, "y.txt")) return;
+    if (!PathAppend(path, "resources") || !PathAppend(path, "y.txt")) return Error;
 #elif FMI_VERSION == 2
-    if (!PathAppend(path, "y.txt")) return;
+    if (!PathAppend(path, "y.txt")) return Error;
 #else
-    if (!strncat(path, "y.txt", MAX_PATH_LENGTH)) return;
+    if (!strncat(path, "y.txt", MAX_PATH_LENGTH)) return Error;
 #endif
 
 #else
@@ -58,7 +60,7 @@ void calculateValues(ModelInstance *comp) {
         strncpy(path, &comp->resourceLocation[strlen(scheme2) - 1], MAX_PATH_LENGTH);
     } else {
         logError(comp, "The resourceLocation must start with \"file:/\" or \"file:///\"");
-        return;
+        return Error;
     }
 #else
     strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
@@ -79,7 +81,7 @@ void calculateValues(ModelInstance *comp) {
 
     if (!file) {
         logError(comp, "Failed to open resource file %s.", path);
-        return;
+        return Error;
     }
 
     // read the first character
@@ -90,6 +92,8 @@ void calculateValues(ModelInstance *comp) {
 
     // close the file
     fclose(file);
+
+    return OK;
 }
 
 

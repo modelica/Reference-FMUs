@@ -20,6 +20,9 @@ int main(int argc, char* argv[]) {
         NULL                 // intermediateUpdate
     ));
 
+    // set start values
+    CALL(applyStartValues(S));
+
     // initialize the FMU
     CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, startTime, fmi3True, stopTime));
 
@@ -27,10 +30,13 @@ int main(int argc, char* argv[]) {
 
     for (int step = 0;; step++) {
 
+        CALL(recordVariables(S, outputFile));
+
         // calculate the current time
         const fmi3Float64 time = step * h;
 
-        CALL(recordVariables(S, outputFile));
+        CALL(applyContinuousInputs(S, false));
+        CALL(applyDiscreteInputs(S));
 
         if (time >= stopTime) {
             break;

@@ -162,7 +162,7 @@ ModelInstance *createModelInstance(
 void freeModelInstance(ModelInstance *comp);
 
 void setStartValues(ModelInstance *comp);
-void calculateValues(ModelInstance *comp);
+Status calculateValues(ModelInstance *comp);
 
 Status getFloat64 (ModelInstance* comp, ValueReference vr, double      *value, size_t *index);
 Status getUInt16  (ModelInstance* comp, ValueReference vr, uint16_t    *value, size_t *index);
@@ -222,14 +222,17 @@ ASSERT_NOT_NULL(vr); \
 ASSERT_NOT_NULL(value); \
 size_t index = 0; \
 Status status = OK; \
+if (nvr == 0) return status; \
+if (S->isDirtyValues) { \
+    Status s = calculateValues(S); \
+    status = max(status, s); \
+    if (status > Warning) return (FMI_STATUS)status; \
+    S->isDirtyValues = false; \
+} \
 for (int i = 0; i < nvr; i++) { \
     Status s = get ## T(S, vr[i], value, &index); \
     status = max(status, s); \
     if (status > Warning) return (FMI_STATUS)status; \
-} \
-if (nvr > 0 && S->isDirtyValues) { \
-    calculateValues(S); \
-    S->isDirtyValues = false; \
 } \
 return (FMI_STATUS)status;
 

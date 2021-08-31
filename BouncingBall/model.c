@@ -14,9 +14,10 @@ void setStartValues(ModelInstance *comp) {
     M(e) =  0.7;
 }
 
-void calculateValues(ModelInstance *comp) {
-    UNUSED(comp)
-    // do nothing
+Status calculateValues(ModelInstance *comp) {
+    UNUSED(comp);
+    // nothing to do
+    return OK;
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {

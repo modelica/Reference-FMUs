@@ -29,7 +29,7 @@
 
 #define EVENT_UPDATE
 
-#define FIXED_SOLVER_STEP 1
+#define FIXED_SOLVER_STEP 0.1
 #define DEFAULT_STOP_TIME 2
 
 typedef enum {
