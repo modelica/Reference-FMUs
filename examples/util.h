@@ -4,6 +4,8 @@
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
+
 #include "FMI3.h"
 #include "config.h"
 
@@ -18,12 +20,6 @@
 #define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/x86_64-darwin/" xstr(MODEL_IDENTIFIER) ".dylib"
 #else
 #define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/x86_64-linux/" xstr(MODEL_IDENTIFIER) ".so"
-#endif
-
-#if defined(_WIN32)
-#define RESOURCE_PATH  xstr(MODEL_IDENTIFIER) "\\resources"
-#else
-#define RESOURCE_PATH  xstr(MODEL_IDENTIFIER) "/resources"
 #endif
 
 #ifndef min
@@ -53,6 +49,19 @@ static FMIStatus status = FMIOK;
 static FILE *outputFile = NULL;
 static FMIInstance *S = NULL;
 static FILE *logFile = NULL;
+
+static const char* resourcePath() {
+
+    static char path[4096] = "";
+
+#ifdef _WIN32
+    _fullpath(path, xstr(MODEL_IDENTIFIER) "\\resources\\", 4096);
+#else
+    realpath(xstr(MODEL_IDENTIFIER) "/resources/", path);
+#endif
+
+    return path;
+}
 
 double nextInputEventTime(double time);
 

@@ -42,20 +42,10 @@ int main(int argc, char* argv[]) {
     fmi3Float64 nextEventTime                     = INFINITY;
     fmi3Float64 nextInputEvent                    = INFINITY;
 
-    char resourcePath[4096] = "";
-
-#ifdef _WIN32
-    _fullpath(resourcePath, xstr(MODEL_IDENTIFIER) "\\resources\\", 4096);
-#else
-    realpath(xstr(MODEL_IDENTIFIER) "/resources", resourcePath);
-#endif
-
-    puts(resourcePath);
-
     // tag::ModelExchange[]
     CALL(FMI3InstantiateModelExchange(S,
         INSTANTIATION_TOKEN, // instantiationToken
-        resourcePath,        // resourcePath
+        resourcePath(),      // resourcePath
         fmi3False,           // visible
         fmi3False            // loggingOn
     ));

@@ -18,8 +18,6 @@ void setStartValues(ModelInstance *comp) {
 
 Status calculateValues(ModelInstance *comp) {
 
-
-
     // load the file
     FILE *file = NULL;
     char path[MAX_PATH_LENGTH] = "";
