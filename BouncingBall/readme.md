@@ -22,6 +22,6 @@ with the variables
 | e        |   0.7 |      | parameter | tunable     | Coefficient of restitution
 | v_min    |   0.1 | m/s2 | parameter | constant    | Velocity below which the ball stops bouncing
 
-The plot shows the [reference result](BouncingBall_ref.csv) computed with [FMPy](https://github.com/CATIA-Systems/FMPy).
+The plot shows the [reference result](BouncingBall_ref.csv) computed with [simulate_me.c](https://github.com/modelica/Reference-FMUs/blob/master/examples/simulate_me.c).
 
 ![plot](BouncingBall_ref.svg)
