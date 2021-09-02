@@ -43,11 +43,17 @@ static void cb_logMessage3(fmi3InstanceEnvironment instanceEnvironment,
 #elif defined(_WIN32)
 #define LOAD_SYMBOL(f) \
     instance->fmi3Functions->fmi3 ## f = (fmi3 ## f ## TYPE*)GetProcAddress(instance->libraryHandle, "fmi3" #f); \
-    if (!instance->fmi3Functions->fmi3 ## f) return fmi3Error;
+    if (!instance->fmi3Functions->fmi3 ## f) { \
+        instance->logMessage(instance, FMIError, "error", "Symbol fmi3" #f " is missing in shared library."); \
+        return fmi3Error; \
+    }
 #else
 #define LOAD_SYMBOL(f) \
     instance->fmi3Functions->fmi3 ## f = (fmi3 ## f ## TYPE*)dlsym(instance->libraryHandle, "fmi3" #f); \
-    if (!instance->fmi3Functions->fmi3 ## f) return fmi3Error;
+    if (!instance->fmi3Functions->fmi3 ## f) { \
+        instance->logMessage(instance, FMIError, "error", "Symbol fmi3" #f " is missing in shared library."); \
+        return fmi3Error; \
+    }
 #endif
 
 #define CALL(f) \
