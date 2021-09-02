@@ -44,11 +44,17 @@ static void cb_logMessage2(fmi2ComponentEnvironment componentEnvironment, fmi2St
 #elif defined(_WIN32)
 #define LOAD_SYMBOL(f) \
     instance->fmi2Functions->fmi2 ## f = (fmi2 ## f ## TYPE*)GetProcAddress(instance->libraryHandle, "fmi2" #f); \
-    if (!instance->fmi2Functions->fmi2 ## f) goto fail;
+    if (!instance->fmi2Functions->fmi2 ## f) { \
+        instance->logMessage(instance, FMIError, "error", "Symbol fmi2" #f " is missing in shared library."); \
+        goto fail; \
+    }
 #else
 #define LOAD_SYMBOL(f) \
     instance->fmi2Functions->fmi2 ## f = (fmi2 ## f ## TYPE*)dlsym(instance->libraryHandle, "fmi2" #f); \
-    if (!instance->fmi2Functions->fmi2 ## f) goto fail;
+    if (!instance->fmi2Functions->fmi2 ## f) { \
+        instance->logMessage(instance, FMIError, "error", "Symbol fmi2" #f " is missing in shared library."); \
+        goto fail; \
+    }
 #endif
 
 #define CALL(f) \
