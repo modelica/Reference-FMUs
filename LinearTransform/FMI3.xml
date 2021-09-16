@@ -34,7 +34,7 @@
       <Dimension valueReference="2"/>
     </Float64>
     <Float64 name="y" valueReference="5" causality="output">
-      <Dimension valueReference="2"/>
+      <Dimension valueReference="1"/>
     </Float64>
   </ModelVariables>
 
