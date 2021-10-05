@@ -21,6 +21,12 @@ if (MSVC)
   string(REPLACE "/MD"  "/MT"  CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
   string(REPLACE "/MDd" "/MTd" CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}")
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+
+  # Minimum supported MSVC version is 1800 = Visual Studio 12.0/2013
+  # See also https://cmake.org/cmake/help/latest/variable/MSVC_VERSION.html
+  if (MSVC_VERSION VERSION_LESS 1800)
+    message (SEND_ERROR "MSVC_VERSION ${MSVC_VERSION} is not a supported Visual Studio compiler version. Please use Visual Studio 2013 or any later version.")
+  endif ()
 endif ()
 
 add_compile_definitions(FMI_VERSION=${FMI_VERSION})
