@@ -2,9 +2,6 @@
 #include "config.h"
 #include "model.h"
 
-// shorthand to access the variables
-#define M(v) (comp->modelData->v)
-
 #define V_MIN (0.1)
 
 void setStartValues(ModelInstance *comp) {
