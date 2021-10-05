@@ -34,7 +34,7 @@ Status calculateValues(ModelInstance *comp) {
     DWORD pathLen = MAX_PATH_LENGTH;
 
 #if FMI_VERSION < 3
-    if (PathCreateFromUrl(comp->resourceLocation, path, &pathLen, 0) != S_OK) {
+    if (PathCreateFromUrlA(comp->resourceLocation, path, &pathLen, 0) != S_OK) {
         return Error;
     }
 #else
@@ -42,9 +42,9 @@ Status calculateValues(ModelInstance *comp) {
 #endif
 
 #if FMI_VERSION == 1
-    if (!PathAppend(path, "resources") || !PathAppend(path, "y.txt")) return Error;
+    if (!PathAppendA(path, "resources") || !PathAppendA(path, "y.txt")) return Error;
 #elif FMI_VERSION == 2
-    if (!PathAppend(path, "y.txt")) return Error;
+    if (!PathAppendA(path, "y.txt")) return Error;
 #else
     if (!strncat(path, "y.txt", MAX_PATH_LENGTH)) return Error;
 #endif
