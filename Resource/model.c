@@ -86,7 +86,7 @@ Status calculateValues(ModelInstance *comp) {
     c = (char)fgetc(file);
 
     // assign it to y
-    comp->modelData->y = c;
+    M(y) = c;
 
     // close the file
     fclose(file);
