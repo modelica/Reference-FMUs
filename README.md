@@ -34,7 +34,7 @@ A set of hand-coded FMUs for development, testing and debugging of the [Function
 
 ## Build the FMUs
 
-To build the FMUs you need [CMake](https://cmake.org/) and a supported [build tool](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html) e.g. Visual Studio, Xcode or make:
+To build the FMUs you need [CMake](https://cmake.org/) and a supported [build tool](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html) e.g. Visual Studio &GreaterEqual; 2013 , Xcode or make:
 
 - download or clone the repository
 
