@@ -164,6 +164,10 @@ add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E 
   "${FMU_BUILD_DIR}/modelDescription.xml"
 )
 
+add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND python "${CMAKE_CURRENT_SOURCE_DIR}/set_tool_version.py"
+  "${FMU_BUILD_DIR}/modelDescription.xml"
+)
+
 # model specific header and source
 foreach (SOURCE_FILE config.h model.c)
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
