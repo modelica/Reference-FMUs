@@ -7,6 +7,9 @@ ENDFUNCTION()
 
 project (Reference-FMUs)
 
+find_package (Python3)
+find_package (Git)
+
 set(FMI_VERSION 2 CACHE STRING "FMI Version")
 set_property(CACHE FMI_VERSION PROPERTY STRINGS 1 2 3)
 
@@ -164,9 +167,11 @@ add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E 
   "${FMU_BUILD_DIR}/modelDescription.xml"
 )
 
-add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND python "${CMAKE_CURRENT_SOURCE_DIR}/set_tool_version.py"
-  "${FMU_BUILD_DIR}/modelDescription.xml"
-)
+if (${Python3_Interpreter_FOUND} AND ${Git_FOUND})
+  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/set_tool_version.py"
+    "${FMU_BUILD_DIR}/modelDescription.xml" "${GIT_EXECUTABLE}"
+  )
+endif()
 
 # model specific header and source
 foreach (SOURCE_FILE config.h model.c)
