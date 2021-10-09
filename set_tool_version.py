@@ -8,7 +8,7 @@ def set_tool_version(filename):
 
     cwd = os.path.dirname(__file__)
 
-    changed_files = subprocess.check_output(['git', 'status', '--porcelain'], cwd=cwd).decode('ascii').strip()
+    changed_files = subprocess.check_output(['git', 'status', '--porcelain', '--untracked=no'], cwd=cwd).decode('ascii').strip()
 
     if changed_files:
         return
