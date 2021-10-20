@@ -1,21 +1,15 @@
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(EXAMPLE_SOURCES
-    include/fmi3Functions.h
-    include/fmi3FunctionTypes.h
-    include/fmi3PlatformTypes.h
+    include/fmi2Functions.h
+    include/fmi2FunctionTypes.h
+    include/fmi2TypesPlatform.h
     include/FMI.h
-    include/FMI3.h
+    include/FMI2.h
     include/model.h
     examples/util.h
     src/FMI.c
-    src/FMI3.c
-)
-
-set(MODEL_SOURCES
-  VanDerPol/sources/fmi3Functions.c
-  VanDerPol/sources/model.c
-  VanDerPol/sources/cosimulation.c
+    src/FMI2.c
 )
 
 if (MSVC)
@@ -131,13 +125,14 @@ set_target_properties(jacobian PROPERTIES
 )
 
 # Examples
-foreach (MODEL_NAME BouncingBall Dahlquist Feedthrough LinearTransform Resource Stair VanDerPol)
+# foreach (MODEL_NAME BouncingBall Dahlquist Feedthrough LinearTransform Resource Stair VanDerPol)
+foreach (MODEL_NAME BouncingBall Dahlquist Feedthrough Resource Stair VanDerPol)
     foreach (INTERFACE_TYPE cs me)
         set(TARGET_NAME ${MODEL_NAME}_${INTERFACE_TYPE})
         add_executable (${TARGET_NAME}
             ${EXAMPLE_SOURCES}
             ${MODEL_NAME}/config.h
-            examples/simulate_${INTERFACE_TYPE}.c
+            examples/simulate_fmi${FMI_VERSION}_${INTERFACE_TYPE}.c
             examples/${MODEL_NAME}.c
         )
         add_dependencies(${TARGET_NAME} ${MODEL_NAME})
@@ -153,36 +148,36 @@ foreach (MODEL_NAME BouncingBall Dahlquist Feedthrough LinearTransform Resource 
     endforeach(INTERFACE_TYPE)
 endforeach(MODEL_NAME)
 
-# scs_synchronous
-add_executable (scs_synchronous
-    ${EXAMPLE_SOURCES}
-    Clocks/config.h
-    examples/Clocks.c
-    examples/scs_synchronous.c
-)
-add_dependencies(scs_synchronous Clocks)
-set_target_properties(scs_synchronous PROPERTIES FOLDER examples)
-target_include_directories(scs_synchronous PRIVATE include Clocks)
-target_link_libraries(scs_synchronous ${LIBRARIES})
-set_target_properties(scs_synchronous PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY         temp
-    RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
-    RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
-)
+# # scs_synchronous
+# add_executable (scs_synchronous
+#     ${EXAMPLE_SOURCES}
+#     Clocks/config.h
+#     examples/Clocks.c
+#     examples/scs_synchronous.c
+# )
+# add_dependencies(scs_synchronous Clocks)
+# set_target_properties(scs_synchronous PROPERTIES FOLDER examples)
+# target_include_directories(scs_synchronous PRIVATE include Clocks)
+# target_link_libraries(scs_synchronous ${LIBRARIES})
+# set_target_properties(scs_synchronous PROPERTIES
+#     RUNTIME_OUTPUT_DIRECTORY         temp
+#     RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+#     RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+# )
 
-if (WIN32)
-    add_executable (scs_threaded
-        ${EXAMPLE_SOURCES}
-        Clocks/config.h
-        examples/scs_threaded.c
-    )
-    add_dependencies(scs_threaded Clocks)
-    set_target_properties(scs_threaded PROPERTIES FOLDER examples)
-    target_include_directories(scs_threaded PRIVATE include Clocks)
-    target_link_libraries(scs_threaded ${LIBRARIES})
-    set_target_properties(scs_threaded PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY         temp
-        RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
-        RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
-    )
-endif ()
+# if (WIN32)
+#     add_executable (scs_threaded
+#         ${EXAMPLE_SOURCES}
+#         Clocks/config.h
+#         examples/scs_threaded.c
+#     )
+#     add_dependencies(scs_threaded Clocks)
+#     set_target_properties(scs_threaded PROPERTIES FOLDER examples)
+#     target_include_directories(scs_threaded PRIVATE include Clocks)
+#     target_link_libraries(scs_threaded ${LIBRARIES})
+#     set_target_properties(scs_threaded PROPERTIES
+#         RUNTIME_OUTPUT_DIRECTORY         temp
+#         RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+#         RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+#     )
+# endif ()

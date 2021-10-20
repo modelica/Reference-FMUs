@@ -6,7 +6,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#if FMI_VERSION == 2
+#include "FMI2.h"
+#else
 #include "FMI3.h"
+#endif
 #include "config.h"
 
 
@@ -14,12 +18,27 @@
 #define xstr(s) str(s)
 #define str(s) #s
 
+#if FMI_VERSION == 2
+
+#if defined(_WIN32)
+
+#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "\\binaries\\win64\\" xstr(MODEL_IDENTIFIER) ".dll"
+#elif defined(__APPLE__)
+#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/darwin64/" xstr(MODEL_IDENTIFIER) ".dylib"
+#else
+#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/linux64/" xstr(MODEL_IDENTIFIER) ".so"
+#endif
+
+#else
+
 #if defined(_WIN32)
 #define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "\\binaries\\x86_64-windows\\" xstr(MODEL_IDENTIFIER) ".dll"
 #elif defined(__APPLE__)
 #define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/x86_64-darwin/" xstr(MODEL_IDENTIFIER) ".dylib"
 #else
 #define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/x86_64-linux/" xstr(MODEL_IDENTIFIER) ".so"
+#endif
+
 #endif
 
 #ifndef min
@@ -36,6 +55,16 @@
 
 FILE *createOutputFile(const char *filename);
 
+#if FMI_VERSION == 2
+static const fmi2Real startTime = 0;
+static const fmi2Real stopTime = DEFAULT_STOP_TIME;
+static const fmi2Real h = FIXED_SOLVER_STEP;
+
+static fmi2Boolean eventEncountered;
+//static fmi2Boolean terminateSimulation;
+static fmi2Boolean earlyReturn;
+static fmi2Real lastSuccessfulTime;
+#else
 static const fmi3Float64 startTime = 0;
 static const fmi3Float64 stopTime = DEFAULT_STOP_TIME;
 static const fmi3Float64 h = FIXED_SOLVER_STEP;
@@ -44,6 +73,7 @@ static fmi3Boolean eventEncountered;
 static fmi3Boolean terminateSimulation;
 static fmi3Boolean earlyReturn;
 static fmi3Float64 lastSuccessfulTime;
+#endif
 
 static FMIStatus status = FMIOK;
 static FILE *outputFile = NULL;
@@ -73,30 +103,26 @@ FMIStatus applyDiscreteInputs(FMIInstance *S);
 
 FMIStatus recordVariables(FMIInstance *S, FILE *outputFile);
 
-static void cb_logMessage(fmi3InstanceEnvironment instanceEnvironment, fmi3String instanceName, fmi3Status status, fmi3String category, fmi3String message) {
-
-    switch (status) {
-        case fmi3OK:
+static void logMessage(FMIInstance *instance, FMIStatus status, const char *category, const char *message) {
+    
+        switch (status) {
+        case FMIOK:
             printf("[OK] ");
             break;
-        case fmi3Warning:
+        case FMIWarning:
             printf("[Warning] ");
             break;
-        case fmi3Discard:
+        case FMIDiscard:
             printf("[Discard] ");
             break;
-        case fmi3Error:
+        case FMIError:
             printf("[Error] ");
             break;
-        case fmi3Fatal:
+        case FMIFatal:
             printf("[Fatal] ");
             break;
     }
-
-    puts(message);
-}
-
-static void logMessage(FMIInstance *instance, FMIStatus status, const char *category, const char *message) {
+    
     puts(message);
 }
 
@@ -170,16 +196,27 @@ static FMIStatus setUp() {
 
 static FMIStatus tearDown() {
 
-    if (status < FMIError) {
-        FMIStatus terminateStatus = FMI3Terminate(S);
-        status = max(status, terminateStatus);
-    }
+    if (S) {
 
-    if (status < FMIFatal) {
-        FMI3FreeInstance(S);
-    }
+        if (status < FMIError) {
+#if FMI_VERSION == 3
+            FMIStatus terminateStatus = FMI3Terminate(S);
+#else
+            FMIStatus terminateStatus = FMI2Terminate(S);
+#endif
+            status = max(status, terminateStatus);
+        }
 
-    FMIFreeInstance(S);
+        if (status < FMIFatal) {
+#if FMI_VERSION == 3
+            FMI3FreeInstance(S);
+#else
+            FMI2FreeInstance(S);
+#endif
+        }
+
+        FMIFreeInstance(S);
+    }
 
     if (outputFile) {
         fclose(outputFile);

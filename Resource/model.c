@@ -35,6 +35,7 @@ Status calculateValues(ModelInstance *comp) {
 
 #if FMI_VERSION < 3
     if (PathCreateFromUrlA(comp->resourceLocation, path, &pathLen, 0) != S_OK) {
+        logError(comp, "Failed to convert resource location to file system path.");
         return Error;
     }
 #else
