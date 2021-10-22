@@ -67,7 +67,6 @@ static const fmi2Real stopTime = DEFAULT_STOP_TIME;
 static const fmi2Real h = FIXED_SOLVER_STEP;
 
 static fmi2Boolean eventEncountered;
-//static fmi2Boolean terminateSimulation;
 static fmi2Boolean earlyReturn;
 static fmi2Real lastSuccessfulTime;
 #else

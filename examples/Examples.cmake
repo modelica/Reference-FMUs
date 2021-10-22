@@ -1,9 +1,8 @@
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(EXAMPLE_SOURCES
-    include/fmi2Functions.h
-    include/fmi2FunctionTypes.h
-    include/fmi2TypesPlatform.h
+    include/fmi${FMI_VERSION}Functions.h
+    include/fmi${FMI_VERSION}FunctionTypes.h
     include/FMI.h
     include/FMI${FMI_VERSION}.h
     include/model.h
