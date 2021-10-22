@@ -195,12 +195,14 @@ fmi2Status fmi2EnterInitializationMode(fmi2Component c) {
 
 fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
 
-    ASSERT_STATE(ExitInitializationMode)
+    ASSERT_STATE(ExitInitializationMode);
+
+    fmi2Status status = fmi2OK;
 
     // if values were set and no fmi2GetXXX triggered update before,
     // ensure calculated values are updated now
     if (S->isDirtyValues) {
-        calculateValues(S);
+        status = calculateValues(S);
         S->isDirtyValues = false;
     }
 
@@ -211,7 +213,7 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
         S->state = StepComplete;
     }
 
-    return fmi2OK;
+    return status;
 }
 
 fmi2Status fmi2Terminate(fmi2Component c) {

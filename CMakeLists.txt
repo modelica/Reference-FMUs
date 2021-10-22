@@ -262,6 +262,6 @@ endforeach(MODEL_NAME)
 
 
 # Examples
-if (${FMI_VERSION} EQUAL 3)
+if (${FMI_VERSION} EQUAL 2 OR ${FMI_VERSION} EQUAL 3)
   include(examples/Examples.cmake)
 endif()

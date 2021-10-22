@@ -384,6 +384,7 @@ fmi2Status FMI2CompletedIntegratorStep(FMIInstance *instance,
 
 /* Providing independent variables and re-initialization of caching */
 fmi2Status FMI2SetTime(FMIInstance *instance, fmi2Real time) {
+    instance->time = time;
     CALL_ARGS(SetTime, "time=%.16g", time)
 }
 
