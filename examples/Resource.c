@@ -23,7 +23,7 @@ FMIStatus recordVariables(FMIInstance *S, FILE *outputFile) {
 #else
     const fmi3ValueReference valueReferences[1] = { vr_y };
     fmi3Int32 values[1] = { 0 };
-    FMIStatus status = FMI3GetInt32((FMIInstance *)S, valueReferences, 1, values, 1); 
+    FMIStatus status = FMI3GetInt32((FMIInstance *)S, valueReferences, 1, values, 1);
 #endif
 
     fprintf(outputFile, "%g,%d\n", ((FMIInstance *)S)->time, values[0]);

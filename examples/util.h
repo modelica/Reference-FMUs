@@ -126,7 +126,7 @@ FMIStatus applyDiscreteInputs(FMIInstance *S);
 FMIStatus recordVariables(FMIInstance *S, FILE *outputFile);
 
 static void logMessage(FMIInstance *instance, FMIStatus status, const char *category, const char *message) {
-    
+
         switch (status) {
         case FMIOK:
             printf("[OK] ");
@@ -144,7 +144,7 @@ static void logMessage(FMIInstance *instance, FMIStatus status, const char *cate
             printf("[Fatal] ");
             break;
     }
-    
+
     puts(message);
 }
 

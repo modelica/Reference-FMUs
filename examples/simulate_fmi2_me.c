@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     CALL(FMI2ExitInitializationMode(S));
 
     fmi2EventInfo eventInfo = { 0 };
-    
+
     // intial event iteration
     do {
 
