@@ -294,7 +294,7 @@ fmi3Status initializeOutputFiles() {
     //fputs("time,InClock_1_Ticks,total_InClock_Ticks\n", outputFile[0]);
     //fputs("time,InClock_2_Ticks,total_InClock_Ticks,result\n", outputFile[1]);
     //fputs("time,InClock_3_Ticks,total_InClock_Ticks,output_3\n", outputFile[2]);
-    //return fmi3OK;
+    return fmi3OK;
 }
 
 /*
@@ -318,7 +318,7 @@ fmi3Status recordVariables2(fmi3Instance s, fmi3Float64 time, int modelPart) {
     //    fprintf(outputFile[2], "%g,%3d,%3d,%4d\n", time, outputs_c3[0], outputs_c3[1], outputs_c3[2]);
     //    logEvent("%g,%3d,%3d,%4d", time, outputs_c3[0], outputs_c3[1], outputs_c3[2]);
     //}
-    //return fmi3OK;
+    return fmi3OK;
 }
 
 /*

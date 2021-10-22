@@ -141,6 +141,13 @@ class BuildTest(unittest.TestCase):
 
         copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='2.0', fmi_types=['cs', 'me'])
 
+        for model in models:
+            for interface_type in ['cs', 'me']:
+                example = f'{model}_{interface_type}'
+                print(f"Running {example}...")
+                filename = os.path.join(build_dir, 'temp', example)
+                subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
+
     def test_fmi3(self):
 
         print('FMI 3.0')

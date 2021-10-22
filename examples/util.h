@@ -6,6 +6,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef _WIN32
+#include "shlwapi.h"
+#pragma comment(lib, "shlwapi.lib")
+#endif
+
 #if FMI_VERSION == 2
 #include "FMI2.h"
 #else
@@ -91,6 +96,23 @@ static const char* resourcePath() {
 #endif
 
     return path;
+}
+
+static const char* resourceURI() {
+
+    static char uri[4096] = "";
+
+    const char *path = resourcePath();
+
+#ifdef _WIN32
+    DWORD length = 4096;
+    UrlCreateFromPathA(path, uri, &length, 0);
+#else
+    strcpy(resourcePath, "file://");
+    strcat(uri, path);
+#endif
+
+    return uri;
 }
 
 double nextInputEventTime(double time);

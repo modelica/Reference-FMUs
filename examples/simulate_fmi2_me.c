@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
     fmi2Real z[NZ] = { 0 };
     fmi2Real previous_z[NZ] = { 0 };
 #else
-    fmi2Inteter *rootsFound = NULL;
+    fmi2Integer *rootsFound = NULL;
 #endif
 
 #if NX > 0
@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
     fmi2Boolean stepEvent  = fmi2False;
 
     CALL(FMI2Instantiate(S,
-        resourcePath(),      // fmuResourceLocation
+        resourceURI(),       // fmuResourceLocation
         fmi2ModelExchange,   // fmuType
         INSTANTIATION_TOKEN, // fmuGUID
         fmi2False,           // visible

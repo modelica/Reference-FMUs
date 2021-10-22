@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) {
     CALL(setUp());
 
     CALL(FMI2Instantiate(S,
-        resourcePath(),      // fmuResourceLocation
+        resourceURI(),       // fmuResourceLocation
         fmi2CoSimulation,    // fmuType
         INSTANTIATION_TOKEN, // fmuGUID
         fmi2False,           // visible
