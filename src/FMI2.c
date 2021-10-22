@@ -224,6 +224,7 @@ fmi2Status FMI2Instantiate(FMIInstance *instance, const char *fmuResourceLocatio
 
     if (!instance->component) goto fail;
 
+    instance->interfaceType = (FMIInterfaceType)fmuType;
     instance->state = FMI2InstantiatedState;
 
     return fmi2OK;
