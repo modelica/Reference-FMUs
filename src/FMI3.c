@@ -44,15 +44,15 @@ static void cb_logMessage3(fmi3InstanceEnvironment instanceEnvironment,
 #define LOAD_SYMBOL(f) \
     instance->fmi3Functions->fmi3 ## f = (fmi3 ## f ## TYPE*)GetProcAddress(instance->libraryHandle, "fmi3" #f); \
     if (!instance->fmi3Functions->fmi3 ## f) { \
-        instance->logMessage(instance, FMIError, "error", "Symbol fmi3" #f " is missing in shared library."); \
-        return fmi3Error; \
+        instance->logMessage(instance, FMIFatal, "fatal", "Symbol fmi3" #f " is missing in shared library."); \
+        return fmi3Fatal; \
     }
 #else
 #define LOAD_SYMBOL(f) \
     instance->fmi3Functions->fmi3 ## f = (fmi3 ## f ## TYPE*)dlsym(instance->libraryHandle, "fmi3" #f); \
     if (!instance->fmi3Functions->fmi3 ## f) { \
-        instance->logMessage(instance, FMIError, "error", "Symbol fmi3" #f " is missing in shared library."); \
-        return fmi3Error; \
+        instance->logMessage(instance, FMIFatal, "fatal", "Symbol fmi3" #f " is missing in shared library."); \
+        return fmi3Fatal; \
     }
 #endif
 
@@ -294,7 +294,7 @@ fmi3Status FMI3InstantiateCoSimulation(
     fmi3CallbackIntermediateUpdate intermediateUpdate) {
 
     if (loadSymbols3(instance) != FMIOK) {
-        return fmi3Error;
+        return fmi3Fatal;
     }
 
     fmi3CallbackLogMessage logMessage = instance->logMessage ? cb_logMessage3 : NULL;
