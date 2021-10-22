@@ -49,15 +49,15 @@ static void cb_logMessage2(fmi2ComponentEnvironment componentEnvironment, fmi2St
 #define LOAD_SYMBOL(f) \
     instance->fmi2Functions->fmi2 ## f = (fmi2 ## f ## TYPE*)GetProcAddress(instance->libraryHandle, "fmi2" #f); \
     if (!instance->fmi2Functions->fmi2 ## f) { \
-        instance->logMessage(instance, FMIError, "error", "Symbol fmi2" #f " is missing in shared library."); \
-        goto fail; \
+        instance->logMessage(instance, FMIFatal, "fatal", "Symbol fmi2" #f " is missing in shared library."); \
+        return fmi2Fatal; \
     }
 #else
 #define LOAD_SYMBOL(f) \
     instance->fmi2Functions->fmi2 ## f = (fmi2 ## f ## TYPE*)dlsym(instance->libraryHandle, "fmi2" #f); \
     if (!instance->fmi2Functions->fmi2 ## f) { \
-        instance->logMessage(instance, FMIError, "error", "Symbol fmi2" #f " is missing in shared library."); \
-        goto fail; \
+        instance->logMessage(instance, FMIFatal, "fatal", "Symbol fmi2" #f " is missing in shared library."); \
+        return fmi2Fatal; \
     }
 #endif
 
@@ -204,7 +204,6 @@ fmi2Status FMI2Instantiate(FMIInstance *instance, const char *fmuResourceLocatio
 #endif
     }
 
-
 #endif
 
     instance->fmi2Functions->callbacks.logger               = cb_logMessage2;
@@ -222,15 +221,14 @@ fmi2Status FMI2Instantiate(FMIInstance *instance, const char *fmuResourceLocatio
             instance->name, fmuType, fmuGUID, fmuResourceLocation, f->logger, f->allocateMemory, f->freeMemory, f->stepFinished, f->componentEnvironment, visible, loggingOn);
     }
 
-    if (!instance->component) goto fail;
+    if (!instance->component) {
+        return fmi2Error;
+    }
 
     instance->interfaceType = (FMIInterfaceType)fmuType;
     instance->state = FMI2InstantiatedState;
 
     return fmi2OK;
-
-fail:
-    return fmi2Error;
 }
 
 void FMI2FreeInstance(FMIInstance *instance) {
