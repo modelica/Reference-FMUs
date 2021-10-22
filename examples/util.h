@@ -109,7 +109,7 @@ static const char* resourceURI() {
     DWORD length = 4096;
     UrlCreateFromPathA(path, uri, &length, 0);
 #else
-    strcpy(resourcePath, "file://");
+    strcpy(uri, "file://");
     strcat(uri, path);
 #endif
 
