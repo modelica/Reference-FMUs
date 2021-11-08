@@ -72,7 +72,7 @@ ModelInstance *createModelInstance(
         comp->logEvents = loggingOn;
         comp->logErrors = true; // always log errors
         comp->nSteps = 0;
-        comp->returnEarly = false;
+        comp->earlyReturnAllowed = false;
     }
 
     if (!comp || !comp->modelData || !comp->instanceName) {
@@ -503,14 +503,18 @@ Status doStep(ModelInstance *comp,
 
             eventUpdate(comp);
 
-            comp->returnEarly = comp->nextEventTime < t + tNext;
-
 #if NZ > 0
             // update previous event indicators
             getEventIndicators(comp, comp->prez, NZ);
 #endif
 
 #if FMI_VERSION == 3
+
+            if (comp->earlyReturnAllowed) {
+                *earlyReturn = true;
+                break;
+            }
+
             if (comp->intermediateUpdate) {
 
                 comp->state = IntermediateUpdateMode;
