@@ -144,8 +144,8 @@ typedef struct {
     // internal solver steps
     int nSteps;
 
-    // co-simulation
-    bool returnEarly;
+    // Co-Simulation
+    bool earlyReturnAllowed;
 
 } ModelInstance;
 

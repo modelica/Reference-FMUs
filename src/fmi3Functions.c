@@ -231,6 +231,11 @@ fmi3Instance fmi3InstantiateCoSimulation(
     fmi3CallbackLogMessage         logMessage,
     fmi3CallbackIntermediateUpdate intermediateUpdate) {
 
+    UNUSED(visible);
+    UNUSED(eventModeUsed);
+    UNUSED(requiredIntermediateVariables);
+    UNUSED(nRequiredIntermediateVariables);
+
     ModelInstance *instance = createModelInstance(
         (loggerType)logMessage,
         (intermediateUpdateType)intermediateUpdate,
@@ -244,6 +249,7 @@ fmi3Instance fmi3InstantiateCoSimulation(
     );
 
     if (instance) {
+        instance->earlyReturnAllowed = earlyReturnAllowed;
         instance->state = Instantiated;
     }
 
@@ -1055,10 +1061,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
         return fmi3Error;
     }
 
-    // TODO: pass to doStep()
-    *terminateSimulation = fmi3False;
-
-    return (fmi3Status) doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, eventEncountered, earlyReturn, terminateSimulation, lastSuccessfulTime);
+    return (fmi3Status) doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, eventEncountered, terminateSimulation, earlyReturn, lastSuccessfulTime);
 }
 
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
