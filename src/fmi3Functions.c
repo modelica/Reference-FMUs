@@ -232,7 +232,6 @@ fmi3Instance fmi3InstantiateCoSimulation(
     fmi3CallbackIntermediateUpdate intermediateUpdate) {
 
     UNUSED(visible);
-    UNUSED(eventModeUsed);
     UNUSED(requiredIntermediateVariables);
     UNUSED(nRequiredIntermediateVariables);
 
@@ -250,7 +249,8 @@ fmi3Instance fmi3InstantiateCoSimulation(
 
     if (instance) {
         instance->earlyReturnAllowed = earlyReturnAllowed;
-        instance->state = Instantiated;
+        instance->eventModeUsed      = eventModeUsed;
+        instance->state              = Instantiated;
     }
 
     return instance;
@@ -1061,7 +1061,31 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
         return fmi3Error;
     }
 
-    return (fmi3Status) doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, eventEncountered, terminateSimulation, earlyReturn, lastSuccessfulTime);
+    bool stateEvent, timeEvent;
+
+    while (S->time + FIXED_SOLVER_STEP < currentCommunicationPoint + communicationStepSize + epsilon(S->time)) {
+
+        doFixedStep(S, &stateEvent, &timeEvent);
+
+        if (stateEvent || timeEvent) {
+
+            if (S->eventModeUsed) {
+                *eventEncountered = fmi3True;
+                break;
+            }
+
+            eventUpdate(S);
+
+            if (S->earlyReturnAllowed) {
+                *earlyReturn = fmi3True;
+                break;
+            }
+        }
+    }
+
+    *lastSuccessfulTime = S->time;
+
+    return fmi3OK;
 }
 
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,

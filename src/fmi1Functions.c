@@ -213,12 +213,21 @@ fmiStatus fmiCancelStep(fmiComponent c) {
 }
 
 fmiStatus fmiDoStep(fmiComponent c, fmiReal currentCommunicationPoint, fmiReal communicationStepSize, fmiBoolean newStep) {
+
     ModelInstance* instance = (ModelInstance *)c;
 
-    bool eventEncountered, terminateSimulation, earlyReturn;
-    double lastSuccessfulTime;
+    while (instance->time + FIXED_SOLVER_STEP < currentCommunicationPoint + communicationStepSize + epsilon(instance->time)) {
 
-    return (fmiStatus)doStep(instance, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime);
+        bool stateEvent, timeEvent;
+
+        doFixedStep(instance, &stateEvent, &timeEvent);
+
+        if (stateEvent || timeEvent) {
+            eventUpdate(instance);
+        }
+    }
+
+    return fmiOK;
 }
 
 static fmiStatus getStatus(char* fname, fmiComponent c, const fmiStatusKind s) {

@@ -146,6 +146,7 @@ typedef struct {
 
     // Co-Simulation
     bool earlyReturnAllowed;
+    bool eventModeUsed;
 
 } ModelInstance;
 
@@ -195,6 +196,7 @@ void getEventIndicators(ModelInstance *comp, double z[], size_t nz);
 void eventUpdate(ModelInstance *comp);
 //void updateEventTime(ModelInstance *comp);
 
+double epsilon(double value);
 bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected);
 bool invalidState(ModelInstance *comp, const char *f, int statesExpected);
 bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void *p);
