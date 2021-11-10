@@ -572,10 +572,18 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
         return fmi2Error;
     }
 
-    bool eventEncountered, terminateSimulation, earlyReturn;
-    double lastSuccessfulTime;
+    while (S->time + FIXED_SOLVER_STEP < currentCommunicationPoint + communicationStepSize + epsilon(S->time)) {
 
-    return (fmi2Status)doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime);
+        bool stateEvent, timeEvent;
+
+        doFixedStep(S, &stateEvent, &timeEvent);
+
+        if (stateEvent || timeEvent) {
+            eventUpdate(S);
+        }
+    }
+
+    return fmi2OK;
 }
 
 /* Inquire slave status */

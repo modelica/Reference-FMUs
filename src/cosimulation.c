@@ -61,18 +61,19 @@ ModelInstance *createModelInstance(
 
     if (comp) {
         comp->componentEnvironment = componentEnvironment;
-        comp->logger = cbLogger;
-        comp->intermediateUpdate = intermediateUpdate;
-        comp->lockPreemtion = NULL;
-        comp->unlockPreemtion = NULL;
-        comp->instanceName = strdup(instanceName);
-        comp->resourceLocation = resourceLocation ? strdup(resourceLocation) : NULL;
-        comp->status = OK;
-        comp->modelData = (ModelData *)calloc(1, sizeof(ModelData));
-        comp->logEvents = loggingOn;
-        comp->logErrors = true; // always log errors
-        comp->nSteps = 0;
-        comp->earlyReturnAllowed = false;
+        comp->logger               = cbLogger;
+        comp->intermediateUpdate   = intermediateUpdate;
+        comp->lockPreemtion        = NULL;
+        comp->unlockPreemtion      = NULL;
+        comp->instanceName         = strdup(instanceName);
+        comp->resourceLocation     = resourceLocation ? strdup(resourceLocation) : NULL;
+        comp->status               = OK;
+        comp->modelData            = (ModelData *)calloc(1, sizeof(ModelData));
+        comp->logEvents            = loggingOn;
+        comp->logErrors            = true; // always log errors
+        comp->nSteps               = 0;
+        comp->earlyReturnAllowed   = false;
+        comp->eventModeUsed        = false;
     }
 
     if (!comp || !comp->modelData || !comp->instanceName) {
@@ -80,18 +81,18 @@ ModelInstance *createModelInstance(
         return NULL;
     }
 
-    comp->time = 0; // overwrite in fmi*SetupExperiment, fmi*SetTime
-    comp->type = interfaceType;
+    comp->time                              = 0; // overwrite in fmi*SetupExperiment, fmi*SetTime
+    comp->type                              = interfaceType;
 
-    comp->state = Instantiated;
-    comp->isNewEventIteration = false;
+    comp->state                             = Instantiated;
+    comp->isNewEventIteration               = false;
 
-    comp->newDiscreteStatesNeeded = false;
-    comp->terminateSimulation = false;
+    comp->newDiscreteStatesNeeded           = false;
+    comp->terminateSimulation               = false;
     comp->nominalsOfContinuousStatesChanged = false;
-    comp->valuesOfContinuousStatesChanged = false;
-    comp->nextEventTimeDefined = false;
-    comp->nextEventTime = 0;
+    comp->valuesOfContinuousStatesChanged   = false;
+    comp->nextEventTimeDefined              = false;
+    comp->nextEventTime                     = 0;
 
     setStartValues(comp); // to be implemented by the includer of this file
     comp->isDirtyValues = true; // because we just called setStartValues
@@ -112,6 +113,10 @@ void freeModelInstance(ModelInstance *comp) {
     free(comp->z);
     free(comp->prez);
     free(comp);
+}
+
+double epsilon(double value) {
+    return (1.0 + fabs(value)) * DBL_EPSILON;
 }
 
 bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected) {
@@ -432,154 +437,61 @@ Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueRe
 }
 #endif
 
-Status doStep(ModelInstance *comp,
-    double t,
-    double tNext,
-    bool* eventEncountered,
-    bool* terminateSimulation,
-    bool* earlyReturn,
-    double* lastSuccessfulTime) {
-
-    UNUSED(t);  // TODO: check t == comp->time ?
-
-    if (eventEncountered)    *eventEncountered    = false;
-    if (terminateSimulation) *terminateSimulation = false;
-    if (earlyReturn)         *earlyReturn         = false;
-
-    bool   stateEvent = false;
-    bool   timeEvent  = false;
-    Status status     = OK;
-
-#if NZ > 0
-    double *temp = NULL;
-#endif
+void doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
 
 #if NX > 0
     double  x[NX] = { 0 };
     double dx[NX] = { 0 };
-#endif
 
-    double epsilon = (1.0 + fabs(comp->time)) * DBL_EPSILON;
+    getContinuousStates(comp, x, NX);
+    getDerivatives(comp, dx, NX);
 
-    while (comp->time + FIXED_SOLVER_STEP < tNext + epsilon) {
-
-#if NX > 0
-        getContinuousStates(comp, x, NX);
-        getDerivatives(comp, dx, NX);
-
-        // forward Euler step
-        for (int i = 0; i < NX; i++) {
-            x[i] += FIXED_SOLVER_STEP * dx[i];
-        }
-
-        setContinuousStates(comp, x, NX);
-#endif
-
-        stateEvent = false;
-
-#if NZ > 0
-        getEventIndicators(comp, comp->z, NZ);
-
-        // check for zero-crossings
-        for (int i = 0; i < NZ; i++) {
-            stateEvent |= comp->prez[i] < 0 && comp->z[i] >= 0;
-            stateEvent |= comp->prez[i] > 0 && comp->z[i] <= 0;
-        }
-
-        // remember the current event indicators
-        temp = comp->z;
-        comp->z = comp->prez;
-        comp->prez = temp;
-#endif
-
-        // check for time event
-        timeEvent = comp->nextEventTimeDefined && (comp->time + FIXED_SOLVER_STEP * 1e-2) >= comp->nextEventTime;
-
-        // log events
-        if (timeEvent) logEvent(comp, "Time event detected at t=%g s.", comp->time);
-        if (stateEvent) logEvent(comp, "State event detected at t=%g s.", comp->time);
-
-        if (stateEvent || timeEvent) {
-
-            eventUpdate(comp);
-
-#if NZ > 0
-            // update previous event indicators
-            getEventIndicators(comp, comp->prez, NZ);
-#endif
-
-#if FMI_VERSION == 3
-
-            if (comp->earlyReturnAllowed) {
-                *earlyReturn = true;
-                break;
-            }
-
-            if (comp->intermediateUpdate) {
-
-                comp->state = IntermediateUpdateMode;
-
-                bool earlyReturnRequested;
-                double earlyReturnTime;
-
-                comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
-                                          comp->time,         // intermediateUpdateTime
-                                          comp->clocksTicked, // clocksTicked
-                                          false,              // intermediateVariableSetRequested
-                                          true,               // intermediateVariableGetAllowed
-                                          false,              // intermediateStepFinished
-                                          true,               // canReturnEarly
-                                          &earlyReturnRequested,
-                                          &earlyReturnTime);
-
-                comp->state = StepMode;
-
-                if (earlyReturnRequested) {
-                    *earlyReturn = true;
-                    // TODO: continue to earlyReturnTime?
-                    return status;
-                }
-            }
-#endif
-        }
-
-        // terminate simulation, if requested by the model in the previous step
-        if (comp->terminateSimulation) {
-#if FMI_VERSION == 2
-            comp->state = StepFailed;
-#endif
-            return Discard; // enforce termination of the simulation loop
-        }
-
-        comp->time = FIXED_SOLVER_STEP * (++comp->nSteps);
-
-#if FMI_VERSION == 3
-        if (comp->intermediateUpdate) {
-
-            comp->state = IntermediateUpdateMode;
-
-            bool earlyReturnRequested;
-            double earlyReturnTime;
-
-            // call intermediate update callback
-            comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
-                                      comp->time, // intermediateUpdateTime
-                                      false,      // clocksTicked
-                                      false,      // intermediateVariableSetRequested
-                                      true,       // intermediateVariableGetAllowed
-                                      true,       // intermediateStepFinished
-                                      true,       // canReturnEarly
-                                      &earlyReturnRequested,
-                                      &earlyReturnTime);
-
-            comp->state = StepMode;
-        }
-#endif
+    // forward Euler step
+    for (int i = 0; i < NX; i++) {
+        x[i] += FIXED_SOLVER_STEP * dx[i];
     }
 
-    if (lastSuccessfulTime) {
-        *lastSuccessfulTime = comp->time;
+    setContinuousStates(comp, x, NX);
+#endif
+
+    comp->nSteps++;
+
+    comp->time = comp->nSteps * FIXED_SOLVER_STEP;
+
+    // state event
+    *stateEvent = false;
+
+#if NZ > 0
+    getEventIndicators(comp, comp->z, NZ);
+
+    // check for zero-crossings
+    for (int i = 0; i < NZ; i++) {
+        *stateEvent |= comp->prez[i] * comp->z[i] < 0;
     }
 
-    return status;
+    // remember the current event indicators
+    double* temp = comp->z;
+    comp->z = comp->prez;
+    comp->prez = temp;
+#endif
+
+    // time event
+    *timeEvent = comp->nextEventTimeDefined && comp->time >= comp->nextEventTime;
+
+    bool earlyReturnRequested;
+    double earlyReturnTime;
+
+    // intermediate update
+    if (comp->intermediateUpdate) {
+        comp->intermediateUpdate(
+            comp->componentEnvironment, // instanceEnvironment
+            comp->time,                 // intermediateUpdateTime
+            false,                      // clocksTicked
+            false,                      // intermediateVariableSetRequested
+            true,                       // intermediateVariableGetAllowed
+            true,                       // intermediateStepFinished
+            false,                      // canReturnEarly
+            &earlyReturnRequested,      // earlyReturnRequested
+            &earlyReturnTime);          // earlyReturnTime
+    }
 }

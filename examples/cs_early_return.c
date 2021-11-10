@@ -23,40 +23,39 @@ int main(int argc, char* argv[]) {
     // set start values
     CALL(applyStartValues(S));
 
+    fmi3Float64 time = startTime;
+
     // initialize the FMU
-    CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, startTime, fmi3True, stopTime));
+    CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, time, fmi3True, stopTime));
 
     CALL(FMI3ExitInitializationMode(S));
 
-    int grid_point = 0; // current point on the grid
+    // communication step size
+    const fmi3Float64 stepSize = 10 * FIXED_SOLVER_STEP;
 
-    fmi3Float64 time = 0;
+    while (true) {
 
-    while (!terminateSimulation) {
+        // apply continuous and discrete inputs
+        CALL(applyContinuousInputs(S, true));
+        CALL(applyDiscreteInputs(S));
 
+        // record variables
         CALL(recordVariables(S, outputFile));
 
-        if (time >= stopTime) {
-            break; // stop time has been reached
+        if (terminateSimulation || time >= stopTime) {
+            break;
         }
 
-        // calculate the distance to the next grid point
-        const fmi3Float64 step_size = (grid_point + 1) * 0.1 - time;
-
-        // do one grid_point
+        // returns early on events
         CALL(FMI3DoStep(S,
             time,                 // currentCommunicationPoint
-            step_size,            // communicationStepSize
+            stepSize,             // communicationStepSize
             fmi3True,             // noSetFMUStatePriorToCurrentPoint
             &eventEncountered,    // eventEncountered
             &terminateSimulation, // terminate
             &earlyReturn,         // earlyReturn
             &time                 // lastSuccessfulTime
         ));
-
-        if (!earlyReturn) {
-            grid_point++; // grid point has been reached
-        }
     }
 
 TERMINATE:

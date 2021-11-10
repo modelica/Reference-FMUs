@@ -1,115 +1,94 @@
-#include <math.h>
-
 #define OUTPUT_FILE  "cs_event_mode_out.csv"
 #define LOG_FILE     "cs_event_mode_log.txt"
 
 #include "util.h"
 
 
-// Callback
-void intermediateUpdate (
-    fmi3InstanceEnvironment instanceEnvironment,
-    fmi3Float64  intermediateUpdateTime,
-    fmi3Boolean  clocksTicked,
-    fmi3Boolean  intermediateVariableSetRequested,
-    fmi3Boolean  intermediateVariableGetAllowed,
-    fmi3Boolean  intermediateStepFinished,
-    fmi3Boolean  canReturnEarly,
-    fmi3Boolean* earlyReturnRequested,
-    fmi3Float64* earlyReturnTime) {
-
-    // ignore clocksTicked
-    // ignore intermediate variables (will be handled in Event Mode)
-    // ignore intermediateStepFinished
-
-    if (canReturnEarly) {
-        // stop at intermediateUpdateTime
-        *earlyReturnRequested = fmi3True;
-        *earlyReturnTime = intermediateUpdateTime;
-    }
-}
-
 int main(int argc, char* argv[]) {
 
     CALL(setUp());
 
-    //////////////////////////
-    // Initialization sub-phase
-
-    // Instantiate the FMU
     CALL(FMI3InstantiateCoSimulation(S,
         INSTANTIATION_TOKEN, // instantiationToken
         NULL,                // resourcePath
         fmi3False,           // visible
         fmi3False,           // loggingOn
-        fmi3False,           // eventModeUsed
+        fmi3True,            // eventModeUsed
         fmi3False,           // earlyReturnAllowed
         NULL,                // requiredIntermediateVariables
         0,                   // nRequiredIntermediateVariables
-        intermediateUpdate   // intermediateUpdate
+        NULL                 // intermediateUpdate
     ));
 
-    // Set all variable start values (of "ScalarVariable / <type> / start")
-    // fmi3SetReal/Integer/Boolean/String(s, ...);
+    // set start values
+    CALL(applyStartValues(S));
 
-    // Initialize the FMU instance
-    CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, startTime, fmi3True, stopTime));
+    fmi3Float64 time = startTime;
 
-    // Set the input values at time = startTime
-    // fmi3SetReal/Integer/Boolean/String(s, ...);
+    // initialize the FMU
+    CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, time, fmi3True, stopTime));
+
     CALL(FMI3ExitInitializationMode(S));
 
-    //////////////////////////
-    // Simulation sub-phase
-    fmi3Float64 time = startTime; // current time
-    fmi3Float64 step = h;         // non-zero step size (0: enter Event Mode)
+    // communication step size
+    const fmi3Float64 stepSize = 10 * FIXED_SOLVER_STEP;
 
-    while (time < stopTime) {
+    while (true) {
 
-        if (step > 0) {
-            // Continuous mode (default mode)
-            fmi3Boolean eventEncountered = fmi3False, terminate = fmi3False, earlyReturn = fmi3False;
-            fmi3Float64 lastSuccessfulTime = 0;
+        CALL(recordVariables(S, outputFile));
 
-            CALL(FMI3DoStep(S, time, step, fmi3False, &eventEncountered, &terminate, &earlyReturn, &lastSuccessfulTime));
+        if (terminateSimulation || time >= stopTime) {
+            break;
+        }
 
-            // TODO: use eventEncountered instead of earlyReturn
-            if (earlyReturn) {
-                // TODO: pass reasons
-                CALL(FMI3EnterEventMode(S, fmi3False, fmi3False, NULL, 0, fmi3False));
-                step = 0;
-            } else {
-                step = h;
-            }
+        CALL(FMI3DoStep(S,
+            time,                 // currentCommunicationPoint
+            stepSize,             // communicationStepSize
+            fmi3True,             // noSetFMUStatePriorToCurrentPoint
+            &eventEncountered,    // eventEncountered
+            &terminateSimulation, // terminate
+            &earlyReturn,         // earlyReturn
+            &time                 // lastSuccessfulTime
+        ));
 
-            // TODO: use lastSuccessfulTime
-            time += h;
+        fmi3Boolean discreteStatesNeedUpdate = fmi3False;
+        fmi3Boolean nominalsChanged          = fmi3False;
+        fmi3Boolean statesChanged            = fmi3False;
+        fmi3Boolean nextEventTimeDefined     = fmi3False;
+        fmi3Float64 nextEventTime            = 0;
 
-        } else {
+        if (eventEncountered) {
 
-            fmi3Boolean discreteStatesNeedUpdate = fmi3True;
-            fmi3Boolean terminateSimulation;
-            fmi3Boolean nominalsOfContinuousStatesChanged;
-            fmi3Boolean valuesOfContinuousStatesChanged;
-            fmi3Boolean nextEventTimeDefined;
-            fmi3Float64 nextEventTime;
+            // record variables before event update
+            CALL(recordVariables(S, outputFile));
 
-            // Event mode
-            CALL(FMI3UpdateDiscreteStates(S, &discreteStatesNeedUpdate, &terminateSimulation, &nominalsOfContinuousStatesChanged, &valuesOfContinuousStatesChanged, &nextEventTimeDefined, &nextEventTime));
+            // enter Event Mode
+            CALL(FMI3EnterEventMode(S, fmi3False, fmi3False, NULL, 0, fmi3False));
 
-            if (!discreteStatesNeedUpdate) {
-                CALL(FMI3EnterStepMode(S));
-                step = h - fmod(time, h);  // finish the step
-            };
-        };
+            // apply continuous and discrete inputs
+            CALL(applyContinuousInputs(S, true));
+            CALL(applyDiscreteInputs(S));
 
-        // Get outputs
-        // fmi3GetReal/Integer/Boolean/String(s, ...);
-        recordVariables(S, outputFile);
+            // update discrete states
+            do {
+                CALL(FMI3UpdateDiscreteStates(S,
+                    &discreteStatesNeedUpdate,
+                    &terminateSimulation,
+                    &nominalsChanged,
+                    &statesChanged,
+                    &nextEventTimeDefined,
+                    &nextEventTime
+                ));
 
-        // Set inputs
-        // fmi3SetReal/Integer/Boolean/String(s, ...);
-    };
+                if (terminateSimulation) {
+                    break;
+                }
+            } while (discreteStatesNeedUpdate);
+
+            // return to Step Mode
+            CALL(FMI3EnterStepMode(S));
+        }
+    }
 
 TERMINATE:
     return tearDown();

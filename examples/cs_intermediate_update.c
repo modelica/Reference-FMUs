@@ -23,6 +23,8 @@ void intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
 
     FMIInstance *S = (FMIInstance *)instanceEnvironment;
 
+    S->time = intermediateUpdateTime;
+
     *earlyReturnRequested = fmi3False;
     *earlyReturnTime = 0;
 
@@ -97,22 +99,33 @@ int main(int argc, char* argv[]) {
         intermediateUpdate   // intermediateUpdate
     ));
 
-    // Set all start values
-    // fmi3Set{VariableType}()
-
-    CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, startTime, fmi3True, stopTime));
-    CALL(FMI3ExitInitializationMode(S));
+    // set start values
+    CALL(applyStartValues(S));
 
     fmi3Float64 time = startTime;
+
+    CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, time, fmi3True, stopTime));
+    CALL(FMI3ExitInitializationMode(S));
+
+    // communication step size
+    const fmi3Float64 stepSize = 10 * FIXED_SOLVER_STEP;
 
     while (time < stopTime) {
 
         fmi3Boolean eventEncountered, terminateSimulation, earlyReturn;
         fmi3Float64 lastSuccessfulTime;
 
-        CALL(FMI3DoStep(S, time, h, fmi3False, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime))
+        CALL(FMI3DoStep(S,
+            time,                 // currentCommunicationPoint
+            stepSize,             // communicationStepSize
+            fmi3True,             // noSetFMUStatePriorToCurrentPoint
+            &eventEncountered,    // eventEncountered
+            &terminateSimulation, // terminate
+            &earlyReturn,         // earlyReturn
+            &time                 // lastSuccessfulTime
+        ));
 
-        time += h;
+        time += stepSize;
     };
 
     fmi3Status terminateStatus;

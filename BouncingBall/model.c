@@ -107,6 +107,11 @@ void eventUpdate(ModelInstance *comp) {
         comp->valuesOfContinuousStatesChanged = true;
     }
 
+    // reset the previous event indicators
+    for (int i = 0; i < NZ; i++) {
+        comp->prez[i] = 0;
+    }
+
     comp->nominalsOfContinuousStatesChanged = false;
     comp->terminateSimulation  = false;
     comp->nextEventTimeDefined = false;
