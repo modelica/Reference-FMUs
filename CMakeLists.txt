@@ -133,6 +133,12 @@ target_compile_definitions(${TARGET_NAME} PRIVATE
   DISABLE_PREFIX
 )
 
+if(MSVC)
+  target_compile_options(${TARGET_NAME} PRIVATE /W4 /WX)
+else()
+  target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+
 if (${FMI_VERSION} EQUAL 1 AND "${FMI_TYPE}" STREQUAL CS)
   target_compile_definitions(${TARGET_NAME} PRIVATE FMI_COSIMULATION)
 endif()

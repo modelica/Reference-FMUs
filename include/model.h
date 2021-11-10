@@ -158,8 +158,7 @@ ModelInstance *createModelInstance(
     const char *instantiationToken,
     const char *resourceLocation,
     bool loggingOn,
-    InterfaceType interfaceType,
-    bool returnEarly);
+    InterfaceType interfaceType);
 void freeModelInstance(ModelInstance *comp);
 
 void setStartValues(ModelInstance *comp);
@@ -224,14 +223,14 @@ ASSERT_NOT_NULL(vr); \
 ASSERT_NOT_NULL(value); \
 size_t index = 0; \
 Status status = OK; \
-if (nvr == 0) return status; \
+if (nvr == 0) return (FMI_STATUS)status; \
 if (S->isDirtyValues) { \
     Status s = calculateValues(S); \
     status = max(status, s); \
     if (status > Warning) return (FMI_STATUS)status; \
     S->isDirtyValues = false; \
 } \
-for (int i = 0; i < nvr; i++) { \
+for (size_t i = 0; i < nvr; i++) { \
     Status s = get ## T(S, vr[i], value, &index); \
     status = max(status, s); \
     if (status > Warning) return (FMI_STATUS)status; \
@@ -243,7 +242,7 @@ ASSERT_NOT_NULL(vr); \
 ASSERT_NOT_NULL(value); \
 size_t index = 0; \
 Status status = OK; \
-for (int i = 0; i < nvr; i++) { \
+for (size_t i = 0; i < nvr; i++) { \
     Status s = set ## T(S, vr[i], value, &index); \
     status = max(status, s); \
     if (status > Warning) return (FMI_STATUS)status; \
@@ -254,7 +253,7 @@ return (FMI_STATUS)status;
 // TODO: make this work with arrays
 #define GET_BOOLEAN_VARIABLES \
 Status status = OK; \
-for (int i = 0; i < nvr; i++) { \
+for (size_t i = 0; i < nvr; i++) { \
     bool v = false; \
     size_t index = 0; \
     Status s = getBoolean(S, vr[i], &v, &index); \
@@ -267,7 +266,7 @@ return (FMI_STATUS)status;
 // TODO: make this work with arrays
 #define SET_BOOLEAN_VARIABLES \
 Status status = OK; \
-for (int i = 0; i < nvr; i++) { \
+for (size_t i = 0; i < nvr; i++) { \
     bool v = value[i]; \
     size_t index = 0; \
     Status s = setBoolean(S, vr[i], &v, &index); \

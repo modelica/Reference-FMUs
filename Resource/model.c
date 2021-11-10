@@ -22,8 +22,6 @@ Status calculateValues(ModelInstance *comp) {
     FILE *file = NULL;
     char path[MAX_PATH_LENGTH] = "";
     char c = '\0';
-    const char *scheme1 = "file:///";
-    const char *scheme2 = "file:/";
 
     if (!comp->resourceLocation) {
         logError(comp, "Resource location must not be NULL.");
@@ -31,9 +29,10 @@ Status calculateValues(ModelInstance *comp) {
     }
 
 #ifdef _WIN32
-    DWORD pathLen = MAX_PATH_LENGTH;
 
 #if FMI_VERSION < 3
+    DWORD pathLen = MAX_PATH_LENGTH;
+
     if (PathCreateFromUrlA(comp->resourceLocation, path, &pathLen, 0) != S_OK) {
         logError(comp, "Failed to convert resource location to file system path.");
         return Error;
@@ -53,6 +52,9 @@ Status calculateValues(ModelInstance *comp) {
 #else
 
 #if FMI_VERSION < 3
+    const char *scheme1 = "file:///";
+    const char *scheme2 = "file:/";
+
     if (strncmp(comp->resourceLocation, scheme1, strlen(scheme1)) == 0) {
         strncpy(path, &comp->resourceLocation[strlen(scheme1)] - 1, MAX_PATH_LENGTH);
     } else if (strncmp(comp->resourceLocation, scheme2, strlen(scheme2)) == 0) {

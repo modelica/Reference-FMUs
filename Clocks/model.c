@@ -169,15 +169,21 @@ void setStartValues(ModelInstance *comp) {
 }
 
 Status calculateValues(ModelInstance *comp) {
-    // nothing to do
+
+    UNUSED(comp);
+
     return OK;
 }
 
 void eventUpdate(ModelInstance *comp) {
-    // nothing to do
+    UNUSED(comp);
 }
 
 Status activateClock(ModelInstance* comp, ValueReference vr) {
+
+    UNUSED(comp);
+    UNUSED(vr);
+
     return OK;
 }
 

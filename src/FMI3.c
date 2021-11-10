@@ -28,6 +28,8 @@ static void cb_logMessage3(fmi3InstanceEnvironment instanceEnvironment,
     fmi3String category,
     fmi3String message) {
 
+    (void)instanceName; // unused
+
     if (!instanceEnvironment) return;
 
     FMIInstance *instance = instanceEnvironment;

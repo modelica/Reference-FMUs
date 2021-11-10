@@ -31,8 +31,7 @@ ModelInstance *createModelInstance(
     const char *instantiationToken,
     const char *resourceLocation,
     bool loggingOn,
-    InterfaceType interfaceType,
-    bool returnEarly) {
+    InterfaceType interfaceType) {
 
     ModelInstance *comp = NULL;
 
@@ -131,6 +130,9 @@ bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t a
 }
 
 bool invalidState(ModelInstance *comp, const char *f, int statesExpected) {
+
+    UNUSED(f);
+    UNUSED(statesExpected);
 
     if (!comp) {
         return true;

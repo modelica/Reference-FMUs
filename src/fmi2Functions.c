@@ -164,9 +164,7 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
         fmuGUID,
         fmuResourceLocation,
         loggingOn,
-        (InterfaceType)fmuType,
-        false
-    );
+        (InterfaceType)fmuType);
 }
 
 fmi2Status fmi2SetupExperiment(fmi2Component c, fmi2Boolean toleranceDefined, fmi2Real tolerance,
@@ -202,7 +200,7 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
     // if values were set and no fmi2GetXXX triggered update before,
     // ensure calculated values are updated now
     if (S->isDirtyValues) {
-        status = calculateValues(S);
+        status = (fmi2Status)calculateValues(S);
         S->isDirtyValues = false;
     }
 
@@ -284,8 +282,6 @@ fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
         S->isDirtyValues = false;
     }
 
-    ModelInstance *instance = (ModelInstance *)c;
-
     GET_VARIABLES(Float64)
 }
 
@@ -303,8 +299,6 @@ fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
         calculateValues(S);
         S->isDirtyValues = false;
     }
-
-    ModelInstance *instance = (ModelInstance *)c;
 
     GET_VARIABLES(Int32)
 }
@@ -324,8 +318,6 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
         S->isDirtyValues = false;
     }
 
-    ModelInstance *instance = (ModelInstance *)c;
-
     GET_BOOLEAN_VARIABLES
 }
 
@@ -344,8 +336,6 @@ fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t
         S->isDirtyValues = false;
     }
 
-    ModelInstance *instance = (ModelInstance *)c;
-
     GET_VARIABLES(String)
 }
 
@@ -362,8 +352,6 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
     if (nvr > 0 && nullPointer(S, "fmi2SetReal", "value[]", value))
         return fmi2Error;
 
-    ModelInstance *instance = (ModelInstance *)c;
-
     SET_VARIABLES(Float64)
 }
 
@@ -376,8 +364,6 @@ fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
 
     if (nvr > 0 && nullPointer(S, "fmi2SetInteger", "value[]", value))
         return fmi2Error;
-
-    ModelInstance *instance = (ModelInstance *)c;
 
     SET_VARIABLES(Int32)
 }
@@ -392,8 +378,6 @@ fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
     if (nvr>0 && nullPointer(S, "fmi2SetBoolean", "value[]", value))
         return fmi2Error;
 
-    ModelInstance *instance = (ModelInstance *)c;
-
     SET_BOOLEAN_VARIABLES
 }
 
@@ -406,8 +390,6 @@ fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t
 
     if (nvr>0 && nullPointer(S, "fmi2SetString", "value[]", value))
         return fmi2Error;
-
-    ModelInstance *instance = (ModelInstance *)c;
 
     SET_VARIABLES(String)
 }
@@ -494,12 +476,11 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReferenc
     // TODO: assert nUnknowns == nDeltaOfUnknowns
     // TODO: assert nKnowns == nDeltaKnowns
 
-
     Status status = OK;
 
-    for (int i = 0; i < nUnknown; i++) {
+    for (size_t i = 0; i < nUnknown; i++) {
         dvUnknown[i] = 0;
-        for (int j = 0; j < nKnown; j++) {
+        for (size_t j = 0; j < nKnown; j++) {
             double partialDerivative = 0;
             Status s = getPartialDerivative(S, vUnknown_ref[i], vKnown_ref[j], &partialDerivative);
             status = max(status, s);
@@ -680,17 +661,6 @@ fmi2Status fmi2NewDiscreteStates(fmi2Component c, fmi2EventInfo *eventInfo) {
 
     ASSERT_STATE(NewDiscreteStates)
 
-    int timeEvent = 0;
-
-    S->newDiscreteStatesNeeded = fmi2False;
-    S->terminateSimulation = fmi2False;
-    S->nominalsOfContinuousStatesChanged = fmi2False;
-    S->valuesOfContinuousStatesChanged = fmi2False;
-
-    if (S->nextEventTimeDefined && S->nextEventTime <= S->time) {
-        timeEvent = 1;
-    }
-
     eventUpdate(S);
 
     S->isNewEventIteration = false;
@@ -820,7 +790,7 @@ fmi2Status fmi2GetNominalsOfContinuousStates(fmi2Component c, fmi2Real x_nominal
     if (nullPointer(S, "fmi2GetNominalContinuousStates", "x_nominal[]", x_nominal))
         return fmi2Error;
 
-    for (int i = 0; i < nx; i++)
+    for (size_t i = 0; i < nx; i++)
         x_nominal[i] = 1;
 
     return fmi2OK;
