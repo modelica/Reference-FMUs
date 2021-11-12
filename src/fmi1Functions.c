@@ -96,9 +96,17 @@ fmiStatus fmiSetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr
 }
 
 fmiStatus fmiSetString(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiString value[]){
+
+    UNUSED(c);
+    UNUSED(vr);
+    UNUSED(nvr);
+    UNUSED(value);
+
     ASSERT_STATE("fmiSetString", not_modelError);
+
     // TODO
-    return fmiOK;
+
+    return fmiError;
 }
 
 fmiStatus fmiGetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, fmiReal value[]) {
@@ -117,9 +125,17 @@ fmiStatus fmiGetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr
 }
 
 fmiStatus fmiGetString(fmiComponent c, const fmiValueReference vr[], size_t nvr, fmiString  value[]) {
+
+    UNUSED(c);
+    UNUSED(vr);
+    UNUSED(nvr);
+    UNUSED(value);
+
     ASSERT_STATE("fmiGetString", not_modelError);
+
     // TODO
-    return fmiOK;
+
+    return fmiError;
 }
 
 #ifdef FMI_COSIMULATION
@@ -135,6 +151,11 @@ fmiComponent fmiInstantiateSlave(fmiString  instanceName, fmiString GUID,
     fmiString fmuLocation, fmiString mimeType, fmiReal timeout, fmiBoolean visible,
     fmiBoolean interactive, fmiCallbackFunctions functions, fmiBoolean loggingOn) {
 
+    UNUSED(mimeType);
+    UNUSED(timeout);
+    UNUSED(visible);
+    UNUSED(interactive);
+
     if (!functions.logger) {
         return NULL;
     }
@@ -148,11 +169,15 @@ fmiComponent fmiInstantiateSlave(fmiString  instanceName, fmiString GUID,
         GUID,
         fmuLocation,
         loggingOn,
-        CoSimulation,
-        false);
+        CoSimulation);
 }
 
 fmiStatus fmiInitializeSlave(fmiComponent c, fmiReal tStart, fmiBoolean StopTimeDefined, fmiReal tStop) {
+
+    UNUSED(tStart);
+    UNUSED(StopTimeDefined);
+    UNUSED(tStop);
+
     return init(c);
 }
 
@@ -177,6 +202,11 @@ void fmiFreeSlaveInstance(fmiComponent c) {
 fmiStatus fmiSetRealInputDerivatives(fmiComponent c, const fmiValueReference vr[], size_t nvr,
     const fmiInteger order[], const fmiReal value[]) {
 
+    UNUSED(vr);
+    UNUSED(nvr);
+    UNUSED(order);
+    UNUSED(value);
+
     ModelInstance* instance = (ModelInstance *)c;
 
     if (invalidState(instance, "fmiSetRealInputDerivatives", Initialized))
@@ -188,6 +218,11 @@ fmiStatus fmiSetRealInputDerivatives(fmiComponent c, const fmiValueReference vr[
 }
 
 fmiStatus fmiGetRealOutputDerivatives(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiInteger order[], fmiReal value[]) {
+
+    UNUSED(vr);
+    UNUSED(nvr);
+    UNUSED(order);
+    UNUSED(value);
 
     ModelInstance* instance = (ModelInstance *)c;
 
@@ -214,6 +249,8 @@ fmiStatus fmiCancelStep(fmiComponent c) {
 
 fmiStatus fmiDoStep(fmiComponent c, fmiReal currentCommunicationPoint, fmiReal communicationStepSize, fmiBoolean newStep) {
 
+    UNUSED(newStep);
+
     ModelInstance* instance = (ModelInstance *)c;
 
     while (instance->time + FIXED_SOLVER_STEP < currentCommunicationPoint + communicationStepSize + epsilon(instance->time)) {
@@ -230,48 +267,58 @@ fmiStatus fmiDoStep(fmiComponent c, fmiReal currentCommunicationPoint, fmiReal c
     return fmiOK;
 }
 
-static fmiStatus getStatus(char* fname, fmiComponent c, const fmiStatusKind s) {
-//    const char* statusKind[3] = {"fmiDoStepStatus","fmiPendingStatus","fmiLastSuccessfulTime"};
-//    ModelInstance* instance = (ModelInstance *)c;
-//    fmiCallbackLogger log = instance->functions.logger;
-//    if (invalidState(instance, fname, Instantiated|Initialized))
-//         return fmiError;
-//    if (instance->loggingOn) log(c, instance->instanceName, fmiOK, "log", "$s: fmiStatusKind = %s", fname, statusKind[s]);
-//    switch(s) {
-//        case fmiDoStepStatus:  log(c, instance->instanceName, fmiError, "error",
-//           "%s: Can be called with fmiDoStepStatus when fmiDoStep returned fmiPending."
-//           " This is not the case.", fname);
-//           break;
-//        case fmiPendingStatus:  log(c, instance->instanceName, fmiError, "error",
-//           "%s: Can be called with fmiPendingStatus when fmiDoStep returned fmiPending."
-//           " This is not the case.", fname);
-//           break;
-//        case fmiLastSuccessfulTime:  log(c, instance->instanceName, fmiError, "error",
-//           "%s: Can be called with fmiLastSuccessfulTime when fmiDoStep returned fmiDiscard."
-//           " This is not the case.", fname);
-//           break;
-//    }
+fmiStatus fmiGetStatus(fmiComponent c, const fmiStatusKind s, fmiStatus* value) {
+
+    UNUSED(s);
+    UNUSED(value);
+
+    logError((ModelInstance*)c, "Not implemented.");
+
     return fmiError;
 }
 
-fmiStatus fmiGetStatus(fmiComponent c, const fmiStatusKind s, fmiStatus* value) {
-    return getStatus("fmiGetStatus", c, s);
-}
-
 fmiStatus fmiGetRealStatus(fmiComponent c, const fmiStatusKind s, fmiReal* value){
-    return getStatus("fmiGetRealStatus", c, s);
+
+    UNUSED(c);
+    UNUSED(s);
+    UNUSED(value);
+
+    logError((ModelInstance*)c, "Not implemented.");
+
+    return fmiError;
 }
 
 fmiStatus fmiGetIntegerStatus(fmiComponent c, const fmiStatusKind s, fmiInteger* value){
-    return getStatus("fmiGetIntegerStatus", c, s);
+
+    UNUSED(c);
+    UNUSED(s);
+    UNUSED(value);
+
+    logError((ModelInstance*)c, "Not implemented.");
+
+    return fmiError;
 }
 
 fmiStatus fmiGetBooleanStatus(fmiComponent c, const fmiStatusKind s, fmiBoolean* value){
-    return getStatus("fmiGetBooleanStatus", c, s);
+
+    UNUSED(c);
+    UNUSED(s);
+    UNUSED(value);
+
+    logError((ModelInstance*)c, "Not implemented.");
+
+    return fmiError;
 }
 
 fmiStatus fmiGetStringStatus(fmiComponent c, const fmiStatusKind s, fmiString*  value){
-    return getStatus("fmiGetStringStatus", c, s);
+
+    UNUSED(c);
+    UNUSED(s);
+    UNUSED(value);
+
+    logError((ModelInstance*)c, "Not implemented.");
+
+    return fmiError;
 }
 
 #else
@@ -297,11 +344,13 @@ fmiComponent fmiInstantiateModel(fmiString instanceName, fmiString GUID,  fmiCal
         GUID,
         NULL,
         loggingOn,
-        ModelExchange,
-        false);
+        ModelExchange);
 }
 
 fmiStatus fmiInitialize(fmiComponent c, fmiBoolean toleranceControlled, fmiReal relativeTolerance, fmiEventInfo* eventInfo) {
+
+    UNUSED(toleranceControlled);
+    UNUSED(relativeTolerance);
 
     ModelInstance *instance = (ModelInstance *)c;
 
@@ -351,24 +400,15 @@ fmiStatus fmiSetContinuousStates(fmiComponent c, const fmiReal x[], size_t nx) {
 
 fmiStatus fmiEventUpdate(fmiComponent c, fmiBoolean intermediateResults, fmiEventInfo* eventInfo) {
 
-    ModelInstance* instance = (ModelInstance *)c;
+    UNUSED(intermediateResults);
 
-    int timeEvent = 0;
+    ModelInstance* instance = (ModelInstance *)c;
 
     if (invalidState(instance, "fmiEventUpdate", Initialized))
         return fmiError;
 
     if (nullPointer(instance, "fmiEventUpdate", "eventInfo", eventInfo))
          return fmiError;
-
-    instance->newDiscreteStatesNeeded           = false;
-    instance->terminateSimulation               = false;
-    instance->nominalsOfContinuousStatesChanged = false;
-    instance->valuesOfContinuousStatesChanged   = false;
-
-    if (instance->nextEventTimeDefined && instance->nextEventTime <= instance->time) {
-        timeEvent = 1;
-    }
 
     eventUpdate(instance);
 
@@ -397,22 +437,13 @@ fmiStatus fmiCompletedIntegratorStep(fmiComponent c, fmiBoolean* callEventUpdate
 }
 
 fmiStatus fmiGetStateValueReferences(fmiComponent c, fmiValueReference vrx[], size_t nx) {
-//    int i;
-//    ModelInstance* instance = (ModelInstance *)c;
-//    if (invalidState(instance, "fmiGetStateValueReferences", not_modelError))
-//        return fmiError;
-//    if (invalidNumber(instance, "fmiGetStateValueReferences", "nx", nx, NX))
-//        return fmiError;
-//    if (nullPointer(instance, "fmiGetStateValueReferences", "vrx[]", vrx))
-//         return fmiError;
-//#if NX>0
-//    for (i=0; i<nx; i++) {
-//        vrx[i] = vrStates[i];
-//        if (instance->loggingOn) instance->functions.logger(c, instance->instanceName, fmiOK, "log",
-//            "fmiGetStateValueReferences: vrx[%d] = %d", i, vrx[i]);
-//    }
-//#endif
-    return fmiOK;
+
+    UNUSED(vrx);
+    UNUSED(nx);
+
+    logError((ModelInstance*)c, "Not implemented.");
+
+    return fmiError;
 }
 
 fmiStatus fmiGetContinuousStates(fmiComponent c, fmiReal states[], size_t nx){
@@ -434,18 +465,22 @@ fmiStatus fmiGetContinuousStates(fmiComponent c, fmiReal states[], size_t nx){
 }
 
 fmiStatus fmiGetNominalContinuousStates(fmiComponent c, fmiReal x_nominal[], size_t nx) {
-//    int i;
-//    ModelInstance* instance = (ModelInstance *)c;
-//    if (invalidState(instance, "fmiGetNominalContinuousStates", not_modelError))
-//        return fmiError;
-//    if (invalidNumber(instance, "fmiGetNominalContinuousStates", "nx", nx, NX))
-//        return fmiError;
-//    if (nullPointer(instance, "fmiGetNominalContinuousStates", "x_nominal[]", x_nominal))
-//         return fmiError;
-//    if (instance->loggingOn) instance->functions.logger(c, instance->instanceName, fmiOK, "log",
-//        "fmiGetNominalContinuousStates: x_nominal[0..%d] = 1.0", nx-1);
-//    for (i=0; i<nx; i++)
-//        x_nominal[i] = 1;
+
+    ModelInstance* instance = (ModelInstance *)c;
+
+    if (invalidState(instance, "fmiGetNominalContinuousStates", not_modelError))
+        return fmiError;
+
+    if (invalidNumber(instance, "fmiGetNominalContinuousStates", "nx", nx, NX))
+        return fmiError;
+
+    if (nullPointer(instance, "fmiGetNominalContinuousStates", "x_nominal[]", x_nominal))
+         return fmiError;
+
+    for (size_t i = 0; i < nx; i++) {
+        x_nominal[i] = 1;
+    }
+
     return fmiOK;
 }
 

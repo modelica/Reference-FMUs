@@ -200,7 +200,16 @@ fmi3Instance fmi3InstantiateModelExchange(
     fmi3InstanceEnvironment    instanceEnvironment,
     fmi3CallbackLogMessage     logMessage) {
 
+    UNUSED(visible);
+
 #ifndef MODEL_EXCHANGE
+    UNUSED(instanceName);
+    UNUSED(instantiationToken);
+    UNUSED(resourcePath);
+    UNUSED(loggingOn);
+    UNUSED(instanceEnvironment);
+    UNUSED(logMessage);
+
     return NULL;
 #else
     return createModelInstance(
@@ -211,9 +220,7 @@ fmi3Instance fmi3InstantiateModelExchange(
         instantiationToken,
         resourcePath,
         loggingOn,
-        ModelExchange,
-        false
-    );
+        ModelExchange);
 #endif
 }
 
@@ -243,9 +250,7 @@ fmi3Instance fmi3InstantiateCoSimulation(
         instantiationToken,
         resourcePath,
         loggingOn,
-        CoSimulation,
-        false
-    );
+        CoSimulation);
 
     if (instance) {
         instance->earlyReturnAllowed = earlyReturnAllowed;
@@ -270,7 +275,22 @@ fmi3Instance fmi3InstantiateScheduledExecution(
     fmi3CallbackLockPreemption     lockPreemption,
     fmi3CallbackUnlockPreemption   unlockPreemption) {
 
+    UNUSED(visible);
+    UNUSED(requiredIntermediateVariables);
+    UNUSED(nRequiredIntermediateVariables);
+
 #ifndef SCHEDULED_CO_SIMULATION
+
+    UNUSED(instanceName);
+    UNUSED(instantiationToken);
+    UNUSED(resourcePath);
+    UNUSED(loggingOn);
+    UNUSED(instanceEnvironment);
+    UNUSED(logMessage);
+    UNUSED(intermediateUpdate);
+    UNUSED(lockPreemption);
+    UNUSED(unlockPreemption);
+
     return NULL;
 #else
     ModelInstance *instance = createModelInstance(
@@ -281,8 +301,7 @@ fmi3Instance fmi3InstantiateScheduledExecution(
         instantiationToken,
         resourcePath,
         loggingOn,
-        ScheduledExecution,
-        false
+        ScheduledExecution
     );
 
     if (instance) {
@@ -305,6 +324,12 @@ void fmi3FreeInstance(fmi3Instance instance) {
 
 fmi3Status fmi3EnterInitializationMode(fmi3Instance instance, fmi3Boolean toleranceDefined, fmi3Float64 tolerance, fmi3Float64 startTime, fmi3Boolean stopTimeDefined, fmi3Float64 stopTime) {
 
+    UNUSED(toleranceDefined);
+    UNUSED(tolerance);
+    UNUSED(startTime);
+    UNUSED(stopTimeDefined);
+    UNUSED(stopTime);
+
     ASSERT_STATE(EnterInitializationMode);
 
     S->state = InitializationMode;
@@ -321,10 +346,13 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
     // if values were set and no fmi3GetXXX triggered update before,
     // ensure calculated values are updated now
     if (S->isDirtyValues) {
-        status = calculateValues(S);
+
+        status = (fmi3Status)calculateValues(S);
+
         if (status > fmi3Warning) {
             return status;
         }
+
         S->isDirtyValues = false;
     }
 
@@ -369,6 +397,12 @@ fmi3Status fmi3EnterEventMode(fmi3Instance instance,
     size_t nEventIndicators,
     fmi3Boolean timeEvent) {
 
+    UNUSED(stepEvent);
+    UNUSED(stateEvent);
+    UNUSED(rootsFound);
+    UNUSED(nEventIndicators);
+    UNUSED(timeEvent);
+
     ASSERT_STATE(EnterEventMode);
 
     S->state = EventMode;
@@ -400,10 +434,17 @@ fmi3Status fmi3Reset(fmi3Instance instance) {
 fmi3Status fmi3GetFloat32(fmi3Instance instance,
                           const fmi3ValueReference valueReferences[], size_t nValueReferences,
                           fmi3Float32 values[], size_t nValues) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(values);
+    UNUSED(nValues);
+
     NOT_IMPLEMENTED
 }
 
 fmi3Status fmi3GetFloat64(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, fmi3Float64 value[], size_t nValues) {
+    UNUSED(nValues);
     ASSERT_STATE(GetFloat64);
     GET_VARIABLES(Float64);
 }
@@ -411,27 +452,47 @@ fmi3Status fmi3GetFloat64(fmi3Instance instance, const fmi3ValueReference vr[], 
 fmi3Status fmi3GetInt8(fmi3Instance instance,
                        const fmi3ValueReference valueReferences[], size_t nValueReferences,
                        fmi3Int8 values[], size_t nValues) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(values);
+    UNUSED(nValues);
+
     NOT_IMPLEMENTED
 }
 
 fmi3Status fmi3GetUInt8(fmi3Instance instance,
                         const fmi3ValueReference valueReferences[], size_t nValueReferences,
                         fmi3UInt8 values[], size_t nValues) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(values);
+    UNUSED(nValues);
+
     NOT_IMPLEMENTED
 }
 
 fmi3Status fmi3GetInt16(fmi3Instance instance,
                         const fmi3ValueReference valueReferences[], size_t nValueReferences,
                         fmi3Int16 values[], size_t nValues) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(values);
+    UNUSED(nValues);
+
     NOT_IMPLEMENTED
 }
 
 fmi3Status fmi3GetUInt16(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, fmi3UInt16 value[], size_t nValues) {
+    UNUSED(nValues);
     ASSERT_STATE(GetUInt16);
     GET_VARIABLES(UInt16);
 }
 
 fmi3Status fmi3GetInt32(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, fmi3Int32 value[], size_t nValues) {
+    UNUSED(nValues);
     ASSERT_STATE(GetInt32);
     GET_VARIABLES(Int32);
 }
@@ -439,39 +500,56 @@ fmi3Status fmi3GetInt32(fmi3Instance instance, const fmi3ValueReference vr[], si
 fmi3Status fmi3GetUInt32(fmi3Instance instance,
                          const fmi3ValueReference valueReferences[], size_t nValueReferences,
                          fmi3UInt32 values[], size_t nValues) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(values);
+    UNUSED(nValues);
+
     NOT_IMPLEMENTED
 }
 
 fmi3Status fmi3GetInt64(fmi3Instance instance,
                         const fmi3ValueReference valueReferences[], size_t nValueReferences,
                         fmi3Int64 values[], size_t nValues) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(values);
+    UNUSED(nValues);
+
     NOT_IMPLEMENTED
 }
 
 fmi3Status fmi3GetUInt64(fmi3Instance instance,
                          const fmi3ValueReference vr[], size_t nvr,
                          fmi3UInt64 value[], size_t nValues) {
+    UNUSED(nValues);
     ASSERT_STATE(GetUInt64);
     GET_VARIABLES(UInt64);
 }
 
 fmi3Status fmi3GetBoolean(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, fmi3Boolean value[], size_t nValues) {
+    UNUSED(nValues);
     ASSERT_STATE(GetBoolean);
     GET_VARIABLES(Boolean);
 }
 
 fmi3Status fmi3GetString(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, fmi3String value[], size_t nValues) {
+    UNUSED(nValues);
     ASSERT_STATE(GetString);
     GET_VARIABLES(String);
 }
 
 fmi3Status fmi3GetBinary(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, size_t size[], fmi3Binary value[], size_t nValues) {
 
+    UNUSED(nValues);
+
     ASSERT_STATE(GetBinary);
 
     Status status = OK;
 
-    for (int i = 0; i < nvr; i++) {
+    for (size_t i = 0; i < nvr; i++) {
         size_t index = 0;
         Status s = getBinary(S, vr[i], size, (const char**)value, &index);
         status = max(status, s);
@@ -486,6 +564,8 @@ fmi3Status fmi3GetClock(fmi3Instance instance,
     size_t nValueReferences,
     fmi3Clock values[],
     size_t nValues) {
+
+    UNUSED(nValues);
 
     ASSERT_STATE(GetClock);
 
@@ -503,11 +583,18 @@ fmi3Status fmi3GetClock(fmi3Instance instance,
 fmi3Status fmi3SetFloat32(fmi3Instance instance,
                           const fmi3ValueReference valueReferences[], size_t nValueReferences,
                           const fmi3Float32 values[], size_t nValues) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(values);
+    UNUSED(nValues);
+
     NOT_IMPLEMENTED
 }
 
 fmi3Status fmi3SetFloat64(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, const fmi3Float64 value[], size_t nValues) {
 
+    UNUSED(nValues);
     ASSERT_STATE(SetFloat64);
     SET_VARIABLES(Float64);
 }
@@ -515,29 +602,49 @@ fmi3Status fmi3SetFloat64(fmi3Instance instance, const fmi3ValueReference vr[], 
 fmi3Status fmi3SetInt8(fmi3Instance instance,
                        const fmi3ValueReference valueReferences[], size_t nValueReferences,
                        const fmi3Int8 values[], size_t nValues) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(values);
+    UNUSED(nValues);
+
     NOT_IMPLEMENTED
 }
 
 fmi3Status fmi3SetUInt8(fmi3Instance instance,
                         const fmi3ValueReference valueReferences[], size_t nValueReferences,
                         const fmi3UInt8 values[], size_t nValues) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(values);
+    UNUSED(nValues);
+
     NOT_IMPLEMENTED
 }
 
 fmi3Status fmi3SetInt16(fmi3Instance instance,
                         const fmi3ValueReference valueReferences[], size_t nValueReferences,
                         const fmi3Int16 values[], size_t nValues) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(values);
+    UNUSED(nValues);
+
     NOT_IMPLEMENTED
 }
 
 fmi3Status fmi3SetUInt16(fmi3Instance instance,
                          const fmi3ValueReference vr[], size_t nvr,
                          const fmi3UInt16 value[], size_t nValues) {
+    UNUSED(nValues);
     ASSERT_STATE(SetUInt16);
     SET_VARIABLES(UInt16);
 }
 
 fmi3Status fmi3SetInt32(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, const fmi3Int32 value[], size_t nValues) {
+    UNUSED(nValues);
     ASSERT_STATE(SetInt32);
     SET_VARIABLES(Int32);
 }
@@ -545,39 +652,56 @@ fmi3Status fmi3SetInt32(fmi3Instance instance, const fmi3ValueReference vr[], si
 fmi3Status fmi3SetUInt32(fmi3Instance instance,
                          const fmi3ValueReference valueReferences[], size_t nValueReferences,
                          const fmi3UInt32 values[], size_t nValues) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(values);
+    UNUSED(nValues);
+
     NOT_IMPLEMENTED
 }
 
 fmi3Status fmi3SetInt64(fmi3Instance instance,
                         const fmi3ValueReference valueReferences[], size_t nValueReferences,
                         const fmi3Int64 values[], size_t nValues) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(values);
+    UNUSED(nValues);
+
     NOT_IMPLEMENTED
 }
 
 fmi3Status fmi3SetUInt64(fmi3Instance instance,
                          const fmi3ValueReference vr[], size_t nvr,
                          const fmi3UInt64 value[], size_t nValues) {
+    UNUSED(nValues);
     ASSERT_STATE(SetUInt64);
     SET_VARIABLES(UInt64);
 }
 
 fmi3Status fmi3SetBoolean(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, const fmi3Boolean value[], size_t nValues) {
+    UNUSED(nValues);
     ASSERT_STATE(SetBoolean);
     SET_VARIABLES(Boolean);
 }
 
 fmi3Status fmi3SetString(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, const fmi3String value[], size_t nValues) {
+    UNUSED(nValues);
     ASSERT_STATE(SetString);
     SET_VARIABLES(String);
 }
 
 fmi3Status fmi3SetBinary(fmi3Instance instance, const fmi3ValueReference vr[], size_t nvr, const size_t size[], const fmi3Binary value[], size_t nValues) {
 
+    UNUSED(nValues);
+
     ASSERT_STATE(SetBinary);
 
     Status status = OK;
 
-    for (int i = 0; i < nvr; i++) {
+    for (size_t i = 0; i < nvr; i++) {
         size_t index = 0;
         Status s = setBinary(S, vr[i], size, (const char* const*)value, &index);
         status = max(status, s);
@@ -592,6 +716,8 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
     size_t nValueReferences,
     const fmi3Clock values[],
     size_t nValues) {
+
+    UNUSED(nValues);
 
     ASSERT_STATE(SetClock);
 
@@ -611,6 +737,9 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
 fmi3Status fmi3GetNumberOfVariableDependencies(fmi3Instance instance,
                                                fmi3ValueReference valueReference,
                                                size_t* nDependencies) {
+    UNUSED(valueReference);
+    UNUSED(nDependencies);
+
     NOT_IMPLEMENTED
 }
 
@@ -621,6 +750,14 @@ fmi3Status fmi3GetVariableDependencies(fmi3Instance instance,
                                        size_t elementIndicesOfIndependents[],
                                        fmi3DependencyKind dependencyKinds[],
                                        size_t nDependencies) {
+
+    UNUSED(dependent);
+    UNUSED(elementIndicesOfDependent);
+    UNUSED(independents);
+    UNUSED(elementIndicesOfIndependents);
+    UNUSED(dependencyKinds);
+    UNUSED(nDependencies);
+
     NOT_IMPLEMENTED
 }
 
@@ -703,6 +840,9 @@ fmi3Status fmi3DeSerializeFMUState (fmi3Instance instance, const fmi3Byte serial
 
 fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance, const fmi3ValueReference unknowns[], size_t nUnknowns, const fmi3ValueReference knowns[], size_t nKnowns, const fmi3Float64 deltaKnowns[], size_t nDeltaKnowns, fmi3Float64 deltaUnknowns[], size_t nDeltaOfUnknowns) {
 
+    UNUSED(nDeltaKnowns);
+    UNUSED(nDeltaOfUnknowns);
+
     ASSERT_STATE(GetDirectionalDerivative);
 
     // TODO: check value references
@@ -711,9 +851,9 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance, const fmi3ValueRe
 
     Status status = OK;
 
-    for (int i = 0; i < nUnknowns; i++) {
+    for (size_t i = 0; i < nUnknowns; i++) {
         deltaUnknowns[i] = 0;
-        for (int j = 0; j < nKnowns; j++) {
+        for (size_t j = 0; j < nKnowns; j++) {
             double partialDerivative = 0;
             Status s = getPartialDerivative(S, unknowns[i], knowns[j], &partialDerivative);
             status = max(status, s);
@@ -735,15 +875,18 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
     fmi3Float64 deltaKnowns[],
     size_t nDeltaKnowns) {
 
+    UNUSED(nDeltaOfUnknowns);
+    UNUSED(nDeltaKnowns);
+
     ASSERT_STATE(GetAdjointDerivative);
 
     // TODO: check value references
 
     Status status = OK;
 
-    for (int i = 0; i < nKnowns; i++) {
+    for (size_t i = 0; i < nKnowns; i++) {
         deltaKnowns[i] = 0;
-        for (int j = 0; j < nUnknowns; j++) {
+        for (size_t j = 0; j < nUnknowns; j++) {
             double partialDerivative = 0;
             Status s = getPartialDerivative(S, unknowns[j], knowns[i], &partialDerivative);
             status = max(status, s);
@@ -794,6 +937,8 @@ fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
                                   fmi3IntervalQualifier qualifier[],
                                   size_t nValues) {
 
+    UNUSED(nValues);
+
     ASSERT_STATE(GetIntervalDecimal);
 
     // ? Check nValueReferences != nValues
@@ -815,6 +960,14 @@ fmi3Status fmi3GetIntervalFraction(fmi3Instance instance,
     fmi3UInt64 resolution[],
     fmi3IntervalQualifier qualifier[],
     size_t nValues) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(intervalCounter);
+    UNUSED(resolution);
+    UNUSED(qualifier);
+    UNUSED(nValues);
+
     NOT_IMPLEMENTED
 }
 
@@ -823,6 +976,12 @@ fmi3Status fmi3GetShiftDecimal(fmi3Instance instance,
     size_t nValueReferences,
     fmi3Float64 shifts[],
     size_t nShifts) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(shifts);
+    UNUSED(nShifts);
+
     NOT_IMPLEMENTED
 }
 
@@ -832,6 +991,13 @@ fmi3Status fmi3GetShiftFraction(fmi3Instance instance,
     fmi3UInt64 shiftCounters[],
     fmi3UInt64 resolutions[],
     size_t nShifts) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(shiftCounters);
+    UNUSED(resolutions);
+    UNUSED(nShifts);
+
     NOT_IMPLEMENTED
 }
 
@@ -840,6 +1006,12 @@ fmi3Status fmi3SetIntervalDecimal(fmi3Instance instance,
                                   size_t nValueReferences,
                                   const fmi3Float64 interval[],
                                   size_t nValues) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(interval);
+    UNUSED(nValues);
+
     NOT_IMPLEMENTED
 }
 
@@ -849,6 +1021,13 @@ fmi3Status fmi3SetIntervalFraction(fmi3Instance instance,
     const fmi3UInt64 intervalCounter[],
     const fmi3UInt64 resolution[],
     size_t nValues) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(intervalCounter);
+    UNUSED(resolution);
+    UNUSED(nValues);
+
     NOT_IMPLEMENTED
 }
 
@@ -901,6 +1080,8 @@ fmi3Status fmi3EnterContinuousTimeMode(fmi3Instance instance) {
 
 fmi3Status fmi3CompletedIntegratorStep(fmi3Instance instance, fmi3Boolean noSetFMUStatePriorToCurrentPoint,
                                        fmi3Boolean *enterEventMode, fmi3Boolean *terminateSimulation) {
+
+    UNUSED(noSetFMUStatePriorToCurrentPoint);
 
     ASSERT_STATE(CompletedIntegratorStep);
 
@@ -958,13 +1139,21 @@ fmi3Status fmi3GetEventIndicators(fmi3Instance instance, fmi3Float64 eventIndica
     ASSERT_STATE(GetEventIndicators);
 
 #if NZ > 0
-    if (invalidNumber(S, "fmi3GetEventIndicators", "ni", ni, NZ))
+    if (invalidNumber(S, "fmi3GetEventIndicators", "ni", ni, NZ)) {
         return fmi3Error;
+    }
 
     getEventIndicators(S, eventIndicators, ni);
 #else
-    if (ni > 0) return fmi3Error;
+
+    UNUSED(eventIndicators);
+
+    if (ni > 0) {
+        // TODO: log error
+        return fmi3Error;
+    }
 #endif
+
     return fmi3OK;
 }
 
@@ -1041,6 +1230,13 @@ fmi3Status fmi3GetOutputDerivatives(fmi3Instance instance,
                                     const fmi3Int32 orders[],
                                     fmi3Float64 values[],
                                     size_t nValues) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(orders);
+    UNUSED(values);
+    UNUSED(nValues);
+
     NOT_IMPLEMENTED
 }
 
@@ -1052,6 +1248,8 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
                       fmi3Boolean* terminateSimulation,
                       fmi3Boolean* earlyReturn,
                       fmi3Float64* lastSuccessfulTime) {
+
+    UNUSED(noSetFMUStatePriorToCurrentPoint);
 
     ASSERT_STATE(DoStep);
 
@@ -1083,6 +1281,8 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
         }
     }
 
+    *terminateSimulation = fmi3False;
+
     *lastSuccessfulTime = S->time;
 
     return fmi3OK;
@@ -1092,6 +1292,8 @@ fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
                                       fmi3ValueReference clockReference,
                                       size_t clockElementIndex,
                                       fmi3Float64 activationTime) {
+
+    UNUSED(clockElementIndex);
 
     ASSERT_STATE(ActivateModelPartition);
 

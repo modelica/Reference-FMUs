@@ -90,7 +90,9 @@ Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *i
 }
 
 Status getBinary(ModelInstance* comp, ValueReference vr, size_t size[], const char* value[], size_t* index) {
+
     calculateValues(comp);
+
     switch (vr) {
         case vr_binary_in:
         case vr_binary_out:
@@ -101,7 +103,6 @@ Status getBinary(ModelInstance* comp, ValueReference vr, size_t size[], const ch
             logError(comp, "Get Binary is not allowed for value reference %u.", vr);
             return Error;
     }
-    return Error;
 }
 
 Status getString(ModelInstance* comp, ValueReference vr, const char **value, size_t *index) {

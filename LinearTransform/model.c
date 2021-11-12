@@ -26,9 +26,9 @@ void setStartValues(ModelInstance *comp) {
 Status calculateValues(ModelInstance *comp) {
 
     // y = A * u
-    for (int i = 0; i < M(m); i++) {
+    for (size_t i = 0; i < M(m); i++) {
         M(y)[i] = 0;
-        for (int j = 0; j < M(n); j++) {
+        for (size_t j = 0; j < M(n); j++) {
             M(y)[i] += M(A)[i][j] * M(u)[j];
         }
     }
@@ -45,18 +45,18 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
             value[(*index)++] = comp->time;
             return OK;
         case vr_u:
-            for (int i = 0; i < M(n); i++) {
+            for (size_t i = 0; i < M(n); i++) {
                 value[(*index)++] = M(u)[i];
             }
             return OK;
         case vr_A:
-            for (int i = 0; i < M(m); i++) {
-            for (int j = 0; j < M(n); j++) {
+            for (size_t i = 0; i < M(m); i++)
+            for (size_t j = 0; j < M(n); j++) {
                 value[(*index)++] = M(A)[i][j];
-            }}
+            }
             return OK;
         case vr_y:
-            for (int i = 0; i < M(m); i++) {
+            for (size_t i = 0; i < M(m); i++) {
                 value[(*index)++] = M(y)[i];
             }
             return OK;
@@ -69,16 +69,16 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
     switch (vr) {
         case vr_u:
-            for (int i = 0; i < M(n); i++) {
+            for (size_t i = 0; i < M(n); i++) {
                 M(u)[i] = value[(*index)++];
             }
             calculateValues(comp);
             return OK;
         case vr_A:
-            for (int i = 0; i < M(m); i++) {
-            for (int j = 0; j < M(n); j++) {
+            for (size_t i = 0; i < M(m); i++)
+            for (size_t j = 0; j < M(n); j++) {
                 M(A)[i][j] = value[(*index)++];
-            }}
+            }
             return OK;
         default:
             logError(comp, "Set Float64 is not allowed for value reference %u.", vr);
