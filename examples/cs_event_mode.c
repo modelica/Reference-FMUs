@@ -14,6 +14,7 @@ int main(int argc, char* argv[]) {
 
     CALL(setUp());
 
+    // tag::EventMode[]
     CALL(FMI3InstantiateCoSimulation(S,
         INSTANTIATION_TOKEN, // instantiationToken
         NULL,                // resourcePath
@@ -114,4 +115,5 @@ int main(int argc, char* argv[]) {
 
 TERMINATE:
     return tearDown();
+    // end::EventMode[]
 }
