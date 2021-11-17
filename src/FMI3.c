@@ -315,6 +315,8 @@ fmi3Status FMI3InstantiateCoSimulation(
         logMessage,
         intermediateUpdate);
 
+    instance->fmi3Functions->eventModeUsed = eventModeUsed;
+
     if (instance->logFunctionCall) {
         instance->logFunctionCall(instance, instance->component ? FMIOK : FMIError,
             "fmi3InstantiateCoSimulation("
@@ -457,7 +459,11 @@ fmi3Status FMI3EnterInitializationMode(FMIInstance *instance,
 
 fmi3Status FMI3ExitInitializationMode(FMIInstance *instance) {
 
-    instance->state = instance->interfaceType == FMIModelExchange ? FMI2EventModeState : FMI2StepCompleteState;
+    if (instance->interfaceType == FMIModelExchange || (instance->fmiVersion == FMIVersion3 && instance->interfaceType == FMICoSimulation && instance->fmi3Functions->eventModeUsed)) {
+        instance->state = FMI2EventModeState;
+    } else {
+        instance->state = FMI2StepCompleteState;
+    }
 
     CALL(ExitInitializationMode)
 }
