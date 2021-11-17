@@ -362,8 +362,7 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
             S->isNewEventIteration = true;
             break;
         case CoSimulation:
-            S->state = StepMode;
-            // TODO: new event iteration?
+            S->state = S->eventModeUsed ? EventMode : StepMode;
             break;
         case ScheduledExecution:
             S->state = ClockActivationMode;
@@ -374,18 +373,6 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
     // initialize event indicators
     getEventIndicators(S, S->prez, NZ);
 #endif
-
-    switch (S->type) {
-        case ModelExchange:
-            S->state = EventMode;
-            break;
-        case CoSimulation:
-            S->state = StepMode;
-            break;
-        case ScheduledExecution:
-            S->state = ClockActivationMode;
-            break;
-    }
 
     return status;
 }
@@ -1259,27 +1246,41 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
         return fmi3Error;
     }
 
-    bool stateEvent, timeEvent;
+    const fmi3Float64 nextCommunicationPoint = currentCommunicationPoint + communicationStepSize + epsilon(S->time);
 
-    while (S->time + FIXED_SOLVER_STEP < currentCommunicationPoint + communicationStepSize + epsilon(S->time)) {
+    fmi3Boolean nextCommunicationPointReached;
+
+    *eventEncountered = fmi3False;
+
+    while (true) {
+
+        nextCommunicationPointReached = S->time + FIXED_SOLVER_STEP > nextCommunicationPoint;
+
+        if (nextCommunicationPointReached) {
+            break;
+        }
+
+        bool stateEvent, timeEvent;
 
         doFixedStep(S, &stateEvent, &timeEvent);
 
         if (stateEvent || timeEvent) {
 
+            *eventEncountered = fmi3True;
+
             if (S->eventModeUsed) {
-                *eventEncountered = fmi3True;
                 break;
             }
 
             eventUpdate(S);
 
             if (S->earlyReturnAllowed) {
-                *earlyReturn = fmi3True;
                 break;
             }
         }
     }
+
+    *earlyReturn = !nextCommunicationPointReached;
 
     *terminateSimulation = fmi3False;
 

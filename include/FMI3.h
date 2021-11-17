@@ -17,6 +17,8 @@ extern "C" {
 
 struct FMI3Functions_ {
 
+    fmi3Boolean eventModeUsed;
+
     fmi3Boolean discreteStatesNeedUpdate;
     fmi3Boolean terminateSimulation;
     fmi3Boolean nominalsOfContinuousStatesChanged;

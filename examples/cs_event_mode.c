@@ -6,6 +6,12 @@
 
 int main(int argc, char* argv[]) {
 
+    fmi3Boolean discreteStatesNeedUpdate = fmi3False;
+    fmi3Boolean nominalsChanged          = fmi3False;
+    fmi3Boolean statesChanged            = fmi3False;
+    fmi3Boolean nextEventTimeDefined     = fmi3False;
+    fmi3Float64 nextEventTime            = 0;
+
     CALL(setUp());
 
     CALL(FMI3InstantiateCoSimulation(S,
@@ -28,7 +34,29 @@ int main(int argc, char* argv[]) {
     // initialize the FMU
     CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, time, fmi3True, stopTime));
 
+    // apply continuous and discrete inputs
+    CALL(applyContinuousInputs(S, true));
+    CALL(applyDiscreteInputs(S));
+
     CALL(FMI3ExitInitializationMode(S));
+
+    // update discrete states
+    do {
+        CALL(FMI3UpdateDiscreteStates(S,
+            &discreteStatesNeedUpdate,
+            &terminateSimulation,
+            &nominalsChanged,
+            &statesChanged,
+            &nextEventTimeDefined,
+            &nextEventTime
+        ));
+
+        if (terminateSimulation) {
+            goto TERMINATE;
+        }
+    } while (discreteStatesNeedUpdate);
+
+    CALL(FMI3EnterStepMode(S));
 
     // communication step size
     const fmi3Float64 stepSize = 10 * FIXED_SOLVER_STEP;
@@ -50,12 +78,6 @@ int main(int argc, char* argv[]) {
             &earlyReturn,         // earlyReturn
             &time                 // lastSuccessfulTime
         ));
-
-        fmi3Boolean discreteStatesNeedUpdate = fmi3False;
-        fmi3Boolean nominalsChanged          = fmi3False;
-        fmi3Boolean statesChanged            = fmi3False;
-        fmi3Boolean nextEventTimeDefined     = fmi3False;
-        fmi3Float64 nextEventTime            = 0;
 
         if (eventEncountered) {
 
