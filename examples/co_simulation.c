@@ -44,7 +44,7 @@ typedef fmi3Instance fmi3InstantiateCoSimulationTYPE(
     fmi3CallbackIntermediateUpdate intermediateUpdate);
 
 // instantiate both FMUs
-s1 = s1_fmi3InstantiateCoSimulation("instance1",   // instanceName
+s1 = s1_fmi3InstantiateCoSimulation("s1",          // instanceName
                                     guid,          // instantiationToken
                                     NULL,          // resourceLocation
                                     fmi3False,     // visible
@@ -57,7 +57,7 @@ s1 = s1_fmi3InstantiateCoSimulation("instance1",   // instanceName
                                     cb_logMessage, // logMessage
                                     NULL);         // intermediateUpdate
 
-s2 = s2_fmi3InstantiateCoSimulation("instance1",   // instanceName
+s2 = s2_fmi3InstantiateCoSimulation("s2",          // instanceName
                                     guid,          // instantiationToken
                                     NULL,          // resourceLocation
                                     fmi3False,     // visible
