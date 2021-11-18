@@ -242,6 +242,15 @@ fmi3Instance fmi3InstantiateCoSimulation(
     UNUSED(requiredIntermediateVariables);
     UNUSED(nRequiredIntermediateVariables);
 
+#ifndef EVENT_UPDATE
+    if (eventModeUsed) {
+        if (logMessage) {
+            logMessage(instanceEnvironment, instanceName, fmi3Error, "error", "Event Mode is not supported.");
+        }
+        return NULL;
+    }
+#endif
+
     ModelInstance *instance = createModelInstance(
         (loggerType)logMessage,
         (intermediateUpdateType)intermediateUpdate,
@@ -359,7 +368,6 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
     switch (S->type) {
         case ModelExchange:
             S->state = EventMode;
-            S->isNewEventIteration = true;
             break;
         case CoSimulation:
             S->state = S->eventModeUsed ? EventMode : StepMode;
@@ -393,7 +401,6 @@ fmi3Status fmi3EnterEventMode(fmi3Instance instance,
     ASSERT_STATE(EnterEventMode);
 
     S->state = EventMode;
-    S->isNewEventIteration = true;
 
     return fmi3OK;
 }
@@ -1032,14 +1039,9 @@ fmi3Status fmi3UpdateDiscreteStates(fmi3Instance instance,
 
     ASSERT_STATE(NewDiscreteStates);
 
-    S->newDiscreteStatesNeeded           = false;
-    S->terminateSimulation               = false;
-    S->nominalsOfContinuousStatesChanged = false;
-    S->valuesOfContinuousStatesChanged   = false;
-
+#ifdef EVENT_UPDATE
     eventUpdate(S);
-
-    S->isNewEventIteration = false;
+#endif
 
     // copy internal eventInfo of component to output arguments
     if (discreteStatesNeedUpdate)          *discreteStatesNeedUpdate          = S->newDiscreteStatesNeeded;
@@ -1264,6 +1266,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
 
         doFixedStep(S, &stateEvent, &timeEvent);
 
+#ifdef EVENT_UPDATE
         if (stateEvent || timeEvent) {
 
             *eventEncountered = fmi3True;
@@ -1278,6 +1281,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
                 break;
             }
         }
+#endif
     }
 
     *earlyReturn = !nextCommunicationPointReached;

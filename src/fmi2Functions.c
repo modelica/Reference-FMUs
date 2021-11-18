@@ -206,7 +206,6 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
 
     if (S->type == ModelExchange) {
         S->state = EventMode;
-        S->isNewEventIteration = false;
     } else {
         S->state = StepComplete;
     }
@@ -558,12 +557,12 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
         bool stateEvent, timeEvent;
 
         doFixedStep(S, &stateEvent, &timeEvent);
-
+#ifdef EVENT_UPDATE
         if (stateEvent || timeEvent) {
             eventUpdate(S);
         }
+#endif
     }
-
     return fmi2OK;
 }
 
@@ -652,7 +651,6 @@ fmi2Status fmi2EnterEventMode(fmi2Component c) {
     ASSERT_STATE(EnterEventMode)
 
     S->state = EventMode;
-    S->isNewEventIteration = fmi2True;
 
     return fmi2OK;
 }
@@ -661,11 +659,10 @@ fmi2Status fmi2NewDiscreteStates(fmi2Component c, fmi2EventInfo *eventInfo) {
 
     ASSERT_STATE(NewDiscreteStates)
 
+#ifdef EVENT_UPDATE
     eventUpdate(S);
+#endif
 
-    S->isNewEventIteration = false;
-
-    // copy internal eventInfo of component to output eventInfo
     eventInfo->newDiscreteStatesNeeded           = S->newDiscreteStatesNeeded;
     eventInfo->terminateSimulation               = S->terminateSimulation;
     eventInfo->nominalsOfContinuousStatesChanged = S->nominalsOfContinuousStatesChanged;

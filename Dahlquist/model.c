@@ -70,10 +70,3 @@ void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
     calculateValues(comp);
     dx[0] = M(der_x);
 }
-
-void eventUpdate(ModelInstance *comp) {
-    comp->valuesOfContinuousStatesChanged   = false;
-    comp->nominalsOfContinuousStatesChanged = false;
-    comp->terminateSimulation               = false;
-    comp->nextEventTimeDefined              = false;
-}

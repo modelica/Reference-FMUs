@@ -133,7 +133,6 @@ typedef struct {
     bool clocksTicked;
 
     bool isDirtyValues;
-    bool isNewEventIteration;
 
     ModelData *modelData;
 
