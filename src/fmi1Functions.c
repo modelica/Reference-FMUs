@@ -258,10 +258,11 @@ fmiStatus fmiDoStep(fmiComponent c, fmiReal currentCommunicationPoint, fmiReal c
         bool stateEvent, timeEvent;
 
         doFixedStep(instance, &stateEvent, &timeEvent);
-
+#ifdef EVENT_UPDATE
         if (stateEvent || timeEvent) {
             eventUpdate(instance);
         }
+#endif
     }
 
     return fmiOK;
@@ -356,9 +357,11 @@ fmiStatus fmiInitialize(fmiComponent c, fmiBoolean toleranceControlled, fmiReal 
 
     fmiStatus status = init(c);
 
+#ifdef EVENT_UPDATE
     eventUpdate(instance);
+#endif
 
-    eventInfo->iterationConverged          = instance->newDiscreteStatesNeeded ? fmiFalse : fmiTrue;
+    eventInfo->iterationConverged          = instance->newDiscreteStatesNeeded;
     eventInfo->stateValueReferencesChanged = fmiFalse;
     eventInfo->stateValuesChanged          = instance->valuesOfContinuousStatesChanged;
     eventInfo->terminateSimulation         = instance->terminateSimulation;
@@ -410,7 +413,9 @@ fmiStatus fmiEventUpdate(fmiComponent c, fmiBoolean intermediateResults, fmiEven
     if (nullPointer(instance, "fmiEventUpdate", "eventInfo", eventInfo))
          return fmiError;
 
+#ifdef EVENT_UPDATE
     eventUpdate(instance);
+#endif
 
     // copy internal eventInfo of component to output eventInfo
     eventInfo->iterationConverged          = fmiTrue;

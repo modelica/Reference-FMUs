@@ -84,7 +84,6 @@ ModelInstance *createModelInstance(
     comp->type                              = interfaceType;
 
     comp->state                             = Instantiated;
-    comp->isNewEventIteration               = false;
 
     comp->newDiscreteStatesNeeded           = false;
     comp->terminateSimulation               = false;

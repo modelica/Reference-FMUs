@@ -13,7 +13,8 @@
     canHandleVariableCommunicationStepSize="true"
     providesIntermediateUpdate="true"
     canReturnEarlyAfterIntermediateUpdate="true"
-    fixedInternalStepSize="1"/>
+    fixedInternalStepSize="1"
+    hasEventMode="true"/>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>
