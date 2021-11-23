@@ -516,17 +516,31 @@ fmi2Status fmi2SetRealInputDerivatives(fmi2Component c, const fmi2ValueReference
 fmi2Status fmi2GetRealOutputDerivatives(fmi2Component c, const fmi2ValueReference vr[], size_t nvr,
                                       const fmi2Integer order[], fmi2Real value[]) {
 
-    UNUSED(vr)
-    UNUSED(nvr)
-    UNUSED(order)
-    UNUSED(value)
+    ASSERT_STATE(GetRealOutputDerivatives);
 
-    ASSERT_STATE(GetRealOutputDerivatives)
+#ifdef GET_OUTPUT_DERIVATIVE
+    Status status = OK;
+
+    for (size_t i = 0; i < nvr; i++) {
+        const Status s = getOutputDerivative(S, vr[i], order[i], &value[i]);
+        status = max(status, s);
+        if (status > Warning) {
+            return (fmi2Status)status;
+        }
+    }
+
+    return (fmi2Status)status;
+#else
+    UNUSED(vr);
+    UNUSED(nvr);
+    UNUSED(order);
+    UNUSED(value);
 
     logError(S, "fmi2GetRealOutputDerivatives: ignoring function call."
         " This model cannot compute derivatives of outputs: MaxOutputDerivativeOrder=\"0\"");
 
     return fmi2Error;
+#endif
 }
 
 fmi2Status fmi2CancelStep(fmi2Component c) {

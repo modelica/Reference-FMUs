@@ -1220,13 +1220,33 @@ fmi3Status fmi3GetOutputDerivatives(fmi3Instance instance,
                                     fmi3Float64 values[],
                                     size_t nValues) {
 
+
+    UNUSED(nValues);
+
+    ASSERT_STATE(GetOutputDerivatives);
+
+#ifdef GET_OUTPUT_DERIVATIVE
+
+    Status status = OK;
+
+    for (size_t i = 0; i < nValueReferences; i++) {
+        const Status s = getOutputDerivative(S, valueReferences[i], orders[i], &values[i]);
+        status = max(status, s);
+        if (status > Warning) {
+            return (fmi3Status)status;
+        }
+    }
+
+    return (fmi3Status)status;
+
+#else
     UNUSED(valueReferences);
     UNUSED(nValueReferences);
     UNUSED(orders);
     UNUSED(values);
-    UNUSED(nValues);
 
     NOT_IMPLEMENTED
+#endif
 }
 
 fmi3Status fmi3DoStep(fmi3Instance instance,
