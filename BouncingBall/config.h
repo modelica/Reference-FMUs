@@ -15,7 +15,7 @@
 #define SET_FLOAT64
 #define EVENT_UPDATE
 
-#define FIXED_SOLVER_STEP 1e-2
+#define FIXED_SOLVER_STEP 1e-3
 #define DEFAULT_STOP_TIME 3
 
 typedef enum {
