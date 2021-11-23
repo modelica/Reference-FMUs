@@ -84,7 +84,7 @@ for model_name, start_values, output_interval in info:
     fmu = os.path.join(dist_dir, model_name + '.fmu')
 
     ref_csv = os.path.join(src_dir, model_name, model_name + '_ref.csv')
-    ref_png = os.path.join(src_dir, model_name, model_name + '_ref.svg')
+    ref_svg = os.path.join(src_dir, model_name, model_name + '_ref.svg')
     in_csv  = os.path.join(src_dir, model_name, model_name + '_in.csv')
 
     if os.path.isfile(in_csv):
@@ -100,7 +100,7 @@ for model_name, start_values, output_interval in info:
     shutil.copyfile(src=out_csv, dst=ref_csv)
 
     ref = read_csv(ref_csv)
-    plot_result(ref, events=True, filename=ref_png)
+    plot_result(ref, events=True, filename=ref_svg)
 
     md_file = os.path.join(src_dir, model_name, 'readme.md')
     html_file = os.path.join(src_dir, model_name, 'readme.html')
