@@ -8,7 +8,7 @@ from fmpy.validation import validate_fmu
 
 
 fmus_dir = os.path.join(os.path.dirname(__file__), 'fmus')  # /path/to/fmi-cross-check/fmus
-test_fmus_version = '0.0.9'
+test_fmus_version = '0.0.10'
 
 test_fmus_dir = os.path.dirname(os.path.abspath(__file__))
 
