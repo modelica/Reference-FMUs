@@ -91,6 +91,26 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
     }
 }
 
+Status getOutputDerivative(ModelInstance *comp, ValueReference valueReference, int order, double *value) {
+
+    if (order != 1) {
+        logError(comp, "The output derivative order %d for value reference %u is not available.", order, valueReference);
+        return Error;
+    }
+
+    switch (valueReference) {
+    case vr_h:
+        *value = M(v);
+        return OK;
+    case vr_v:
+        *value = M(g);
+        return OK;
+    default:
+        logError(comp, "The output derivative for value reference %u is not available.", valueReference);
+        return Error;
+    }
+}
+
 void eventUpdate(ModelInstance *comp) {
 
     if (M(h) <= 0 && M(v) < 0) {
