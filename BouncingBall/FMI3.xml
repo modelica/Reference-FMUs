@@ -18,7 +18,7 @@
     canHandleVariableCommunicationStepSize="true"
     providesIntermediateUpdate="true"
     canReturnEarlyAfterIntermediateUpdate="true"
-    fixedInternalStepSize="1e-2"
+    fixedInternalStepSize="1e-3"
     hasEventMode="true"/>
 
   <UnitDefinitions>
