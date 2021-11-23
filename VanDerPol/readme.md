@@ -15,6 +15,6 @@ whith
 | der(x)        | The derivative |     0 |
 | k             | Parameter      |     1 |
 
-The plot shows the [reference result](VanDerPol_ref.csv) computed with [simulate_me.c](https://github.com/modelica/Reference-FMUs/blob/master/examples/simulate_me.c).
+The plot shows the [reference result](VanDerPol_ref.csv) computed with [simulate_fmi3_me.c](https://github.com/modelica/Reference-FMUs/blob/master/examples/simulate_fmi3_me.c).
 
 ![plot](VanDerPol_ref.svg)
