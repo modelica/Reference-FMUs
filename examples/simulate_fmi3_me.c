@@ -108,8 +108,10 @@ int main(int argc, char* argv[]) {
         inputEvent = time >= nextInputEventTime(time);
         timeEvent = nextEventTimeDefined && time >= nextEventTime;
 
+        const bool eventOccurred = inputEvent || timeEvent || stateEvent || stepEvent;
+
         // handle events
-        if (inputEvent || timeEvent || stateEvent || stepEvent) {
+        if (eventOccurred) {
 
             CALL(FMI3EnterEventMode(S, stepEvent, stateEvent, rootsFound, NZ, timeEvent));
 
@@ -189,25 +191,30 @@ int main(int argc, char* argv[]) {
 #endif
 
 #if NZ > 0
-        // get event indicators at t = time
-        CALL(FMI3GetEventIndicators(S, z, NZ));
-
         stateEvent = fmi3False;
 
-        for (size_t i = 0; i < NZ; i++) {
+        if (eventOccurred) {
+            // reset the previous event indicators
+            CALL(FMI3GetEventIndicators(S, previous_z, NZ));
+        } else {
+            // get event indicators at t = time
+            CALL(FMI3GetEventIndicators(S, z, NZ));
 
-            // check for zero crossings
-            if (previous_z[i] < 0 && z[i] >= 0) {
-                rootsFound[i] = 1;   // -\+
-            } else  if (previous_z[i] > 0 && z[i] <= 0) {
-                rootsFound[i] = -1;  // +/-
-            } else {
-                rootsFound[i] = 0;   // no zero crossing
+            for (size_t i = 0; i < NZ; i++) {
+
+                // check for zero crossings
+                if (previous_z[i] < 0 && z[i] >= 0) {
+                    rootsFound[i] = 1;   // -\+
+                } else  if (previous_z[i] > 0 && z[i] <= 0) {
+                    rootsFound[i] = -1;  // +/-
+                } else {
+                    rootsFound[i] = 0;   // no zero crossing
+                }
+
+                stateEvent |= rootsFound[i];
+
+                previous_z[i] = z[i]; // remember the current value
             }
-
-            stateEvent |= rootsFound[i];
-
-            previous_z[i] = z[i]; // remember the current value
         }
 #endif
 
