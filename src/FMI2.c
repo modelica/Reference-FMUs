@@ -471,7 +471,7 @@ fmi2Status FMI2CancelStep(FMIInstance *instance) {
 fmi2Status FMI2GetStatus(FMIInstance *instance, const fmi2StatusKind s, fmi2Status* value) {
     fmi2Status status = instance->fmi2Functions->fmi2GetStatus(instance->component, s, value);
     if (instance->logFunctionCall) {
-        instance->logFunctionCall(instance, status, "fmi2GetStatus(s=%s, value=%d)", s, *value);
+        instance->logFunctionCall(instance, status, "fmi2GetStatus(s=%d, value=%d)", s, *value);
     }
     return status;
 }
@@ -479,7 +479,7 @@ fmi2Status FMI2GetStatus(FMIInstance *instance, const fmi2StatusKind s, fmi2Stat
 fmi2Status FMI2GetRealStatus(FMIInstance *instance, const fmi2StatusKind s, fmi2Real* value) {
     fmi2Status status = instance->fmi2Functions->fmi2GetRealStatus(instance->component, s, value);
     if (instance->logFunctionCall) {
-        instance->logFunctionCall(instance, status, "fmi2GetRealStatus(s=%s, value=%.16g)", s, *value);
+        instance->logFunctionCall(instance, status, "fmi2GetRealStatus(s=%d, value=%.16g)", s, *value);
     }
     return status;
 }
@@ -487,7 +487,7 @@ fmi2Status FMI2GetRealStatus(FMIInstance *instance, const fmi2StatusKind s, fmi2
 fmi2Status FMI2GetIntegerStatus(FMIInstance *instance, const fmi2StatusKind s, fmi2Integer* value) {
     fmi2Status status = instance->fmi2Functions->fmi2GetIntegerStatus(instance->component, s, value);
     if (instance->logFunctionCall) {
-        instance->logFunctionCall(instance, status, "fmi2GetIntegerStatus(s=%s, value=%d)", s, *value);
+        instance->logFunctionCall(instance, status, "fmi2GetIntegerStatus(s=%d, value=%d)", s, *value);
     }
     return status;
 }
@@ -495,7 +495,7 @@ fmi2Status FMI2GetIntegerStatus(FMIInstance *instance, const fmi2StatusKind s, f
 fmi2Status FMI2GetBooleanStatus(FMIInstance *instance, const fmi2StatusKind s, fmi2Boolean* value) {
     fmi2Status status = instance->fmi2Functions->fmi2GetBooleanStatus(instance->component, s, value);
     if (instance->logFunctionCall) {
-        instance->logFunctionCall(instance, status, "fmi2GetBooleanStatus(s=%s, value=%d)", s, *value);
+        instance->logFunctionCall(instance, status, "fmi2GetBooleanStatus(s=%d, value=%d)", s, *value);
     }
     return status;
 }
@@ -503,7 +503,7 @@ fmi2Status FMI2GetBooleanStatus(FMIInstance *instance, const fmi2StatusKind s, f
 fmi2Status FMI2GetStringStatus(FMIInstance *instance, const fmi2StatusKind s, fmi2String* value) {
     fmi2Status status = instance->fmi2Functions->fmi2GetStringStatus(instance->component, s, value);
     if (instance->logFunctionCall) {
-        instance->logFunctionCall(instance, status, "fmi2GetStringStatus(s=%s, value=%s)", s, *value);
+        instance->logFunctionCall(instance, status, "fmi2GetStringStatus(s=%d, value=%s)", s, *value);
     }
     return status;
 }
