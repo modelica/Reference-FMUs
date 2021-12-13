@@ -51,6 +51,6 @@ void eventUpdate(ModelInstance *comp) {
 
     comp->valuesOfContinuousStatesChanged   = false;
     comp->nominalsOfContinuousStatesChanged = false;
-    comp->terminateSimulation               = false;
+    comp->terminateSimulation               = M(counter) >= 10;
     comp->nextEventTimeDefined              = true;
 }
