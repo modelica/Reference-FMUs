@@ -39,7 +39,28 @@ int main(int argc, char* argv[]) {
         }
 
         // call instance s1 and check status
-        CALL(FMI2DoStep(S, time, h, fmi2True));
+        const fmi2Status doStepStatus = FMI2DoStep(S, time, h, fmi2True);
+
+        if (doStepStatus == fmi2Discard) {
+
+            fmi2Boolean terminated;
+            CALL(FMI2GetBooleanStatus(S, fmi2Terminated, &terminated));
+
+            if (terminated) {
+
+                fmi2Real lastSuccessfulTime;
+                CALL(FMI2GetRealStatus(S, fmi2LastSuccessfulTime, &lastSuccessfulTime));
+
+                S->time = lastSuccessfulTime;
+                CALL(recordVariables(S, outputFile));
+
+                break;
+            }
+
+        } else {
+            CALL(doStepStatus);
+        }
+
     }
 
 TERMINATE:

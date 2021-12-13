@@ -571,13 +571,15 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
         bool stateEvent, timeEvent;
 
         doFixedStep(S, &stateEvent, &timeEvent);
+
 #ifdef EVENT_UPDATE
         if (stateEvent || timeEvent) {
             eventUpdate(S);
         }
 #endif
     }
-    return fmi2OK;
+
+    return S->terminateSimulation ? fmi2Discard : fmi2OK;
 }
 
 /* Inquire slave status */
