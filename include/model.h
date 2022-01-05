@@ -93,7 +93,6 @@ typedef void (*unlockPreemptionType) ();
 
 typedef void (*intermediateUpdateType) (void *instanceEnvironment,
                                         double intermediateUpdateTime,
-                                        bool clocksTicked,
                                         bool intermediateVariableSetRequested,
                                         bool intermediateVariableGetAllowed,
                                         bool intermediateStepFinished,
@@ -219,35 +218,35 @@ if (!p) { \
 }
 
 #define GET_VARIABLES(T) \
-ASSERT_NOT_NULL(vr); \
-ASSERT_NOT_NULL(value); \
+ASSERT_NOT_NULL(valueReferences); \
+ASSERT_NOT_NULL(values); \
 size_t index = 0; \
 Status status = OK; \
-if (nvr == 0) return (FMI_STATUS)status; \
+if (nValueReferences == 0) return (FMI_STATUS)status; \
 if (S->isDirtyValues) { \
     Status s = calculateValues(S); \
     status = max(status, s); \
     if (status > Warning) return (FMI_STATUS)status; \
     S->isDirtyValues = false; \
 } \
-for (size_t i = 0; i < nvr; i++) { \
-    Status s = get ## T(S, vr[i], value, &index); \
+for (size_t i = 0; i < nValueReferences; i++) { \
+    Status s = get ## T(S, valueReferences[i], values, &index); \
     status = max(status, s); \
     if (status > Warning) return (FMI_STATUS)status; \
 } \
 return (FMI_STATUS)status;
 
 #define SET_VARIABLES(T) \
-ASSERT_NOT_NULL(vr); \
-ASSERT_NOT_NULL(value); \
+ASSERT_NOT_NULL(valueReferences); \
+ASSERT_NOT_NULL(values); \
 size_t index = 0; \
 Status status = OK; \
-for (size_t i = 0; i < nvr; i++) { \
-    Status s = set ## T(S, vr[i], value, &index); \
+for (size_t i = 0; i < nValueReferences; i++) { \
+    Status s = set ## T(S, valueReferences[i], values, &index); \
     status = max(status, s); \
     if (status > Warning) return (FMI_STATUS)status; \
 } \
-if (nvr > 0) S->isDirtyValues = true; \
+if (nValueReferences > 0) S->isDirtyValues = true; \
 return (FMI_STATUS)status;
 
 // TODO: make this work with arrays

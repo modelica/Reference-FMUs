@@ -48,7 +48,6 @@ static void activateModelPartition1(ModelInstance* comp, double time) {
         comp->intermediateUpdate(
             comp->componentEnvironment, // fmu instance
             time,                       // intermediateUpdateTime
-            true,                       // clocksTicked
             false,                      // intermediateVariableSetAllowed
             false,                      // intermediateVariableGetAllowed
             true,                       // intermediateStepFinished
@@ -92,7 +91,6 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
         comp->intermediateUpdate(
             comp->componentEnvironment, // fmu instance
             time,                       // intermediateUpdateTime
-            true,                       // clocksTicked
             false,                      // intermediateVariableSetAllowed
             false,                      // intermediateVariableGetAllowed
             true,                       // intermediateStepFinished
@@ -143,7 +141,6 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
             comp->intermediateUpdate(
                 comp,   // fmu instance
                 time,   // intermediateUpdateTime
-                true,   // clocksTicked
                 false,  // intermediateVariableSetAllowed
                 false,  // intermediateVariableGetAllowed
                 true,   // intermediateStepFinished

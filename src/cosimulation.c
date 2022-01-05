@@ -487,7 +487,6 @@ void doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
         comp->intermediateUpdate(
             comp->componentEnvironment, // instanceEnvironment
             comp->time,                 // intermediateUpdateTime
-            false,                      // clocksTicked
             false,                      // intermediateVariableSetRequested
             true,                       // intermediateVariableGetAllowed
             true,                       // intermediateStepFinished

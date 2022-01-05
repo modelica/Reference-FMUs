@@ -166,19 +166,19 @@ FMI_STATIC fmi3Status FMI3InstantiateCoSimulation(
     fmi3Boolean                    earlyReturnAllowed,
     const fmi3ValueReference       requiredIntermediateVariables[],
     size_t                         nRequiredIntermediateVariables,
-    fmi3CallbackIntermediateUpdate intermediateUpdate);
+    fmi3IntermediateUpdateCallback intermediateUpdate);
 
 FMI_STATIC fmi3Status FMI3InstantiateScheduledExecution(
     FMIInstance                   *instance,
     fmi3String                     instantiationToken,
-    fmi3String                     resourceLocation,
+    fmi3String                     resourcePath,
     fmi3Boolean                    visible,
     fmi3Boolean                    loggingOn,
-    const fmi3ValueReference       requiredIntermediateVariables[],
-    size_t                         nRequiredIntermediateVariables,
-    fmi3CallbackIntermediateUpdate intermediateUpdate,
-    fmi3CallbackLockPreemption     lockPreemption,
-    fmi3CallbackUnlockPreemption   unlockPreemption);
+    fmi3InstanceEnvironment        instanceEnvironment,
+    fmi3LogMessageCallback         logMessage,
+    fmi3ClockUpdateCallback        clockUpdate,
+    fmi3LockPreemptionCallback     lockPreemption,
+    fmi3UnlockPreemptionCallback   unlockPreemption);
 
 FMI_STATIC fmi3Status FMI3FreeInstance(FMIInstance *instance);
 

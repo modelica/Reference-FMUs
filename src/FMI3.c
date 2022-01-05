@@ -23,12 +23,9 @@
 
 
 static void cb_logMessage3(fmi3InstanceEnvironment instanceEnvironment,
-    fmi3String instanceName,
-    fmi3Status status,
-    fmi3String category,
-    fmi3String message) {
-
-    (void)instanceName; // unused
+                           fmi3Status status,
+                           fmi3String category,
+                           fmi3String message) {
 
     if (!instanceEnvironment) return;
 
@@ -249,7 +246,7 @@ fmi3Status FMI3InstantiateModelExchange(
 
     fmi3Status status = loadSymbols3(instance);
 
-    fmi3CallbackLogMessage logMessage = instance->logMessage ? cb_logMessage3 : NULL;
+    fmi3LogMessageCallback logMessage = instance->logMessage ? cb_logMessage3 : NULL;
 
     instance->component = instance->fmi3Functions->fmi3InstantiateModelExchange(instance->name, instantiationToken, resourcePath, visible, loggingOn, instance, logMessage);
 
@@ -293,13 +290,13 @@ fmi3Status FMI3InstantiateCoSimulation(
     fmi3Boolean                    earlyReturnAllowed,
     const fmi3ValueReference       requiredIntermediateVariables[],
     size_t                         nRequiredIntermediateVariables,
-    fmi3CallbackIntermediateUpdate intermediateUpdate) {
+    fmi3IntermediateUpdateCallback intermediateUpdate) {
 
     if (loadSymbols3(instance) != FMIOK) {
         return fmi3Fatal;
     }
 
-    fmi3CallbackLogMessage logMessage = instance->logMessage ? cb_logMessage3 : NULL;
+    fmi3LogMessageCallback logMessage = instance->logMessage ? cb_logMessage3 : NULL;
 
     instance->component = instance->fmi3Functions->fmi3InstantiateCoSimulation(
         instance->name,
@@ -363,17 +360,17 @@ fmi3Status FMI3InstantiateScheduledExecution(
     fmi3String                     resourcePath,
     fmi3Boolean                    visible,
     fmi3Boolean                    loggingOn,
-    const fmi3ValueReference       requiredIntermediateVariables[],
-    size_t                         nRequiredIntermediateVariables,
-    fmi3CallbackIntermediateUpdate intermediateUpdate,
-    fmi3CallbackLockPreemption     lockPreemption,
-    fmi3CallbackUnlockPreemption   unlockPreemption) {
+    fmi3InstanceEnvironment        instanceEnvironment,
+    fmi3LogMessageCallback         logMessage,
+    fmi3ClockUpdateCallback        clockUpdate,
+    fmi3LockPreemptionCallback     lockPreemption,
+    fmi3UnlockPreemptionCallback   unlockPreemption) {
 
     if (loadSymbols3(instance) != FMIOK) {
         return fmi3Error;
     }
 
-    fmi3CallbackLogMessage logMessage = instance->logMessage ? cb_logMessage3 : NULL;
+    fmi3LogMessageCallback _logMessage = instance->logMessage ? cb_logMessage3 : NULL;
 
     instance->component = instance->fmi3Functions->fmi3InstantiateScheduledExecution(
         instance->name,
@@ -381,11 +378,9 @@ fmi3Status FMI3InstantiateScheduledExecution(
         resourcePath,
         visible,
         loggingOn,
-        requiredIntermediateVariables,
-        nRequiredIntermediateVariables,
         instance,
-        logMessage,
-        intermediateUpdate,
+        _logMessage,
+        clockUpdate,
         lockPreemption,
         unlockPreemption);
 
@@ -397,11 +392,9 @@ fmi3Status FMI3InstantiateScheduledExecution(
             "resourcePath=\"%s\", "
             "visible=%d, "
             "loggingOn=%d, "
-            "requiredIntermediateVariables=0x%p, "
-            "nRequiredIntermediateVariables=%zu, "
             "instanceEnvironment=0x%p, "
             "logMessage=0x%p, "
-            "intermediateUpdate=0x%p, "
+            "clockUpdate=0x%p, "
             "lockPreemption=0x%p, "
             "unlockPreemption=0x%p)",
             instance->name,
@@ -409,11 +402,9 @@ fmi3Status FMI3InstantiateScheduledExecution(
             resourcePath,
             visible,
             loggingOn,
-            requiredIntermediateVariables,
-            nRequiredIntermediateVariables,
             instance,
-            logMessage,
-            intermediateUpdate,
+            _logMessage,
+            clockUpdate,
             lockPreemption,
             unlockPreemption
         );
@@ -617,7 +608,8 @@ fmi3Status FMI3GetClock(FMIInstance *instance,
     size_t nValueReferences,
     fmi3Clock values[],
     size_t nValues) {
-    CALL_ARRAY(Get, Clock)
+    // TODO: implement
+    return fmi3Error;
 }
 
 fmi3Status FMI3SetFloat32(FMIInstance *instance,
@@ -739,7 +731,8 @@ fmi3Status FMI3SetClock(FMIInstance *instance,
     size_t nValueReferences,
     const fmi3Clock values[],
     size_t nValues) {
-    CALL_ARRAY(Set, Clock)
+    // TODO: implement
+    return fmi3Error;
 }
 
 /* Getting Variable Dependency Information */
@@ -845,8 +838,8 @@ FMI_STATIC fmi3Status FMI3GetIntervalDecimal(FMIInstance *instance,
     fmi3IntervalQualifier qualifiers[],
     size_t nIntervals) {
     CALL_ARGS(GetIntervalDecimal,
-        "valueReferences=0x%p, nValueReferences=%zu, intervals=0x%p, qualifiers=0x%p, nIntervals=%zu",
-        valueReferences, nValueReferences, intervals, qualifiers, nIntervals);
+        "valueReferences=0x%p, nValueReferences=%zu, intervals=0x%p, qualifiers=0x%p",
+        valueReferences, nValueReferences, intervals, qualifiers);
 }
 
 //fmi3Status FMI3GetIntervalFraction(FMIInstance *instance,
@@ -1061,8 +1054,8 @@ fmi3Status FMI3ActivateModelPartition(FMIInstance *instance,
     size_t clockElementIndex,
     fmi3Float64 activationTime) {
     CALL_ARGS(ActivateModelPartition,
-        "clockReference=%u, clockElementIndex=%zu, activationTime=%.16g",
-        clockReference, clockElementIndex, activationTime);
+        "clockReference=%u, activationTime=%.16g",
+        clockReference, activationTime);
 }
 
 #undef LOAD_SYMBOL
