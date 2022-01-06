@@ -18,9 +18,6 @@
 #include "model.h"
 #include "cosimulation.h"
 
-
-#define FMI_STATUS fmi3Status
-
 // C-code FMUs have functions names prefixed with MODEL_IDENTIFIER_.
 // Define DISABLE_PREFIX to build a binary FMU.
 #if !defined(DISABLE_PREFIX) && !defined(FMI3_FUNCTION_PREFIX)
@@ -29,6 +26,70 @@
 #define FMI3_FUNCTION_PREFIX pasteB(MODEL_IDENTIFIER, _)
 #endif
 #include "fmi3Functions.h"
+
+#define ASSERT_NOT_NULL(p) \
+if (!p) { \
+        logError(S, "Argument %s must not be NULL.", xstr(p)); \
+        S->state = modelError; \
+        return (fmi3Status)Error; \
+}
+
+#define GET_VARIABLES(T) \
+ASSERT_NOT_NULL(valueReferences); \
+ASSERT_NOT_NULL(values); \
+size_t index = 0; \
+Status status = OK; \
+if (nValueReferences == 0) return (fmi3Status)status; \
+if (S->isDirtyValues) { \
+    Status s = calculateValues(S); \
+    status = max(status, s); \
+    if (status > Warning) return (fmi3Status)status; \
+    S->isDirtyValues = false; \
+} \
+for (size_t i = 0; i < nValueReferences; i++) { \
+    Status s = get ## T(S, valueReferences[i], values, &index); \
+    status = max(status, s); \
+    if (status > Warning) return (fmi3Status)status; \
+} \
+return (fmi3Status)status;
+
+#define SET_VARIABLES(T) \
+ASSERT_NOT_NULL(valueReferences); \
+ASSERT_NOT_NULL(values); \
+size_t index = 0; \
+Status status = OK; \
+for (size_t i = 0; i < nValueReferences; i++) { \
+    Status s = set ## T(S, valueReferences[i], values, &index); \
+    status = max(status, s); \
+    if (status > Warning) return (fmi3Status)status; \
+} \
+if (nValueReferences > 0) S->isDirtyValues = true; \
+return (fmi3Status)status;
+
+// TODO: make this work with arrays
+#define GET_BOOLEAN_VARIABLES \
+Status status = OK; \
+for (size_t i = 0; i < nvr; i++) { \
+    bool v = false; \
+    size_t index = 0; \
+    Status s = getBoolean(S, vr[i], &v, &index); \
+    value[i] = v; \
+    status = max(status, s); \
+    if (status > Warning) return (fmi3Status)status; \
+} \
+return (fmi3Status)status;
+
+// TODO: make this work with arrays
+#define SET_BOOLEAN_VARIABLES \
+Status status = OK; \
+for (size_t i = 0; i < nvr; i++) { \
+    bool v = value[i]; \
+    size_t index = 0; \
+    Status s = setBoolean(S, vr[i], &v, &index); \
+    status = max(status, s); \
+    if (status > Warning) return (fmi3Status)status; \
+} \
+return (fmi3Status)status;
 
 #ifndef max
 #define max(a,b) ((a)>(b) ? (a) : (b))
