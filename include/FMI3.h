@@ -61,6 +61,7 @@ struct FMI3Functions_ {
     fmi3GetBooleanTYPE                      *fmi3GetBoolean;
     fmi3GetStringTYPE                       *fmi3GetString;
     fmi3GetBinaryTYPE                       *fmi3GetBinary;
+    fmi3GetClockTYPE                        *fmi3GetClock;
     fmi3SetFloat32TYPE                      *fmi3SetFloat32;
     fmi3SetFloat64TYPE                      *fmi3SetFloat64;
     fmi3SetInt8TYPE                         *fmi3SetInt8;
@@ -74,6 +75,7 @@ struct FMI3Functions_ {
     fmi3SetBooleanTYPE                      *fmi3SetBoolean;
     fmi3SetStringTYPE                       *fmi3SetString;
     fmi3SetBinaryTYPE                       *fmi3SetBinary;
+    fmi3SetClockTYPE                        *fmi3SetClock;
 
     /* Getting Variable Dependency Information */
     fmi3GetNumberOfVariableDependenciesTYPE *fmi3GetNumberOfVariableDependencies;
@@ -96,16 +98,17 @@ struct FMI3Functions_ {
     fmi3ExitConfigurationModeTYPE           *fmi3ExitConfigurationMode;
 
     /* Clock related functions */
-    fmi3GetClockTYPE                        *fmi3GetClock;
-    fmi3SetClockTYPE                        *fmi3SetClock;
     fmi3GetIntervalDecimalTYPE              *fmi3GetIntervalDecimal;
     fmi3GetIntervalFractionTYPE             *fmi3GetIntervalFraction;
+    fmi3GetShiftDecimalTYPE                 *fmi3GetShiftDecimal;
+    fmi3GetShiftFractionTYPE                *fmi3GetShiftFraction;
     fmi3SetIntervalDecimalTYPE              *fmi3SetIntervalDecimal;
     fmi3SetIntervalFractionTYPE             *fmi3SetIntervalFraction;
+    fmi3EvaluateDiscreteStatesTYPE          *fmi3EvaluateDiscreteStates;
     fmi3UpdateDiscreteStatesTYPE            *fmi3UpdateDiscreteStates;
 
     /***************************************************
-    Functions for FMI 3.0 for Model Exchange
+    Functions for Model Exchange
     ****************************************************/
 
     fmi3EnterContinuousTimeModeTYPE         *fmi3EnterContinuousTimeMode;
@@ -127,17 +130,21 @@ struct FMI3Functions_ {
     Functions for FMI 3.0 for Co-Simulation
     ****************************************************/
 
-    /* Simulating the FMU */
     fmi3EnterStepModeTYPE                   *fmi3EnterStepMode;
     fmi3GetOutputDerivativesTYPE            *fmi3GetOutputDerivatives;
     fmi3DoStepTYPE                          *fmi3DoStep;
+
+    /***************************************************
+    Functions for Scheduled Execution
+    ****************************************************/
+
     fmi3ActivateModelPartitionTYPE          *fmi3ActivateModelPartition;
 
 };
 
 
 /***************************************************
-Types for Common Functions
+Common Functions
 ****************************************************/
 
 /* Inquire version numbers and setting logging status */
@@ -152,7 +159,7 @@ FMI_STATIC fmi3Status FMI3SetDebugLogging(FMIInstance *instance,
 FMI_STATIC fmi3Status FMI3InstantiateModelExchange(
     FMIInstance *instance,
     fmi3String   instantiationToken,
-    fmi3String   resourceLocation,
+    fmi3String   resourcePath,
     fmi3Boolean  visible,
     fmi3Boolean  loggingOn);
 
@@ -395,11 +402,11 @@ FMI_STATIC fmi3Status FMI3SetFMUState(FMIInstance *instance, fmi3FMUState  FMUSt
 FMI_STATIC fmi3Status FMI3FreeFMUState(FMIInstance *instance, fmi3FMUState* FMUState);
 
 FMI_STATIC fmi3Status FMI3SerializedFMUStateSize(FMIInstance *instance,
-    fmi3FMUState  FMUState,
+    fmi3FMUState FMUState,
     size_t* size);
 
 FMI_STATIC fmi3Status FMI3SerializeFMUState(FMIInstance *instance,
-    fmi3FMUState  FMUState,
+    fmi3FMUState FMUState,
     fmi3Byte serializedState[],
     size_t size);
 
@@ -434,44 +441,53 @@ FMI_STATIC fmi3Status FMI3EnterConfigurationMode(FMIInstance *instance);
 
 FMI_STATIC fmi3Status FMI3ExitConfigurationMode(FMIInstance *instance);
 
-/* Clock related functions */
 FMI_STATIC fmi3Status FMI3GetIntervalDecimal(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3Float64 intervals[],
-    fmi3IntervalQualifier qualifiers[],
-    size_t nIntervals);
+    fmi3IntervalQualifier qualifiers[]);
 
-//fmi3Status FMI3GetIntervalFraction(FMIInstance *instance,
-//    const fmi3ValueReference valueReferences[],
-//    size_t nValueReferences,
-//    fmi3UInt64 intervalCounter[],
-//    fmi3UInt64 resolution[],
-//    size_t nValues);
-//
-//fmi3Status FMI3SetIntervalDecimal(FMIInstance *instance,
-//    const fmi3ValueReference valueReferences[],
-//    size_t nValueReferences,
-//    const fmi3Float64 interval[],
-//    size_t nValues);
-//
-//fmi3Status FMI3SetIntervalFraction(FMIInstance *instance,
-//    const fmi3ValueReference valueReferences[],
-//    size_t nValueReferences,
-//    const fmi3UInt64 intervalCounter[],
-//    const fmi3UInt64 resolution[],
-//    size_t nValues);
+FMI_STATIC fmi3Status FMI3GetIntervalFraction(FMIInstance *instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    fmi3UInt64 intervalCounters[],
+    fmi3UInt64 resolutions[],
+    fmi3IntervalQualifier qualifiers[]);
+
+FMI_STATIC fmi3Status FMI3GetShiftDecimal(FMIInstance *instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    fmi3Float64 shifts[]);
+
+FMI_STATIC fmi3Status FMI3GetShiftFraction(FMIInstance *instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    fmi3UInt64 shiftCounters[],
+    fmi3UInt64 resolutions[]);
+
+FMI_STATIC fmi3Status FMI3SetIntervalDecimal(FMIInstance *instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    const fmi3Float64 intervals[]);
+
+FMI_STATIC fmi3Status FMI3SetIntervalFraction(FMIInstance *instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    const fmi3UInt64 intervalCounters[],
+    const fmi3UInt64 resolutions[]);
+
+FMI_STATIC fmi3Status FMI3EvaluateDiscreteStates(FMIInstance *instance);
 
 FMI_STATIC fmi3Status FMI3UpdateDiscreteStates(FMIInstance *instance,
-    fmi3Boolean *discreteStatesNeedUpdate,
-    fmi3Boolean *terminateSimulation,
-    fmi3Boolean *nominalsOfContinuousStatesChanged,
-    fmi3Boolean *valuesOfContinuousStatesChanged,
-    fmi3Boolean *nextEventTimeDefined,
-    fmi3Float64 *nextEventTime);
+    fmi3Boolean* discreteStatesNeedUpdate,
+    fmi3Boolean* terminateSimulation,
+    fmi3Boolean* nominalsOfContinuousStatesChanged,
+    fmi3Boolean* valuesOfContinuousStatesChanged,
+    fmi3Boolean* nextEventTimeDefined,
+    fmi3Float64* nextEventTime);
 
 /***************************************************
-Types for Functions for Model Exchange
+Functions for Model Exchange
 ****************************************************/
 
 FMI_STATIC fmi3Status FMI3EnterContinuousTimeMode(FMIInstance *instance);
@@ -512,7 +528,7 @@ FMI_STATIC fmi3Status FMI3GetNumberOfContinuousStates(FMIInstance *instance,
     size_t* nContinuousStates);
 
 /***************************************************
-Types for Functions for Co-Simulation
+Functions for Co-Simulation
 ****************************************************/
 
 /* Simulating the FMU */
@@ -530,10 +546,14 @@ FMI_STATIC fmi3Status FMI3DoStep(FMIInstance *instance,
     fmi3Float64 currentCommunicationPoint,
     fmi3Float64 communicationStepSize,
     fmi3Boolean noSetFMUStatePriorToCurrentPoint,
-    fmi3Boolean* eventEncountered,
-    fmi3Boolean* terminate,
+    fmi3Boolean* eventHandlingNeeded,
+    fmi3Boolean* terminateSimulation,
     fmi3Boolean* earlyReturn,
     fmi3Float64* lastSuccessfulTime);
+
+/***************************************************
+Functions for Scheduled Execution
+****************************************************/
 
 FMI_STATIC fmi3Status FMI3ActivateModelPartition(FMIInstance *instance,
     fmi3ValueReference clockReference,
