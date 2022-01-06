@@ -197,6 +197,7 @@ static fmi3Status loadSymbols3(FMIInstance *instance) {
     LOAD_SYMBOL(SetIntervalDecimal);
     LOAD_SYMBOL(SetIntervalFraction);
     LOAD_SYMBOL(EvaluateDiscreteStates);
+    LOAD_SYMBOL(UpdateDiscreteStates);
 
     /***************************************************
     Functions for Model Exchange
@@ -610,8 +611,16 @@ fmi3Status FMI3GetClock(FMIInstance *instance,
     size_t nValueReferences,
     fmi3Clock values[],
     size_t nValues) {
-    // TODO: implement
-    return fmi3Error;
+
+    fmi3Status status = instance->fmi3Functions->fmi3GetClock(instance->component, valueReferences, nValueReferences, values);
+
+    if (instance->logFunctionCall) {
+        FMIValueReferencesToString(instance, valueReferences, nValueReferences);
+        FMIValuesToString(instance, nValues, values, FMIClockType);
+        instance->logFunctionCall(instance, status, "fmi3GetClock(valueReferences=%s, nValueReferences=%zu, values=%s)", instance->buf1, nValueReferences, instance->buf2);
+    }
+
+    return status;
 }
 
 fmi3Status FMI3SetFloat32(FMIInstance *instance,

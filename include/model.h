@@ -100,6 +100,8 @@ typedef void (*intermediateUpdateType) (void *instanceEnvironment,
                                         bool *earlyReturnRequested,
                                         double *earlyReturnTime);
 
+typedef void(*clockUpdateType) (void *instanceEnvironment);
+
 typedef struct {
 
     double time;
@@ -112,6 +114,7 @@ typedef struct {
     // callback functions
     loggerType logger;
     intermediateUpdateType intermediateUpdate;
+    clockUpdateType clockUpdate;
 
     lockPreemptionType lockPreemtion;
     unlockPreemptionType unlockPreemtion;

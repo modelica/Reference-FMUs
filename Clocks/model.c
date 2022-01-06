@@ -35,26 +35,15 @@ static void activateModelPartition1(ModelInstance* comp, double time) {
         M(inClock3_qualifier)= 2; // fmi3IntervalChanged
         M(inClock3_interval) = 0.0;
     }
+
     M(outClock) = ((M(outClock) == false) && (M(totalInClockTicks) % 5 == 0));
 
     if (comp->unlockPreemtion) {
         comp->unlockPreemtion();
     }
 
-    bool earlyReturnRequested;
-    double earlyReturnTime;
-
     if (M(inClock3_qualifier) == 2 || M(outClock)) {
-        comp->intermediateUpdate(
-            comp->componentEnvironment, // fmu instance
-            time,                       // intermediateUpdateTime
-            false,                      // intermediateVariableSetAllowed
-            false,                      // intermediateVariableGetAllowed
-            true,                       // intermediateStepFinished
-            false,                      // canReturnEarly
-            &earlyReturnRequested,
-            &earlyReturnTime
-        );
+        comp->clockUpdate(comp->componentEnvironment);
     }
 }
 
@@ -65,6 +54,8 @@ ModelPartition 2 does the following:
   - triggers outClock, if the number of totalInTicks is a multiple of 5
 **************************************/
 static void activateModelPartition2(ModelInstance* comp, double time) {
+
+    UNUSED(time);
 
     if (comp->lockPreemtion) {
         comp->lockPreemtion();
@@ -84,20 +75,8 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
         comp->unlockPreemtion();
     }
 
-    bool earlyReturnRequested;
-    double earlyReturnTime;
-
     if (M(outClock)) {
-        comp->intermediateUpdate(
-            comp->componentEnvironment, // fmu instance
-            time,                       // intermediateUpdateTime
-            false,                      // intermediateVariableSetAllowed
-            false,                      // intermediateVariableGetAllowed
-            true,                       // intermediateStepFinished
-            false,                      // canReturnEarly
-            &earlyReturnRequested,
-            &earlyReturnTime
-        );
+        comp->clockUpdate(comp->componentEnvironment);
     }
 }
 

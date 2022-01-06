@@ -9,7 +9,6 @@
 // tag::IntermediateUpdateCallback[]
 void intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
                            fmi3Float64 intermediateUpdateTime,
-                           fmi3Boolean clocksTicked,
                            fmi3Boolean intermediateVariableSetRequested,
                            fmi3Boolean intermediateVariableGetAllowed,
                            fmi3Boolean intermediateStepFinished,
@@ -62,7 +61,6 @@ void intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     fprintf(logFile, "intermediateUpdate("
         "instanceEnvironment=0x%p, "
         "intermediateUpdateTime=%.16g, "
-        "clocksTicked=%d, "
         "intermediateVariableSetRequested=%d, "
         "intermediateVariableGetAllowed=%d, "
         "intermediateStepFinished=%d, "
@@ -71,7 +69,6 @@ void intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
         "earlyReturnTime=%.16g)\n",
         instanceEnvironment,
         intermediateUpdateTime,
-        clocksTicked,
         intermediateVariableSetRequested,
         intermediateVariableGetAllowed,
         intermediateStepFinished,
@@ -113,7 +110,6 @@ int main(int argc, char* argv[]) {
     while (time < stopTime) {
 
         fmi3Boolean eventEncountered, terminateSimulation, earlyReturn;
-        fmi3Float64 lastSuccessfulTime;
 
         CALL(FMI3DoStep(S,
             time,                 // currentCommunicationPoint
@@ -127,8 +123,6 @@ int main(int argc, char* argv[]) {
 
         time += stepSize;
     };
-
-    fmi3Status terminateStatus;
 
 TERMINATE:
     return tearDown();

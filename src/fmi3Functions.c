@@ -347,7 +347,6 @@ fmi3Instance fmi3InstantiateScheduledExecution(
     fmi3UnlockPreemptionCallback   unlockPreemption) {
 
     UNUSED(visible);
-    UNUSED(clockUpdate);
 
 #ifndef SCHEDULED_CO_SIMULATION
 
@@ -357,6 +356,7 @@ fmi3Instance fmi3InstantiateScheduledExecution(
     UNUSED(loggingOn);
     UNUSED(instanceEnvironment);
     UNUSED(logMessage);
+    UNUSED(clockUpdate);
     UNUSED(lockPreemption);
     UNUSED(unlockPreemption);
 
@@ -375,6 +375,7 @@ fmi3Instance fmi3InstantiateScheduledExecution(
 
     if (instance) {
         instance->state = Instantiated;
+        instance->clockUpdate = clockUpdate;
         instance->lockPreemtion = lockPreemption;
         instance->unlockPreemtion = unlockPreemption;
     }

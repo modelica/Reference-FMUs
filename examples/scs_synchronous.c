@@ -11,21 +11,10 @@ fmi3ValueReference outClockVRs[1] = { vr_outClock };
 fmi3Clock outClockValues[2];
 
 
-static void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
-                                  fmi3Float64 intermediateUpdateTime,
-                                  fmi3Boolean clocksTicked,
-                                  fmi3Boolean intermediateVariableSetRequested,
-                                  fmi3Boolean intermediateVariableGetAllowed,
-                                  fmi3Boolean intermediateStepFinished,
-                                  fmi3Boolean canReturnEarly,
-                                  fmi3Boolean *earlyReturnRequested,
-                                  fmi3Float64 *earlyReturnTime) {
-
-    if (clocksTicked) {
-        countdownClockIntervals[0] = 0.0;
-        countdownClocksQualifier[0] = fmi3IntervalNotYetKnown;
-        FMI3GetIntervalDecimal(S, vr_countdownClocks, 1, countdownClockIntervals, countdownClocksQualifier, 1);
-    }
+static void cb_clockUpdate(fmi3InstanceEnvironment instanceEnvironment) {
+    countdownClockIntervals[0] = 0.0;
+    countdownClocksQualifier[0] = fmi3IntervalNotYetKnown;
+    FMI3GetIntervalDecimal(S, vr_countdownClocks, 1, countdownClockIntervals, countdownClocksQualifier, 1);
 }
 
 
@@ -40,7 +29,7 @@ int main(int argc, char* argv[]) {
         fmi3False,             // loggingOn
         NULL,                  // requiredIntermediateVariables
         0,                     // nRequiredIntermediateVariables
-        cb_intermediateUpdate, // intermediateUpdate
+        cb_clockUpdate,        // clockUpdate
         NULL,                  // lockPreemption
         NULL                   // unlockPreemption
     ));
