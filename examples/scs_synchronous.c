@@ -14,7 +14,7 @@ fmi3Clock outClockValues[2];
 static void cb_clockUpdate(fmi3InstanceEnvironment instanceEnvironment) {
     countdownClockIntervals[0] = 0.0;
     countdownClocksQualifier[0] = fmi3IntervalNotYetKnown;
-    FMI3GetIntervalDecimal(S, vr_countdownClocks, 1, countdownClockIntervals, countdownClocksQualifier, 1);
+    FMI3GetIntervalDecimal(S, vr_countdownClocks, 1, countdownClockIntervals, countdownClocksQualifier);
 }
 
 
