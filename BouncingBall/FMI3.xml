@@ -48,9 +48,9 @@
 
   <ModelVariables>
     <Float64 name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time"/>
-    <Float64 name="h" valueReference="1" causality="output" variability="continuous" initial="exact" declaredType="Position" start="1" description="Position of the ball"/>
+    <Float64 name="h" valueReference="1" causality="output" variability="continuous" initial="exact" declaredType="Position" start="1" description="Position of the ball" intermediateUpdate="true"/>
     <Float64 name="der(h)" valueReference="2" causality="local" variability="continuous" initial="calculated" declaredType="Velocity" derivative="1" description="Derivative of h"/>
-    <Float64 name="v" valueReference="3" causality="output" variability="continuous" initial="exact" declaredType="Velocity" start="0" reinit="true" description="Velocity of the ball"/>
+    <Float64 name="v" valueReference="3" causality="output" variability="continuous" initial="exact" declaredType="Velocity" start="0" reinit="true" description="Velocity of the ball" intermediateUpdate="true"/>
     <Float64 name="der(v)" valueReference="4" causality="local" variability="continuous" initial="calculated" declaredType="Acceleration" derivative="3" description="Derivative of v"/>
     <Float64 name="g" valueReference="5" causality="parameter" variability="fixed" initial="exact" declaredType="Acceleration" start="-9.81" derivative="1" description="Gravity acting on the ball"/>
     <Float64 name="e" valueReference="6" causality="parameter" variability="tunable" initial="exact" start="0.7" min="0.5" max="1" description="Coefficient of restitution"/>
