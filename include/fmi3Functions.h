@@ -2,7 +2,7 @@
 #define fmi3Functions_h
 
 /*
-This header file declares the functions of FMI 3.0-beta.2.
+This header file declares the functions of FMI 3.0-beta.3.
 It must be used when compiling an FMU.
 
 In order to have unique function names even if several FMUs
@@ -93,7 +93,7 @@ it may be set to __declspec(dllimport).
 #endif
 
 /* FMI version */
-#define fmi3Version "3.0-beta.2"
+#define fmi3Version "3.0-beta.3"
 
 /***************************************************
 Common Functions
@@ -310,10 +310,15 @@ Functions for Co-Simulation
 ****************************************************/
 
 /* Simulating the FMU */
-FMI3_Export fmi3EnterStepModeTYPE          fmi3EnterStepMode;
-FMI3_Export fmi3GetOutputDerivativesTYPE   fmi3GetOutputDerivatives;
+FMI3_Export fmi3EnterStepModeTYPE        fmi3EnterStepMode;
+FMI3_Export fmi3GetOutputDerivativesTYPE fmi3GetOutputDerivatives;
+FMI3_Export fmi3DoStepTYPE               fmi3DoStep;
+
+/***************************************************
+Functions for Scheduled Execution
+****************************************************/
+
 FMI3_Export fmi3ActivateModelPartitionTYPE fmi3ActivateModelPartition;
-FMI3_Export fmi3DoStepTYPE                 fmi3DoStep;
 
 #ifdef __cplusplus
 }  /* end of extern "C" { */

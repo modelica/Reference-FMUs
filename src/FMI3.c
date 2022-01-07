@@ -23,12 +23,9 @@
 
 
 static void cb_logMessage3(fmi3InstanceEnvironment instanceEnvironment,
-    fmi3String instanceName,
-    fmi3Status status,
-    fmi3String category,
-    fmi3String message) {
-
-    (void)instanceName; // unused
+                           fmi3Status status,
+                           fmi3String category,
+                           fmi3String message) {
 
     if (!instanceEnvironment) return;
 
@@ -126,107 +123,110 @@ static fmi3Status loadSymbols3(FMIInstance *instance) {
     ****************************************************/
 
     /* Inquire version numbers and set debug logging */
-    LOAD_SYMBOL(GetVersion)
-    LOAD_SYMBOL(SetDebugLogging)
+    LOAD_SYMBOL(GetVersion);
+    LOAD_SYMBOL(SetDebugLogging);
 
     /* Creation and destruction of FMU instances */
-    LOAD_SYMBOL(InstantiateModelExchange)
-    LOAD_SYMBOL(InstantiateCoSimulation)
-    LOAD_SYMBOL(InstantiateScheduledExecution)
-    LOAD_SYMBOL(FreeInstance)
+    LOAD_SYMBOL(InstantiateModelExchange);
+    LOAD_SYMBOL(InstantiateCoSimulation);
+    LOAD_SYMBOL(InstantiateScheduledExecution);
+    LOAD_SYMBOL(FreeInstance);
 
     /* Enter and exit initialization mode, terminate and reset */
-    LOAD_SYMBOL(EnterInitializationMode)
-    LOAD_SYMBOL(ExitInitializationMode)
-    LOAD_SYMBOL(EnterEventMode)
-    LOAD_SYMBOL(Terminate)
-    LOAD_SYMBOL(Reset)
+    LOAD_SYMBOL(EnterInitializationMode);
+    LOAD_SYMBOL(ExitInitializationMode);
+    LOAD_SYMBOL(EnterEventMode);
+    LOAD_SYMBOL(Terminate);
+    LOAD_SYMBOL(Reset);
 
     /* Getting and setting variable values */
-    LOAD_SYMBOL(GetFloat32)
-    LOAD_SYMBOL(GetFloat64)
-    LOAD_SYMBOL(GetInt8)
-    LOAD_SYMBOL(GetUInt8)
-    LOAD_SYMBOL(GetInt16)
-    LOAD_SYMBOL(GetUInt16)
-    LOAD_SYMBOL(GetInt32)
-    LOAD_SYMBOL(GetUInt32)
-    LOAD_SYMBOL(GetInt64)
-    LOAD_SYMBOL(GetUInt64)
-    LOAD_SYMBOL(GetBoolean)
-    LOAD_SYMBOL(GetString)
-    LOAD_SYMBOL(GetBinary)
-    LOAD_SYMBOL(GetClock)
-    LOAD_SYMBOL(SetFloat32)
-    LOAD_SYMBOL(SetFloat64)
-    LOAD_SYMBOL(SetInt8)
-    LOAD_SYMBOL(SetUInt8)
-    LOAD_SYMBOL(SetInt16)
-    LOAD_SYMBOL(SetUInt16)
-    LOAD_SYMBOL(SetInt32)
-    LOAD_SYMBOL(SetUInt32)
-    LOAD_SYMBOL(SetInt64)
-    LOAD_SYMBOL(SetUInt64)
-    LOAD_SYMBOL(SetBoolean)
-    LOAD_SYMBOL(SetString)
-    LOAD_SYMBOL(SetBinary)
-    LOAD_SYMBOL(SetClock)
+    LOAD_SYMBOL(GetFloat32);
+    LOAD_SYMBOL(GetFloat64);
+    LOAD_SYMBOL(GetInt8);
+    LOAD_SYMBOL(GetUInt8);
+    LOAD_SYMBOL(GetInt16);
+    LOAD_SYMBOL(GetUInt16);
+    LOAD_SYMBOL(GetInt32);
+    LOAD_SYMBOL(GetUInt32);
+    LOAD_SYMBOL(GetInt64);
+    LOAD_SYMBOL(GetUInt64);
+    LOAD_SYMBOL(GetBoolean);
+    LOAD_SYMBOL(GetString);
+    LOAD_SYMBOL(GetBinary);
+    LOAD_SYMBOL(GetClock);
+    LOAD_SYMBOL(SetFloat32);
+    LOAD_SYMBOL(SetFloat64);
+    LOAD_SYMBOL(SetInt8);
+    LOAD_SYMBOL(SetUInt8);
+    LOAD_SYMBOL(SetInt16);
+    LOAD_SYMBOL(SetUInt16);
+    LOAD_SYMBOL(SetInt32);
+    LOAD_SYMBOL(SetUInt32);
+    LOAD_SYMBOL(SetInt64);
+    LOAD_SYMBOL(SetUInt64);
+    LOAD_SYMBOL(SetBoolean);
+    LOAD_SYMBOL(SetString);
+    LOAD_SYMBOL(SetBinary);
+    LOAD_SYMBOL(SetClock);
 
     /* Getting Variable Dependency Information */
-    LOAD_SYMBOL(GetNumberOfVariableDependencies)
-    LOAD_SYMBOL(GetVariableDependencies)
+    LOAD_SYMBOL(GetNumberOfVariableDependencies);
+    LOAD_SYMBOL(GetVariableDependencies);
 
     /* Getting and setting the internal FMU state */
-    LOAD_SYMBOL(GetFMUState)
-    LOAD_SYMBOL(SetFMUState)
-    LOAD_SYMBOL(FreeFMUState)
-    LOAD_SYMBOL(SerializedFMUStateSize)
-    LOAD_SYMBOL(SerializeFMUState)
-    LOAD_SYMBOL(DeSerializeFMUState)
+    LOAD_SYMBOL(GetFMUState);
+    LOAD_SYMBOL(SetFMUState);
+    LOAD_SYMBOL(FreeFMUState);
+    LOAD_SYMBOL(SerializedFMUStateSize);
+    LOAD_SYMBOL(SerializeFMUState);
+    LOAD_SYMBOL(DeSerializeFMUState);
 
     /* Getting partial derivatives */
-    LOAD_SYMBOL(GetDirectionalDerivative)
-    LOAD_SYMBOL(GetAdjointDerivative)
+    LOAD_SYMBOL(GetDirectionalDerivative);
+    LOAD_SYMBOL(GetAdjointDerivative);
 
     /* Entering and exiting the Configuration or Reconfiguration Mode */
-    LOAD_SYMBOL(EnterConfigurationMode)
-    LOAD_SYMBOL(ExitConfigurationMode)
+    LOAD_SYMBOL(EnterConfigurationMode);
+    LOAD_SYMBOL(ExitConfigurationMode);
 
     /* Clock related functions */
-    LOAD_SYMBOL(GetIntervalDecimal)
-    LOAD_SYMBOL(GetIntervalFraction)
-    LOAD_SYMBOL(SetIntervalDecimal)
-    LOAD_SYMBOL(SetIntervalFraction)
-    LOAD_SYMBOL(UpdateDiscreteStates)
+    LOAD_SYMBOL(GetIntervalDecimal);
+    LOAD_SYMBOL(GetIntervalFraction);
+    LOAD_SYMBOL(GetShiftDecimal);
+    LOAD_SYMBOL(GetShiftFraction);
+    LOAD_SYMBOL(SetIntervalDecimal);
+    LOAD_SYMBOL(SetIntervalFraction);
+    LOAD_SYMBOL(EvaluateDiscreteStates);
+    LOAD_SYMBOL(UpdateDiscreteStates);
 
     /***************************************************
     Functions for Model Exchange
     ****************************************************/
 
-    LOAD_SYMBOL(EnterContinuousTimeMode)
-    LOAD_SYMBOL(CompletedIntegratorStep)
+    LOAD_SYMBOL(EnterContinuousTimeMode);
+    LOAD_SYMBOL(CompletedIntegratorStep);
 
     /* Providing independent variables and re-initialization of caching */
-    LOAD_SYMBOL(SetTime)
-    LOAD_SYMBOL(SetContinuousStates)
+    LOAD_SYMBOL(SetTime);
+    LOAD_SYMBOL(SetContinuousStates);
 
     /* Evaluation of the model equations */
-    LOAD_SYMBOL(GetContinuousStateDerivatives)
-    LOAD_SYMBOL(GetEventIndicators)
-    LOAD_SYMBOL(GetContinuousStates)
-    LOAD_SYMBOL(GetNominalsOfContinuousStates)
-    LOAD_SYMBOL(GetNumberOfEventIndicators)
-    LOAD_SYMBOL(GetNumberOfContinuousStates)
+    LOAD_SYMBOL(GetContinuousStateDerivatives);
+    LOAD_SYMBOL(GetEventIndicators);
+    LOAD_SYMBOL(GetContinuousStates);
+    LOAD_SYMBOL(GetNominalsOfContinuousStates);
+    LOAD_SYMBOL(GetNumberOfEventIndicators);
+    LOAD_SYMBOL(GetNumberOfContinuousStates);
 
     /***************************************************
     Functions for Co-Simulation
     ****************************************************/
 
     /* Simulating the FMU */
-    LOAD_SYMBOL(EnterStepMode)
-    LOAD_SYMBOL(GetOutputDerivatives)
-    LOAD_SYMBOL(DoStep)
-    LOAD_SYMBOL(ActivateModelPartition)
+    LOAD_SYMBOL(EnterStepMode);
+    LOAD_SYMBOL(GetOutputDerivatives);
+    LOAD_SYMBOL(DoStep);
+    LOAD_SYMBOL(ActivateModelPartition);
 
     instance->state = FMI2StartAndEndState;
 
@@ -249,7 +249,7 @@ fmi3Status FMI3InstantiateModelExchange(
 
     fmi3Status status = loadSymbols3(instance);
 
-    fmi3CallbackLogMessage logMessage = instance->logMessage ? cb_logMessage3 : NULL;
+    fmi3LogMessageCallback logMessage = instance->logMessage ? cb_logMessage3 : NULL;
 
     instance->component = instance->fmi3Functions->fmi3InstantiateModelExchange(instance->name, instantiationToken, resourcePath, visible, loggingOn, instance, logMessage);
 
@@ -293,13 +293,13 @@ fmi3Status FMI3InstantiateCoSimulation(
     fmi3Boolean                    earlyReturnAllowed,
     const fmi3ValueReference       requiredIntermediateVariables[],
     size_t                         nRequiredIntermediateVariables,
-    fmi3CallbackIntermediateUpdate intermediateUpdate) {
+    fmi3IntermediateUpdateCallback intermediateUpdate) {
 
     if (loadSymbols3(instance) != FMIOK) {
         return fmi3Fatal;
     }
 
-    fmi3CallbackLogMessage logMessage = instance->logMessage ? cb_logMessage3 : NULL;
+    fmi3LogMessageCallback logMessage = instance->logMessage ? cb_logMessage3 : NULL;
 
     instance->component = instance->fmi3Functions->fmi3InstantiateCoSimulation(
         instance->name,
@@ -363,17 +363,17 @@ fmi3Status FMI3InstantiateScheduledExecution(
     fmi3String                     resourcePath,
     fmi3Boolean                    visible,
     fmi3Boolean                    loggingOn,
-    const fmi3ValueReference       requiredIntermediateVariables[],
-    size_t                         nRequiredIntermediateVariables,
-    fmi3CallbackIntermediateUpdate intermediateUpdate,
-    fmi3CallbackLockPreemption     lockPreemption,
-    fmi3CallbackUnlockPreemption   unlockPreemption) {
+    fmi3InstanceEnvironment        instanceEnvironment,
+    fmi3LogMessageCallback         logMessage,
+    fmi3ClockUpdateCallback        clockUpdate,
+    fmi3LockPreemptionCallback     lockPreemption,
+    fmi3UnlockPreemptionCallback   unlockPreemption) {
 
     if (loadSymbols3(instance) != FMIOK) {
         return fmi3Error;
     }
 
-    fmi3CallbackLogMessage logMessage = instance->logMessage ? cb_logMessage3 : NULL;
+    fmi3LogMessageCallback _logMessage = instance->logMessage ? cb_logMessage3 : NULL;
 
     instance->component = instance->fmi3Functions->fmi3InstantiateScheduledExecution(
         instance->name,
@@ -381,11 +381,9 @@ fmi3Status FMI3InstantiateScheduledExecution(
         resourcePath,
         visible,
         loggingOn,
-        requiredIntermediateVariables,
-        nRequiredIntermediateVariables,
         instance,
-        logMessage,
-        intermediateUpdate,
+        _logMessage,
+        clockUpdate,
         lockPreemption,
         unlockPreemption);
 
@@ -397,11 +395,9 @@ fmi3Status FMI3InstantiateScheduledExecution(
             "resourcePath=\"%s\", "
             "visible=%d, "
             "loggingOn=%d, "
-            "requiredIntermediateVariables=0x%p, "
-            "nRequiredIntermediateVariables=%zu, "
             "instanceEnvironment=0x%p, "
             "logMessage=0x%p, "
-            "intermediateUpdate=0x%p, "
+            "clockUpdate=0x%p, "
             "lockPreemption=0x%p, "
             "unlockPreemption=0x%p)",
             instance->name,
@@ -409,11 +405,9 @@ fmi3Status FMI3InstantiateScheduledExecution(
             resourcePath,
             visible,
             loggingOn,
-            requiredIntermediateVariables,
-            nRequiredIntermediateVariables,
             instance,
-            logMessage,
-            intermediateUpdate,
+            _logMessage,
+            clockUpdate,
             lockPreemption,
             unlockPreemption
         );
@@ -454,7 +448,7 @@ fmi3Status FMI3EnterInitializationMode(FMIInstance *instance,
 
     CALL_ARGS(EnterInitializationMode,
         "fmi3EnterInitializationMode(toleranceDefined=%d, tolerance=%.16g, startTime=%.16g, stopTimeDefined=%d, stopTime=%.16g)",
-        toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime)
+        toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime);
 }
 
 fmi3Status FMI3ExitInitializationMode(FMIInstance *instance) {
@@ -465,7 +459,7 @@ fmi3Status FMI3ExitInitializationMode(FMIInstance *instance) {
         instance->state = FMI2StepCompleteState;
     }
 
-    CALL(ExitInitializationMode)
+    CALL(ExitInitializationMode);
 }
 
 fmi3Status FMI3EnterEventMode(FMIInstance *instance,
@@ -489,12 +483,12 @@ fmi3Status FMI3EnterEventMode(FMIInstance *instance,
 
 fmi3Status FMI3Terminate(FMIInstance *instance) {
     instance->state = FMI2TerminatedState;
-    CALL(Terminate)
+    CALL(Terminate);
 }
 
 fmi3Status FMI3Reset(FMIInstance *instance) {
     instance->state = FMI2InstantiatedState;
-    CALL(Reset)
+    CALL(Reset);
 }
 
 /* Getting and setting variable values */
@@ -503,7 +497,7 @@ fmi3Status FMI3GetFloat32(FMIInstance *instance,
     size_t nValueReferences,
     fmi3Float32 values[],
     size_t nValues) {
-    CALL_ARRAY(Get, Float32)
+    CALL_ARRAY(Get, Float32);
 }
 
 fmi3Status FMI3GetFloat64(FMIInstance *instance,
@@ -511,7 +505,7 @@ fmi3Status FMI3GetFloat64(FMIInstance *instance,
     size_t nValueReferences,
     fmi3Float64 values[],
     size_t nValues) {
-    CALL_ARRAY(Get, Float64)
+    CALL_ARRAY(Get, Float64);
 }
 
 fmi3Status FMI3GetInt8(FMIInstance *instance,
@@ -519,7 +513,7 @@ fmi3Status FMI3GetInt8(FMIInstance *instance,
     size_t nValueReferences,
     fmi3Int8 values[],
     size_t nValues) {
-    CALL_ARRAY(Get, Int8)
+    CALL_ARRAY(Get, Int8);
 }
 
 fmi3Status FMI3GetUInt8(FMIInstance *instance,
@@ -527,7 +521,7 @@ fmi3Status FMI3GetUInt8(FMIInstance *instance,
     size_t nValueReferences,
     fmi3UInt8 values[],
     size_t nValues) {
-    CALL_ARRAY(Get, UInt8)
+    CALL_ARRAY(Get, UInt8);
 }
 
 fmi3Status FMI3GetInt16(FMIInstance *instance,
@@ -535,7 +529,7 @@ fmi3Status FMI3GetInt16(FMIInstance *instance,
     size_t nValueReferences,
     fmi3Int16 values[],
     size_t nValues) {
-    CALL_ARRAY(Get, Int16)
+    CALL_ARRAY(Get, Int16);
 }
 
 fmi3Status FMI3GetUInt16(FMIInstance *instance,
@@ -543,7 +537,7 @@ fmi3Status FMI3GetUInt16(FMIInstance *instance,
     size_t nValueReferences,
     fmi3UInt16 values[],
     size_t nValues) {
-    CALL_ARRAY(Get, UInt16)
+    CALL_ARRAY(Get, UInt16);
 }
 
 fmi3Status FMI3GetInt32(FMIInstance *instance,
@@ -551,7 +545,7 @@ fmi3Status FMI3GetInt32(FMIInstance *instance,
     size_t nValueReferences,
     fmi3Int32 values[],
     size_t nValues) {
-    CALL_ARRAY(Get, Int32)
+    CALL_ARRAY(Get, Int32);
 }
 
 fmi3Status FMI3GetUInt32(FMIInstance *instance,
@@ -559,7 +553,7 @@ fmi3Status FMI3GetUInt32(FMIInstance *instance,
     size_t nValueReferences,
     fmi3UInt32 values[],
     size_t nValues) {
-    CALL_ARRAY(Get, UInt32)
+    CALL_ARRAY(Get, UInt32);
 }
 
 fmi3Status FMI3GetInt64(FMIInstance *instance,
@@ -567,7 +561,7 @@ fmi3Status FMI3GetInt64(FMIInstance *instance,
     size_t nValueReferences,
     fmi3Int64 values[],
     size_t nValues) {
-    CALL_ARRAY(Get, Int64)
+    CALL_ARRAY(Get, Int64);
 }
 
 fmi3Status FMI3GetUInt64(FMIInstance *instance,
@@ -575,7 +569,7 @@ fmi3Status FMI3GetUInt64(FMIInstance *instance,
     size_t nValueReferences,
     fmi3UInt64 values[],
     size_t nValues) {
-    CALL_ARRAY(Get, UInt64)
+    CALL_ARRAY(Get, UInt64);
 }
 
 fmi3Status FMI3GetBoolean(FMIInstance *instance,
@@ -583,7 +577,7 @@ fmi3Status FMI3GetBoolean(FMIInstance *instance,
     size_t nValueReferences,
     fmi3Boolean values[],
     size_t nValues) {
-    CALL_ARRAY(Get, Boolean)
+    CALL_ARRAY(Get, Boolean);
 }
 
 fmi3Status FMI3GetString(FMIInstance *instance,
@@ -591,7 +585,7 @@ fmi3Status FMI3GetString(FMIInstance *instance,
     size_t nValueReferences,
     fmi3String values[],
     size_t nValues) {
-    CALL_ARRAY(Get, String)
+    CALL_ARRAY(Get, String);
 }
 
 fmi3Status FMI3GetBinary(FMIInstance *instance,
@@ -617,7 +611,16 @@ fmi3Status FMI3GetClock(FMIInstance *instance,
     size_t nValueReferences,
     fmi3Clock values[],
     size_t nValues) {
-    CALL_ARRAY(Get, Clock)
+
+    fmi3Status status = instance->fmi3Functions->fmi3GetClock(instance->component, valueReferences, nValueReferences, values);
+
+    if (instance->logFunctionCall) {
+        FMIValueReferencesToString(instance, valueReferences, nValueReferences);
+        FMIValuesToString(instance, nValues, values, FMIClockType);
+        instance->logFunctionCall(instance, status, "fmi3GetClock(valueReferences=%s, nValueReferences=%zu, values=%s)", instance->buf1, nValueReferences, instance->buf2);
+    }
+
+    return status;
 }
 
 fmi3Status FMI3SetFloat32(FMIInstance *instance,
@@ -625,7 +628,7 @@ fmi3Status FMI3SetFloat32(FMIInstance *instance,
     size_t nValueReferences,
     const fmi3Float32 values[],
     size_t nValues)    {
-    CALL_ARRAY(Set, Float32)
+    CALL_ARRAY(Set, Float32);
 }
 
 fmi3Status FMI3SetFloat64(FMIInstance *instance,
@@ -633,7 +636,7 @@ fmi3Status FMI3SetFloat64(FMIInstance *instance,
     size_t nValueReferences,
     const fmi3Float64 values[],
     size_t nValues) {
-    CALL_ARRAY(Set, Float64)
+    CALL_ARRAY(Set, Float64);
 }
 
 fmi3Status FMI3SetInt8(FMIInstance *instance,
@@ -641,7 +644,7 @@ fmi3Status FMI3SetInt8(FMIInstance *instance,
     size_t nValueReferences,
     const fmi3Int8 values[],
     size_t nValues) {
-    CALL_ARRAY(Set, Int8)
+    CALL_ARRAY(Set, Int8);
 }
 
 fmi3Status FMI3SetUInt8(FMIInstance *instance,
@@ -649,7 +652,7 @@ fmi3Status FMI3SetUInt8(FMIInstance *instance,
     size_t nValueReferences,
     const fmi3UInt8 values[],
     size_t nValues) {
-    CALL_ARRAY(Set, UInt8)
+    CALL_ARRAY(Set, UInt8);
 }
 
 fmi3Status FMI3SetInt16(FMIInstance *instance,
@@ -657,7 +660,7 @@ fmi3Status FMI3SetInt16(FMIInstance *instance,
     size_t nValueReferences,
     const fmi3Int16 values[],
     size_t nValues) {
-    CALL_ARRAY(Set, Int16)
+    CALL_ARRAY(Set, Int16);
 }
 
 fmi3Status FMI3SetUInt16(FMIInstance *instance,
@@ -665,7 +668,7 @@ fmi3Status FMI3SetUInt16(FMIInstance *instance,
     size_t nValueReferences,
     const fmi3UInt16 values[],
     size_t nValues) {
-    CALL_ARRAY(Set, UInt16)
+    CALL_ARRAY(Set, UInt16);
 }
 
 fmi3Status FMI3SetInt32(FMIInstance *instance,
@@ -673,7 +676,7 @@ fmi3Status FMI3SetInt32(FMIInstance *instance,
     size_t nValueReferences,
     const fmi3Int32 values[],
     size_t nValues) {
-    CALL_ARRAY(Set, Int32)
+    CALL_ARRAY(Set, Int32);
 }
 
 fmi3Status FMI3SetUInt32(FMIInstance *instance,
@@ -681,7 +684,7 @@ fmi3Status FMI3SetUInt32(FMIInstance *instance,
     size_t nValueReferences,
     const fmi3UInt32 values[],
     size_t nValues) {
-    CALL_ARRAY(Set, UInt32)
+    CALL_ARRAY(Set, UInt32);
 }
 
 fmi3Status FMI3SetInt64(FMIInstance *instance,
@@ -689,7 +692,7 @@ fmi3Status FMI3SetInt64(FMIInstance *instance,
     size_t nValueReferences,
     const fmi3Int64 values[],
     size_t nValues) {
-    CALL_ARRAY(Set, Int64)
+    CALL_ARRAY(Set, Int64);
 }
 
 fmi3Status FMI3SetUInt64(FMIInstance *instance,
@@ -697,7 +700,7 @@ fmi3Status FMI3SetUInt64(FMIInstance *instance,
     size_t nValueReferences,
     const fmi3UInt64 values[],
     size_t nValues) {
-    CALL_ARRAY(Set, UInt64)
+    CALL_ARRAY(Set, UInt64);
 }
 
 fmi3Status FMI3SetBoolean(FMIInstance *instance,
@@ -705,7 +708,7 @@ fmi3Status FMI3SetBoolean(FMIInstance *instance,
     size_t nValueReferences,
     const fmi3Boolean values[],
     size_t nValues) {
-    CALL_ARRAY(Set, Boolean)
+    CALL_ARRAY(Set, Boolean);
 }
 
 fmi3Status FMI3SetString(FMIInstance *instance,
@@ -713,7 +716,7 @@ fmi3Status FMI3SetString(FMIInstance *instance,
     size_t nValueReferences,
     const fmi3String values[],
     size_t nValues) {
-    CALL_ARRAY(Set, String)
+    CALL_ARRAY(Set, String);
 }
 
 fmi3Status FMI3SetBinary(FMIInstance *instance,
@@ -739,14 +742,15 @@ fmi3Status FMI3SetClock(FMIInstance *instance,
     size_t nValueReferences,
     const fmi3Clock values[],
     size_t nValues) {
-    CALL_ARRAY(Set, Clock)
+    // TODO: implement
+    return fmi3Error;
 }
 
 /* Getting Variable Dependency Information */
 fmi3Status FMI3GetNumberOfVariableDependencies(FMIInstance *instance,
     fmi3ValueReference valueReference,
     size_t* nDependencies) {
-    CALL_ARGS(GetNumberOfVariableDependencies, "valueReference=%u, nDependencies=0x%p", valueReference, nDependencies)
+    CALL_ARGS(GetNumberOfVariableDependencies, "valueReference=%u, nDependencies=0x%p", valueReference, nDependencies);
 }
 
 fmi3Status FMI3GetVariableDependencies(FMIInstance *instance,
@@ -757,20 +761,20 @@ fmi3Status FMI3GetVariableDependencies(FMIInstance *instance,
     fmi3DependencyKind dependencyKinds[],
     size_t nDependencies) {
     CALL_ARGS(GetVariableDependencies, "dependent=%u, elementIndicesOfDependent=0x%p, independents=0x%p, elementIndicesOfIndependents=0x%p, dependencyKinds=0x%p, nDependencies=%zu",
-        dependent, elementIndicesOfDependent, independents, elementIndicesOfIndependents, dependencyKinds, nDependencies)
+        dependent, elementIndicesOfDependent, independents, elementIndicesOfIndependents, dependencyKinds, nDependencies);
 }
 
 /* Getting and setting the internal FMU state */
 fmi3Status FMI3GetFMUState(FMIInstance *instance, fmi3FMUState* FMUState) {
-    CALL_ARGS(GetFMUState, "FMUState=0x%p", FMUState)
+    CALL_ARGS(GetFMUState, "FMUState=0x%p", FMUState);
 }
 
 fmi3Status FMI3SetFMUState(FMIInstance *instance, fmi3FMUState  FMUState) {
-    CALL_ARGS(SetFMUState, "FMUState=0x%p", FMUState)
+    CALL_ARGS(SetFMUState, "FMUState=0x%p", FMUState);
 }
 
 fmi3Status FMI3FreeFMUState(FMIInstance *instance, fmi3FMUState* FMUState) {
-    CALL_ARGS(FreeFMUState, "FMUState=0x%p", FMUState)
+    CALL_ARGS(FreeFMUState, "FMUState=0x%p", FMUState);
 }
 
 
@@ -829,11 +833,11 @@ fmi3Status FMI3GetAdjointDerivative(FMIInstance *instance,
 
 /* Entering and exiting the Configuration or Reconfiguration Mode */
 fmi3Status FMI3EnterConfigurationMode(FMIInstance *instance) {
-    CALL(EnterConfigurationMode)
+    CALL(EnterConfigurationMode);
 }
 
 fmi3Status FMI3ExitConfigurationMode(FMIInstance *instance) {
-    CALL(ExitConfigurationMode)
+    CALL(ExitConfigurationMode);
 }
 
 /* Clock related functions */
@@ -842,52 +846,72 @@ FMI_STATIC fmi3Status FMI3GetIntervalDecimal(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3Float64 intervals[],
-    fmi3IntervalQualifier qualifiers[],
-    size_t nIntervals) {
+    fmi3IntervalQualifier qualifiers[]) {
     CALL_ARGS(GetIntervalDecimal,
-        "valueReferences=0x%p, nValueReferences=%zu, intervals=0x%p, qualifiers=0x%p, nIntervals=%zu",
-        valueReferences, nValueReferences, intervals, qualifiers, nIntervals);
+        "valueReferences=0x%p, nValueReferences=%zu, intervals=0x%p, qualifiers=0x%p",
+        valueReferences, nValueReferences, intervals, qualifiers);
 }
 
-//fmi3Status FMI3GetIntervalFraction(FMIInstance *instance,
-//    const fmi3ValueReference valueReferences[],
-//    size_t nValueReferences,
-//    fmi3UInt64 intervalCounter[],
-//    fmi3UInt64 resolution[],
-//    size_t nValues) {
-//    CALL_ARGS(GetIntervalFraction,
-//        "valueReferences=0x%p, nValueReferences=%zu, intervalCounter=0x%p, resolution=0x%p, nValues=%zu",
-//        valueReferences, nValueReferences, intervalCounter, resolution, nValues);
-//}
-//
-//fmi3Status FMI3SetIntervalDecimal(FMIInstance *instance,
-//    const fmi3ValueReference valueReferences[],
-//    size_t nValueReferences,
-//    const fmi3Float64 interval[],
-//    size_t nValues) {
-//    CALL_ARGS(SetIntervalDecimal,
-//        "valueReferences=0x%p, nValueReferences=%zu, interval=0x%p, nValues=%zu",
-//        valueReferences, nValueReferences, interval, nValues);
-//}
-//
-//fmi3Status FMI3SetIntervalFraction(FMIInstance *instance,
-//    const fmi3ValueReference valueReferences[],
-//    size_t nValueReferences,
-//    const fmi3UInt64 intervalCounter[],
-//    const fmi3UInt64 resolution[],
-//    size_t nValues) {
-//    CALL_ARGS(SetIntervalFraction,
-//        "valueReferences=0x%p, nValueReferences=%zu, intervalCounter=0x%p, resolution=0x%p, nValues=%zu",
-//        valueReferences, nValueReferences, intervalCounter, resolution, nValues);
-//}
+fmi3Status FMI3GetIntervalFraction(FMIInstance *instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    fmi3UInt64 intervalCounters[],
+    fmi3UInt64 resolutions[],
+    fmi3IntervalQualifier qualifiers[]) {
+    CALL_ARGS(GetIntervalFraction,
+        "valueReferences=0x%p, nValueReferences=%zu, intervalCounters=0x%p, resolutions=0x%p, qualifiers=%d",
+        valueReferences, nValueReferences, intervalCounters, resolutions, qualifiers);
+}
+
+fmi3Status FMI3GetShiftDecimal(FMIInstance *instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    fmi3Float64 shifts[]) {
+    CALL_ARGS(GetShiftDecimal,
+        "valueReferences=0x%p, nValueReferences=%zu, shifts=0x%p",
+        valueReferences, nValueReferences, shifts);
+}
+
+fmi3Status FMI3GetShiftFraction(FMIInstance *instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    fmi3UInt64 shiftCounters[],
+    fmi3UInt64 resolutions[]) {
+    CALL_ARGS(GetShiftFraction,
+        "valueReferences=0x%p, nValueReferences=%zu, shiftCounters=0x%p, resolutions=0x%p",
+        valueReferences, nValueReferences, shiftCounters, resolutions);
+}
+
+fmi3Status FMI3SetIntervalDecimal(FMIInstance *instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    const fmi3Float64 intervals[]) {
+    CALL_ARGS(SetIntervalDecimal,
+        "valueReferences=0x%p, nValueReferences=%zu, intervals=0x%p",
+        valueReferences, nValueReferences, intervals);
+}
+
+fmi3Status FMI3SetIntervalFraction(FMIInstance *instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    const fmi3UInt64 intervalCounters[],
+    const fmi3UInt64 resolutions[]) {
+    CALL_ARGS(SetIntervalFraction,
+        "valueReferences=0x%p, nValueReferences=%zu, intervalCounters=0x%p, resolutions=0x%p",
+        valueReferences, nValueReferences, intervalCounters, resolutions);
+}
+
+fmi3Status FMI3EvaluateDiscreteStates(FMIInstance *instance) {
+    CALL(EvaluateDiscreteStates);
+}
 
 fmi3Status FMI3UpdateDiscreteStates(FMIInstance *instance,
-    fmi3Boolean *discreteStatesNeedUpdate,
-    fmi3Boolean *terminateSimulation,
-    fmi3Boolean *nominalsOfContinuousStatesChanged,
-    fmi3Boolean *valuesOfContinuousStatesChanged,
-    fmi3Boolean *nextEventTimeDefined,
-    fmi3Float64 *nextEventTime) {
+    fmi3Boolean* discreteStatesNeedUpdate,
+    fmi3Boolean* terminateSimulation,
+    fmi3Boolean* nominalsOfContinuousStatesChanged,
+    fmi3Boolean* valuesOfContinuousStatesChanged,
+    fmi3Boolean* nextEventTimeDefined,
+    fmi3Float64* nextEventTime) {
 
     fmi3Status status = instance->fmi3Functions->fmi3UpdateDiscreteStates(instance->component, discreteStatesNeedUpdate, terminateSimulation, nominalsOfContinuousStatesChanged, valuesOfContinuousStatesChanged, nextEventTimeDefined, nextEventTime);
 
@@ -906,7 +930,7 @@ Types for Functions for Model Exchange
 
 fmi3Status FMI3EnterContinuousTimeMode(FMIInstance *instance) {
     instance->state = FMI2ContinuousTimeModeState;
-    CALL(EnterContinuousTimeMode)
+    CALL(EnterContinuousTimeMode);
 }
 
 fmi3Status FMI3CompletedIntegratorStep(FMIInstance *instance,
@@ -1020,7 +1044,7 @@ Types for Functions for Co-Simulation
 /* Simulating the FMU */
 
 fmi3Status FMI3EnterStepMode(FMIInstance *instance) {
-    CALL(EnterStepMode)
+    CALL(EnterStepMode);
 }
 
 fmi3Status FMI3GetOutputDerivatives(FMIInstance *instance,
@@ -1061,8 +1085,8 @@ fmi3Status FMI3ActivateModelPartition(FMIInstance *instance,
     size_t clockElementIndex,
     fmi3Float64 activationTime) {
     CALL_ARGS(ActivateModelPartition,
-        "clockReference=%u, clockElementIndex=%zu, activationTime=%.16g",
-        clockReference, clockElementIndex, activationTime);
+        "clockReference=%u, activationTime=%.16g",
+        clockReference, activationTime);
 }
 
 #undef LOAD_SYMBOL
