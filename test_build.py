@@ -8,7 +8,7 @@ from fmpy.validation import validate_fmu
 
 
 fmus_dir = os.path.join(os.path.dirname(__file__), 'fmus')  # /path/to/fmi-cross-check/fmus
-test_fmus_version = '0.0.10'
+test_fmus_version = '0.0.11'
 
 test_fmus_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -21,7 +21,7 @@ else:
         generator = 'Visual Studio 15 2017 Win64'
     else:
         generator = 'Unix Makefiles'
-    
+
 
 def copy_to_cross_check(build_dir, model_names, fmi_version, fmi_types):
     if fmus_dir is None:
