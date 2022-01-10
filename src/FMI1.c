@@ -54,29 +54,36 @@ static void *loadSymbol(FMIInstance *instance, const char *prefix, const char *n
 }
 
 #define LOAD_SYMBOL(f) \
+do { \
     instance->fmi1Functions->fmi1 ## f = (fmi1 ## f ## TYPE*)loadSymbol(instance, modelIdentifier, "_fmi" #f); \
     if (!instance->fmi1Functions->fmi1 ## f) { \
         status = fmi1Error; \
         goto fail; \
-    }
+    } \
+} while (0)
 
 #define CALL(f) \
+do { \
     currentInstance = instance; \
     fmi1Status status = instance->fmi1Functions->fmi1 ## f (instance->component); \
     if (instance->logFunctionCall) { \
         instance->logFunctionCall(instance, status, "fmi" #f "()"); \
     } \
-    return status;
+    return status; \
+} while (0)
 
 #define CALL_ARGS(f, m, ...) \
+do { \
     currentInstance = instance; \
     fmi1Status status = instance->fmi1Functions->fmi1 ## f (instance->component, __VA_ARGS__); \
     if (instance->logFunctionCall) { \
         instance->logFunctionCall(instance, status, "fmi" #f "(" m ")", __VA_ARGS__); \
     } \
-    return status;
+    return status; \
+} while (0)
 
 #define CALL_ARRAY(s, t) \
+do { \
     currentInstance = instance; \
     fmi1Status status = instance->fmi1Functions->fmi1 ## s ## t(instance->component, vr, nvr, value); \
     if (instance->logFunctionCall) { \
@@ -84,7 +91,8 @@ static void *loadSymbol(FMIInstance *instance, const char *prefix, const char *n
         FMIValuesToString(instance, nvr, value, FMI ## t ## Type); \
         instance->logFunctionCall(instance, status, "fmi" #s #t "(vr=%s, nvr=%zu, value=%s)", instance->buf1, nvr, instance->buf2); \
     } \
-    return status;
+    return status; \
+} while (0)
 
 /***************************************************
  Common Functions for FMI 1.0

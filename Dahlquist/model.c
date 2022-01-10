@@ -56,17 +56,17 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
 }
 
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
-    UNUSED(nx)
+    UNUSED(nx);
     x[0] = M(x);
 }
 
 void setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
-    UNUSED(nx)
+    UNUSED(nx);
     M(x) = x[0];
 }
 
 void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
-    UNUSED(nx)
+    UNUSED(nx);
     calculateValues(comp);
     dx[0] = M(der_x);
 }
