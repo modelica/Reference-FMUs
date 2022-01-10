@@ -5,7 +5,7 @@
 void setStartValues(ModelInstance *comp) {
     M(r) = false;       // Clock
     M(xr) = 0.0;                    // Sample
-    M(ur) = 0.0;                    // Discrete state/output
+    M(ur) = 1.0;                    // Discrete state/output
     M(pre_ur) = 0.0;                // Previous ur
     M(ar) = 0.0;                    // Local var
 }

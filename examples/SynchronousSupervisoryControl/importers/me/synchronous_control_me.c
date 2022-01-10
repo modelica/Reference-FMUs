@@ -38,6 +38,7 @@
 
 // Controller model size
 #define Controller_NX 0
+#define Controller_NY 1
 #define Controller_NDX 1
 #define Controller_NZ 0
 #define Controller_NU 1
@@ -59,6 +60,8 @@
 
 #define FIXED_STEP 1e-2
 #define STOP_TIME 10
+
+#define MAXDIRLENGTH 250
 
 typedef struct
 {
@@ -121,9 +124,8 @@ fmi3Status instantiate_all(fmi3Instance instances[], char *names[], fmi3Instanti
     return fmi3OK;
 }
 
-fmi3Status initialize_all(fmi3Instance instances[], fmi3Float64 tStart, fmi3Float64 tEnd, char *names[],
-                          fmi3EnterInitializationModeTYPE *enterInit[],
-                          fmi3ExitInitializationModeTYPE *exitInit[])
+fmi3Status enterInitAll(fmi3Instance instances[], fmi3Float64 tStart, fmi3Float64 tEnd, char* names[],
+    fmi3EnterInitializationModeTYPE* enterInit[])
 {
     fmi3Status status = fmi3OK;
 
@@ -143,6 +145,13 @@ fmi3Status initialize_all(fmi3Instance instances[], fmi3Float64 tStart, fmi3Floa
 
         printf("DONE. \n");
     }
+
+    return fmi3OK;
+}
+
+fmi3Status exitInitAll(fmi3Instance instances[], char* names[], fmi3ExitInitializationModeTYPE* exitInit[])
+{
+    fmi3Status status = fmi3OK;
 
     for (int i = 0; i < N_INSTANCES; i++)
     {
@@ -227,6 +236,11 @@ int main(int argc, char *argv[])
     const fmi3Float64 tEnd = STOP_TIME;
     fmi3Float64 time = 0;
     const fmi3Float64 tStart = 0;
+    char cwd[MAXDIRLENGTH];
+
+    // FMU data
+    fmi3Float64 aux = 0;
+
 
     // Instances
     fmi3Instance instances[N_INSTANCES] = {NULL}; // Remaining elements are implicitly NULL
@@ -234,38 +248,34 @@ int main(int argc, char *argv[])
     char* names[N_INSTANCES] = { "plant", "controller" };
 
     // Instance functions
-    fmi3InstantiateModelExchangeTYPE *instantiate[N_INSTANCES] = {
-        Plant_fmi3InstantiateModelExchange,
-        Controller_fmi3InstantiateModelExchange};
-    fmi3EnterInitializationModeTYPE *enterInit[N_INSTANCES] = {
-        Plant_fmi3EnterInitializationMode,
-        Controller_fmi3EnterInitializationMode
-    };
-    fmi3ExitInitializationModeTYPE *exitInit[N_INSTANCES] = {
-        Plant_fmi3ExitInitializationMode,
-        Controller_fmi3ExitInitializationMode
-    };
-    fmi3EnterConfigurationModeTYPE *enter_CT_mode[N_INSTANCES] = {
-        Plant_fmi3EnterConfigurationMode,
-        Controller_fmi3EnterConfigurationMode
-    };
-    fmi3TerminateTYPE *terminate[N_INSTANCES] = {
-        Plant_fmi3Terminate,
-        Controller_fmi3Terminate
-    };
-    fmi3FreeInstanceTYPE *freeInstance[N_INSTANCES] = {
-        Plant_fmi3FreeInstance,
-        Controller_fmi3FreeInstance
-    };
+    fmi3InstantiateModelExchangeTYPE *instantiate[N_INSTANCES] = {Plant_fmi3InstantiateModelExchange, Controller_fmi3InstantiateModelExchange};
+    fmi3EnterInitializationModeTYPE *enterInit[N_INSTANCES] = {Plant_fmi3EnterInitializationMode, Controller_fmi3EnterInitializationMode};
+    fmi3ExitInitializationModeTYPE* exitInit[N_INSTANCES] = { Plant_fmi3ExitInitializationMode, Controller_fmi3ExitInitializationMode };
+    fmi3EnterConfigurationModeTYPE *enter_CT_mode[N_INSTANCES] = {Plant_fmi3EnterContinuousTimeMode, Controller_fmi3EnterContinuousTimeMode};
+    fmi3TerminateTYPE *terminate[N_INSTANCES] = {Plant_fmi3Terminate, Controller_fmi3Terminate};
+    fmi3FreeInstanceTYPE *freeInstance[N_INSTANCES] = {Plant_fmi3FreeInstance, Controller_fmi3FreeInstance};
 
     // Instance refs
-    const fmi3ValueReference plant_u_refs[Plant_NU] = {Plant_U_ref};
+    const fmi3ValueReference plant_u_refs[Plant_NU] = { Plant_U_ref };
+    const fmi3ValueReference plant_y_refs[Plant_NX] = { Plant_X_ref };
+    const fmi3ValueReference controller_u_refs[Controller_NU] = { Controller_XR_ref };
+    const fmi3ValueReference controller_y_refs[Controller_NY] = { Controller_UR_ref };
+    
+    // Will hold exchanged values: Controller -> Plant
+    fmi3Float64 controller_vals[Controller_NY] = { 0.0 };
+    // Will hold exchanged values: Plant -> Controller
+    fmi3Float64 plant_vals[Plant_NX] = { 0.0 };
+    fmi3Float64 plant_der_vals[Plant_NX] = { 0.0 };
 
     // Recording
     FILE *outputFile = NULL;
 
     InstanceData plantD[N_INSTANCES];
     initialize_instance_data(plantD);
+
+    getcwd(cwd, MAXDIRLENGTH);
+    puts("Opening output file in cwd:");
+    printf("%s\n", cwd);
 
     outputFile = fopen("synchronous_control_me_out.csv", "w");
     if (!outputFile)
@@ -280,8 +290,18 @@ int main(int argc, char *argv[])
     CHECK_STATUS(instantiate_all(instances, names, instantiate))
 
     // Initialize
-    CHECK_STATUS(initialize_all(instances, tStart, tEnd, names, enterInit, exitInit))
+    CHECK_STATUS(enterInitAll(instances, tStart, tEnd, names, enterInit))
 
+    // Exchange data Controller -> Plant
+    Controller_fmi3GetFloat64(instances[CONTROLLER_ID], controller_y_refs, Controller_NY, controller_vals, Controller_NY);
+    Plant_fmi3SetFloat64(instances[PLANT_ID], plant_u_refs, Plant_NU, controller_vals, Plant_NU);
+
+    //Exchange data Plant -> Controller
+    Plant_fmi3GetFloat64(instances[PLANT_ID], plant_y_refs, Plant_NX, plant_vals, Plant_NX);
+    Controller_fmi3SetFloat64(instances[CONTROLLER_ID], controller_u_refs, Controller_NU, plant_vals, Controller_NU);
+
+    CHECK_STATUS(exitInitAll(instances, names, exitInit))
+    
     time = tStart;
 
     CHECK_STATUS(enter_CT_mode_all(instances, names, enter_CT_mode))
@@ -289,101 +309,75 @@ int main(int argc, char *argv[])
     // Record initial outputs
     recordVariables(outputFile, instances, names, time);
 
-    // while (!plantD.terminateSimulation) {
+    while (time + h <= tEnd)
+    {   
+        // Estimate next Plant state
+        Plant_fmi3GetContinuousStates(instances[PLANT_ID], plant_vals, Plant_NX);
+        Plant_fmi3GetContinuousStateDerivatives(instances[PLANT_ID], plant_der_vals, Plant_NX);
+        plant_vals[0] += h * plant_der_vals[0];
 
-    //     tNext = time + h;
+        // Set FMU time
+        time += h;
+        CHECK_STATUS(Plant_fmi3SetTime(instances[PLANT_ID], time));
+        CHECK_STATUS(Controller_fmi3SetTime(instances[CONTROLLER_ID], time));
 
-    //     // handle events
-    //     if (plantD.enterEventMode || plantD.stateEvent || plantD.timeEvent) {
+        // Update Plant state
+        Plant_fmi3SetContinuousStates(instances[PLANT_ID], plant_vals, Plant_NX);
 
-    //         if (!plantD.initialEventMode) {
-    //             CHECK_STATUS(Plant_fmi3EnterEventMode(plant, plantD.enterEventMode, plantD.stateEvent, plantD.rootsFound, Plant_NZ, plantD.timeEvent));
-    //         }
+        //Exchange data Plant -> Controller
+        Plant_fmi3GetFloat64(instances[PLANT_ID], plant_y_refs, Plant_NX, plant_vals, Plant_NX);
+        Controller_fmi3SetFloat64(instances[CONTROLLER_ID], controller_u_refs, Controller_NU, plant_vals, Controller_NU);
 
-    //         // event iteration
-    //         fmi3Boolean discreteStatesNeedUpdate = fmi3True;
-    //         fmi3Boolean terminateSimulation = fmi3False;
-    //         fmi3Boolean nominalsOfContinuousStatesChanged = fmi3False;
-    //         fmi3Boolean valuesOfContinuousStatesChanged = fmi3False;
-    //         fmi3Boolean nextEventTimeDefined = fmi3False;
-    //         fmi3Float64 nextEventTime = 0;
+        // Exchange data Controller -> Plant
+        Controller_fmi3GetFloat64(instances[CONTROLLER_ID], controller_y_refs, Controller_NY, controller_vals, Controller_NY);
+        Plant_fmi3SetFloat64(instances[PLANT_ID], plant_u_refs, Plant_NU, controller_vals, Plant_NU);
 
-    //         while (discreteStatesNeedUpdate) {
+        // Record data
+        recordVariables(outputFile, instances, names, time);
+    }
 
-    //             // set inputs at super dense time point
-    //             // Plant_fmi3SetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
+//     // handle events
+//     if (plantD.enterEventMode || plantD.stateEvent || plantD.timeEvent) {
 
-    //             fmi3Boolean nominalsChanged = fmi3False;
-    //             fmi3Boolean statesChanged = fmi3False;
+//         if (!plantD.initialEventMode) {
+//             CHECK_STATUS(Plant_fmi3EnterEventMode(plant, plantD.enterEventMode, plantD.stateEvent, plantD.rootsFound, Plant_NZ, plantD.timeEvent));
+//         }
 
-    //             // update discrete states
-    //             CHECK_STATUS(Plant_fmi3UpdateDiscreteStates(plant, &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime));
+//         // event iteration
+//         fmi3Boolean discreteStatesNeedUpdate = fmi3True;
+//         fmi3Boolean terminateSimulation = fmi3False;
+//         fmi3Boolean nominalsOfContinuousStatesChanged = fmi3False;
+//         fmi3Boolean valuesOfContinuousStatesChanged = fmi3False;
+//         fmi3Boolean nextEventTimeDefined = fmi3False;
+//         fmi3Float64 nextEventTime = 0;
 
-    //             // getOutput at super dense time point
-    //             // Plant_fmi3GetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
+//         while (discreteStatesNeedUpdate) {
 
-    //             nominalsOfContinuousStatesChanged |= nominalsChanged;
-    //             valuesOfContinuousStatesChanged |= statesChanged;
+//             // set inputs at super dense time point
+//             // Plant_fmi3SetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
 
-    //             if (terminateSimulation) goto TERMINATE;
-    //         }
+//             fmi3Boolean nominalsChanged = fmi3False;
+//             fmi3Boolean statesChanged = fmi3False;
 
-    //         // enter Continuous-Time Mode
-    //         CHECK_STATUS(Plant_fmi3EnterContinuousTimeMode(plant));
+//             // update discrete states
+//             CHECK_STATUS(Plant_fmi3UpdateDiscreteStates(plant, &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime));
 
-    //         // retrieve solution at simulation (re)start
-    //         CHECK_STATUS(recordVariables(outputFile, plant, time));
+//             // getOutput at super dense time point
+//             // Plant_fmi3GetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
 
-    //         if (plantD.initialEventMode || valuesOfContinuousStatesChanged) {
-    //             // the model signals a value change of states, retrieve them
-    //             CHECK_STATUS(Plant_fmi3GetContinuousStates(plant, plantD.x, Plant_NX));
-    //         }
+//             nominalsOfContinuousStatesChanged |= nominalsChanged;
+//             valuesOfContinuousStatesChanged |= statesChanged;
 
-    //         if (nextEventTimeDefined) {
-    //             tNext = min(nextEventTime, tEnd);
-    //         }
-    //         else {
-    //             tNext = tEnd;
-    //         }
-
-    //         plantD.initialEventMode = fmi3False;
-    //     }
-
-    //     if (time >= tEnd) {
-    //         goto TERMINATE;
-    //     }
-
-    //     // compute derivatives
-    //     CHECK_STATUS(Plant_fmi3GetContinuousStateDerivatives(plant, plantD.der_x, Plant_NX));
-
-    //     // advance time
-    //     h = min(fixedStep, tNext - time);
-    //     time += h;
-    //     CHECK_STATUS(Plant_fmi3SetTime(plant, time));
-
-    //     // set continuous inputs at t = time
-    //     Plant_fmi3SetFloat64(plant, plant_u_refs, Plant_NU, plantD.u, Plant_NU);
-
-    //     // set states at t = time and perform one step
-    //     for (size_t i = 0; i < Plant_NX; i++) {
-    //         plantD.x[i] += h * plantD.der_x[i]; // forward Euler method
-    //     }
-
-    //     CHECK_STATUS(Plant_fmi3SetContinuousStates(plant, plantD.x, Plant_NX));
-
-    //     // inform the model about an accepted step
-    //     CHECK_STATUS(Plant_fmi3CompletedIntegratorStep(plant, fmi3True, &(plantD.enterEventMode), &(plantD.terminateSimulation)));
-
-    //     // get continuous output
-    //     // Plant_fmi3GetFloat*(m, ...)
-    //     CHECK_STATUS(recordVariables(outputFile, plant, time));
-    // }
+//             if (terminateSimulation) goto TERMINATE;
+//         }
 
 TERMINATE:
 
     status = terminate_all(instances, names, terminate);
 
     clean_all(instances, names, freeInstance);
+
+    fclose(outputFile);
 
     puts("Done!");
     return status == fmi3OK ? EXIT_SUCCESS : EXIT_FAILURE;
