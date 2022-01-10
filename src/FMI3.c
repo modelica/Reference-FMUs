@@ -38,40 +38,51 @@ static void cb_logMessage3(fmi3InstanceEnvironment instanceEnvironment,
 
 #if defined(FMI2_FUNCTION_PREFIX)
 #define LOAD_SYMBOL(f) \
-    instance->fmi3Functions->fmi3 ## f = fmi3 ## f;
+do { \
+    instance->fmi3Functions->fmi3 ## f = fmi3 ## f; \
+} while (0)
 #elif defined(_WIN32)
 #define LOAD_SYMBOL(f) \
+do { \
     instance->fmi3Functions->fmi3 ## f = (fmi3 ## f ## TYPE*)GetProcAddress(instance->libraryHandle, "fmi3" #f); \
     if (!instance->fmi3Functions->fmi3 ## f) { \
         instance->logMessage(instance, FMIFatal, "fatal", "Symbol fmi3" #f " is missing in shared library."); \
         return fmi3Fatal; \
-    }
+    } \
+} while (0)
 #else
 #define LOAD_SYMBOL(f) \
+do { \
     instance->fmi3Functions->fmi3 ## f = (fmi3 ## f ## TYPE*)dlsym(instance->libraryHandle, "fmi3" #f); \
     if (!instance->fmi3Functions->fmi3 ## f) { \
         instance->logMessage(instance, FMIFatal, "fatal", "Symbol fmi3" #f " is missing in shared library."); \
         return fmi3Fatal; \
-    }
+    } \
+} while (0)
 #endif
 
 #define CALL(f) \
+do { \
     fmi3Status status = instance->fmi3Functions->fmi3 ## f (instance->component); \
     if (instance->logFunctionCall) { \
         instance->logFunctionCall(instance, status, "fmi3" #f "()"); \
     } \
     instance->status = status > instance->status ? status : instance->status; \
-    return status;
+    return status; \
+} while (0)
 
 #define CALL_ARGS(f, m, ...) \
+do { \
     fmi3Status status = instance->fmi3Functions-> fmi3 ## f (instance->component, __VA_ARGS__); \
     if (instance->logFunctionCall) { \
         instance->logFunctionCall(instance, status, "fmi3" #f "(" m ")", __VA_ARGS__); \
     } \
     instance->status = status > instance->status ? status : instance->status; \
-    return status;
+    return status; \
+} while (0)
 
 #define CALL_ARRAY(s, t) \
+do { \
     fmi3Status status = instance->fmi3Functions->fmi3 ## s ## t(instance->component, valueReferences, nValueReferences, values, nValues); \
     if (instance->logFunctionCall) { \
         FMIValueReferencesToString(instance, valueReferences, nValueReferences); \
@@ -79,7 +90,8 @@ static void cb_logMessage3(fmi3InstanceEnvironment instanceEnvironment,
         instance->logFunctionCall(instance, status, "fmi3" #s #t "(valueReferences=%s, nValueReferences=%zu, values=%s, nValues=%zu)", instance->buf1, nValueReferences, instance->buf2, nValues); \
     } \
     instance->status = status > instance->status ? status : instance->status; \
-    return status;
+    return status; \
+} while (0)
 
 /***************************************************
 Types for Common Functions

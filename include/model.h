@@ -5,7 +5,7 @@
 #error FMI_VERSION must be one of 1, 2 or 3
 #endif
 
-#define UNUSED(x) (void)(x);
+#define UNUSED(x) (void)(x)
 
 #include <stddef.h>  // for size_t
 #include <stdbool.h> // for bool

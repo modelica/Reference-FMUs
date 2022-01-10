@@ -26,66 +26,76 @@
 #endif
 
 #define ASSERT_NOT_NULL(p) \
-if (!p) { \
-    logError(S, "Argument %s must not be NULL.", xstr(p)); \
-    S->state = modelError; \
-    return (fmiStatus)Error; \
-}
+do { \
+    if (!p) { \
+        logError(S, "Argument %s must not be NULL.", xstr(p)); \
+        S->state = modelError; \
+        return (fmiStatus)Error; \
+    } \
+} while (0)
 
 #define GET_VARIABLES(T) \
-ASSERT_NOT_NULL(vr); \
-ASSERT_NOT_NULL(value); \
-size_t index = 0; \
-Status status = OK; \
-if (nvr == 0) return (fmiStatus)status; \
-if (S->isDirtyValues) { \
-    Status s = calculateValues(S); \
-    status = max(status, s); \
-    if (status > Warning) return (fmiStatus)status; \
-    S->isDirtyValues = false; \
-} \
-for (size_t i = 0; i < nvr; i++) { \
-    Status s = get ## T(S, vr[i], value, &index); \
-    status = max(status, s); \
-    if (status > Warning) return (fmiStatus)status; \
-} \
-return (fmiStatus)status;
+do { \
+    ASSERT_NOT_NULL(vr); \
+    ASSERT_NOT_NULL(value); \
+    size_t index = 0; \
+    Status status = OK; \
+    if (nvr == 0) return (fmiStatus)status; \
+    if (S->isDirtyValues) { \
+        Status s = calculateValues(S); \
+        status = max(status, s); \
+        if (status > Warning) return (fmiStatus)status; \
+        S->isDirtyValues = false; \
+    } \
+    for (size_t i = 0; i < nvr; i++) { \
+        Status s = get ## T(S, vr[i], value, &index); \
+        status = max(status, s); \
+        if (status > Warning) return (fmiStatus)status; \
+    } \
+    return (fmiStatus)status; \
+} while (0)
 
 #define SET_VARIABLES(T) \
-ASSERT_NOT_NULL(vr); \
-ASSERT_NOT_NULL(value); \
-size_t index = 0; \
-Status status = OK; \
-for (size_t i = 0; i < nvr; i++) { \
-    Status s = set ## T(S, vr[i], value, &index); \
-    status = max(status, s); \
-    if (status > Warning) return (fmiStatus)status; \
-} \
-if (nvr > 0) S->isDirtyValues = true; \
-return (fmiStatus)status;
+do { \
+    ASSERT_NOT_NULL(vr); \
+    ASSERT_NOT_NULL(value); \
+    size_t index = 0; \
+    Status status = OK; \
+    for (size_t i = 0; i < nvr; i++) { \
+        Status s = set ## T(S, vr[i], value, &index); \
+        status = max(status, s); \
+        if (status > Warning) return (fmiStatus)status; \
+    } \
+    if (nvr > 0) S->isDirtyValues = true; \
+    return (fmiStatus)status; \
+} while (0)
 
 #define GET_BOOLEAN_VARIABLES \
-Status status = OK; \
-for (size_t i = 0; i < nvr; i++) { \
-    bool v = false; \
-    size_t index = 0; \
-    Status s = getBoolean(S, vr[i], &v, &index); \
-    value[i] = v; \
-    status = max(status, s); \
-    if (status > Warning) return (fmiStatus)status; \
-} \
-return (fmiStatus)status;
+do { \
+    Status status = OK; \
+    for (size_t i = 0; i < nvr; i++) { \
+        bool v = false; \
+        size_t index = 0; \
+        Status s = getBoolean(S, vr[i], &v, &index); \
+        value[i] = v; \
+        status = max(status, s); \
+        if (status > Warning) return (fmiStatus)status; \
+    } \
+    return (fmiStatus)status; \
+} while (0)
 
 #define SET_BOOLEAN_VARIABLES \
-Status status = OK; \
-for (size_t i = 0; i < nvr; i++) { \
-    bool v = value[i]; \
-    size_t index = 0; \
-    Status s = setBoolean(S, vr[i], &v, &index); \
-    status = max(status, s); \
-    if (status > Warning) return (fmiStatus)status; \
-} \
-return (fmiStatus)status;
+do { \
+    Status status = OK; \
+    for (size_t i = 0; i < nvr; i++) { \
+        bool v = value[i]; \
+        size_t index = 0; \
+        Status s = setBoolean(S, vr[i], &v, &index); \
+        status = max(status, s); \
+        if (status > Warning) return (fmiStatus)status; \
+    } \
+    return (fmiStatus)status; \
+} while (0)
 
 #ifndef max
 #define max(a,b) ((a)>(b) ? (a) : (b))
@@ -96,7 +106,8 @@ return (fmiStatus)status;
 #endif
 
 #define ASSERT_STATE(F, A) \
-    if (!c) return fmiError; \
+    if (!c) \
+        return fmiError; \
     ModelInstance* S = (ModelInstance *)c; \
     if (invalidState(S, F, not_modelError)) \
         return fmiError;

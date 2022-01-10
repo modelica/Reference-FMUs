@@ -28,68 +28,78 @@
 #include "fmi3Functions.h"
 
 #define ASSERT_NOT_NULL(p) \
-if (!p) { \
+do { \
+    if (!p) { \
         logError(S, "Argument %s must not be NULL.", xstr(p)); \
         S->state = modelError; \
         return (fmi3Status)Error; \
-}
+    } \
+} while (0)
 
 #define GET_VARIABLES(T) \
-ASSERT_NOT_NULL(valueReferences); \
-ASSERT_NOT_NULL(values); \
-size_t index = 0; \
-Status status = OK; \
-if (nValueReferences == 0) return (fmi3Status)status; \
-if (S->isDirtyValues) { \
-    Status s = calculateValues(S); \
-    status = max(status, s); \
-    if (status > Warning) return (fmi3Status)status; \
-    S->isDirtyValues = false; \
-} \
-for (size_t i = 0; i < nValueReferences; i++) { \
-    Status s = get ## T(S, valueReferences[i], values, &index); \
-    status = max(status, s); \
-    if (status > Warning) return (fmi3Status)status; \
-} \
-return (fmi3Status)status;
+do { \
+    ASSERT_NOT_NULL(valueReferences); \
+    ASSERT_NOT_NULL(values); \
+    size_t index = 0; \
+    Status status = OK; \
+    if (nValueReferences == 0) return (fmi3Status)status; \
+    if (S->isDirtyValues) { \
+        Status s = calculateValues(S); \
+        status = max(status, s); \
+        if (status > Warning) return (fmi3Status)status; \
+        S->isDirtyValues = false; \
+    } \
+    for (size_t i = 0; i < nValueReferences; i++) { \
+        Status s = get ## T(S, valueReferences[i], values, &index); \
+        status = max(status, s); \
+        if (status > Warning) return (fmi3Status)status; \
+    } \
+    return (fmi3Status)status; \
+} while (0)
 
 #define SET_VARIABLES(T) \
-ASSERT_NOT_NULL(valueReferences); \
-ASSERT_NOT_NULL(values); \
-size_t index = 0; \
-Status status = OK; \
-for (size_t i = 0; i < nValueReferences; i++) { \
-    Status s = set ## T(S, valueReferences[i], values, &index); \
-    status = max(status, s); \
-    if (status > Warning) return (fmi3Status)status; \
-} \
-if (nValueReferences > 0) S->isDirtyValues = true; \
-return (fmi3Status)status;
+do { \
+    ASSERT_NOT_NULL(valueReferences); \
+    ASSERT_NOT_NULL(values); \
+    size_t index = 0; \
+    Status status = OK; \
+    for (size_t i = 0; i < nValueReferences; i++) { \
+        Status s = set ## T(S, valueReferences[i], values, &index); \
+        status = max(status, s); \
+        if (status > Warning) return (fmi3Status)status; \
+    } \
+    if (nValueReferences > 0) S->isDirtyValues = true; \
+    return (fmi3Status)status; \
+} while (0)
 
 // TODO: make this work with arrays
 #define GET_BOOLEAN_VARIABLES \
-Status status = OK; \
-for (size_t i = 0; i < nvr; i++) { \
-    bool v = false; \
-    size_t index = 0; \
-    Status s = getBoolean(S, vr[i], &v, &index); \
-    value[i] = v; \
-    status = max(status, s); \
-    if (status > Warning) return (fmi3Status)status; \
-} \
-return (fmi3Status)status;
+do { \
+    Status status = OK; \
+    for (size_t i = 0; i < nvr; i++) { \
+        bool v = false; \
+        size_t index = 0; \
+        Status s = getBoolean(S, vr[i], &v, &index); \
+        value[i] = v; \
+        status = max(status, s); \
+        if (status > Warning) return (fmi3Status)status; \
+    } \
+    return (fmi3Status)status; \
+} while (0)
 
 // TODO: make this work with arrays
 #define SET_BOOLEAN_VARIABLES \
-Status status = OK; \
-for (size_t i = 0; i < nvr; i++) { \
-    bool v = value[i]; \
-    size_t index = 0; \
-    Status s = setBoolean(S, vr[i], &v, &index); \
-    status = max(status, s); \
-    if (status > Warning) return (fmi3Status)status; \
-} \
-return (fmi3Status)status;
+do { \
+    Status status = OK; \
+    for (size_t i = 0; i < nvr; i++) { \
+        bool v = value[i]; \
+        size_t index = 0; \
+        Status s = setBoolean(S, vr[i], &v, &index); \
+        status = max(status, s); \
+        if (status > Warning) return (fmi3Status)status; \
+    } \
+    return (fmi3Status)status; \
+} while (0)
 
 #ifndef max
 #define max(a,b) ((a)>(b) ? (a) : (b))
@@ -213,14 +223,19 @@ return (fmi3Status)status;
 // Private helpers used below to validate function arguments
 // ---------------------------------------------------------------------------
 
-#define NOT_IMPLEMENTED ModelInstance *comp = (ModelInstance *)instance; \
+#define NOT_IMPLEMENTED \
+do { \
+    ModelInstance *comp = (ModelInstance *)instance; \
     logError(comp, "Function is not implemented."); \
-    return fmi3Error;
+    return fmi3Error; \
+} while (0)
 
 #define ASSERT_STATE(F) \
-    if (!instance) return fmi3Error; \
+    if (!instance) \
+        return fmi3Error; \
     ModelInstance *S = (ModelInstance *)instance; \
-    if(!allowedState(S, MASK_fmi3##F, #F)) return fmi3Error;
+    if (!allowedState(S, MASK_fmi3##F, #F)) \
+        return fmi3Error; \
 
 static bool allowedState(ModelInstance *instance, int statesExpected, char *name) {
 
@@ -234,7 +249,6 @@ static bool allowedState(ModelInstance *instance, int statesExpected, char *name
     }
 
     return true;
-
 }
 
 /***************************************************
@@ -502,7 +516,7 @@ fmi3Status fmi3GetFloat32(fmi3Instance instance,
     UNUSED(values);
     UNUSED(nValues);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3GetFloat64(fmi3Instance instance,
@@ -527,7 +541,7 @@ fmi3Status fmi3GetInt8(fmi3Instance instance,
     UNUSED(values);
     UNUSED(nValues);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3GetUInt8(fmi3Instance instance,
@@ -541,7 +555,7 @@ fmi3Status fmi3GetUInt8(fmi3Instance instance,
     UNUSED(values);
     UNUSED(nValues);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3GetInt16(fmi3Instance instance,
@@ -555,7 +569,7 @@ fmi3Status fmi3GetInt16(fmi3Instance instance,
     UNUSED(values);
     UNUSED(nValues);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3GetUInt16(fmi3Instance instance,
@@ -590,7 +604,7 @@ fmi3Status fmi3GetUInt32(fmi3Instance instance,
     UNUSED(values);
     UNUSED(nValues);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3GetInt64(fmi3Instance instance,
@@ -604,7 +618,7 @@ fmi3Status fmi3GetInt64(fmi3Instance instance,
     UNUSED(values);
     UNUSED(nValues);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3GetUInt64(fmi3Instance instance,
@@ -689,7 +703,7 @@ fmi3Status fmi3SetFloat32(fmi3Instance instance,
     UNUSED(values);
     UNUSED(nValues);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3SetFloat64(fmi3Instance instance,
@@ -714,7 +728,7 @@ fmi3Status fmi3SetInt8(fmi3Instance instance,
     UNUSED(values);
     UNUSED(nValues);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3SetUInt8(fmi3Instance instance,
@@ -728,7 +742,7 @@ fmi3Status fmi3SetUInt8(fmi3Instance instance,
     UNUSED(values);
     UNUSED(nValues);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3SetInt16(fmi3Instance instance,
@@ -742,7 +756,7 @@ fmi3Status fmi3SetInt16(fmi3Instance instance,
     UNUSED(values);
     UNUSED(nValues);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3SetUInt16(fmi3Instance instance,
@@ -776,7 +790,7 @@ fmi3Status fmi3SetUInt32(fmi3Instance instance,
     UNUSED(values);
     UNUSED(nValues);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3SetInt64(fmi3Instance instance,
@@ -790,7 +804,7 @@ fmi3Status fmi3SetInt64(fmi3Instance instance,
     UNUSED(values);
     UNUSED(nValues);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3SetUInt64(fmi3Instance instance,
@@ -872,7 +886,7 @@ fmi3Status fmi3GetNumberOfVariableDependencies(fmi3Instance instance,
     UNUSED(valueReference);
     UNUSED(nDependencies);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3GetVariableDependencies(fmi3Instance instance,
@@ -890,7 +904,7 @@ fmi3Status fmi3GetVariableDependencies(fmi3Instance instance,
     UNUSED(dependencyKinds);
     UNUSED(nDependencies);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3GetFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
@@ -1110,7 +1124,7 @@ fmi3Status fmi3GetIntervalFraction(fmi3Instance instance,
     UNUSED(resolutions);
     UNUSED(qualifiers);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3GetShiftDecimal(fmi3Instance instance,
@@ -1122,7 +1136,7 @@ fmi3Status fmi3GetShiftDecimal(fmi3Instance instance,
     UNUSED(nValueReferences);
     UNUSED(shifts);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3GetShiftFraction(fmi3Instance instance,
@@ -1136,7 +1150,7 @@ fmi3Status fmi3GetShiftFraction(fmi3Instance instance,
     UNUSED(shiftCounters);
     UNUSED(resolutions);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3SetIntervalDecimal(fmi3Instance instance,
@@ -1148,7 +1162,7 @@ fmi3Status fmi3SetIntervalDecimal(fmi3Instance instance,
     UNUSED(nValueReferences);
     UNUSED(intervals);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3SetIntervalFraction(fmi3Instance instance,
@@ -1162,11 +1176,11 @@ fmi3Status fmi3SetIntervalFraction(fmi3Instance instance,
     UNUSED(intervalCounters);
     UNUSED(resolutions);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3EvaluateDiscreteStates(fmi3Instance instance) {
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3UpdateDiscreteStates(fmi3Instance instance,
@@ -1399,7 +1413,7 @@ fmi3Status fmi3GetOutputDerivatives(fmi3Instance instance,
     UNUSED(orders);
     UNUSED(values);
 
-    NOT_IMPLEMENTED
+    NOT_IMPLEMENTED;
 #endif
 }
 
