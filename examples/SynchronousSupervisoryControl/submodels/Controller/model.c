@@ -3,9 +3,9 @@
 #include "model.h"
 
 void setStartValues(ModelInstance *comp) {
-    M(r) = false;       // Clock
+    M(r) = fmi3ClockInactive;       // Clock
     M(xr) = 0.0;                    // Sample
-    M(ur) = 1.0;                    // Discrete state/output
+    M(ur) = 0.0;                    // Discrete state/output
     M(pre_ur) = 0.0;                // Previous ur
     M(ar) = 0.0;                    // Local var
 }
@@ -20,7 +20,12 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
             value[(*index)++] = M(xr);
             return OK;
         case vr_ur:
-            value[(*index)++] = M(ur);
+            if (M(r) == fmi3ClockActive) {
+                value[(*index)++] = M(ur) + 1.0;
+            }
+            else {
+                value[(*index)++] = M(ur);
+            }
             return OK;
         case vr_pre_ur:
             value[(*index)++] = M(pre_ur);
@@ -45,8 +50,39 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
     }
 }
 
+Status activateClock(ModelInstance* comp, ValueReference vr) {
+    switch (vr) {
+        case vr_r:
+            M(r) = fmi3ClockActive;
+            return OK;
+        default:
+            logError(comp, "Unexpected value reference: %d.", vr);
+            return Error;
+    }
+}
+
+Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
+    switch (vr) {
+        case vr_r:
+            (*value) = M(r);
+            return OK;
+        default:
+            logError(comp, "Unexpected value reference: %d.", vr);
+            return Error;
+    }
+}
+
 void eventUpdate(ModelInstance *comp) {
     comp->nominalsOfContinuousStatesChanged = false;
     comp->terminateSimulation  = false;
     comp->nextEventTimeDefined = false;
+    
+    // State transition
+    M(pre_ur) = M(ur);
+    M(ur) = M(ur) + 1;
+
+    // Deactivate clock
+    M(r) = fmi3ClockInactive;
+
+
 }

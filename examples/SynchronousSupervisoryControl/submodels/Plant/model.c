@@ -52,5 +52,6 @@ void setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
 }
 
 void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
+    calculateValues(comp);
     dx[0] = M(der_x);
 }

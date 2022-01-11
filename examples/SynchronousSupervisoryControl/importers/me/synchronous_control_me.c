@@ -46,6 +46,7 @@
 // Controller vrefs
 #define Controller_UR_ref 3
 #define Controller_XR_ref 2
+#define Controller_R_ref 1
 
 // Instance data sizing
 #define MAX_NX 1
@@ -260,16 +261,23 @@ int main(int argc, char *argv[])
     const fmi3ValueReference plant_y_refs[Plant_NX] = { Plant_X_ref };
     const fmi3ValueReference controller_u_refs[Controller_NU] = { Controller_XR_ref };
     const fmi3ValueReference controller_y_refs[Controller_NY] = { Controller_UR_ref };
+    const fmi3ValueReference controller_r_refs[] = { Controller_R_ref };
     
     // Will hold exchanged values: Controller -> Plant
     fmi3Float64 controller_vals[Controller_NY] = { 0.0 };
+    fmi3Clock controller_r_vals[] = { fmi3ClockActive };
     // Will hold exchanged values: Plant -> Controller
     fmi3Float64 plant_vals[Plant_NX] = { 0.0 };
     fmi3Float64 plant_der_vals[Plant_NX] = { 0.0 };
 
     // Recording
     FILE *outputFile = NULL;
+    
+    // Controller's clock r timer
+    fmi3Float64 controller_r_period = 1.0;
+    fmi3Float64 controller_r_timer = controller_r_period;
 
+    // Instance data
     InstanceData plantD[N_INSTANCES];
     initialize_instance_data(plantD);
 
@@ -288,6 +296,10 @@ int main(int argc, char *argv[])
 
     // Instantiate
     CHECK_STATUS(instantiate_all(instances, names, instantiate))
+
+    // Set debug logging
+    char* categories[] = { "logEvents", "logStatusError" };
+    Controller_fmi3SetDebugLogging(instances[CONTROLLER_ID], true, 2, categories);
 
     // Initialize
     CHECK_STATUS(enterInitAll(instances, tStart, tEnd, names, enterInit))
@@ -310,27 +322,58 @@ int main(int argc, char *argv[])
     recordVariables(outputFile, instances, names, time);
 
     while (time + h <= tEnd)
-    {   
+    {
+        // Advance time and update timers
+        time += h;
+        controller_r_timer -= h;
+
+        // Check if controller needs to execute
+        if (controller_r_timer <= 0.0) {
+
+            printf("Entering event mode for ticking clock r. \n");
+
+            // Reset timer
+            controller_r_timer = controller_r_period;
+
+            // Put Controller into event mode, as clocks are about to tick
+            CHECK_STATUS(Controller_fmi3EnterEventMode(instances[CONTROLLER_ID], fmi3False, fmi3False, NULL, 0, fmi3False));
+            
+            // Activate clock
+            CHECK_STATUS(Controller_fmi3SetClock(instances[CONTROLLER_ID], controller_r_refs, 1, controller_r_vals, 1));
+
+            // Set inputs to clocked partition: Exchange data Plant -> Controller
+            Plant_fmi3GetFloat64(instances[PLANT_ID], plant_y_refs, Plant_NX, plant_vals, Plant_NX);
+            Controller_fmi3SetFloat64(instances[CONTROLLER_ID], controller_u_refs, Controller_NU, plant_vals, Controller_NU);
+
+            // Compute outputs to clocked partition: Exchange data Controller -> Plant
+            Controller_fmi3GetFloat64(instances[CONTROLLER_ID], controller_y_refs, Controller_NY, controller_vals, Controller_NY);
+            Plant_fmi3SetFloat64(instances[PLANT_ID], plant_u_refs, Plant_NU, controller_vals, Plant_NU);
+            
+            // Update discrete states of the controller
+            fmi3Boolean nominalsChanged = fmi3False;
+            fmi3Boolean statesChanged = fmi3False;
+            fmi3Boolean nextEventTimeDefined = fmi3False;
+            fmi3Boolean terminateSimulation = fmi3False;
+            fmi3Boolean discreteStatesNeedUpdate = fmi3False;
+            fmi3Float64 nextEventTime = INFINITY;
+            Controller_fmi3UpdateDiscreteStates(instances[CONTROLLER_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
+
+            // Exit event mode
+            Controller_fmi3EnterContinuousTimeMode(instances[CONTROLLER_ID]);
+            printf("Exiting event mode. \n");
+        }
+
         // Estimate next Plant state
         Plant_fmi3GetContinuousStates(instances[PLANT_ID], plant_vals, Plant_NX);
         Plant_fmi3GetContinuousStateDerivatives(instances[PLANT_ID], plant_der_vals, Plant_NX);
         plant_vals[0] += h * plant_der_vals[0];
 
         // Set FMU time
-        time += h;
         CHECK_STATUS(Plant_fmi3SetTime(instances[PLANT_ID], time));
         CHECK_STATUS(Controller_fmi3SetTime(instances[CONTROLLER_ID], time));
 
         // Update Plant state
         Plant_fmi3SetContinuousStates(instances[PLANT_ID], plant_vals, Plant_NX);
-
-        //Exchange data Plant -> Controller
-        Plant_fmi3GetFloat64(instances[PLANT_ID], plant_y_refs, Plant_NX, plant_vals, Plant_NX);
-        Controller_fmi3SetFloat64(instances[CONTROLLER_ID], controller_u_refs, Controller_NU, plant_vals, Controller_NU);
-
-        // Exchange data Controller -> Plant
-        Controller_fmi3GetFloat64(instances[CONTROLLER_ID], controller_y_refs, Controller_NY, controller_vals, Controller_NY);
-        Plant_fmi3SetFloat64(instances[PLANT_ID], plant_u_refs, Plant_NU, controller_vals, Plant_NU);
 
         // Record data
         recordVariables(outputFile, instances, names, time);
