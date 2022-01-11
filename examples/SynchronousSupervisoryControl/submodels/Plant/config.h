@@ -16,7 +16,7 @@
 #define SET_FLOAT64
 #define EVENT_UPDATE
 
-#define FIXED_SOLVER_STEP 1e-3
+#define FIXED_SOLVER_STEP 1e-2
 
 typedef enum {
     vr_x = 1, vr_der_x, vr_u

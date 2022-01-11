@@ -4,7 +4,7 @@
 #include <stdbool.h> // for bool
 
 // define class name and unique id
-#define MODEL_IDENTIFIER Controller
+#define MODEL_IDENTIFIER Supervisor
 #define INSTANTIATION_TOKEN "{00000000-0000-0000-0000-000000000000}"
 
 #define CO_SIMULATION
@@ -13,12 +13,6 @@
 // define model size
 #define NX 0
 #define NZ 0
-
-#define GET_FLOAT64
-#define SET_FLOAT64
-#define EVENT_UPDATE
-#define ACTIVATE_CLOCK
-#define GET_CLOCK
 
 #define FIXED_SOLVER_STEP 1e-2
 

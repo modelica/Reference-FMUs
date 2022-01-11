@@ -171,7 +171,7 @@ set_target_properties(scs_synchronous PROPERTIES
 )
 
 # Synchronous Supervisory Control Example
-set (SUPERVISOR_FMUS Controller Plant)
+set (SUPERVISOR_FMUS Controller Plant Supervisor)
 
 foreach (SUBMODEL ${SUPERVISOR_FMUS})
     add_library(Supervisory_${SUBMODEL} STATIC src/fmi3Functions.c src/model_common.c examples/SynchronousSupervisoryControl/submodels/${SUBMODEL}/model.c)

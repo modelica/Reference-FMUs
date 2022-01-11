@@ -13,13 +13,19 @@
 
 #undef fmi3Functions_h
 #undef FMI3_FUNCTION_PREFIX
+#define FMI3_FUNCTION_PREFIX Plant_
+#include "fmi3Functions.h"
+#undef FMI3_FUNCTION_PREFIX
+
+#undef fmi3Functions_h
+#undef FMI3_FUNCTION_PREFIX
 #define FMI3_FUNCTION_PREFIX Controller_
 #include "fmi3Functions.h"
 #undef FMI3_FUNCTION_PREFIX
 
 #undef fmi3Functions_h
 #undef FMI3_FUNCTION_PREFIX
-#define FMI3_FUNCTION_PREFIX Plant_
+#define FMI3_FUNCTION_PREFIX Supervisor_
 #include "fmi3Functions.h"
 #undef FMI3_FUNCTION_PREFIX
 
@@ -57,21 +63,21 @@
 #define PLANT_ID 0
 #define CONTROLLER_ID 1
 
-#define N_INSTANCES 2
+#define N_INSTANCES 3
 
 #define FIXED_STEP 1e-2
 #define STOP_TIME 10
 
 #define MAXDIRLENGTH 250
 
-typedef struct
-{
-    fmi3Boolean timeEvent, stateEvent, enterEventMode, terminateSimulation, initialEventMode;
-    fmi3Float64 x[MAX_NX];
-    fmi3Float64 der_x[MAX_NX];
-    fmi3Int32 rootsFound[MAX_NZ];
-    fmi3Float64 u[MAX_NU];
-} InstanceData;
+//typedef struct
+//{
+//    fmi3Boolean timeEvent, stateEvent, enterEventMode, terminateSimulation, initialEventMode;
+//    fmi3Float64 x[MAX_NX];
+//    fmi3Float64 der_x[MAX_NX];
+//    fmi3Int32 rootsFound[MAX_NZ];
+//    fmi3Float64 u[MAX_NU];
+//} InstanceData;
 
 
 #define OUTPUT_FILE_HEADER "time,x,r,x_r,u_r\n"
@@ -88,19 +94,6 @@ fmi3Status recordVariables(FILE *outputFile, fmi3Instance instances[], char *nam
     //                                      time,     x,         r, x_r,                u_r
     fprintf(outputFile, "%g,%g,%d,%g,%g\n", time, plant_vals[0], 0, controller_vals[0], controller_vals[1]);
     return fmi3OK;
-}
-
-void initialize_instance_data(InstanceData data[])
-{
-    // Initialize instance data
-    for (int i = 0; i < N_INSTANCES; i++)
-    {
-        data[i].timeEvent = fmi3False;
-        data[i].stateEvent = fmi3False;
-        data[i].enterEventMode = fmi3False;
-        data[i].terminateSimulation = fmi3False;
-        data[i].initialEventMode = fmi3True;
-    }
 }
 
 fmi3Status instantiate_all(fmi3Instance instances[], char *names[], fmi3InstantiateModelExchangeTYPE *instantiate[])
@@ -246,15 +239,39 @@ int main(int argc, char *argv[])
     // Instances
     fmi3Instance instances[N_INSTANCES] = {NULL}; // Remaining elements are implicitly NULL
 
-    char* names[N_INSTANCES] = { "plant", "controller" };
+    char* names[N_INSTANCES] = { "plant", "controller", "supervisor"};
 
     // Instance functions
-    fmi3InstantiateModelExchangeTYPE *instantiate[N_INSTANCES] = {Plant_fmi3InstantiateModelExchange, Controller_fmi3InstantiateModelExchange};
-    fmi3EnterInitializationModeTYPE *enterInit[N_INSTANCES] = {Plant_fmi3EnterInitializationMode, Controller_fmi3EnterInitializationMode};
-    fmi3ExitInitializationModeTYPE* exitInit[N_INSTANCES] = { Plant_fmi3ExitInitializationMode, Controller_fmi3ExitInitializationMode };
-    fmi3EnterConfigurationModeTYPE *enter_CT_mode[N_INSTANCES] = {Plant_fmi3EnterContinuousTimeMode, Controller_fmi3EnterContinuousTimeMode};
-    fmi3TerminateTYPE *terminate[N_INSTANCES] = {Plant_fmi3Terminate, Controller_fmi3Terminate};
-    fmi3FreeInstanceTYPE *freeInstance[N_INSTANCES] = {Plant_fmi3FreeInstance, Controller_fmi3FreeInstance};
+	fmi3InstantiateModelExchangeTYPE* instantiate[N_INSTANCES] = { 
+        Plant_fmi3InstantiateModelExchange, 
+        Controller_fmi3InstantiateModelExchange, 
+        Supervisor_fmi3InstantiateModelExchange 
+    };
+	fmi3EnterInitializationModeTYPE* enterInit[N_INSTANCES] = { 
+        Plant_fmi3EnterInitializationMode,
+        Controller_fmi3EnterInitializationMode,
+        Supervisor_fmi3EnterInitializationMode
+    };
+	fmi3ExitInitializationModeTYPE* exitInit[N_INSTANCES] = { 
+        Plant_fmi3ExitInitializationMode,
+        Controller_fmi3ExitInitializationMode,
+        Supervisor_fmi3ExitInitializationMode
+    };
+	fmi3EnterConfigurationModeTYPE* enter_CT_mode[N_INSTANCES] = { 
+        Plant_fmi3EnterContinuousTimeMode,
+        Controller_fmi3EnterContinuousTimeMode,
+        Supervisor_fmi3EnterContinuousTimeMode
+    };
+	fmi3TerminateTYPE* terminate[N_INSTANCES] = { 
+        Plant_fmi3Terminate,
+        Controller_fmi3Terminate,
+        Supervisor_fmi3Terminate
+    };
+	fmi3FreeInstanceTYPE* freeInstance[N_INSTANCES] = { 
+        Plant_fmi3FreeInstance,
+        Controller_fmi3FreeInstance,
+        Supervisor_fmi3FreeInstance
+    };
 
     // Instance refs
     const fmi3ValueReference plant_u_refs[Plant_NU] = { Plant_U_ref };
@@ -276,10 +293,6 @@ int main(int argc, char *argv[])
     // Controller's clock r timer
     fmi3Float64 controller_r_period = 1.0;
     fmi3Float64 controller_r_timer = controller_r_period;
-
-    // Instance data
-    InstanceData plantD[N_INSTANCES];
-    initialize_instance_data(plantD);
 
     getcwd(cwd, MAXDIRLENGTH);
     puts("Opening output file in cwd:");
