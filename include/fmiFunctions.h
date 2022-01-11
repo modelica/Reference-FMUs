@@ -25,7 +25,7 @@
    - October 16, 2010: First public Version
 
 
-   Copyright © 2008-2010, MODELISAR consortium. All rights reserved.
+   Copyright(c) 2017, MODELICA Association Project FMI. All rights reserved.
    This file is licensed by the copyright holders under the BSD License
    (http://www.opensource.org/licenses/bsd-license.html):
 
@@ -113,9 +113,10 @@ Functions for FMI for Co-Simulation
 #define fmiVersion "1.0"
 
 /* make sure all compiler use the same alignment policies for structures */
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma pack(push,8)
 #endif
+
 
 /* Type definitions */
      typedef enum {fmiOK,
@@ -148,7 +149,7 @@ Functions for FMI for Co-Simulation
    } fmiEventInfo;
 
 /* reset alignment policy to the one set before reading this file */
-#ifdef _MSC_VER
+#ifdef WIN32
 #pragma pack(pop)
 #endif
 
