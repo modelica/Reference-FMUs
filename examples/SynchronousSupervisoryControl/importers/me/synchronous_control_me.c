@@ -54,6 +54,11 @@
 #define Controller_XR_ref 2
 #define Controller_R_ref 1
 
+// Supervisor vrefs
+#define Supervisor_S_ref 1
+#define Supervisor_X_ref 2
+#define Supervisor_AS_ref 3
+
 // Instance data sizing
 #define MAX_NX 1
 #define MAX_NZ 1
@@ -62,6 +67,7 @@
 // instance IDs
 #define PLANT_ID 0
 #define CONTROLLER_ID 1
+#define SUPERVISOR_ID 2
 
 #define N_INSTANCES 3
 
@@ -279,13 +285,17 @@ int main(int argc, char *argv[])
     const fmi3ValueReference controller_u_refs[Controller_NU] = { Controller_XR_ref };
     const fmi3ValueReference controller_y_refs[Controller_NY] = { Controller_UR_ref };
     const fmi3ValueReference controller_r_refs[] = { Controller_R_ref };
-    
+    const fmi3ValueReference supervisor_in_refs[1] = { Supervisor_X_ref };
+
     // Will hold exchanged values: Controller -> Plant
     fmi3Float64 controller_vals[Controller_NY] = { 0.0 };
     fmi3Clock controller_r_vals[] = { fmi3ClockActive };
     // Will hold exchanged values: Plant -> Controller
     fmi3Float64 plant_vals[Plant_NX] = { 0.0 };
     fmi3Float64 plant_der_vals[Plant_NX] = { 0.0 };
+    // Will hold event indicator values of supervisor;
+    fmi3Float64 supervisor_evt_vals[1] = { 0.0 };
+    fmi3Float64 supervisor_event_indicator = 0.0;
 
     // Recording
     FILE *outputFile = NULL;
@@ -325,6 +335,13 @@ int main(int argc, char *argv[])
     Plant_fmi3GetFloat64(instances[PLANT_ID], plant_y_refs, Plant_NX, plant_vals, Plant_NX);
     Controller_fmi3SetFloat64(instances[CONTROLLER_ID], controller_u_refs, Controller_NU, plant_vals, Controller_NU);
 
+    //Exchange data Plant -> Supervisor
+    Supervisor_fmi3SetFloat64(instances[SUPERVISOR_ID], supervisor_in_refs, 1, plant_vals, 1);
+
+    // Initialize event indicators
+    Supervisor_fmi3GetEventIndicators(instances[SUPERVISOR_ID], supervisor_evt_vals, 1);
+    supervisor_event_indicator = supervisor_evt_vals[0];
+
     CHECK_STATUS(exitInitAll(instances, names, exitInit))
     
     time = tStart;
@@ -339,9 +356,18 @@ int main(int argc, char *argv[])
         // Advance time and update timers
         time += h;
         controller_r_timer -= h;
+        
+        // Check for state events or time events.
+        bool timeEvent = controller_r_timer <= 0.0;
+        
+        Supervisor_fmi3GetEventIndicators(instances[SUPERVISOR_ID], supervisor_evt_vals, 1);
+        bool stateEvent = supervisor_event_indicator * supervisor_evt_vals[0] < 0.0;
+        supervisor_event_indicator = supervisor_evt_vals[0];
+
+        printf("Time event: %d \t State Event: %d \n", timeEvent, stateEvent);
 
         // Check if controller needs to execute
-        if (controller_r_timer <= 0.0) {
+        if (timeEvent) {
 
             printf("Entering event mode for ticking clock r. \n");
 
@@ -376,6 +402,10 @@ int main(int argc, char *argv[])
             printf("Exiting event mode. \n");
         }
 
+        // Exchange data Plant -> Supervisor
+        Plant_fmi3GetFloat64(instances[PLANT_ID], plant_y_refs, Plant_NX, plant_vals, Plant_NX);
+        Supervisor_fmi3SetFloat64(instances[SUPERVISOR_ID], supervisor_in_refs, 1, plant_vals, 1);
+
         // Estimate next Plant state
         Plant_fmi3GetContinuousStates(instances[PLANT_ID], plant_vals, Plant_NX);
         Plant_fmi3GetContinuousStateDerivatives(instances[PLANT_ID], plant_der_vals, Plant_NX);
@@ -384,6 +414,7 @@ int main(int argc, char *argv[])
         // Set FMU time
         CHECK_STATUS(Plant_fmi3SetTime(instances[PLANT_ID], time));
         CHECK_STATUS(Controller_fmi3SetTime(instances[CONTROLLER_ID], time));
+        CHECK_STATUS(Supervisor_fmi3SetTime(instances[SUPERVISOR_ID], time));
 
         // Update Plant state
         Plant_fmi3SetContinuousStates(instances[PLANT_ID], plant_vals, Plant_NX);
