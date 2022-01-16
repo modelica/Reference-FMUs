@@ -12,6 +12,16 @@
 #include <stdint.h>
 
 #include "config.h"
+#include "namespace.h"
+
+/* Macros to construct the real function name (prepend function name by FMI3_FUNCTION_PREFIX) */
+#if defined(FMI3_FUNCTION_PREFIX)
+#define fmi3Paste(a,b)     a ## b
+#define fmi3PasteB(a,b)    fmi3Paste(a,b)
+#define fmi3FullName(name) fmi3PasteB(FMI3_FUNCTION_PREFIX, name)
+#else
+#define fmi3FullName(name) name
+#endif
 
 #if FMI_VERSION == 1
 
@@ -155,6 +165,45 @@ typedef struct {
     bool eventModeUsed;
 
 } ModelInstance;
+
+// Internal functions that make up an FMI independent layer.
+// These are prefixed to enable static linking.
+#define createModelInstance   fmi3FullName(createModelInstance)
+#define freeModelInstance   fmi3FullName(freeModelInstance)
+#define setStartValues   fmi3FullName(setStartValues)
+#define calculateValues   fmi3FullName(calculateValues)
+#define getFloat64   fmi3FullName(getFloat64)
+#define getUInt16   fmi3FullName(getUInt16)
+#define getInt32   fmi3FullName(getInt32)
+#define getUInt64   fmi3FullName(getUInt64)
+#define getBoolean   fmi3FullName(getBoolean)
+#define getString   fmi3FullName(getString)
+#define getBinary   fmi3FullName(getBinary)
+#define setFloat64   fmi3FullName(setFloat64)
+#define setUInt16   fmi3FullName(setUInt16)
+#define setInt32   fmi3FullName(setInt32)
+#define setUInt64   fmi3FullName(setUInt64)
+#define setBoolean   fmi3FullName(setBoolean)
+#define setString   fmi3FullName(setString)
+#define setBinary   fmi3FullName(setBinary)
+#define activateClock   fmi3FullName(activateClock)
+#define getClock   fmi3FullName(getClock)
+#define getInterval   fmi3FullName(getInterval)
+#define activateModelPartition   fmi3FullName(activateModelPartition)
+#define getContinuousStates   fmi3FullName(getContinuousStates)
+#define setContinuousStates   fmi3FullName(setContinuousStates)
+#define getDerivatives   fmi3FullName(getDerivatives)
+#define getOutputDerivative   fmi3FullName(getOutputDerivative)
+#define getPartialDerivative   fmi3FullName(getPartialDerivative)
+#define getEventIndicators   fmi3FullName(getEventIndicators)
+#define eventUpdate   fmi3FullName(eventUpdate)
+#define epsilon   fmi3FullName(epsilon)
+#define invalidNumber   fmi3FullName(invalidNumber)
+#define invalidState   fmi3FullName(invalidState)
+#define nullPointer   fmi3FullName(nullPointer)
+#define logError   fmi3FullName(logError)
+#define setDebugLogging   fmi3FullName(setDebugLogging)
+#define logEvent   fmi3FullName(logEvent)
 
 ModelInstance *createModelInstance(
     loggerType logger,

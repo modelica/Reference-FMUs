@@ -9,7 +9,6 @@ void setStartValues(ModelInstance *comp) {
 }
 
 Status calculateValues(ModelInstance *comp) {
-    logEvent(comp, "calculateValues called.\n");
     M(der_x) = - M(x) + M(u);
     return OK;
 }
@@ -29,7 +28,6 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
 }
 
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
-    logEvent(comp, "setFloat64 called on Plan with vr %d.", vr);
     switch (vr) {
         case vr_u:
             M(u) = value[(*index)++];

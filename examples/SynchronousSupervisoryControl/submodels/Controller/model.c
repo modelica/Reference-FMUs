@@ -42,7 +42,6 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
 }
 
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
-    logEvent(comp, "Supervisor called with value reference: %d.", vr);
     switch (vr) {
         case vr_xr:
             M(xr) = value[(*index)++];
@@ -87,7 +86,7 @@ void eventUpdate(ModelInstance *comp) {
     comp->nextEventTimeDefined = false;
     
     // State transition
-    logError(comp, "Controller clock state transition.");
+    logEvent(comp, "Controller clock state transition.");
     M(pre_ur) = M(ur);
     M(ur) = M(ur) + M(as);
 

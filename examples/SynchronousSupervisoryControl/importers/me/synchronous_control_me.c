@@ -10,13 +10,6 @@
 #include <dlfcn.h>
 #endif
 
-
-//#undef fmi3Functions_h
-//#undef FMI3_FUNCTION_PREFIX
-//#define FMI3_FUNCTION_PREFIX Supervisor_
-//#include "fmi3Functions.h"
-//#undef FMI3_FUNCTION_PREFIX
-
 #undef fmi3Functions_h
 #undef FMI3_FUNCTION_PREFIX
 #define FMI3_FUNCTION_PREFIX Plant_
@@ -29,6 +22,11 @@
 #include "fmi3Functions.h"
 #undef FMI3_FUNCTION_PREFIX
 
+#undef fmi3Functions_h
+#undef FMI3_FUNCTION_PREFIX
+#define FMI3_FUNCTION_PREFIX Supervisor_
+#include "fmi3Functions.h"
+#undef FMI3_FUNCTION_PREFIX
 
 #define INSTANTIATION_TOKEN "{00000000-0000-0000-0000-000000000000}"
 
@@ -56,7 +54,7 @@
 #define N_INSTANCES 3
 
 #define FIXED_STEP 1e-2
-#define STOP_TIME 1
+#define STOP_TIME 10.0
 
 #define MAXDIRLENGTH 250
 
@@ -128,7 +126,7 @@ fmi3Status instantiate_all(fmi3Instance instances[])
     fmi3InstantiateModelExchangeTYPE* instantiate[N_INSTANCES] = {
         Plant_fmi3InstantiateModelExchange,
         Controller_fmi3InstantiateModelExchange,
-        //Supervisor_fmi3InstantiateModelExchange
+        Supervisor_fmi3InstantiateModelExchange
     };
 
     for (int i = 0; i < N_INSTANCES; i++)
@@ -156,7 +154,7 @@ fmi3Status enterInitAll(fmi3Instance instances[])
     fmi3EnterInitializationModeTYPE* enterInit[N_INSTANCES] = {
         Plant_fmi3EnterInitializationMode,
         Controller_fmi3EnterInitializationMode,
-        //Supervisor_fmi3EnterInitializationMode
+        Supervisor_fmi3EnterInitializationMode
     };
 
     fmi3Status status = fmi3OK;
@@ -186,7 +184,7 @@ fmi3Status exitInitAll(fmi3Instance instances[])
     fmi3ExitInitializationModeTYPE* exitInit[N_INSTANCES] = {
         Plant_fmi3ExitInitializationMode,
         Controller_fmi3ExitInitializationMode,
-        //Supervisor_fmi3ExitInitializationMode
+        Supervisor_fmi3ExitInitializationMode
     };
 
     fmi3Status status = fmi3OK;
@@ -215,7 +213,7 @@ fmi3Status enter_CT_mode_all(fmi3Instance instances[])
     fmi3EnterConfigurationModeTYPE* enter_CT_mode[N_INSTANCES] = {
         Plant_fmi3EnterContinuousTimeMode,
         Controller_fmi3EnterContinuousTimeMode,
-        //Supervisor_fmi3EnterContinuousTimeMode
+        Supervisor_fmi3EnterContinuousTimeMode
     };
 
     fmi3Status status = fmi3OK;
@@ -244,7 +242,7 @@ fmi3Status terminate_all(fmi3Instance instances[])
     fmi3TerminateTYPE* terminate[N_INSTANCES] = {
         Plant_fmi3Terminate,
         Controller_fmi3Terminate,
-        //Supervisor_fmi3Terminate
+        Supervisor_fmi3Terminate
     };
 
     fmi3Status status = fmi3OK;
@@ -267,7 +265,7 @@ void clean_all(fmi3Instance instances[])
     fmi3FreeInstanceTYPE* freeInstance[N_INSTANCES] = {
         Plant_fmi3FreeInstance,
         Controller_fmi3FreeInstance,
-        //Supervisor_fmi3FreeInstance
+        Supervisor_fmi3FreeInstance
     };
 
     for (int i = 0; i < N_INSTANCES; i++){
@@ -347,7 +345,7 @@ int main(int argc, char *argv[])
     // Set debug logging
     char* categories[] = { "logEvents", "logStatusError" };
     Controller_fmi3SetDebugLogging(instances[CONTROLLER_ID], true, 2, categories);
-    //Supervisor_fmi3SetDebugLogging(instances[SUPERVISOR_ID], true, 2, categories);
+    Supervisor_fmi3SetDebugLogging(instances[SUPERVISOR_ID], true, 2, categories);
     Plant_fmi3SetDebugLogging(instances[PLANT_ID], true, 2, categories);
 
     // Initialize
@@ -356,10 +354,6 @@ int main(int argc, char *argv[])
     // Exchange data Controller -> Plant
     Controller_fmi3GetFloat64(instances[CONTROLLER_ID], controller_y_refs, 1, controller_vals, 1);
     Plant_fmi3SetFloat64(instances[PLANT_ID], plant_u_refs, 1, controller_vals, 1);
-
-    assert(Plant_fmi3SetFloat64 == Supervisor_fmi3SetFloat64);
-
-    return EXIT_FAILURE;
 
     //Exchange data Plant -> Controller
     Plant_fmi3GetFloat64(instances[PLANT_ID], plant_y_refs, 1, plant_vals, 1);
