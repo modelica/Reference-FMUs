@@ -190,7 +190,7 @@ if (${FMI_VERSION} EQUAL 3)
     set (SUPERVISOR_FMUS Controller Plant Supervisor)
 
     foreach (SUBMODEL ${SUPERVISOR_FMUS})
-        add_library(Supervisory_${SUBMODEL} STATIC src/fmi3Functions.c src/cosimulation.c examples/SynchronousSupervisoryControl/submodels/${SUBMODEL}/model.c)
+        add_library(Supervisory_${SUBMODEL} STATIC src/fmi3Functions.c src/cosimulation.c examples/SynchronousSupervisoryControl/submodels/${SUBMODEL}/config.h examples/SynchronousSupervisoryControl/submodels/${SUBMODEL}/model.c)
         set_target_properties(Supervisory_${SUBMODEL} PROPERTIES FOLDER examples)
         target_include_directories(Supervisory_${SUBMODEL} PRIVATE include examples/SynchronousSupervisoryControl/submodels/${SUBMODEL})
     endforeach(SUBMODEL)
