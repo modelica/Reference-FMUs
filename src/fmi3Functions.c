@@ -357,6 +357,8 @@ fmi3Status fmi3EnterEventMode(fmi3Instance instance,
 
     S->state = EventMode;
     S->isNewEventIteration = true;
+    S->isBecauseOfTimeEvent = timeEvent;
+    S->isBecauseOfStateEvent = stateEvent;
 
     return fmi3OK;
 }
@@ -925,6 +927,8 @@ fmi3Status fmi3UpdateDiscreteStates(fmi3Instance instance,
     eventUpdate(S);
 
     S->isNewEventIteration = false;
+    S->isBecauseOfTimeEvent = false;
+    S->isBecauseOfStateEvent = false;
 
     // copy internal eventInfo of component to output arguments
     if (discreteStatesNeedUpdate)          *discreteStatesNeedUpdate          = S->newDiscreteStatesNeeded;

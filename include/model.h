@@ -136,6 +136,8 @@ typedef struct {
 
     bool isDirtyValues;
     bool isNewEventIteration;
+    bool isBecauseOfTimeEvent;
+    bool isBecauseOfStateEvent;
 
     ModelData *modelData;
 

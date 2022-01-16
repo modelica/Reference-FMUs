@@ -91,6 +91,8 @@ ModelInstance* createModelInstance(
 
     comp->state = Instantiated;
     comp->isNewEventIteration = false;
+    comp->isBecauseOfTimeEvent = false;
+    comp->isBecauseOfStateEvent = false;
 
     comp->newDiscreteStatesNeeded = false;
     comp->terminateSimulation = false;

@@ -367,39 +367,51 @@ int main(int argc, char *argv[])
         printf("Time event: %d \t State Event: %d \n", timeEvent, stateEvent);
 
         // Check if controller needs to execute
-        if (timeEvent) {
+        if (timeEvent || stateEvent) {
+            if (timeEvent && !stateEvent) {
+                printf("Entering event mode for ticking clock r. \n");
 
-            printf("Entering event mode for ticking clock r. \n");
+                // Reset timer
+                controller_r_timer = controller_r_period;
 
-            // Reset timer
-            controller_r_timer = controller_r_period;
+                // Put Controller into event mode, as clocks are about to tick
+                CHECK_STATUS(Controller_fmi3EnterEventMode(instances[CONTROLLER_ID], fmi3False, fmi3False, NULL, 0, fmi3True));
 
-            // Put Controller into event mode, as clocks are about to tick
-            CHECK_STATUS(Controller_fmi3EnterEventMode(instances[CONTROLLER_ID], fmi3False, fmi3False, NULL, 0, fmi3False));
-            
-            // Activate clock
-            CHECK_STATUS(Controller_fmi3SetClock(instances[CONTROLLER_ID], controller_r_refs, 1, controller_r_vals, 1));
+                // Activate clock
+                CHECK_STATUS(Controller_fmi3SetClock(instances[CONTROLLER_ID], controller_r_refs, 1, controller_r_vals, 1));
 
-            // Set inputs to clocked partition: Exchange data Plant -> Controller
-            Plant_fmi3GetFloat64(instances[PLANT_ID], plant_y_refs, Plant_NX, plant_vals, Plant_NX);
-            Controller_fmi3SetFloat64(instances[CONTROLLER_ID], controller_u_refs, Controller_NU, plant_vals, Controller_NU);
+                // Set inputs to clocked partition: Exchange data Plant -> Controller
+                Plant_fmi3GetFloat64(instances[PLANT_ID], plant_y_refs, Plant_NX, plant_vals, Plant_NX);
+                Controller_fmi3SetFloat64(instances[CONTROLLER_ID], controller_u_refs, Controller_NU, plant_vals, Controller_NU);
 
-            // Compute outputs to clocked partition: Exchange data Controller -> Plant
-            Controller_fmi3GetFloat64(instances[CONTROLLER_ID], controller_y_refs, Controller_NY, controller_vals, Controller_NY);
-            Plant_fmi3SetFloat64(instances[PLANT_ID], plant_u_refs, Plant_NU, controller_vals, Plant_NU);
-            
-            // Update discrete states of the controller
-            fmi3Boolean nominalsChanged = fmi3False;
-            fmi3Boolean statesChanged = fmi3False;
-            fmi3Boolean nextEventTimeDefined = fmi3False;
-            fmi3Boolean terminateSimulation = fmi3False;
-            fmi3Boolean discreteStatesNeedUpdate = fmi3False;
-            fmi3Float64 nextEventTime = INFINITY;
-            Controller_fmi3UpdateDiscreteStates(instances[CONTROLLER_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
+                // Compute outputs to clocked partition: Exchange data Controller -> Plant
+                Controller_fmi3GetFloat64(instances[CONTROLLER_ID], controller_y_refs, Controller_NY, controller_vals, Controller_NY);
+                Plant_fmi3SetFloat64(instances[PLANT_ID], plant_u_refs, Plant_NU, controller_vals, Plant_NU);
 
-            // Exit event mode
-            Controller_fmi3EnterContinuousTimeMode(instances[CONTROLLER_ID]);
-            printf("Exiting event mode. \n");
+                // Update discrete states of the controller
+                fmi3Boolean nominalsChanged = fmi3False;
+                fmi3Boolean statesChanged = fmi3False;
+                fmi3Boolean nextEventTimeDefined = fmi3False;
+                fmi3Boolean terminateSimulation = fmi3False;
+                fmi3Boolean discreteStatesNeedUpdate = fmi3False;
+                fmi3Float64 nextEventTime = INFINITY;
+                Controller_fmi3UpdateDiscreteStates(instances[CONTROLLER_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
+
+                // Exit event mode
+                Controller_fmi3EnterContinuousTimeMode(instances[CONTROLLER_ID]);
+                printf("Exiting event mode. \n");
+            }
+            else if (!timeEvent && stateEvent) {
+                printf("Entering event mode for ticking clock s. \n");
+
+                // Put Controller into event mode, as clocks are about to tick
+                CHECK_STATUS(Supervisor_fmi3EnterEventMode(instances[SUPERVISOR_ID], fmi3False, fmi3True, NULL, 0, fmi3False));
+
+            }
+            else {
+                assert(timeEvent && stateEvent);
+                assert(false); // Never happens in this example.
+            }
         }
 
         // Exchange data Plant -> Supervisor
