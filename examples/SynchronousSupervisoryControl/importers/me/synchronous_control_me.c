@@ -53,6 +53,8 @@
 #define Controller_UR_ref 3
 #define Controller_XR_ref 2
 #define Controller_R_ref 1
+#define Controller_S_ref 6
+#define Controller_AS_ref 5
 
 // Supervisor vrefs
 #define Supervisor_S_ref 1
@@ -285,6 +287,10 @@ int main(int argc, char *argv[])
     const fmi3ValueReference controller_u_refs[Controller_NU] = { Controller_XR_ref };
     const fmi3ValueReference controller_y_refs[Controller_NY] = { Controller_UR_ref };
     const fmi3ValueReference controller_r_refs[] = { Controller_R_ref };
+    const fmi3ValueReference controller_s_refs[] = { Controller_S_ref };
+    const fmi3ValueReference controller_as_refs[] = { Controller_AS_ref };
+    const fmi3ValueReference supervisor_s_refs[] = { Supervisor_S_ref };
+    const fmi3ValueReference supervisor_as_refs[] = { Supervisor_AS_ref };
     const fmi3ValueReference supervisor_in_refs[1] = { Supervisor_X_ref };
 
     // Will hold exchanged values: Controller -> Plant
@@ -296,12 +302,14 @@ int main(int argc, char *argv[])
     // Will hold event indicator values of supervisor;
     fmi3Float64 supervisor_evt_vals[1] = { 0.0 };
     fmi3Float64 supervisor_event_indicator = 0.0;
+    fmi3Clock supervisor_s_vals[] = { fmi3ClockInactive };
+    fmi3Float64 supervisor_as_vals[] = { 0.0 };
 
     // Recording
     FILE *outputFile = NULL;
     
     // Controller's clock r timer
-    fmi3Float64 controller_r_period = 1.0;
+    fmi3Float64 controller_r_period = 0.1;
     fmi3Float64 controller_r_timer = controller_r_period;
 
     getcwd(cwd, MAXDIRLENGTH);
@@ -381,12 +389,12 @@ int main(int argc, char *argv[])
                 CHECK_STATUS(Controller_fmi3SetClock(instances[CONTROLLER_ID], controller_r_refs, 1, controller_r_vals, 1));
 
                 // Set inputs to clocked partition: Exchange data Plant -> Controller
-                Plant_fmi3GetFloat64(instances[PLANT_ID], plant_y_refs, Plant_NX, plant_vals, Plant_NX);
-                Controller_fmi3SetFloat64(instances[CONTROLLER_ID], controller_u_refs, Controller_NU, plant_vals, Controller_NU);
+                CHECK_STATUS(Plant_fmi3GetFloat64(instances[PLANT_ID], plant_y_refs, Plant_NX, plant_vals, Plant_NX));
+                CHECK_STATUS(Controller_fmi3SetFloat64(instances[CONTROLLER_ID], controller_u_refs, Controller_NU, plant_vals, Controller_NU));
 
                 // Compute outputs to clocked partition: Exchange data Controller -> Plant
-                Controller_fmi3GetFloat64(instances[CONTROLLER_ID], controller_y_refs, Controller_NY, controller_vals, Controller_NY);
-                Plant_fmi3SetFloat64(instances[PLANT_ID], plant_u_refs, Plant_NU, controller_vals, Plant_NU);
+                CHECK_STATUS(Controller_fmi3GetFloat64(instances[CONTROLLER_ID], controller_y_refs, Controller_NY, controller_vals, Controller_NY));
+                CHECK_STATUS(Plant_fmi3SetFloat64(instances[PLANT_ID], plant_u_refs, Plant_NU, controller_vals, Plant_NU));
 
                 // Update discrete states of the controller
                 fmi3Boolean nominalsChanged = fmi3False;
@@ -404,9 +412,33 @@ int main(int argc, char *argv[])
             else if (!timeEvent && stateEvent) {
                 printf("Entering event mode for ticking clock s. \n");
 
-                // Put Controller into event mode, as clocks are about to tick
+                // Put Supervisor and Controller into event mode, as clocks are about to tick. Note the flags used.
                 CHECK_STATUS(Supervisor_fmi3EnterEventMode(instances[SUPERVISOR_ID], fmi3False, fmi3True, NULL, 0, fmi3False));
+                CHECK_STATUS(Controller_fmi3EnterEventMode(instances[CONTROLLER_ID], fmi3False, fmi3False, NULL, 0, fmi3False));
 
+                // Propagate clock activation Supervisor -> Controller
+                CHECK_STATUS(Supervisor_fmi3GetClock(instances[SUPERVISOR_ID], supervisor_s_refs, 1, supervisor_s_vals, 1));
+                assert(supervisor_s_vals[0] == fmi3ClockActive);
+                CHECK_STATUS(Controller_fmi3SetClock(instances[CONTROLLER_ID], controller_s_refs, 1, supervisor_s_vals, 1));
+
+                // Exchange data Supervisor -> Controller
+                CHECK_STATUS(Supervisor_fmi3GetFloat64(instances[SUPERVISOR_ID], supervisor_as_refs, 1, supervisor_as_vals, 1));
+                CHECK_STATUS(Controller_fmi3SetFloat64(instances[CONTROLLER_ID], controller_as_refs, 1, supervisor_as_vals, 1));
+
+                // Update discrete states of the controller and supervisor
+                fmi3Boolean nominalsChanged = fmi3False;
+                fmi3Boolean statesChanged = fmi3False;
+                fmi3Boolean nextEventTimeDefined = fmi3False;
+                fmi3Boolean terminateSimulation = fmi3False;
+                fmi3Boolean discreteStatesNeedUpdate = fmi3False;
+                fmi3Float64 nextEventTime = INFINITY;
+                Supervisor_fmi3UpdateDiscreteStates(instances[SUPERVISOR_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
+                Controller_fmi3UpdateDiscreteStates(instances[CONTROLLER_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
+                
+                // Exit event mode
+                Supervisor_fmi3EnterContinuousTimeMode(instances[SUPERVISOR_ID]);
+                Controller_fmi3EnterContinuousTimeMode(instances[CONTROLLER_ID]);
+                printf("Exiting event mode. \n");
             }
             else {
                 assert(timeEvent && stateEvent);
@@ -434,41 +466,6 @@ int main(int argc, char *argv[])
         // Record data
         recordVariables(outputFile, instances, names, time);
     }
-
-//     // handle events
-//     if (plantD.enterEventMode || plantD.stateEvent || plantD.timeEvent) {
-
-//         if (!plantD.initialEventMode) {
-//             CHECK_STATUS(Plant_fmi3EnterEventMode(plant, plantD.enterEventMode, plantD.stateEvent, plantD.rootsFound, Plant_NZ, plantD.timeEvent));
-//         }
-
-//         // event iteration
-//         fmi3Boolean discreteStatesNeedUpdate = fmi3True;
-//         fmi3Boolean terminateSimulation = fmi3False;
-//         fmi3Boolean nominalsOfContinuousStatesChanged = fmi3False;
-//         fmi3Boolean valuesOfContinuousStatesChanged = fmi3False;
-//         fmi3Boolean nextEventTimeDefined = fmi3False;
-//         fmi3Float64 nextEventTime = 0;
-
-//         while (discreteStatesNeedUpdate) {
-
-//             // set inputs at super dense time point
-//             // Plant_fmi3SetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
-
-//             fmi3Boolean nominalsChanged = fmi3False;
-//             fmi3Boolean statesChanged = fmi3False;
-
-//             // update discrete states
-//             CHECK_STATUS(Plant_fmi3UpdateDiscreteStates(plant, &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime));
-
-//             // getOutput at super dense time point
-//             // Plant_fmi3GetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
-
-//             nominalsOfContinuousStatesChanged |= nominalsChanged;
-//             valuesOfContinuousStatesChanged |= statesChanged;
-
-//             if (terminateSimulation) goto TERMINATE;
-//         }
 
 TERMINATE:
 

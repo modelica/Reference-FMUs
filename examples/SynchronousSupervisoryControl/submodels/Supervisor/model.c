@@ -5,7 +5,7 @@
 void setStartValues(ModelInstance *comp) {
     M(s) = fmi3ClockInactive;       // Clock
     M(x) = 0.0;                    // Sample
-    M(as) = 0.0;                    // Discrete state/output
+    M(as) = 1.0;                    // Discrete state/output
 }
 
 void calculateValues(ModelInstance *comp) {
@@ -15,7 +15,12 @@ void calculateValues(ModelInstance *comp) {
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
     switch (vr) {
         case vr_as:
-            value[(*index)++] = M(as);
+            if (comp->state == EventMode && comp->isBecauseOfStateEvent) {
+                value[(*index)++] = M(as)*-1.0;
+            }
+            else {
+                value[(*index)++] = M(as);
+            }
             return OK;
         default:
             logError(comp, "Unexpected value reference: %d.", vr);
@@ -37,7 +42,12 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
 Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
     switch (vr) {
         case vr_s:
-            (*value) = M(s);
+            if (comp->state == EventMode && comp->isBecauseOfStateEvent) {
+                (*value) = fmi3ClockActive;
+            }
+            else {
+                (*value) = fmi3ClockInactive;
+            }
             return OK;
         default:
             logError(comp, "Unexpected value reference: %d.", vr);
@@ -49,9 +59,14 @@ void eventUpdate(ModelInstance *comp) {
     comp->nominalsOfContinuousStatesChanged = false;
     comp->terminateSimulation  = false;
     comp->nextEventTimeDefined = false;
+
+    if (comp->isBecauseOfStateEvent) {
+        // Execute state transition
+        M(as) = M(as) * -1.0;
+    }
 }
 
 void getEventIndicators(ModelInstance* comp, double z[], size_t nz) {
     UNUSED(nz);
-    z[0] = 4.0 - M(x);
+    z[0] = 2.0 - M(x);
 }

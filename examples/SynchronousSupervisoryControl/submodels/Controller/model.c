@@ -7,7 +7,8 @@ void setStartValues(ModelInstance *comp) {
     M(xr) = 0.0;                    // Sample
     M(ur) = 0.0;                    // Discrete state/output
     M(pre_ur) = 0.0;                // Previous ur
-    M(ar) = 0.0;                    // Local var
+    M(as) = 1.0;                    // In var from Supervisor
+    M(s) = fmi3ClockInactive;       // Clock from Supervisor
 }
 
 void calculateValues(ModelInstance *comp) {
@@ -21,7 +22,7 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
             return OK;
         case vr_ur:
             if (M(r) == fmi3ClockActive) {
-                value[(*index)++] = M(ur) + 1.0;
+                value[(*index)++] = M(ur) + M(as);
             }
             else {
                 value[(*index)++] = M(ur);
@@ -30,8 +31,8 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
         case vr_pre_ur:
             value[(*index)++] = M(pre_ur);
             return OK;
-        case vr_ar:
-            value[(*index)++] = M(ar);
+        case vr_as:
+            value[(*index)++] = M(as);
             return OK;
         default:
             logError(comp, "Unexpected value reference: %d.", vr);
@@ -44,6 +45,9 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
         case vr_xr:
             M(xr) = value[(*index)++];
             return OK;
+        case vr_as:
+            M(as) = value[(*index)++];
+            return OK;
         default:
             logError(comp, "Unexpected value reference: %d.", vr);
             return Error;
@@ -54,6 +58,9 @@ Status activateClock(ModelInstance* comp, ValueReference vr) {
     switch (vr) {
         case vr_r:
             M(r) = fmi3ClockActive;
+            return OK;
+        case vr_s:
+            M(s) = fmi3ClockActive;
             return OK;
         default:
             logError(comp, "Unexpected value reference: %d.", vr);
@@ -79,10 +86,10 @@ void eventUpdate(ModelInstance *comp) {
     
     // State transition
     M(pre_ur) = M(ur);
-    M(ur) = M(ur) + 1;
+    M(ur) = M(ur) + M(as);
 
-    // Deactivate clock
+    // Deactivate clocks
     M(r) = fmi3ClockInactive;
-
+    M(s) = fmi3ClockInactive;
 
 }
