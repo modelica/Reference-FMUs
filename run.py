@@ -1,7 +1,8 @@
 """ Simulate the FMUs, generate the reference results and plots and convert the readme.md files to HTML """
+import shutil
+from subprocess import check_call
 
-from fmpy import simulate_fmu
-from fmpy.util import plot_result, write_csv, read_csv
+from fmpy.util import plot_result, read_csv
 import os
 import markdown2
 
@@ -60,26 +61,30 @@ footer = """
 </html>
 """
 
-dist_dir = os.path.dirname(__file__)
-dist_dir = os.path.join(dist_dir, 'build', 'dist')
+root_dir = os.path.dirname(__file__)
+dist_dir = os.path.join(root_dir, 'build', 'dist')
+temp_dir = os.path.join(root_dir, 'build', 'temp')
 
 src_dir = os.path.dirname(__file__)
 
 info = [
-    ('BouncingBall', {}, 0.01),
-    ('Dahlquist',    {}, 0.2),
-    ('Feedthrough',  {'real_fixed_param': 1}, 0.2),
-    ('Resource',     {}, 0.2),
-    ('Stair',        {}, 10),
-    ('VanDerPol',    {}, 0.1),
+    ('BouncingBall',    {}, 0.01),
+    ('Dahlquist',       {}, 0.2),
+    ('LinearTransform', {}, 1),
+    ('Feedthrough',     {'real_fixed_param': 1}, 0.2),
+    ('Resource',        {}, 0.2),
+    ('Stair',           {}, 10),
+    ('VanDerPol',       {}, 0.1),
 ]
 
 for model_name, start_values, output_interval in info:
+
     print(model_name)
+
     fmu = os.path.join(dist_dir, model_name + '.fmu')
 
     ref_csv = os.path.join(src_dir, model_name, model_name + '_ref.csv')
-    ref_png = os.path.join(src_dir, model_name, model_name + '_ref.svg')
+    ref_svg = os.path.join(src_dir, model_name, model_name + '_ref.svg')
     in_csv  = os.path.join(src_dir, model_name, model_name + '_in.csv')
 
     if os.path.isfile(in_csv):
@@ -87,17 +92,15 @@ for model_name, start_values, output_interval in info:
     else:
         input = None
 
-    result = simulate_fmu(fmu,
-                          fmi_type='ModelExchange',
-                          # solver='Euler',
-                          start_values=start_values,
-                          input=input,
-                          output_interval=output_interval
-                          )
+    exe = os.path.join(temp_dir, model_name + '_me.exe')
+    out_csv = os.path.join(temp_dir, model_name + '_me_out.csv')
 
-    write_csv(ref_csv, result)
+    check_call([exe], cwd=temp_dir)
+
+    shutil.copyfile(src=out_csv, dst=ref_csv)
+
     ref = read_csv(ref_csv)
-    plot_result(ref, events=True, filename=ref_png)
+    plot_result(ref, events=True, filename=ref_svg)
 
     md_file = os.path.join(src_dir, model_name, 'readme.md')
     html_file = os.path.join(src_dir, model_name, 'readme.html')

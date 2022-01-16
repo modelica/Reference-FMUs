@@ -19,7 +19,77 @@
 #include "fmi2Functions.h"
 #include "model.h"
 
-#define FMI_STATUS fmi2Status
+#define ASSERT_NOT_NULL(p) \
+do { \
+    if (!p) { \
+        logError(S, "Argument %s must not be NULL.", xstr(p)); \
+        S->state = modelError; \
+        return (fmi2Status)Error; \
+    } \
+} while (0)
+
+#define GET_VARIABLES(T) \
+do { \
+    ASSERT_NOT_NULL(vr); \
+    ASSERT_NOT_NULL(value); \
+    size_t index = 0; \
+    Status status = OK; \
+    if (nvr == 0) return (fmi2Status)status; \
+    if (S->isDirtyValues) { \
+        Status s = calculateValues(S); \
+        status = max(status, s); \
+        if (status > Warning) return (fmi2Status)status; \
+        S->isDirtyValues = false; \
+    } \
+    for (size_t i = 0; i < nvr; i++) { \
+        Status s = get ## T(S, vr[i], value, &index); \
+        status = max(status, s); \
+        if (status > Warning) return (fmi2Status)status; \
+    } \
+    return (fmi2Status)status; \
+} while (0)
+
+#define SET_VARIABLES(T) \
+do { \
+    ASSERT_NOT_NULL(vr); \
+    ASSERT_NOT_NULL(value); \
+    size_t index = 0; \
+    Status status = OK; \
+    for (size_t i = 0; i < nvr; i++) { \
+        Status s = set ## T(S, vr[i], value, &index); \
+        status = max(status, s); \
+        if (status > Warning) return (fmi2Status)status; \
+    } \
+    if (nvr > 0) S->isDirtyValues = true; \
+    return (fmi2Status)status; \
+} while (0)
+
+#define GET_BOOLEAN_VARIABLES \
+do { \
+    Status status = OK; \
+    for (size_t i = 0; i < nvr; i++) { \
+        bool v = false; \
+        size_t index = 0; \
+        Status s = getBoolean(S, vr[i], &v, &index); \
+        value[i] = v; \
+        status = max(status, s); \
+        if (status > Warning) return (fmi2Status)status; \
+    } \
+    return (fmi2Status)status; \
+} while (0)
+
+#define SET_BOOLEAN_VARIABLES \
+do { \
+    Status status = OK; \
+    for (size_t i = 0; i < nvr; i++) { \
+        bool v = value[i]; \
+        size_t index = 0; \
+        Status s = setBoolean(S, vr[i], &v, &index); \
+        status = max(status, s); \
+        if (status > Warning) return (fmi2Status)status; \
+    } \
+    return (fmi2Status)status; \
+} while (0)
 
 #ifndef max
 #define max(a,b) ((a)>(b) ? (a) : (b))
@@ -116,7 +186,9 @@
 // shorthand to access the  instance
 #define S ((ModelInstance *)c)
 
-#define ASSERT_STATE(S) if(!allowedState(c, MASK_fmi2##S, #S)) return fmi2Error;
+#define ASSERT_STATE(S) \
+    if (!allowedState(c, MASK_fmi2##S, #S)) \
+        return fmi2Error;
 
 static bool allowedState(ModelInstance *instance, int statesExpected, char *name) {
 
@@ -141,7 +213,11 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
                             fmi2String fmuResourceLocation, const fmi2CallbackFunctions *functions,
                             fmi2Boolean visible, fmi2Boolean loggingOn) {
 
-    UNUSED(visible)
+    UNUSED(visible);
+
+    if (!functions || !functions->logger) {
+        return NULL;
+    }
 
     return createModelInstance(
         (loggerType)functions->logger,
@@ -151,18 +227,16 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
         fmuGUID,
         fmuResourceLocation,
         loggingOn,
-        (InterfaceType)fmuType,
-        false
-    );
+        (InterfaceType)fmuType);
 }
 
 fmi2Status fmi2SetupExperiment(fmi2Component c, fmi2Boolean toleranceDefined, fmi2Real tolerance,
                             fmi2Real startTime, fmi2Boolean stopTimeDefined, fmi2Real stopTime) {
 
-    UNUSED(toleranceDefined)
-    UNUSED(tolerance)
-    UNUSED(stopTimeDefined)
-    UNUSED(stopTime)
+    UNUSED(toleranceDefined);
+    UNUSED(tolerance);
+    UNUSED(stopTimeDefined);
+    UNUSED(stopTime);
 
     ASSERT_STATE(SetupExperiment)
 
@@ -182,23 +256,24 @@ fmi2Status fmi2EnterInitializationMode(fmi2Component c) {
 
 fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
 
-    ASSERT_STATE(ExitInitializationMode)
+    ASSERT_STATE(ExitInitializationMode);
+
+    fmi2Status status = fmi2OK;
 
     // if values were set and no fmi2GetXXX triggered update before,
     // ensure calculated values are updated now
     if (S->isDirtyValues) {
-        calculateValues(S);
+        status = (fmi2Status)calculateValues(S);
         S->isDirtyValues = false;
     }
 
     if (S->type == ModelExchange) {
         S->state = EventMode;
-        S->isNewEventIteration = false;
     } else {
         S->state = StepComplete;
     }
 
-    return fmi2OK;
+    return status;
 }
 
 fmi2Status fmi2Terminate(fmi2Component c) {
@@ -269,9 +344,7 @@ fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
         S->isDirtyValues = false;
     }
 
-    ModelInstance *instance = (ModelInstance *)c;
-
-    GET_VARIABLES(Float64)
+    GET_VARIABLES(Float64);
 }
 
 fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Integer value[]) {
@@ -289,9 +362,7 @@ fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
         S->isDirtyValues = false;
     }
 
-    ModelInstance *instance = (ModelInstance *)c;
-
-    GET_VARIABLES(Int32)
+    GET_VARIABLES(Int32);
 }
 
 fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
@@ -309,9 +380,7 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
         S->isDirtyValues = false;
     }
 
-    ModelInstance *instance = (ModelInstance *)c;
-
-    GET_BOOLEAN_VARIABLES
+    GET_BOOLEAN_VARIABLES;
 }
 
 fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
@@ -329,9 +398,7 @@ fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t
         S->isDirtyValues = false;
     }
 
-    ModelInstance *instance = (ModelInstance *)c;
-
-    GET_VARIABLES(String)
+    GET_VARIABLES(String);
 }
 
 fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
@@ -347,9 +414,7 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
     if (nvr > 0 && nullPointer(S, "fmi2SetReal", "value[]", value))
         return fmi2Error;
 
-    ModelInstance *instance = (ModelInstance *)c;
-
-    SET_VARIABLES(Float64)
+    SET_VARIABLES(Float64);
 }
 
 fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Integer value[]) {
@@ -362,9 +427,7 @@ fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
     if (nvr > 0 && nullPointer(S, "fmi2SetInteger", "value[]", value))
         return fmi2Error;
 
-    ModelInstance *instance = (ModelInstance *)c;
-
-    SET_VARIABLES(Int32)
+    SET_VARIABLES(Int32);
 }
 
 fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
@@ -377,14 +440,12 @@ fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
     if (nvr>0 && nullPointer(S, "fmi2SetBoolean", "value[]", value))
         return fmi2Error;
 
-    ModelInstance *instance = (ModelInstance *)c;
-
-    SET_BOOLEAN_VARIABLES
+    SET_BOOLEAN_VARIABLES;
 }
 
 fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
 
-    ASSERT_STATE(SetString)
+    ASSERT_STATE(SetString);
 
     if (nvr>0 && nullPointer(S, "fmi2SetString", "vr[]", vr))
         return fmi2Error;
@@ -392,14 +453,12 @@ fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t
     if (nvr>0 && nullPointer(S, "fmi2SetString", "value[]", value))
         return fmi2Error;
 
-    ModelInstance *instance = (ModelInstance *)c;
-
-    SET_VARIABLES(String)
+    SET_VARIABLES(String);
 }
 
 fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {
 
-    ASSERT_STATE(GetFMUstate)
+    ASSERT_STATE(GetFMUstate);
 
     ModelData *modelData = (ModelData *)calloc(1, sizeof(ModelData));
     memcpy(modelData, S->modelData, sizeof(ModelData));
@@ -409,7 +468,7 @@ fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {
 
 fmi2Status fmi2SetFMUstate (fmi2Component c, fmi2FMUstate FMUstate) {
 
-    ASSERT_STATE(SetFMUstate)
+    ASSERT_STATE(SetFMUstate);
 
     ModelData *modelData = FMUstate;
     memcpy(S->modelData, modelData, sizeof(ModelData));
@@ -429,8 +488,8 @@ fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate* FMUstate) {
 
 fmi2Status fmi2SerializedFMUstateSize(fmi2Component c, fmi2FMUstate FMUstate, size_t *size) {
 
-    UNUSED(c)
-    UNUSED(FMUstate)
+    UNUSED(c);
+    UNUSED(FMUstate);
 
     ASSERT_STATE(SerializedFMUstateSize)
 
@@ -473,18 +532,17 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReferenc
                                         const fmi2ValueReference vKnown_ref[] , size_t nKnown,
                                         const fmi2Real dvKnown[], fmi2Real dvUnknown[]) {
 
-    ASSERT_STATE(GetDirectionalDerivative)
+    ASSERT_STATE(GetDirectionalDerivative);
 
     // TODO: check value references
     // TODO: assert nUnknowns == nDeltaOfUnknowns
     // TODO: assert nKnowns == nDeltaKnowns
 
-
     Status status = OK;
 
-    for (int i = 0; i < nUnknown; i++) {
+    for (size_t i = 0; i < nUnknown; i++) {
         dvUnknown[i] = 0;
-        for (int j = 0; j < nKnown; j++) {
+        for (size_t j = 0; j < nKnown; j++) {
             double partialDerivative = 0;
             Status s = getPartialDerivative(S, vUnknown_ref[i], vKnown_ref[j], &partialDerivative);
             status = max(status, s);
@@ -505,12 +563,12 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReferenc
 fmi2Status fmi2SetRealInputDerivatives(fmi2Component c, const fmi2ValueReference vr[], size_t nvr,
                                      const fmi2Integer order[], const fmi2Real value[]) {
 
-    UNUSED(vr)
-    UNUSED(nvr)
-    UNUSED(order)
-    UNUSED(value)
+    UNUSED(vr);
+    UNUSED(nvr);
+    UNUSED(order);
+    UNUSED(value);
 
-    ASSERT_STATE(SetRealInputDerivatives)
+    ASSERT_STATE(SetRealInputDerivatives);
 
     logError(S, "fmi2SetRealInputDerivatives: ignoring function call."
             " This model cannot interpolate inputs: canInterpolateInputs=\"fmi2False\"");
@@ -521,22 +579,36 @@ fmi2Status fmi2SetRealInputDerivatives(fmi2Component c, const fmi2ValueReference
 fmi2Status fmi2GetRealOutputDerivatives(fmi2Component c, const fmi2ValueReference vr[], size_t nvr,
                                       const fmi2Integer order[], fmi2Real value[]) {
 
-    UNUSED(vr)
-    UNUSED(nvr)
-    UNUSED(order)
-    UNUSED(value)
+    ASSERT_STATE(GetRealOutputDerivatives);
 
-    ASSERT_STATE(GetRealOutputDerivatives)
+#ifdef GET_OUTPUT_DERIVATIVE
+    Status status = OK;
+
+    for (size_t i = 0; i < nvr; i++) {
+        const Status s = getOutputDerivative(S, vr[i], order[i], &value[i]);
+        status = max(status, s);
+        if (status > Warning) {
+            return (fmi2Status)status;
+        }
+    }
+
+    return (fmi2Status)status;
+#else
+    UNUSED(vr);
+    UNUSED(nvr);
+    UNUSED(order);
+    UNUSED(value);
 
     logError(S, "fmi2GetRealOutputDerivatives: ignoring function call."
         " This model cannot compute derivatives of outputs: MaxOutputDerivativeOrder=\"0\"");
 
     return fmi2Error;
+#endif
 }
 
 fmi2Status fmi2CancelStep(fmi2Component c) {
 
-    ASSERT_STATE(CancelStep)
+    ASSERT_STATE(CancelStep);
 
     logError(S, "fmi2CancelStep: Can be called when fmi2DoStep returned fmi2Pending."
         " This is not the case.");
@@ -547,9 +619,9 @@ fmi2Status fmi2CancelStep(fmi2Component c) {
 fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
                     fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
 
-    UNUSED(noSetFMUStatePriorToCurrentPoint)
+    UNUSED(noSetFMUStatePriorToCurrentPoint);
 
-    ASSERT_STATE(DoStep)
+    ASSERT_STATE(DoStep);
 
     if (communicationStepSize <= 0) {
         logError(S, "fmi2DoStep: communication step size must be > 0 but was %g.", communicationStepSize);
@@ -557,10 +629,20 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
         return fmi2Error;
     }
 
-    int earlyReturn;
-    double lastSuccessfulTime;
+    while (S->time + FIXED_SOLVER_STEP < currentCommunicationPoint + communicationStepSize + epsilon(S->time)) {
 
-    return (fmi2Status)doStep(S, currentCommunicationPoint, currentCommunicationPoint + communicationStepSize, &earlyReturn, &lastSuccessfulTime);
+        bool stateEvent, timeEvent;
+
+        doFixedStep(S, &stateEvent, &timeEvent);
+
+#ifdef EVENT_UPDATE
+        if (stateEvent || timeEvent) {
+            eventUpdate(S);
+        }
+#endif
+    }
+
+    return S->terminateSimulation ? fmi2Discard : fmi2OK;
 }
 
 /* Inquire slave status */
@@ -593,16 +675,16 @@ static fmi2Status getStatus(char* fname, fmi2Component c, const fmi2StatusKind s
 
 fmi2Status fmi2GetStatus(fmi2Component c, const fmi2StatusKind s, fmi2Status *value) {
 
-    UNUSED(value)
+    UNUSED(value);
 
-    ASSERT_STATE(GetStatus)
+    ASSERT_STATE(GetStatus);
 
     return getStatus("fmi2GetStatus", c, s);
 }
 
 fmi2Status fmi2GetRealStatus(fmi2Component c, const fmi2StatusKind s, fmi2Real *value) {
 
-    ASSERT_STATE(GetRealStatus)
+    ASSERT_STATE(GetRealStatus);
 
     if (s == fmi2LastSuccessfulTime) {
         *value = S->time;
@@ -614,16 +696,16 @@ fmi2Status fmi2GetRealStatus(fmi2Component c, const fmi2StatusKind s, fmi2Real *
 
 fmi2Status fmi2GetIntegerStatus(fmi2Component c, const fmi2StatusKind s, fmi2Integer *value) {
 
-    UNUSED(value)
+    UNUSED(value);
 
-    ASSERT_STATE(GetIntegerStatus)
+    ASSERT_STATE(GetIntegerStatus);
 
     return getStatus("fmi2GetIntegerStatus", c, s);
 }
 
 fmi2Status fmi2GetBooleanStatus(fmi2Component c, const fmi2StatusKind s, fmi2Boolean *value) {
 
-    ASSERT_STATE(GetBooleanStatus)
+    ASSERT_STATE(GetBooleanStatus);
 
     if (s == fmi2Terminated) {
         *value = S->terminateSimulation;
@@ -634,8 +716,8 @@ fmi2Status fmi2GetBooleanStatus(fmi2Component c, const fmi2StatusKind s, fmi2Boo
 }
 
 fmi2Status fmi2GetStringStatus(fmi2Component c, const fmi2StatusKind s, fmi2String *value) {
-    UNUSED(value)
-    ASSERT_STATE(GetStringStatus)
+    UNUSED(value);
+    ASSERT_STATE(GetStringStatus);
     return getStatus("fmi2GetStringStatus", c, s);
 }
 
@@ -645,34 +727,21 @@ fmi2Status fmi2GetStringStatus(fmi2Component c, const fmi2StatusKind s, fmi2Stri
 /* Enter and exit the different modes */
 fmi2Status fmi2EnterEventMode(fmi2Component c) {
 
-    ASSERT_STATE(EnterEventMode)
+    ASSERT_STATE(EnterEventMode);
 
     S->state = EventMode;
-    S->isNewEventIteration = fmi2True;
 
     return fmi2OK;
 }
 
 fmi2Status fmi2NewDiscreteStates(fmi2Component c, fmi2EventInfo *eventInfo) {
 
-    ASSERT_STATE(NewDiscreteStates)
+    ASSERT_STATE(NewDiscreteStates);
 
-    int timeEvent = 0;
-
-    S->newDiscreteStatesNeeded = fmi2False;
-    S->terminateSimulation = fmi2False;
-    S->nominalsOfContinuousStatesChanged = fmi2False;
-    S->valuesOfContinuousStatesChanged = fmi2False;
-
-    if (S->nextEventTimeDefined && S->nextEventTime <= S->time) {
-        timeEvent = 1;
-    }
-
+#ifdef EVENT_UPDATE
     eventUpdate(S);
+#endif
 
-    S->isNewEventIteration = false;
-
-    // copy internal eventInfo of component to output eventInfo
     eventInfo->newDiscreteStatesNeeded           = S->newDiscreteStatesNeeded;
     eventInfo->terminateSimulation               = S->terminateSimulation;
     eventInfo->nominalsOfContinuousStatesChanged = S->nominalsOfContinuousStatesChanged;
@@ -685,7 +754,7 @@ fmi2Status fmi2NewDiscreteStates(fmi2Component c, fmi2EventInfo *eventInfo) {
 
 fmi2Status fmi2EnterContinuousTimeMode(fmi2Component c) {
 
-    ASSERT_STATE(EnterContinuousTimeMode)
+    ASSERT_STATE(EnterContinuousTimeMode);
 
     S->state = ContinuousTimeMode;
 
@@ -697,9 +766,9 @@ fmi2Status fmi2CompletedIntegratorStep(fmi2Component c, fmi2Boolean noSetFMUStat
 
 
 
-    UNUSED(noSetFMUStatePriorToCurrentPoint)
+    UNUSED(noSetFMUStatePriorToCurrentPoint);
 
-    ASSERT_STATE(CompletedIntegratorStep)
+    ASSERT_STATE(CompletedIntegratorStep);
 
     if (nullPointer(S, "fmi2CompletedIntegratorStep", "enterEventMode", enterEventMode))
         return fmi2Error;
@@ -716,7 +785,7 @@ fmi2Status fmi2CompletedIntegratorStep(fmi2Component c, fmi2Boolean noSetFMUStat
 /* Providing independent variables and re-initialization of caching */
 fmi2Status fmi2SetTime(fmi2Component c, fmi2Real time) {
 
-    ASSERT_STATE(SetTime)
+    ASSERT_STATE(SetTime);
 
     S->time = time;
 
@@ -725,7 +794,7 @@ fmi2Status fmi2SetTime(fmi2Component c, fmi2Real time) {
 
 fmi2Status fmi2SetContinuousStates(fmi2Component c, const fmi2Real x[], size_t nx){
 
-    ASSERT_STATE(SetContinuousStates)
+    ASSERT_STATE(SetContinuousStates);
 
     if (invalidNumber(S, "fmi2SetContinuousStates", "nx", nx, NX))
         return fmi2Error;
@@ -741,7 +810,7 @@ fmi2Status fmi2SetContinuousStates(fmi2Component c, const fmi2Real x[], size_t n
 /* Evaluation of the model equations */
 fmi2Status fmi2GetDerivatives(fmi2Component c, fmi2Real derivatives[], size_t nx) {
 
-    ASSERT_STATE(GetDerivatives)
+    ASSERT_STATE(GetDerivatives);
 
     if (invalidNumber(S, "fmi2GetDerivatives", "nx", nx, NX))
         return fmi2Error;
@@ -756,7 +825,7 @@ fmi2Status fmi2GetDerivatives(fmi2Component c, fmi2Real derivatives[], size_t nx
 
 fmi2Status fmi2GetEventIndicators(fmi2Component c, fmi2Real eventIndicators[], size_t ni) {
 
-    ASSERT_STATE(GetEventIndicators)
+    ASSERT_STATE(GetEventIndicators);
 
 #if NZ > 0
 
@@ -765,8 +834,8 @@ fmi2Status fmi2GetEventIndicators(fmi2Component c, fmi2Real eventIndicators[], s
 
     getEventIndicators(S, eventIndicators, ni);
 #else
-    UNUSED(c)
-    UNUSED(eventIndicators)
+    UNUSED(c);
+    UNUSED(eventIndicators);
     if (ni > 0) return fmi2Error;
 #endif
     return fmi2OK;
@@ -774,7 +843,7 @@ fmi2Status fmi2GetEventIndicators(fmi2Component c, fmi2Real eventIndicators[], s
 
 fmi2Status fmi2GetContinuousStates(fmi2Component c, fmi2Real states[], size_t nx) {
 
-    ASSERT_STATE(GetContinuousStates)
+    ASSERT_STATE(GetContinuousStates);
 
     if (invalidNumber(S, "fmi2GetContinuousStates", "nx", nx, NX))
         return fmi2Error;
@@ -789,7 +858,7 @@ fmi2Status fmi2GetContinuousStates(fmi2Component c, fmi2Real states[], size_t nx
 
 fmi2Status fmi2GetNominalsOfContinuousStates(fmi2Component c, fmi2Real x_nominal[], size_t nx) {
 
-    ASSERT_STATE(GetNominalsOfContinuousStates)
+    ASSERT_STATE(GetNominalsOfContinuousStates);
 
     if (invalidNumber(S, "fmi2GetNominalContinuousStates", "nx", nx, NX))
         return fmi2Error;
@@ -797,7 +866,7 @@ fmi2Status fmi2GetNominalsOfContinuousStates(fmi2Component c, fmi2Real x_nominal
     if (nullPointer(S, "fmi2GetNominalContinuousStates", "x_nominal[]", x_nominal))
         return fmi2Error;
 
-    for (int i = 0; i < nx; i++)
+    for (size_t i = 0; i < nx; i++)
         x_nominal[i] = 1;
 
     return fmi2OK;

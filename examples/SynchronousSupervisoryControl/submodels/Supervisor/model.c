@@ -3,13 +3,14 @@
 #include "model.h"
 
 void setStartValues(ModelInstance *comp) {
-    M(s) = fmi3ClockInactive;       // Clock
+    M(s) = false;       // Clock
     M(x) = 0.0;                    // Sample
     M(as) = 1.0;                    // Discrete state/output
 }
 
-void calculateValues(ModelInstance *comp) {
-    UNUSED(comp)
+Status calculateValues(ModelInstance *comp) {
+    UNUSED(comp);
+    return OK;
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
@@ -43,10 +44,10 @@ Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
     switch (vr) {
         case vr_s:
             if (comp->state == EventMode && comp->isBecauseOfStateEvent) {
-                (*value) = fmi3ClockActive;
+                (*value) = true;
             }
             else {
-                (*value) = fmi3ClockInactive;
+                (*value) = true;
             }
             return OK;
         default:

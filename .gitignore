@@ -9,6 +9,7 @@ fmi1_me/
 fmi2/
 fmi3/
 fmus/
+merged/
 *.fmu
 *.zip
 *_out.csv

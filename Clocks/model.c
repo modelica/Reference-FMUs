@@ -26,7 +26,9 @@ ModelPartition 1 does the following:
 **************************************/
 static void activateModelPartition1(ModelInstance* comp, double time) {
 
-    comp->lockPreemtion();
+    if (comp->lockPreemtion) {
+        comp->lockPreemtion();
+    }
 
     // increment the counters
     M(inClock1Ticks)++;
@@ -37,25 +39,15 @@ static void activateModelPartition1(ModelInstance* comp, double time) {
         M(inClock3_qualifier)= 2; // fmi3IntervalChanged
         M(inClock3_interval) = 0.0;
     }
+
     M(outClock) = ((M(outClock) == false) && (M(totalInClockTicks) % 5 == 0));
 
-    comp->unlockPreemtion();
-
-    bool earlyReturnRequested;
-    double earlyReturnTime;
+    if (comp->unlockPreemtion) {
+        comp->unlockPreemtion();
+    }
 
     if (M(inClock3_qualifier) == 2 || M(outClock)) {
-        comp->intermediateUpdate(
-            comp->componentEnvironment, // fmu instance
-            time,                       // intermediateUpdateTime
-            true,                       // clocksTicked
-            false,                      // intermediateVariableSetAllowed
-            false,                      // intermediateVariableGetAllowed
-            true,                       // intermediateStepFinished
-            false,                      // canReturnEarly
-            &earlyReturnRequested,
-            &earlyReturnTime
-        );
+        comp->clockUpdate(comp->componentEnvironment);
     }
 }
 
@@ -67,7 +59,11 @@ ModelPartition 2 does the following:
 **************************************/
 static void activateModelPartition2(ModelInstance* comp, double time) {
 
-    comp->lockPreemtion();
+    UNUSED(time);
+
+    if (comp->lockPreemtion) {
+        comp->lockPreemtion();
+    }
 
     // increment the counters
     M(inClock2Ticks)++;
@@ -78,23 +74,13 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
 
     // set output clocks
     M(outClock) = ((M(outClock) == false) && (M(totalInClockTicks) % 5 == 0));
-    comp->unlockPreemtion();
 
-    bool earlyReturnRequested;
-    double earlyReturnTime;
+    if (comp->unlockPreemtion) {
+        comp->unlockPreemtion();
+    }
 
     if (M(outClock)) {
-        comp->intermediateUpdate(
-            comp->componentEnvironment, // fmu instance
-            time,                       // intermediateUpdateTime
-            true,                       // clocksTicked
-            false,                      // intermediateVariableSetAllowed
-            false,                      // intermediateVariableGetAllowed
-            true,                       // intermediateStepFinished
-            false,                      // canReturnEarly
-            &earlyReturnRequested,
-            &earlyReturnTime
-        );
+        comp->clockUpdate(comp->componentEnvironment);
     }
 }
 
@@ -107,11 +93,16 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
  **************************************/
  static void activateModelPartition3(ModelInstance *comp, double time) {
 
-    comp->lockPreemtion();
+    if (comp->lockPreemtion) {
+        comp->lockPreemtion();
+    }
 
     // increment the counters
     M(inClock3Ticks)++;
-    comp->unlockPreemtion();
+
+    if (comp->unlockPreemtion) {
+        comp->unlockPreemtion();
+    }
 
     // This partition is supposed to consume a bit of time on a low prio ...
     unsigned long sum = 0;
@@ -133,7 +124,6 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
             comp->intermediateUpdate(
                 comp,   // fmu instance
                 time,   // intermediateUpdateTime
-                true,   // clocksTicked
                 false,  // intermediateVariableSetAllowed
                 false,  // intermediateVariableGetAllowed
                 true,   // intermediateStepFinished
@@ -158,15 +148,22 @@ void setStartValues(ModelInstance *comp) {
     M(output3)           = 0;
 }
 
-void calculateValues(ModelInstance *comp) {
-    // nothing to do
+Status calculateValues(ModelInstance *comp) {
+
+    UNUSED(comp);
+
+    return OK;
 }
 
 void eventUpdate(ModelInstance *comp) {
-    // nothing to do
+    UNUSED(comp);
 }
 
 Status activateClock(ModelInstance* comp, ValueReference vr) {
+
+    UNUSED(comp);
+    UNUSED(vr);
+
     return OK;
 }
 

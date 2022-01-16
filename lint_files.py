@@ -2,6 +2,9 @@ import os
 import sys
 
 
+autofix = False
+
+
 def lint_file(filename):
 
     messages = []
@@ -27,6 +30,24 @@ def lint_file(filename):
                 messages.append(("Carriage return character found", i))
 
     return messages
+
+
+def fix_file(filename):
+
+    lines = []
+
+    with open(filename, 'r', encoding='utf-8') as file:
+
+        for line in file:
+            line = line.rstrip() + '\n'
+            line = line.replace('\t', '    ')
+            lines.append(line)
+
+    if lines[-1] != '':
+        lines.append('')
+
+    with open(filename, 'w') as file:
+        file.writelines(lines)
 
 
 total_problems = 0
@@ -55,6 +76,10 @@ for root, dirs, files in os.walk(top, topdown=True):
         print(filename)
 
         messages = lint_file(filename)
+
+        if messages and autofix:
+            fix_file(filename)
+            messages = lint_file(filename)
 
         if messages:
 

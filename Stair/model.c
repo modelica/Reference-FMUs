@@ -13,9 +13,10 @@ void setStartValues(ModelInstance *comp) {
     comp->nextEventTimeDefined = true;
 }
 
-void calculateValues(ModelInstance *comp) {
-    // do nothing
-    UNUSED(comp)
+Status calculateValues(ModelInstance *comp) {
+    UNUSED(comp);
+    // nothing to do
+    return OK;
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
@@ -51,6 +52,6 @@ void eventUpdate(ModelInstance *comp) {
 
     comp->valuesOfContinuousStatesChanged   = false;
     comp->nominalsOfContinuousStatesChanged = false;
-    comp->terminateSimulation               = false;
+    comp->terminateSimulation               = M(counter) >= 10;
     comp->nextEventTimeDefined              = true;
 }

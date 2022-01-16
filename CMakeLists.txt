@@ -7,6 +7,9 @@ ENDFUNCTION()
 
 project (Reference-FMUs)
 
+find_package (Python3)
+find_package (Git)
+
 set(FMI_VERSION 2 CACHE STRING "FMI Version")
 set_property(CACHE FMI_VERSION PROPERTY STRINGS 1 2 3)
 
@@ -21,6 +24,12 @@ if (MSVC)
   string(REPLACE "/MD"  "/MT"  CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
   string(REPLACE "/MDd" "/MTd" CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}")
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
+
+  # Minimum supported MSVC version is 1800 = Visual Studio 12.0/2013
+  # See also https://cmake.org/cmake/help/latest/variable/MSVC_VERSION.html
+  if (MSVC_VERSION VERSION_LESS 1800)
+    message (SEND_ERROR "MSVC_VERSION ${MSVC_VERSION} is not a supported Visual Studio compiler version. Please use Visual Studio 2013 or any later version.")
+  endif ()
 endif ()
 
 add_compile_definitions(FMI_VERSION=${FMI_VERSION})
@@ -66,7 +75,7 @@ if (${FMI_VERSION} LESS 3)
 
 #include \"fmi${FMI_VERSION}Functions.c\"
 #include \"model.c\"
-#include \"model_common.c\"
+#include \"cosimulation.c\"
 ")
 endif ()
 
@@ -85,8 +94,9 @@ foreach (MODEL_NAME ${MODEL_NAMES})
 set(TARGET_NAME ${MODEL_NAME})
 
 SET(HEADERS
-  ${MODEL_NAME}/config.h
-  include/model.h
+    ${MODEL_NAME}/config.h
+    include/cosimulation.h
+    include/model.h
   include/namespace.h
 )
 
@@ -109,7 +119,7 @@ endif()
 SET(SOURCES
   ${MODEL_NAME}/model.c
   src/fmi${FMI_VERSION}Functions.c
-  src/model_common.c
+  src/cosimulation.c
 )
 
 add_library(${TARGET_NAME} SHARED
@@ -121,6 +131,12 @@ add_library(${TARGET_NAME} SHARED
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist)
 
 target_compile_definitions(${TARGET_NAME} PRIVATE DISABLE_PREFIX)
+
+if(MSVC)
+  target_compile_options(${TARGET_NAME} PRIVATE /W4 /WX)
+else()
+  target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
 
 if (${FMI_VERSION} EQUAL 1 AND "${FMI_TYPE}" STREQUAL CS)
   target_compile_definitions(${TARGET_NAME} PRIVATE FMI_COSIMULATION)
@@ -156,6 +172,12 @@ add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E 
   "${FMU_BUILD_DIR}/modelDescription.xml"
 )
 
+if (${Python3_Interpreter_FOUND} AND ${Git_FOUND})
+  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/set_tool_version.py"
+    "${FMU_BUILD_DIR}/modelDescription.xml" "${GIT_EXECUTABLE}"
+  )
+endif()
+
 # model specific header and source
 foreach (SOURCE_FILE config.h model.c)
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
@@ -183,6 +205,12 @@ add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E 
   "${FMU_BUILD_DIR}/documentation/${MODEL_NAME}_ref.svg"
 )
 
+# reference csv
+add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+  "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/${MODEL_NAME}_ref.csv"
+  "${FMU_BUILD_DIR}/documentation/${MODEL_NAME}_ref.csv"
+)
+
 # license
 add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
   "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt"
@@ -198,7 +226,7 @@ foreach (SOURCE_FILE model.h namespace.h)
 endforeach(SOURCE_FILE)
 
 # common sources
-foreach (SOURCE_FILE fmi${FMI_VERSION}Functions.c model_common.c)
+foreach (SOURCE_FILE fmi${FMI_VERSION}Functions.c cosimulation.c)
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/src/${SOURCE_FILE}"
     "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"
@@ -235,10 +263,12 @@ add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
   WORKING_DIRECTORY ${FMU_BUILD_DIR}
 )
 
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dist/${MODEL_NAME}.fmu DESTINATION .)
+
 endforeach(MODEL_NAME)
 
 
 # Examples
-if (${FMI_VERSION} EQUAL 3)
+if (${FMI_VERSION} EQUAL 2 OR ${FMI_VERSION} EQUAL 3)
   include(examples/Examples.cmake)
 endif()

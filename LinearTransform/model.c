@@ -24,15 +24,17 @@ void setStartValues(ModelInstance *comp) {
 
 }
 
-void calculateValues(ModelInstance *comp) {
+Status calculateValues(ModelInstance *comp) {
 
     // y = A * u
-    for (int i = 0; i < M(m); i++) {
+    for (size_t i = 0; i < M(m); i++) {
         M(y)[i] = 0;
-        for (int j = 0; j < M(n); j++) {
+        for (size_t j = 0; j < M(n); j++) {
             M(y)[i] += M(A)[i][j] * M(u)[j];
         }
     }
+
+    return OK;
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
@@ -44,18 +46,18 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
             value[(*index)++] = comp->time;
             return OK;
         case vr_u:
-            for (int i = 0; i < M(n); i++) {
+            for (size_t i = 0; i < M(n); i++) {
                 value[(*index)++] = M(u)[i];
             }
             return OK;
         case vr_A:
-            for (int i = 0; i < M(m); i++) {
-            for (int j = 0; j < M(n); j++) {
+            for (size_t i = 0; i < M(m); i++)
+            for (size_t j = 0; j < M(n); j++) {
                 value[(*index)++] = M(A)[i][j];
-            }}
+            }
             return OK;
         case vr_y:
-            for (int i = 0; i < M(m); i++) {
+            for (size_t i = 0; i < M(m); i++) {
                 value[(*index)++] = M(y)[i];
             }
             return OK;
@@ -68,16 +70,16 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
     switch (vr) {
         case vr_u:
-            for (int i = 0; i < M(n); i++) {
+            for (size_t i = 0; i < M(n); i++) {
                 M(u)[i] = value[(*index)++];
             }
             calculateValues(comp);
             return OK;
         case vr_A:
-            for (int i = 0; i < M(m); i++) {
-            for (int j = 0; j < M(n); j++) {
+            for (size_t i = 0; i < M(m); i++)
+            for (size_t j = 0; j < M(n); j++) {
                 M(A)[i][j] = value[(*index)++];
-            }}
+            }
             return OK;
         default:
             logError(comp, "Set Float64 is not allowed for value reference %u.", vr);
@@ -85,7 +87,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
     }
 }
 
-Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
+Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t *value, size_t *index) {
     calculateValues(comp);
     switch (vr) {
         case vr_m:
@@ -95,18 +97,18 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *inde
             value[(*index)++] = M(n);
             return OK;
         default:
-            logError(comp, "Get Int32 is not allowed for value reference %u.", vr);
+            logError(comp, "Get UInt64 is not allowed for value reference %u.", vr);
             return Error;
     }
 }
 
-Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t *index) {
+Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t *value, size_t *index) {
 
     if (comp->state != ConfigurationMode && comp->state != ReconfigurationMode) {
         return Error;
     }
 
-    int v = value[(*index)++];
+    const uint64_t v = value[(*index)++];
 
     switch (vr) {
         case vr_m:
@@ -118,7 +120,7 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t
             M(n) = v;
             return OK;
         default:
-            logError(comp, "Set Int32 is not allowed for value reference %u.", vr);
+            logError(comp, "Set UInt64 is not allowed for value reference %u.", vr);
             return Error;
     }
 }

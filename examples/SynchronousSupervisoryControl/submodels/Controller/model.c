@@ -3,16 +3,17 @@
 #include "model.h"
 
 void setStartValues(ModelInstance *comp) {
-    M(r) = fmi3ClockInactive;       // Clock
+    M(r) = false;       // Clock
     M(xr) = 0.0;                    // Sample
     M(ur) = 0.0;                    // Discrete state/output
     M(pre_ur) = 0.0;                // Previous ur
     M(as) = 1.0;                    // In var from Supervisor
-    M(s) = fmi3ClockInactive;       // Clock from Supervisor
+    M(s) = false;       // Clock from Supervisor
 }
 
-void calculateValues(ModelInstance *comp) {
-    UNUSED(comp)
+Status calculateValues(ModelInstance *comp) {
+    UNUSED(comp);
+    return OK;
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
@@ -21,7 +22,7 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
             value[(*index)++] = M(xr);
             return OK;
         case vr_ur:
-            if (M(r) == fmi3ClockActive) {
+            if (M(r) == true) {
                 value[(*index)++] = M(ur) + M(as);
             }
             else {
@@ -41,6 +42,7 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
 }
 
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
+    logEvent(comp, "Supervisor called with value reference: %d.", vr);
     switch (vr) {
         case vr_xr:
             M(xr) = value[(*index)++];
@@ -57,10 +59,10 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
 Status activateClock(ModelInstance* comp, ValueReference vr) {
     switch (vr) {
         case vr_r:
-            M(r) = fmi3ClockActive;
+            M(r) = true;
             return OK;
         case vr_s:
-            M(s) = fmi3ClockActive;
+            M(s) = true;
             return OK;
         default:
             logError(comp, "Unexpected value reference: %d.", vr);
@@ -85,11 +87,12 @@ void eventUpdate(ModelInstance *comp) {
     comp->nextEventTimeDefined = false;
     
     // State transition
+    logError(comp, "Controller clock state transition.");
     M(pre_ur) = M(ur);
     M(ur) = M(ur) + M(as);
 
     // Deactivate clocks
-    M(r) = fmi3ClockInactive;
-    M(s) = fmi3ClockInactive;
+    M(r) = false;
+    M(s) = false;
 
 }
