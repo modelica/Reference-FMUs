@@ -400,7 +400,9 @@ int main(int argc, char *argv[])
 
                 // Put Controller into event mode, as clocks are about to tick
                 Controller_fmi3EnterEventMode(instances[CONTROLLER_ID], fmi3False, fmi3False, NULL, 0, fmi3True);
-                
+                // Put Plant into event mode, as its input is a discrete time variable
+                Plant_fmi3EnterEventMode(instances[PLANT_ID], fmi3False, fmi3False, NULL, 0, fmi3False);
+
                 // Handle time event in controller
                 handleTimeEventController(instances);
 
@@ -412,9 +414,11 @@ int main(int argc, char *argv[])
                 fmi3Boolean discreteStatesNeedUpdate = fmi3False;
                 fmi3Float64 nextEventTime = INFINITY;
                 Controller_fmi3UpdateDiscreteStates(instances[CONTROLLER_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
+                Plant_fmi3UpdateDiscreteStates(instances[PLANT_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
 
                 // Exit event mode
                 Controller_fmi3EnterContinuousTimeMode(instances[CONTROLLER_ID]);
+                Plant_fmi3EnterContinuousTimeMode(instances[PLANT_ID]);
                 printf("Exiting event mode. \n");
             }
             else if (!timeEvent && stateEvent) {
@@ -424,7 +428,7 @@ int main(int argc, char *argv[])
                 Supervisor_fmi3EnterEventMode(instances[SUPERVISOR_ID], fmi3False, fmi3True, NULL, 0, fmi3False);
                 Controller_fmi3EnterEventMode(instances[CONTROLLER_ID], fmi3False, fmi3False, NULL, 0, fmi3False);
 
-                // TODO: Handle state event supervisor
+                // Handle state event supervisor
                 handleStateEventSupervisor(instances);
 
                 // Update discrete states of the controller and supervisor
@@ -455,6 +459,8 @@ int main(int argc, char *argv[])
                 // Put Supervisor and Controller into event mode, as clocks are about to tick. Note the flags used.
                 Supervisor_fmi3EnterEventMode(instances[SUPERVISOR_ID], fmi3False, fmi3True, NULL, 0, fmi3False);
                 Controller_fmi3EnterEventMode(instances[CONTROLLER_ID], fmi3False, fmi3False, NULL, 0, fmi3True);
+                // Put Plant into event mode, as its input is a discrete time variable
+                Plant_fmi3EnterEventMode(instances[PLANT_ID], fmi3False, fmi3False, NULL, 0, fmi3False);
 
                 handleStateEventSupervisor(instances);
                 handleTimeEventController(instances);
@@ -468,10 +474,12 @@ int main(int argc, char *argv[])
                 fmi3Float64 nextEventTime = INFINITY;
                 Supervisor_fmi3UpdateDiscreteStates(instances[SUPERVISOR_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
                 Controller_fmi3UpdateDiscreteStates(instances[CONTROLLER_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
-                
+                Plant_fmi3UpdateDiscreteStates(instances[PLANT_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
+
                 // Exit event mode
                 Supervisor_fmi3EnterContinuousTimeMode(instances[SUPERVISOR_ID]);
                 Controller_fmi3EnterContinuousTimeMode(instances[CONTROLLER_ID]);
+                Plant_fmi3EnterContinuousTimeMode(instances[PLANT_ID]);
                 printf("Exiting event mode. \n");
             }
         }
