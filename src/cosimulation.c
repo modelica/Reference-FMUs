@@ -37,21 +37,33 @@ ModelInstance *createModelInstance(
 
     if (!instanceName || strlen(instanceName) == 0) {
         if (cbLogger) {
+#if FMI_VERSION < 3
             cbLogger(componentEnvironment, "?", Error, "error", "Missing instance name.");
+#else
+            cbLogger(componentEnvironment, Error, "error", "Missing instance name.");
+#endif
         }
         return NULL;
     }
 
     if (!instantiationToken || strlen(instantiationToken) == 0) {
         if (cbLogger) {
+#if FMI_VERSION < 3
             cbLogger(componentEnvironment, instanceName, Error, "error", "Missing GUID.");
+#else
+            cbLogger(componentEnvironment, Error, "error", "Missing instantiationToken.");
+#endif
         }
         return NULL;
     }
 
     if (strcmp(instantiationToken, INSTANTIATION_TOKEN)) {
         if (cbLogger) {
+#if FMI_VERSION < 3
             cbLogger(componentEnvironment, instanceName, Error, "error", "Wrong GUID.");
+#else
+            cbLogger(componentEnvironment, Error, "error", "Wrong instantiationToken.");
+#endif
         }
         return NULL;
     }
@@ -205,7 +217,11 @@ static void logMessage(ModelInstance *comp, int status, const char *category, co
     va_end(args1);
 
     // no need to distinguish between FMI versions since we're not using variadic arguments
+#if FMI_VERSION < 3
     comp->logger(comp->componentEnvironment, comp->instanceName, status, category, buf);
+#else
+    comp->logger(comp->componentEnvironment, status, category, buf);
+#endif
 
     free(buf);
 }
