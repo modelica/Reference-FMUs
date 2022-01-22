@@ -85,7 +85,7 @@ typedef enum {
 #if FMI_VERSION < 3
 typedef void (*loggerType) (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message, ...);
 #else
-typedef void (*loggerType) (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message);
+typedef void (*loggerType) (void *componentEnvironment, int status, const char *category, const char *message);
 #endif
 
 typedef void (*lockPreemptionType)   ();
