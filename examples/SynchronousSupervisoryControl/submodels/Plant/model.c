@@ -1,4 +1,4 @@
-#include <math.h>  // for fabs()
+#include <math.h>    // for fabs()
 #include "config.h"
 #include "model.h"
 
@@ -45,14 +45,17 @@ void eventUpdate(ModelInstance *comp) {
 }
 
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
+    UNUSED(nx);
     x[0] = M(x);
 }
 
 void setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
+    UNUSED(nx);
     M(x) = x[0];
 }
 
 void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
+    UNUSED(nx);
     calculateValues(comp);
     dx[0] = M(der_x);
 }

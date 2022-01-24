@@ -1,11 +1,11 @@
-#include <math.h>  // for fabs()
+#include <math.h>   // for fabs()
 #include "config.h"
 #include "model.h"
 
 void setStartValues(ModelInstance *comp) {
     M(s) = false;       // Clock
-    M(x) = 0.0;                    // Sample
-    M(as) = 1.0;                    // Discrete state/output
+    M(x) = 0.0;         // Sample
+    M(as) = 1.0;        // Discrete state/output
 }
 
 Status calculateValues(ModelInstance *comp) {

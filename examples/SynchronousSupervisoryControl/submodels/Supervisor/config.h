@@ -14,22 +14,23 @@
 #define NX 0
 #define NZ 1
 
-#define FIXED_SOLVER_STEP 1e-2
-#define EVENT_UPDATE
 #define SET_FLOAT64
 #define GET_FLOAT64
+#define EVENT_UPDATE
 #define GET_CLOCK
+
+#define FIXED_SOLVER_STEP 1e-2
 
 typedef enum {
     vr_s = 1,   // Clock s
-    vr_x,      // Sample from Plant
+    vr_x,       // Sample from Plant
     vr_as       // Output that is fed to the Controller
 } ValueReference;
 
 typedef struct {
     bool s;    // Clock
-    double x;      // Sample
-    double as;      // Output that is fed to the Controller
+    double x;  // Sample
+    double as; // Output that is fed to the Controller
 } ModelData;
 
 #endif /* config_h */
