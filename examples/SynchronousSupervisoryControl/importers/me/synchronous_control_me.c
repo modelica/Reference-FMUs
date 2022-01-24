@@ -121,7 +121,7 @@ FILE* initializeFile(char* fname) {
 
 
 
-fmi3Status instantiate_all(fmi3Instance instances[])
+fmi3Status instantiateAll(fmi3Instance instances[])
 {
     fmi3InstantiateModelExchangeTYPE* instantiate[N_INSTANCES] = {
         Plantmodel_fmi3InstantiateModelExchange,
@@ -149,7 +149,7 @@ fmi3Status instantiate_all(fmi3Instance instances[])
     return fmi3OK;
 }
 
-fmi3Status enterInitAll(fmi3Instance instances[])
+fmi3Status enterInitializationModeAll(fmi3Instance instances[])
 {
     fmi3EnterInitializationModeTYPE* enterInit[N_INSTANCES] = {
         Plantmodel_fmi3EnterInitializationMode,
@@ -179,7 +179,7 @@ fmi3Status enterInitAll(fmi3Instance instances[])
     return fmi3OK;
 }
 
-fmi3Status exitInitAll(fmi3Instance instances[])
+fmi3Status exitInitializationModeAll(fmi3Instance instances[])
 {
     fmi3ExitInitializationModeTYPE* exitInit[N_INSTANCES] = {
         Plantmodel_fmi3ExitInitializationMode,
@@ -208,7 +208,7 @@ fmi3Status exitInitAll(fmi3Instance instances[])
     return fmi3OK;
 }
 
-fmi3Status enter_CT_mode_all(fmi3Instance instances[])
+fmi3Status enterContinuousTimeModeAll(fmi3Instance instances[])
 {
     fmi3EnterConfigurationModeTYPE* enter_CT_mode[N_INSTANCES] = {
         Plantmodel_fmi3EnterContinuousTimeMode,
@@ -237,7 +237,7 @@ fmi3Status enter_CT_mode_all(fmi3Instance instances[])
     return fmi3OK;
 }
 
-fmi3Status terminate_all(fmi3Instance instances[])
+fmi3Status terminateAll(fmi3Instance instances[])
 {
     fmi3TerminateTYPE* terminate[N_INSTANCES] = {
         Plantmodel_fmi3Terminate,
@@ -260,7 +260,7 @@ fmi3Status terminate_all(fmi3Instance instances[])
     return status;
 }
 
-void clean_all(fmi3Instance instances[])
+void freeInstanceAll(fmi3Instance instances[])
 {
     fmi3FreeInstanceTYPE* freeInstance[N_INSTANCES] = {
         Plantmodel_fmi3FreeInstance,
@@ -340,7 +340,7 @@ int main(int argc, char *argv[])
     }
 
     // Instantiate
-    instantiate_all(instances);
+    instantiateAll(instances);
 
     // Set debug logging
     char* categories[] = { "logEvents", "logStatusError" };
@@ -349,7 +349,7 @@ int main(int argc, char *argv[])
     Plantmodel_fmi3SetDebugLogging(instances[PLANTMODEL_ID], true, 2, categories);
 
     // Initialize
-    enterInitAll(instances);
+    enterInitializationModeAll(instances);
 
     // Exchange data Controller -> Plantmodel
     Controller_fmi3GetFloat64(instances[CONTROLLER_ID], controller_y_refs, 1, controller_vals, 1);
@@ -366,17 +366,16 @@ int main(int argc, char *argv[])
     Supervisor_fmi3GetEventIndicators(instances[SUPERVISOR_ID], supervisor_evt_vals, 1);
     supervisor_event_indicator = supervisor_evt_vals[0];
 
-    exitInitAll(instances);
+    exitInitializationModeAll(instances);
     
     time = tStart;
 
-    enter_CT_mode_all(instances);
+    enterContinuousTimeModeAll(instances);
 
     // Record initial outputs
     recordVariables(outputFile, instances, time);
 
-    while (time + h <= tEnd)
-    {
+    while (time + h <= tEnd) {
         // Advance time and update timers
         time += h;
         controller_r_timer -= h;
@@ -505,9 +504,9 @@ int main(int argc, char *argv[])
         recordVariables(outputFile, instances, time);
     }
 
-    status = terminate_all(instances);
+    status = terminateAll(instances);
 
-    clean_all(instances);
+    freeInstanceAll(instances);
 
     fclose(outputFile);
 
