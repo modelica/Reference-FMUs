@@ -91,8 +91,7 @@ static void cb_logMessage3(fmi3InstanceEnvironment instanceEnvironment,
 
 #define OUTPUT_FILE_HEADER "time,x,r,x_r,u_r\n"
 
-fmi3Status recordVariables(FILE *outputFile, fmi3Instance instances[], fmi3Float64 time)
-{
+fmi3Status recordVariables(FILE *outputFile, fmi3Instance instances[], fmi3Float64 time) {
     const fmi3ValueReference plantmodel_vref[] = {Plantmodel_X_ref};
     fmi3Float64 plantmodel_vals[] = {0};
     Plantmodel_fmi3GetFloat64(instances[PLANTMODEL_ID], plantmodel_vref, 1, plantmodel_vals, 1);
@@ -108,8 +107,7 @@ fmi3Status recordVariables(FILE *outputFile, fmi3Instance instances[], fmi3Float
 
 FILE* initializeFile(char* fname) {
     FILE* outputFile = fopen(fname, "w");
-    if (!outputFile)
-    {
+    if (!outputFile) {
         puts("Failed to open output file.");
         return NULL;
     }
@@ -119,132 +117,100 @@ FILE* initializeFile(char* fname) {
 
 //*******************************************************//
 
-
-
-fmi3Status instantiateAll(fmi3Instance instances[])
-{
+fmi3Status instantiateAll(fmi3Instance instances[]) {
     fmi3InstantiateModelExchangeTYPE* instantiate[N_INSTANCES] = {
         Plantmodel_fmi3InstantiateModelExchange,
         Controller_fmi3InstantiateModelExchange,
         Supervisor_fmi3InstantiateModelExchange
     };
 
-    for (int i = 0; i < N_INSTANCES; i++)
-    {
-
+    for (int i = 0; i < N_INSTANCES; i++) {
         printf("Instantiating %s... ", names[i]);
-
         if (instantiate[i]) {
             instances[i] = instantiate[i](names[i], INSTANTIATION_TOKEN, NULL, fmi3False, fmi3True, NULL, cb_logMessage3);
-
-            if (instances[i] == NULL)
-            {
+            if (instances[i] == NULL) {
                 printf("Failed to instantiate %s. \n", names[i]);
                 return fmi3Fatal;
             }
         }
-
         printf("DONE. \n");
     }
     return fmi3OK;
 }
 
-fmi3Status enterInitializationModeAll(fmi3Instance instances[])
-{
+fmi3Status enterInitializationModeAll(fmi3Instance instances[]) {
     fmi3EnterInitializationModeTYPE* enterInit[N_INSTANCES] = {
         Plantmodel_fmi3EnterInitializationMode,
         Controller_fmi3EnterInitializationMode,
         Supervisor_fmi3EnterInitializationMode
-    };
-
+    }; 
     fmi3Status status = fmi3OK;
 
     // Enter init mode
-    for (int i = 0; i < N_INSTANCES; i++)
-    {
-        printf("Entering init mode for %s... ", names[i]);
-
+    for (int i = 0; i < N_INSTANCES; i++) {
+        printf("Entering init mode for %s... ", names[i]); 
         if (enterInit[i]) {
             status = enterInit[i](instances[i], fmi3False, 0.0, tStart, fmi3True, tEnd);
-            if (status != fmi3OK)
-            {
+            if (status != fmi3OK) {
                 printf("Failed to enter init mode for %s. \n", names[i]);
                 return fmi3Fatal;
             }
-        }
-
+        } 
         printf("DONE. \n");
-    }
-
+    } 
     return fmi3OK;
 }
 
-fmi3Status exitInitializationModeAll(fmi3Instance instances[])
-{
+fmi3Status exitInitializationModeAll(fmi3Instance instances[]) {
     fmi3ExitInitializationModeTYPE* exitInit[N_INSTANCES] = {
         Plantmodel_fmi3ExitInitializationMode,
         Controller_fmi3ExitInitializationMode,
         Supervisor_fmi3ExitInitializationMode
-    };
-
+    }; 
     fmi3Status status = fmi3OK;
 
-    for (int i = 0; i < N_INSTANCES; i++)
-    {
-        printf("Exiting init mode for %s... ", names[i]);
-
+    for (int i = 0; i < N_INSTANCES; i++) {
+        printf("Exiting init mode for %s... ", names[i]); 
         if (exitInit[i]) {
             status = exitInit[i](instances[i]);
-            if (status != fmi3OK)
-            {
+            if (status != fmi3OK) {
                 printf("Failed to enter init mode for %s. \n", names[i]);
                 return status;
             }
-        }
-
+        } 
         printf("DONE. \n");
-    }
-
+    } 
     return fmi3OK;
 }
 
-fmi3Status enterContinuousTimeModeAll(fmi3Instance instances[])
-{
+fmi3Status enterContinuousTimeModeAll(fmi3Instance instances[]) {
     fmi3EnterConfigurationModeTYPE* enter_CT_mode[N_INSTANCES] = {
         Plantmodel_fmi3EnterContinuousTimeMode,
         Controller_fmi3EnterContinuousTimeMode,
         Supervisor_fmi3EnterContinuousTimeMode
-    };
-
+    }; 
     fmi3Status status = fmi3OK;
 
-    for (int i = 0; i < N_INSTANCES; i++)
-    {
-        printf("Entering CT mode for %s... ", names[i]);
-
+    for (int i = 0; i < N_INSTANCES; i++) {
+        printf("Entering CT mode for %s... ", names[i]); 
         if (enter_CT_mode[i]) {
             status = enter_CT_mode[i](instances[i]);
-            if (status != fmi3OK)
-            {
+            if (status != fmi3OK) {
                 printf("Failed to enter CT mode for %s. \n", names[i]);
                 return fmi3Fatal;
             }
-        }
-
+        } 
         printf("DONE. \n");
-    }
-
+    } 
     return fmi3OK;
 }
 
-fmi3Status terminateAll(fmi3Instance instances[])
-{
+fmi3Status terminateAll(fmi3Instance instances[]) {
     fmi3TerminateTYPE* terminate[N_INSTANCES] = {
         Plantmodel_fmi3Terminate,
         Controller_fmi3Terminate,
         Supervisor_fmi3Terminate
-    };
-
+    }; 
     fmi3Status status = fmi3OK;
 
     for (int i = 0; i < N_INSTANCES; i++) {
@@ -255,19 +221,16 @@ fmi3Status terminateAll(fmi3Instance instances[])
             printf("DONE. \n");
             status = max(status, s);
         }
-    }
-
+    } 
     return status;
 }
 
-void freeInstanceAll(fmi3Instance instances[])
-{
+void freeInstanceAll(fmi3Instance instances[]) {
     fmi3FreeInstanceTYPE* freeInstance[N_INSTANCES] = {
         Plantmodel_fmi3FreeInstance,
         Controller_fmi3FreeInstance,
         Supervisor_fmi3FreeInstance
-    };
-
+    }; 
     for (int i = 0; i < N_INSTANCES; i++){
         if (instances[i]) {
             printf("Freeing %s... ", names[i]);
