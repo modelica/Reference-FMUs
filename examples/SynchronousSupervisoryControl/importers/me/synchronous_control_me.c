@@ -12,7 +12,7 @@
 
 #undef fmi3Functions_h
 #undef FMI3_FUNCTION_PREFIX
-#define FMI3_FUNCTION_PREFIX Plant_
+#define FMI3_FUNCTION_PREFIX Plantmodel_
 #include "fmi3Functions.h"
 #undef FMI3_FUNCTION_PREFIX
 
@@ -30,24 +30,24 @@
 
 #define INSTANTIATION_TOKEN "{00000000-0000-0000-0000-000000000000}"
 
-// Plant vrefs
-#define Plant_U_ref 3
-#define Plant_X_ref 1
+// Plantmodel vrefs
+#define Plantmodel_U_ref  3
+#define Plantmodel_X_ref  1
 
 // Controller vrefs
 #define Controller_UR_ref 3
 #define Controller_XR_ref 2
-#define Controller_R_ref 1
-#define Controller_S_ref 6
+#define Controller_R_ref  1
+#define Controller_S_ref  6
 #define Controller_AS_ref 5
 
 // Supervisor vrefs
-#define Supervisor_S_ref 1
-#define Supervisor_X_ref 2
+#define Supervisor_S_ref  1
+#define Supervisor_X_ref  2
 #define Supervisor_AS_ref 3
 
 // instance IDs
-#define PLANT_ID 0
+#define PLANTMODEL_ID 0
 #define CONTROLLER_ID 1
 #define SUPERVISOR_ID 2
 
@@ -59,19 +59,19 @@
 #define MAXDIRLENGTH 250
 
 // Instance names
-const char* names[N_INSTANCES] = { "plant", "controller", "supervisor" };
+const char* names[N_INSTANCES] = { "plantmodel", "controller", "supervisor" };
 
 // Constants with value references
-const fmi3ValueReference plant_u_refs[] = { Plant_U_ref };
-const fmi3ValueReference plant_y_refs[] = { Plant_X_ref };
-const fmi3ValueReference controller_u_refs[] = { Controller_XR_ref };
-const fmi3ValueReference controller_y_refs[] = { Controller_UR_ref };
-const fmi3ValueReference controller_r_refs[] = { Controller_R_ref };
-const fmi3ValueReference controller_s_refs[] = { Controller_S_ref };
+const fmi3ValueReference plantmodel_u_refs[]  = { Plantmodel_U_ref  };
+const fmi3ValueReference plantmodel_y_refs[]  = { Plantmodel_X_ref  };
+const fmi3ValueReference controller_u_refs[]  = { Controller_XR_ref };
+const fmi3ValueReference controller_y_refs[]  = { Controller_UR_ref };
+const fmi3ValueReference controller_r_refs[]  = { Controller_R_ref  };
+const fmi3ValueReference controller_s_refs[]  = { Controller_S_ref  };
 const fmi3ValueReference controller_as_refs[] = { Controller_AS_ref };
-const fmi3ValueReference supervisor_s_refs[] = { Supervisor_S_ref };
+const fmi3ValueReference supervisor_s_refs[]  = { Supervisor_S_ref  };
 const fmi3ValueReference supervisor_as_refs[] = { Supervisor_AS_ref };
-const fmi3ValueReference supervisor_in_refs[1] = { Supervisor_X_ref };
+const fmi3ValueReference supervisor_in_refs[] = { Supervisor_X_ref  };
 
 // Simulation constants
 const fmi3Float64 tEnd = STOP_TIME;
@@ -93,16 +93,16 @@ static void cb_logMessage3(fmi3InstanceEnvironment instanceEnvironment,
 
 fmi3Status recordVariables(FILE *outputFile, fmi3Instance instances[], fmi3Float64 time)
 {
-    const fmi3ValueReference plant_vref[] = {Plant_X_ref};
-    fmi3Float64 plant_vals[] = {0};
-    Plant_fmi3GetFloat64(instances[PLANT_ID], plant_vref, 1, plant_vals, 1);
+    const fmi3ValueReference plantmodel_vref[] = {Plantmodel_X_ref};
+    fmi3Float64 plantmodel_vals[] = {0};
+    Plantmodel_fmi3GetFloat64(instances[PLANTMODEL_ID], plantmodel_vref, 1, plantmodel_vals, 1);
 
     const fmi3ValueReference controller_vref[] = {Controller_XR_ref, Controller_UR_ref};
     fmi3Float64 controller_vals[] = {0.0, 0.0};
     Controller_fmi3GetFloat64(instances[CONTROLLER_ID], controller_vref, 2, controller_vals, 2);
 
     //                                      time,     x,         r, x_r,                u_r
-    fprintf(outputFile, "%g,%g,%d,%g,%g\n", time, plant_vals[0], 0, controller_vals[0], controller_vals[1]);
+    fprintf(outputFile, "%g,%g,%d,%g,%g\n", time, plantmodel_vals[0], 0, controller_vals[0], controller_vals[1]);
     return fmi3OK;
 }
 
@@ -124,7 +124,7 @@ FILE* initializeFile(char* fname) {
 fmi3Status instantiate_all(fmi3Instance instances[])
 {
     fmi3InstantiateModelExchangeTYPE* instantiate[N_INSTANCES] = {
-        Plant_fmi3InstantiateModelExchange,
+        Plantmodel_fmi3InstantiateModelExchange,
         Controller_fmi3InstantiateModelExchange,
         Supervisor_fmi3InstantiateModelExchange
     };
@@ -152,7 +152,7 @@ fmi3Status instantiate_all(fmi3Instance instances[])
 fmi3Status enterInitAll(fmi3Instance instances[])
 {
     fmi3EnterInitializationModeTYPE* enterInit[N_INSTANCES] = {
-        Plant_fmi3EnterInitializationMode,
+        Plantmodel_fmi3EnterInitializationMode,
         Controller_fmi3EnterInitializationMode,
         Supervisor_fmi3EnterInitializationMode
     };
@@ -182,7 +182,7 @@ fmi3Status enterInitAll(fmi3Instance instances[])
 fmi3Status exitInitAll(fmi3Instance instances[])
 {
     fmi3ExitInitializationModeTYPE* exitInit[N_INSTANCES] = {
-        Plant_fmi3ExitInitializationMode,
+        Plantmodel_fmi3ExitInitializationMode,
         Controller_fmi3ExitInitializationMode,
         Supervisor_fmi3ExitInitializationMode
     };
@@ -211,7 +211,7 @@ fmi3Status exitInitAll(fmi3Instance instances[])
 fmi3Status enter_CT_mode_all(fmi3Instance instances[])
 {
     fmi3EnterConfigurationModeTYPE* enter_CT_mode[N_INSTANCES] = {
-        Plant_fmi3EnterContinuousTimeMode,
+        Plantmodel_fmi3EnterContinuousTimeMode,
         Controller_fmi3EnterContinuousTimeMode,
         Supervisor_fmi3EnterContinuousTimeMode
     };
@@ -240,7 +240,7 @@ fmi3Status enter_CT_mode_all(fmi3Instance instances[])
 fmi3Status terminate_all(fmi3Instance instances[])
 {
     fmi3TerminateTYPE* terminate[N_INSTANCES] = {
-        Plant_fmi3Terminate,
+        Plantmodel_fmi3Terminate,
         Controller_fmi3Terminate,
         Supervisor_fmi3Terminate
     };
@@ -263,7 +263,7 @@ fmi3Status terminate_all(fmi3Instance instances[])
 void clean_all(fmi3Instance instances[])
 {
     fmi3FreeInstanceTYPE* freeInstance[N_INSTANCES] = {
-        Plant_fmi3FreeInstance,
+        Plantmodel_fmi3FreeInstance,
         Controller_fmi3FreeInstance,
         Supervisor_fmi3FreeInstance
     };
@@ -282,15 +282,15 @@ void handleTimeEventController(fmi3Instance instances[]) {
     fmi3Clock controller_r_vals[] = { fmi3ClockActive };
     Controller_fmi3SetClock(instances[CONTROLLER_ID], controller_r_refs, 1, controller_r_vals);
     
-    // Set inputs to clocked partition: Exchange data Plant -> Controller
-    fmi3Float64 plant_vals[] = { 0.0 };
-    Plant_fmi3GetFloat64(instances[PLANT_ID], plant_y_refs, 1, plant_vals, 1);
-    Controller_fmi3SetFloat64(instances[CONTROLLER_ID], controller_u_refs, 1, plant_vals, 1);
+    // Set inputs to clocked partition: Exchange data Plantmodel -> Controller
+    fmi3Float64 plantmodel_vals[] = { 0.0 };
+    Plantmodel_fmi3GetFloat64(instances[PLANTMODEL_ID], plantmodel_y_refs, 1, plantmodel_vals, 1);
+    Controller_fmi3SetFloat64(instances[CONTROLLER_ID], controller_u_refs, 1, plantmodel_vals, 1);
     
-    // Compute outputs to clocked partition: Exchange data Controller -> Plant
+    // Compute outputs to clocked partition: Exchange data Controller -> Plantmodel
     fmi3Float64 controller_vals[] = { 0.0 };
     Controller_fmi3GetFloat64(instances[CONTROLLER_ID], controller_y_refs, 1, controller_vals, 1);
-    Plant_fmi3SetFloat64(instances[PLANT_ID], plant_u_refs, 1, controller_vals, 1);
+    Plantmodel_fmi3SetFloat64(instances[PLANTMODEL_ID], plantmodel_u_refs, 1, controller_vals, 1);
     
 }
 
@@ -320,11 +320,11 @@ int main(int argc, char *argv[])
     // Instances
     fmi3Instance instances[N_INSTANCES] = {NULL}; // Remaining elements are implicitly NULL
     
-    // Will hold exchanged values: Controller -> Plant
+    // Will hold exchanged values: Controller -> Plantmodel
     fmi3Float64 controller_vals[] = { 0.0 };
-    // Will hold exchanged values: Plant -> Controller
-    fmi3Float64 plant_vals[] = { 0.0 };
-    fmi3Float64 plant_der_vals[] = { 0.0 };
+    // Will hold exchanged values: Plantmodel -> Controller
+    fmi3Float64 plantmodel_vals[] = { 0.0 };
+    fmi3Float64 plantmodel_der_vals[] = { 0.0 };
     // Will hold event indicator values of supervisor;
     fmi3Float64 supervisor_evt_vals[1] = { 0.0 };
     fmi3Float64 supervisor_event_indicator = 0.0;
@@ -346,21 +346,21 @@ int main(int argc, char *argv[])
     char* categories[] = { "logEvents", "logStatusError" };
     Controller_fmi3SetDebugLogging(instances[CONTROLLER_ID], true, 2, categories);
     Supervisor_fmi3SetDebugLogging(instances[SUPERVISOR_ID], true, 2, categories);
-    Plant_fmi3SetDebugLogging(instances[PLANT_ID], true, 2, categories);
+    Plantmodel_fmi3SetDebugLogging(instances[PLANTMODEL_ID], true, 2, categories);
 
     // Initialize
     enterInitAll(instances);
 
-    // Exchange data Controller -> Plant
+    // Exchange data Controller -> Plantmodel
     Controller_fmi3GetFloat64(instances[CONTROLLER_ID], controller_y_refs, 1, controller_vals, 1);
-    Plant_fmi3SetFloat64(instances[PLANT_ID], plant_u_refs, 1, controller_vals, 1);
+    Plantmodel_fmi3SetFloat64(instances[PLANTMODEL_ID], plantmodel_u_refs, 1, controller_vals, 1);
 
-    //Exchange data Plant -> Controller
-    Plant_fmi3GetFloat64(instances[PLANT_ID], plant_y_refs, 1, plant_vals, 1);
-    Controller_fmi3SetFloat64(instances[CONTROLLER_ID], controller_u_refs, 1, plant_vals, 1);
+    //Exchange data Plantmodel -> Controller
+    Plantmodel_fmi3GetFloat64(instances[PLANTMODEL_ID], plantmodel_y_refs, 1, plantmodel_vals, 1);
+    Controller_fmi3SetFloat64(instances[CONTROLLER_ID], controller_u_refs, 1, plantmodel_vals, 1);
 
-    //Exchange data Plant -> Supervisor
-    Supervisor_fmi3SetFloat64(instances[SUPERVISOR_ID], supervisor_in_refs, 1, plant_vals, 1);
+    //Exchange data Plantmodel -> Supervisor
+    Supervisor_fmi3SetFloat64(instances[SUPERVISOR_ID], supervisor_in_refs, 1, plantmodel_vals, 1);
 
     // Initialize event indicators
     Supervisor_fmi3GetEventIndicators(instances[SUPERVISOR_ID], supervisor_evt_vals, 1);
@@ -400,8 +400,8 @@ int main(int argc, char *argv[])
 
                 // Put Controller into event mode, as clocks are about to tick
                 Controller_fmi3EnterEventMode(instances[CONTROLLER_ID], fmi3False, fmi3False, NULL, 0, fmi3True);
-                // Put Plant into event mode, as its input is a discrete time variable
-                Plant_fmi3EnterEventMode(instances[PLANT_ID], fmi3False, fmi3False, NULL, 0, fmi3False);
+                // Put Plantmodel into event mode, as its input is a discrete time variable
+                Plantmodel_fmi3EnterEventMode(instances[PLANTMODEL_ID], fmi3False, fmi3False, NULL, 0, fmi3False);
 
                 // Handle time event in controller
                 handleTimeEventController(instances);
@@ -414,11 +414,11 @@ int main(int argc, char *argv[])
                 fmi3Boolean discreteStatesNeedUpdate = fmi3False;
                 fmi3Float64 nextEventTime = INFINITY;
                 Controller_fmi3UpdateDiscreteStates(instances[CONTROLLER_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
-                Plant_fmi3UpdateDiscreteStates(instances[PLANT_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
+                Plantmodel_fmi3UpdateDiscreteStates(instances[PLANTMODEL_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
 
                 // Exit event mode
                 Controller_fmi3EnterContinuousTimeMode(instances[CONTROLLER_ID]);
-                Plant_fmi3EnterContinuousTimeMode(instances[PLANT_ID]);
+                Plantmodel_fmi3EnterContinuousTimeMode(instances[PLANTMODEL_ID]);
                 printf("Exiting event mode. \n");
             }
             else if (!timeEvent && stateEvent) {
@@ -459,8 +459,8 @@ int main(int argc, char *argv[])
                 // Put Supervisor and Controller into event mode, as clocks are about to tick. Note the flags used.
                 Supervisor_fmi3EnterEventMode(instances[SUPERVISOR_ID], fmi3False, fmi3True, NULL, 0, fmi3False);
                 Controller_fmi3EnterEventMode(instances[CONTROLLER_ID], fmi3False, fmi3False, NULL, 0, fmi3True);
-                // Put Plant into event mode, as its input is a discrete time variable
-                Plant_fmi3EnterEventMode(instances[PLANT_ID], fmi3False, fmi3False, NULL, 0, fmi3False);
+                // Put Plantmodel into event mode, as its input is a discrete time variable
+                Plantmodel_fmi3EnterEventMode(instances[PLANTMODEL_ID], fmi3False, fmi3False, NULL, 0, fmi3False);
 
                 handleStateEventSupervisor(instances);
                 handleTimeEventController(instances);
@@ -474,32 +474,32 @@ int main(int argc, char *argv[])
                 fmi3Float64 nextEventTime = INFINITY;
                 Supervisor_fmi3UpdateDiscreteStates(instances[SUPERVISOR_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
                 Controller_fmi3UpdateDiscreteStates(instances[CONTROLLER_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
-                Plant_fmi3UpdateDiscreteStates(instances[PLANT_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
+                Plantmodel_fmi3UpdateDiscreteStates(instances[PLANTMODEL_ID], &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime);
 
                 // Exit event mode
                 Supervisor_fmi3EnterContinuousTimeMode(instances[SUPERVISOR_ID]);
                 Controller_fmi3EnterContinuousTimeMode(instances[CONTROLLER_ID]);
-                Plant_fmi3EnterContinuousTimeMode(instances[PLANT_ID]);
+                Plantmodel_fmi3EnterContinuousTimeMode(instances[PLANTMODEL_ID]);
                 printf("Exiting event mode. \n");
             }
         }
 
-        // Exchange data Plant -> Supervisor
-        Plant_fmi3GetFloat64(instances[PLANT_ID], plant_y_refs, 1, plant_vals, 1);
-        Supervisor_fmi3SetFloat64(instances[SUPERVISOR_ID], supervisor_in_refs, 1, plant_vals, 1);
+        // Exchange data Plantmodel -> Supervisor
+        Plantmodel_fmi3GetFloat64(instances[PLANTMODEL_ID], plantmodel_y_refs, 1, plantmodel_vals, 1);
+        Supervisor_fmi3SetFloat64(instances[SUPERVISOR_ID], supervisor_in_refs, 1, plantmodel_vals, 1);
 
-        // Estimate next Plant state
-        Plant_fmi3GetContinuousStates(instances[PLANT_ID], plant_vals, 1);
-        Plant_fmi3GetContinuousStateDerivatives(instances[PLANT_ID], plant_der_vals, 1);
-        plant_vals[0] += h * plant_der_vals[0];
+        // Estimate next Plantmodel state
+        Plantmodel_fmi3GetContinuousStates(instances[PLANTMODEL_ID], plantmodel_vals, 1);
+        Plantmodel_fmi3GetContinuousStateDerivatives(instances[PLANTMODEL_ID], plantmodel_der_vals, 1);
+        plantmodel_vals[0] += h * plantmodel_der_vals[0];
 
         // Set FMU time
-        Plant_fmi3SetTime(instances[PLANT_ID], time);
+        Plantmodel_fmi3SetTime(instances[PLANTMODEL_ID], time);
         Controller_fmi3SetTime(instances[CONTROLLER_ID], time);
         Supervisor_fmi3SetTime(instances[SUPERVISOR_ID], time);
 
-        // Update Plant state
-        Plant_fmi3SetContinuousStates(instances[PLANT_ID], plant_vals, 1);
+        // Update Plantmodel state
+        Plantmodel_fmi3SetContinuousStates(instances[PLANTMODEL_ID], plantmodel_vals, 1);
 
         // Record data
         recordVariables(outputFile, instances, time);
