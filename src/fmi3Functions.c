@@ -206,8 +206,9 @@ do { \
 #define MASK_fmi3GetEventIndicators            MASK_fmi3GetContinuousStateDerivatives
 #define MASK_fmi3GetContinuousStates           MASK_fmi3GetContinuousStateDerivatives
 #define MASK_fmi3GetNominalsOfContinuousStates MASK_fmi3GetContinuousStateDerivatives
-#define MASK_fmi3GetNumberOfEventIndicators    MASK_fmi3GetContinuousStateDerivatives
-#define MASK_fmi3GetNumberOfContinuousStates   MASK_fmi3GetContinuousStateDerivatives
+
+#define MASK_fmi3GetNumberOfContinuousStates   MASK_AnyState
+#define MASK_fmi3GetNumberOfEventIndicators    MASK_AnyState
 
 /* Functions for Co-Simulation */
 
