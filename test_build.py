@@ -1,201 +1,185 @@
-import unittest
+import itertools
+
+from pathlib import Path
 import subprocess
 import os
 import shutil
-from fmpy import simulate_fmu, platform, read_model_description
+from fmpy import simulate_fmu, platform
 from fmpy.util import compile_platform_binary
 from fmpy.validation import validate_fmu
 
 
-fmus_dir = os.path.join(os.path.dirname(__file__), 'fmus')  # /path/to/fmi-cross-check/fmus
 test_fmus_version = '0.0.11'
 
-test_fmus_dir = os.path.dirname(os.path.abspath(__file__))
 
-models = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
+def validate(build_dir, fmi_types, models, compile=False):
 
-if 'CMAKE_GENERATOR' in os.environ:
-    generator = os.environ['CMAKE_GENERATOR']
-else:
-    if os.name == 'nt':
-        generator = 'Visual Studio 15 2017 Win64'
-    else:
-        generator = 'Unix Makefiles'
+    from fmpy.util import read_csv, validate_result
+
+    test_fmus_dir = Path(__file__).parent
+
+    for model in models:
+
+        print(model)
+
+        fmu_filename = os.path.join(build_dir, 'dist', model + '.fmu')
+
+        problems = validate_fmu(fmu_filename)
+
+        assert len(problems) == 0
+
+        if model == 'Feedthrough':
+            start_values = {'real_fixed_param': 1, 'string_param': "FMI is awesome!"}
+            in_csv = os.path.join(test_fmus_dir, model, model + '_in.csv')
+            input = read_csv(in_csv)
+        else:
+            start_values = {}
+            input = None
+
+        ref_csv = os.path.join(test_fmus_dir, model, model + '_ref.csv')
+
+        for fmi_type in fmi_types:
+
+            ref = read_csv(ref_csv)
+
+            if compile:
+                if model == 'Resource' and os.name == 'nt':
+                    continue
+                compile_platform_binary(fmu_filename)
+
+            result = simulate_fmu(fmu_filename,
+                                  fmi_type=fmi_type,
+                                  start_values=start_values,
+                                  input=input,
+                                  solver='Euler')
+
+            dev = validate_result(result, ref)
+
+            assert dev < 0.2, "Failed to validate " + model
 
 
-def copy_to_cross_check(build_dir, model_names, fmi_version, fmi_types):
-    if fmus_dir is None:
-        return
+def build_fmus(build_dir, fmi_version, fmi_type='ME'):
 
-    for fmi_type in fmi_types:
-        for model in model_names:
-            target_dir = os.path.join(fmus_dir, fmi_version, fmi_type, platform, 'Reference-FMUs', test_fmus_version, model)
-            if not os.path.exists(target_dir):
-                os.makedirs(target_dir)
-            shutil.copy(os.path.join(build_dir, 'dist', model + '.fmu'), target_dir)
-            shutil.copy(os.path.join(test_fmus_dir, model, model + '_ref.csv'), target_dir)
-            shutil.copy(os.path.join(test_fmus_dir, model, model + '_ref.opt'), target_dir)
+    import argparse
+
+    if build_dir.exists():
+        shutil.rmtree(build_dir)
+
+    os.makedirs(build_dir)
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--cmake-generator', default='Visual Studio 17 2022' if os.name == 'nt' else 'Unix Makefiles')
+    parser.add_argument('--cmake-architecture', default='x64' if os.name == 'nt' else None,)
+
+    args, _ = parser.parse_known_args()
+
+    cmake_options = ['-G', args.cmake_generator]
+
+    if args.cmake_architecture is not None:
+        cmake_options += ['-A', args.cmake_architecture]
+
+    cmake_options += ['-D', f'FMI_VERSION={fmi_version}', '-D', f'FMI_TYPE={fmi_type}', '..']
+
+    subprocess.call(['cmake'] + cmake_options, cwd=build_dir)
+    subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
 
-class BuildTest(unittest.TestCase):
-    """ Build all variants of the Reference FMUs and simulate the default experiment """
+def copy_to_cross_check(dist_dir, model_names, fmi_version, fmi_types):
 
-    @classmethod
-    def setUpClass(cls):
-        # clean up
-        for name in ['fmi1_me', 'fmi1_cs', 'fmi2', 'fmi3']:
-            build_dir = os.path.join(test_fmus_dir, name)
-            if os.path.isdir(build_dir):
-                print("Removing " + build_dir)
-                shutil.rmtree(build_dir)
+    parent_dir = Path(__file__).parent
 
-    def validate(self, build_dir, fmi_types=['ModelExchange', 'CoSimulation'], models=models, compile=False):
+    for fmi_type, model in itertools.product(fmi_types, model_names):
+        target_dir = parent_dir / 'fmus' / fmi_version / fmi_type / platform / 'Reference-FMUs' / test_fmus_version / model
+        os.makedirs(target_dir, exist_ok=True)
+        shutil.copy(dist_dir / f'{model}.fmu', target_dir)
+        shutil.copy(parent_dir / model / f'{model}_ref.csv', target_dir)
+        shutil.copy(parent_dir / model / f'{model}_ref.opt', target_dir)
 
-        from fmpy.util import read_csv, validate_result
 
-        for model in models:
+def test_fmi1_me():
 
-            print(model)
+    build_dir = Path(__file__).parent / 'fmi1_me'
 
-            fmu_filename = os.path.join(build_dir, 'dist', model + '.fmu')
+    build_fmus(build_dir, fmi_version=1, fmi_type='ME')
 
-            problems = validate_fmu(fmu_filename)
+    model_names = ['BouncingBall', 'Dahlquist', 'Stair', 'VanDerPol']
 
-            self.assertEqual([], problems)
+    validate(build_dir, fmi_types=['ModelExchange'], models=model_names)
 
-            if model == 'Feedthrough':
-                start_values = {'real_fixed_param': 1, 'string_param': "FMI is awesome!"}
-                in_csv = os.path.join(test_fmus_dir, model, model + '_in.csv')
-                input = read_csv(in_csv)
-            else:
-                start_values = {}
-                input = None
+    copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=model_names, fmi_version='1.0', fmi_types=['me'])
 
-            ref_csv = os.path.join(test_fmus_dir, model, model + '_ref.csv')
 
-            for fmi_type in fmi_types:
+def test_fmi1_cs():
 
-                ref = read_csv(ref_csv)
+    build_dir = Path(__file__).parent / 'fmi1_cs'
 
-                if compile:
-                    compile_platform_binary(fmu_filename)
+    build_fmus(build_dir, fmi_version=1, fmi_type='CS')
 
-                result = simulate_fmu(fmu_filename,
-                                      fmi_type=fmi_type,
-                                      start_values=start_values,
-                                      input=input,
-                                      solver='Euler')
+    model_names = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol']
 
-                dev = validate_result(result, ref)
+    validate(build_dir, fmi_types=['CoSimulation'], models=model_names)
 
-                self.assertLess(dev, 0.2, "Failed to validate " + model)
+    copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=model_names, fmi_version='1.0', fmi_types=['cs'])
 
-    def test_fmi1_me(self):
 
-        build_dir = os.path.join(test_fmus_dir, 'fmi1_me')
+def test_fmi2():
 
-        if not os.path.exists(build_dir):
-            os.makedirs(build_dir)
+    build_dir = Path(__file__).parent / 'fmi2'
 
-        subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=1', '-DFMI_TYPE=ME', '..'], cwd=build_dir)
-        subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
+    build_fmus(build_dir, fmi_version=2)
 
-        model_names = ['BouncingBall', 'Dahlquist', 'Stair', 'VanDerPol']
+    models = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
 
-        self.validate(build_dir,
-                      fmi_types=['ModelExchange'],
-                      models=model_names)
+    validate(build_dir, fmi_types=['CoSimulation', 'ModelExchange'], models=models)
+    validate(build_dir, fmi_types=['CoSimulation', 'ModelExchange'], models=models, compile=True)
 
-        copy_to_cross_check(build_dir=build_dir, model_names=model_names, fmi_version='1.0', fmi_types=['me'])
-
-    def test_fmi1_cs(self):
-
-        build_dir = os.path.join(test_fmus_dir, 'fmi1_cs')
-
-        if not os.path.exists(build_dir):
-            os.makedirs(build_dir)
-
-        subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=1', '-DFMI_TYPE=CS', '..'], cwd=build_dir)
-        subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
-
-        model_names = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol']
-
-        self.validate(build_dir,
-                      fmi_types=['CoSimulation'],
-                      models=model_names)
-
-        copy_to_cross_check(build_dir=build_dir, model_names=model_names, fmi_version='1.0', fmi_types=['cs'])
-
-    def test_fmi2(self):
-
-        build_dir = os.path.join(test_fmus_dir, 'fmi2')
-
-        if not os.path.exists(build_dir):
-            os.makedirs(build_dir)
-
-        subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=2', '..'], cwd=build_dir)
-        subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
-
-        self.validate(build_dir)
-        self.validate(build_dir, compile=True)
-
-        copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='2.0', fmi_types=['cs', 'me'])
-
-        for model in models:
-            for interface_type in ['cs', 'me']:
-                example = f'{model}_{interface_type}'
-                print(f"Running {example}...")
-                filename = os.path.join(build_dir, 'temp', example)
-                subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
-
-    def test_fmi3(self):
-
-        print('FMI 3.0')
-
-        build_dir = os.path.join(test_fmus_dir, 'fmi3')
-
-        if not os.path.exists(build_dir):
-            os.makedirs(build_dir)
-
-        subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=3', '..'], cwd=build_dir)
-        subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
-
-        # run examples
-        examples = [
-            'cs_early_return',
-            'cs_event_mode',
-            'cs_intermediate_update',
-            'BouncingBall_cs',
-            'BouncingBall_me',
-            'import_shared_library',
-            'import_static_library',
-            'jacobian',
-            'scs_synchronous',
-            'Stair_cs',
-            'Stair_me'
-        ]
-
-        is_windows = os.name == 'nt'
-
-        if is_windows:
-            examples.append('scs_threaded')  # runs only on Windows
-
-        for example in examples:
-            print("Running %s example..." % example)
+    for model in models:
+        for interface_type in ['cs', 'me']:
+            example = f'{model}_{interface_type}'
+            print(f"Running {example}...")
             filename = os.path.join(build_dir, 'temp', example)
             subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
 
-        models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
-        self.validate(build_dir, models=models)
-        self.validate(build_dir, models=models, compile=True)
-
-        copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='3.0', fmi_types=['cs', 'me'])
-        copy_to_cross_check(build_dir=build_dir, model_names=['Clocks'], fmi_version='3.0', fmi_types=['se'])
-
-        for model in ['Clocks', 'LinearTransform']:
-            problems = validate_fmu(filename=os.path.join(build_dir, 'dist', model + '.fmu'))
-            self.assertEqual([], problems)
+    copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=models, fmi_version='2.0', fmi_types=['cs', 'me'])
 
 
-if __name__ == '__main__':
-    unittest.main()
+def test_fmi3():
+
+    build_dir = Path(__file__).parent / 'fmi3'
+
+    build_fmus(build_dir, fmi_version=3)
+
+    # run examples
+    examples = [
+        'cs_early_return',
+        'cs_event_mode',
+        'cs_intermediate_update',
+        'BouncingBall_cs',
+        'BouncingBall_me',
+        'import_shared_library',
+        'import_static_library',
+        'jacobian',
+        'scs_synchronous',
+        'Stair_cs',
+        'Stair_me'
+    ]
+
+    if os.name == 'nt':
+        examples.append('scs_threaded')  # runs only on Windows
+
+    for example in examples:
+        print("Running %s example..." % example)
+        subprocess.check_call(build_dir / 'temp' / example, cwd=build_dir / 'temp')
+
+    models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
+
+    validate(build_dir, fmi_types=['CoSimulation', 'ModelExchange'], models=models)
+    validate(build_dir, fmi_types=['CoSimulation', 'ModelExchange'], models=models, compile=True)
+
+    for model in ['Clocks', 'LinearTransform']:
+        problems = validate_fmu(filename=build_dir / 'dist' / f'{model}.fmu')
+        assert len(problems) == 0
+
+    copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=models, fmi_version='3.0', fmi_types=['cs', 'me'])
+    copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=['Clocks'], fmi_version='3.0', fmi_types=['se'])
