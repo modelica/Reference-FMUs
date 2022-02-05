@@ -18,7 +18,7 @@ if 'CMAKE_GENERATOR' in os.environ:
     cmake_options = os.environ['CMAKE_GENERATOR']
 else:
     if os.name == 'nt':
-        cmake_options = ['-G', 'Visual Studio 16 2019', '-A', 'x64']
+        cmake_options = ['-G', 'Visual Studio 17 2022', '-A', 'x64']
     else:
         cmake_options = ['-G', 'Unix Makefiles']
 
@@ -55,8 +55,8 @@ class BuildTest(unittest.TestCase):
 
         for model in models:
 
-            if model == 'Resource' and os.name == 'nt':
-                continue
+            # if model == 'Resource' and os.name == 'nt':
+            #     continue
 
             print(model)
 

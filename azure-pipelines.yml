@@ -92,9 +92,9 @@ jobs:
       artifact: darwin64
 
 - job: win64
-  displayName: 'Windows Server 2019'
+  displayName: 'Windows Server 2022'
   pool:
-    vmImage: 'windows-2019'
+    vmImage: 'windows-2022'
   dependsOn:
   - lint_files
 
