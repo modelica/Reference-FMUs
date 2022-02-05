@@ -137,7 +137,7 @@ class BuildTest(unittest.TestCase):
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
         self.validate(build_dir)
-        self.validate(build_dir, compile=True)
+        # self.validate(build_dir, compile=True)
 
         copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='2.0', fmi_types=['cs', 'me'])
 
@@ -187,7 +187,7 @@ class BuildTest(unittest.TestCase):
 
         models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
         self.validate(build_dir, models=models)
-        self.validate(build_dir, models=models, compile=True)
+        # self.validate(build_dir, models=models, compile=True)
 
         copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='3.0', fmi_types=['cs', 'me'])
         copy_to_cross_check(build_dir=build_dir, model_names=['Clocks'], fmi_version='3.0', fmi_types=['se'])
