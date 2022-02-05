@@ -15,12 +15,12 @@ test_fmus_dir = os.path.dirname(os.path.abspath(__file__))
 models = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
 
 if 'CMAKE_GENERATOR' in os.environ:
-    generator = os.environ['CMAKE_GENERATOR']
+    cmake_options = os.environ['CMAKE_GENERATOR']
 else:
     if os.name == 'nt':
-        generator = 'Visual Studio 15 2017 Win64'
+        cmake_options = ['-G', 'Visual Studio 16 2019', '-A', 'x64']
     else:
-        generator = 'Unix Makefiles'
+        cmake_options = ['-G', 'Unix Makefiles']
 
 
 def copy_to_cross_check(build_dir, model_names, fmi_version, fmi_types):
@@ -97,7 +97,7 @@ class BuildTest(unittest.TestCase):
         if not os.path.exists(build_dir):
             os.makedirs(build_dir)
 
-        subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=1', '-DFMI_TYPE=ME', '..'], cwd=build_dir)
+        subprocess.call(['cmake'] + cmake_options + ['-DFMI_VERSION=1', '-DFMI_TYPE=ME', '..'], cwd=build_dir)
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
         model_names = ['BouncingBall', 'Dahlquist', 'Stair', 'VanDerPol']
@@ -115,7 +115,7 @@ class BuildTest(unittest.TestCase):
         if not os.path.exists(build_dir):
             os.makedirs(build_dir)
 
-        subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=1', '-DFMI_TYPE=CS', '..'], cwd=build_dir)
+        subprocess.call(['cmake'] + cmake_options + ['-DFMI_VERSION=1', '-DFMI_TYPE=CS', '..'], cwd=build_dir)
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
         model_names = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol']
@@ -133,7 +133,7 @@ class BuildTest(unittest.TestCase):
         if not os.path.exists(build_dir):
             os.makedirs(build_dir)
 
-        subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=2', '..'], cwd=build_dir)
+        subprocess.call(['cmake'] + cmake_options + ['-DFMI_VERSION=2', '..'], cwd=build_dir)
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
         self.validate(build_dir)
@@ -157,7 +157,7 @@ class BuildTest(unittest.TestCase):
         if not os.path.exists(build_dir):
             os.makedirs(build_dir)
 
-        subprocess.call(['cmake', '-G', generator, '-DFMI_VERSION=3', '..'], cwd=build_dir)
+        subprocess.call(['cmake'] + cmake_options + ['-DFMI_VERSION=3', '..'], cwd=build_dir)
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
         # run examples

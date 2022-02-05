@@ -1,6 +1,6 @@
 variables:
   fmpy: https://github.com/CATIA-Systems/FMPy/archive/c5adf10f65825a26f2b10f3ea7c14a0a72486986.zip
-  conda.packages: python=3.7 dask lark-parser lxml numpy pathlib pip pytest requests scipy
+  conda.packages: python=3.10 dask lark-parser lxml numpy pathlib pip pytest requests scipy
 
 jobs:
 
@@ -92,9 +92,9 @@ jobs:
       artifact: darwin64
 
 - job: win64
-  displayName: 'Windows 2016'
+  displayName: 'Windows Server 2019'
   pool:
-    vmImage: 'vs2017-win2016'
+    vmImage: 'windows-2019'
   dependsOn:
   - lint_files
 
