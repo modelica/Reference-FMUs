@@ -55,6 +55,9 @@ class BuildTest(unittest.TestCase):
 
         for model in models:
 
+            if model == 'Resource' and os.name == 'nt':
+                continue
+
             print(model)
 
             fmu_filename = os.path.join(build_dir, 'dist', model + '.fmu')
@@ -137,7 +140,7 @@ class BuildTest(unittest.TestCase):
         subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
         self.validate(build_dir)
-        # self.validate(build_dir, compile=True)
+        self.validate(build_dir, compile=True)
 
         copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='2.0', fmi_types=['cs', 'me'])
 
@@ -186,8 +189,9 @@ class BuildTest(unittest.TestCase):
             subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
 
         models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
+
         self.validate(build_dir, models=models)
-        # self.validate(build_dir, models=models, compile=True)
+        self.validate(build_dir, models=models, compile=True)
 
         copy_to_cross_check(build_dir=build_dir, model_names=models, fmi_version='3.0', fmi_types=['cs', 'me'])
         copy_to_cross_check(build_dir=build_dir, model_names=['Clocks'], fmi_version='3.0', fmi_types=['se'])
