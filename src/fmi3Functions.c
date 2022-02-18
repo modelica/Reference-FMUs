@@ -467,11 +467,11 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
 }
 
 fmi3Status fmi3EnterEventMode(fmi3Instance instance,
-                              fmi3Boolean stepEvent,
-                              fmi3Boolean stateEvent,
+                              fmi3EventQualifier stepEvent,
+                              fmi3EventQualifier stateEvent,
                               const fmi3Int32 rootsFound[],
                               size_t nEventIndicators,
-                              fmi3Boolean timeEvent) {
+                              fmi3EventQualifier timeEvent) {
 
     UNUSED(stepEvent);
     UNUSED(stateEvent);
@@ -1175,6 +1175,32 @@ fmi3Status fmi3SetIntervalFraction(fmi3Instance instance,
     UNUSED(valueReferences);
     UNUSED(nValueReferences);
     UNUSED(intervalCounters);
+    UNUSED(resolutions);
+
+    NOT_IMPLEMENTED;
+}
+
+fmi3Status fmi3SetShiftDecimal(fmi3Instance instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    const fmi3Float64 shifts[]) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(shifts);
+
+    NOT_IMPLEMENTED;
+}
+
+fmi3Status fmi3SetShiftFraction(fmi3Instance instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    const fmi3UInt64 shiftCounters[],
+    const fmi3UInt64 resolutions[]) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(shiftCounters);
     UNUSED(resolutions);
 
     NOT_IMPLEMENTED;
