@@ -2,7 +2,7 @@
 #define fmi3Functions_h
 
 /*
-This header file declares the functions of FMI 3.0-beta.3.
+This header file declares the functions of FMI 3.0-beta.4.
 It must be used when compiling an FMU.
 
 In order to have unique function names even if several FMUs
@@ -21,7 +21,7 @@ static link library. For FMUs compiled in a DLL/sharedObject, the "actual" funct
 names are used and "FMI3_FUNCTION_PREFIX" must not be defined.
 
 Copyright (C) 2008-2011 MODELISAR consortium,
-              2012-2021 Modelica Association Project "FMI"
+              2012-2022 Modelica Association Project "FMI"
               All rights reserved.
 
 This file is licensed by the copyright holders under the 2-Clause BSD License
@@ -93,7 +93,7 @@ it may be set to __declspec(dllimport).
 #endif
 
 /* FMI version */
-#define fmi3Version "3.0-beta.3"
+#define fmi3Version "3.0-beta.4"
 
 /***************************************************
 Common Functions
@@ -173,6 +173,8 @@ Common Functions
 #define fmi3GetShiftFraction         fmi3FullName(fmi3GetShiftFraction)
 #define fmi3SetIntervalDecimal       fmi3FullName(fmi3SetIntervalDecimal)
 #define fmi3SetIntervalFraction      fmi3FullName(fmi3SetIntervalFraction)
+#define fmi3SetShiftDecimal          fmi3FullName(fmi3SetShiftDecimal)
+#define fmi3SetShiftFraction         fmi3FullName(fmi3SetShiftFraction)
 #define fmi3EvaluateDiscreteStates   fmi3FullName(fmi3EvaluateDiscreteStates)
 #define fmi3UpdateDiscreteStates     fmi3FullName(fmi3UpdateDiscreteStates)
 
@@ -294,7 +296,9 @@ FMI3_Export fmi3EnterContinuousTimeModeTYPE fmi3EnterContinuousTimeMode;
 FMI3_Export fmi3CompletedIntegratorStepTYPE fmi3CompletedIntegratorStep;
 
 /* Providing independent variables and re-initialization of caching */
+/* tag::SetTimeTYPE[] */
 FMI3_Export fmi3SetTimeTYPE             fmi3SetTime;
+/* end::SetTimeTYPE[] */
 FMI3_Export fmi3SetContinuousStatesTYPE fmi3SetContinuousStates;
 
 /* Evaluation of the model equations */

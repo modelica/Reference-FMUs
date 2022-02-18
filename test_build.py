@@ -26,7 +26,7 @@ def validate(build_dir, fmi_types, models, compile=False):
 
         problems = validate_fmu(fmu_filename)
 
-        assert len(problems) == 0
+        assert not problems
 
         if model == 'Feedthrough':
             start_values = {'real_fixed_param': 1, 'string_param': "FMI is awesome!"}
