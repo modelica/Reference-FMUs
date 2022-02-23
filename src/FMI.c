@@ -12,10 +12,13 @@
 #ifdef _WIN32
 #include <shlwapi.h>
 #pragma comment(lib, "shlwapi.lib")
-#define strdup _strdup
 #else
 #include <stdarg.h>
 #include <dlfcn.h>
+#endif
+
+#ifdef _MSC_VER
+#define strdup _strdup
 #endif
 
 #include "FMI.h"

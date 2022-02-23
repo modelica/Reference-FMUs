@@ -9,7 +9,6 @@
 #include <direct.h>
 #include "Shlwapi.h"
 #pragma comment(lib, "shlwapi.lib")
-#define strdup _strdup
 #else
 #include <stdarg.h>
 #include <dlfcn.h>
