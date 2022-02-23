@@ -95,7 +95,7 @@ typedef enum {
 #if FMI_VERSION < 3
 typedef void (*loggerType) (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message, ...);
 #else
-typedef void (*loggerType) (void *componentEnvironment, const char *instanceName, int status, const char *category, const char *message);
+typedef void (*loggerType) (void *componentEnvironment, int status, const char *category, const char *message);
 #endif
 
 typedef void (*lockPreemptionType)   ();
@@ -214,9 +214,13 @@ ModelInstance *createModelInstance(
     const char *resourceLocation,
     bool loggingOn,
     InterfaceType interfaceType);
+
 void freeModelInstance(ModelInstance *comp);
 
-void setStartValues(ModelInstance *comp);
+void reset(ModelInstance* comp);
+
+void setStartValues(ModelInstance* comp);
+
 Status calculateValues(ModelInstance *comp);
 
 Status getFloat64 (ModelInstance* comp, ValueReference vr, double      *value, size_t *index);

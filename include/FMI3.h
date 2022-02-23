@@ -104,6 +104,8 @@ struct FMI3Functions_ {
     fmi3GetShiftFractionTYPE                *fmi3GetShiftFraction;
     fmi3SetIntervalDecimalTYPE              *fmi3SetIntervalDecimal;
     fmi3SetIntervalFractionTYPE             *fmi3SetIntervalFraction;
+    fmi3SetShiftDecimalTYPE                 *fmi3SetShiftDecimal;
+    fmi3SetShiftFractionTYPE                *fmi3SetShiftFraction;
     fmi3EvaluateDiscreteStatesTYPE          *fmi3EvaluateDiscreteStates;
     fmi3UpdateDiscreteStatesTYPE            *fmi3UpdateDiscreteStates;
 
@@ -200,11 +202,11 @@ FMI_STATIC fmi3Status FMI3EnterInitializationMode(FMIInstance *instance,
 FMI_STATIC fmi3Status FMI3ExitInitializationMode(FMIInstance *instance);
 
 FMI_STATIC fmi3Status FMI3EnterEventMode(FMIInstance *instance,
-    fmi3Boolean stepEvent,
-    fmi3Boolean stateEvent,
+    fmi3EventQualifier stepEvent,
+    fmi3EventQualifier stateEvent,
     const fmi3Int32 rootsFound[],
     size_t nEventIndicators,
-    fmi3Boolean timeEvent);
+    fmi3EventQualifier timeEvent);
 
 FMI_STATIC fmi3Status FMI3Terminate(FMIInstance *instance);
 
@@ -474,6 +476,17 @@ FMI_STATIC fmi3Status FMI3SetIntervalFraction(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3UInt64 intervalCounters[],
+    const fmi3UInt64 resolutions[]);
+
+FMI_STATIC fmi3Status FMI3SetShiftDecimal(FMIInstance *instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    const fmi3Float64 shifts[]);
+
+FMI_STATIC fmi3Status FMI3SetShiftFraction(FMIInstance *instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    const fmi3UInt64 shiftCounters[],
     const fmi3UInt64 resolutions[]);
 
 FMI_STATIC fmi3Status FMI3EvaluateDiscreteStates(FMIInstance *instance);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fmiModelDescription fmiVersion="3.0-beta.3" modelName="Feedthrough" generationTool="Reference FMUs (development build)" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f004}">
+<fmiModelDescription fmiVersion="3.0-beta.4" modelName="Feedthrough" generationTool="Reference FMUs (development build)" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f004}">
 
   <ModelExchange
     modelIdentifier="Feedthrough"
@@ -38,7 +38,9 @@
     <String name="string_param" valueReference="11" description="String parameter" causality="parameter" variability="fixed">
         <Start value="Set me!"/>
     </String>
-    <Binary name="binary_in" valueReference="12" description="Binary input" causality="input" start="536574206d652c20746f6f21"/>
+    <Binary name="binary_in" valueReference="12" description="Binary input" causality="input">
+        <Start value="536574206d652c20746f6f21"/>
+    </Binary>
     <Binary name="binary_out" valueReference="13" description="Binary output" causality="output"/>
   </ModelVariables>
 

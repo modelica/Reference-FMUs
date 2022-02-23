@@ -46,10 +46,12 @@ th, td {
 
 <p>Implements the equation</p>
 
-<pre><code>y = u * A
+<pre><code>y' = u * A
 </code></pre>
 
-<p>The plot shows the <a href="Feedthrough_ref.csv">reference result</a> computed with <a href="https://github.com/modelica/Reference-FMUs/blob/master/examples/simulate_fmi3_me.c">simulate<em>fmi3</em>me.c</a>.</p>
+<p>where <code>A</code> is an <code>m x n</code> matrix, <code>u</code> a vector of size <code>m</code>, and <code>y</code> a vector of size <code>n</code>.</p>
+
+<p>The plot shows the <a href="LinearTransform_ref.csv">reference result</a> computed with <a href="https://github.com/modelica/Reference-FMUs/blob/master/examples/simulate_fmi3_me.c">simulate<em>fmi3</em>me.c</a>.</p>
 
 <p><img src="LinearTransform_ref.svg" alt="Plot" /></p>
 

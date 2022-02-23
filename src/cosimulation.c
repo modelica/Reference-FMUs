@@ -18,7 +18,7 @@
 #include "fmi3Functions.h"
 #endif
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 #define strdup _strdup
 #endif
 
@@ -37,21 +37,33 @@ ModelInstance *createModelInstance(
 
     if (!instanceName || strlen(instanceName) == 0) {
         if (cbLogger) {
+#if FMI_VERSION < 3
             cbLogger(componentEnvironment, "?", Error, "error", "Missing instance name.");
+#else
+            cbLogger(componentEnvironment, Error, "error", "Missing instance name.");
+#endif
         }
         return NULL;
     }
 
     if (!instantiationToken || strlen(instantiationToken) == 0) {
         if (cbLogger) {
+#if FMI_VERSION < 3
             cbLogger(componentEnvironment, instanceName, Error, "error", "Missing GUID.");
+#else
+            cbLogger(componentEnvironment, Error, "error", "Missing instantiationToken.");
+#endif
         }
         return NULL;
     }
 
     if (strcmp(instantiationToken, INSTANTIATION_TOKEN)) {
         if (cbLogger) {
+#if FMI_VERSION < 3
             cbLogger(componentEnvironment, instanceName, Error, "error", "Wrong GUID.");
+#else
+            cbLogger(componentEnvironment, Error, "error", "Wrong instantiationToken.");
+#endif
         }
         return NULL;
     }
@@ -80,7 +92,7 @@ ModelInstance *createModelInstance(
         return NULL;
     }
 
-    comp->time                              = 0; // overwrite in fmi*SetupExperiment, fmi*SetTime
+    comp->time                              = 0.0;  // overwrite in fmi*SetupExperiment, fmi*SetTime
     comp->type                              = interfaceType;
 
     comp->state                             = Instantiated;
@@ -92,8 +104,9 @@ ModelInstance *createModelInstance(
     comp->nextEventTimeDefined              = false;
     comp->nextEventTime                     = 0;
 
-    setStartValues(comp); // to be implemented by the includer of this file
-    comp->isDirtyValues = true; // because we just called setStartValues
+    setStartValues(comp);
+
+    comp->isDirtyValues = true;
 
 #if NZ > 0
     comp->z    = calloc(sizeof(double), NZ);
@@ -111,6 +124,15 @@ void freeModelInstance(ModelInstance *comp) {
     free(comp->z);
     free(comp->prez);
     free(comp);
+}
+
+void reset(ModelInstance* comp) {
+    comp->state = Instantiated;
+    comp->time = 0.0;
+    comp->nSteps = 0;
+    comp->status = OK;
+    setStartValues(comp);
+    comp->isDirtyValues = true;
 }
 
 double epsilon(double value) {
@@ -205,7 +227,11 @@ static void logMessage(ModelInstance *comp, int status, const char *category, co
     va_end(args1);
 
     // no need to distinguish between FMI versions since we're not using variadic arguments
+#if FMI_VERSION < 3
     comp->logger(comp->componentEnvironment, comp->instanceName, status, category, buf);
+#else
+    comp->logger(comp->componentEnvironment, status, category, buf);
+#endif
 
     free(buf);
 }

@@ -46,7 +46,7 @@ do { \
         S->isDirtyValues = false; \
     } \
     for (size_t i = 0; i < nValueReferences; i++) { \
-        Status s = get ## T(S, valueReferences[i], values, &index); \
+        Status s = get ## T(S, (ValueReference)valueReferences[i], values, &index); \
         status = max(status, s); \
         if (status > Warning) return (fmi3Status)status; \
     } \
@@ -60,7 +60,7 @@ do { \
     size_t index = 0; \
     Status status = OK; \
     for (size_t i = 0; i < nValueReferences; i++) { \
-        Status s = set ## T(S, valueReferences[i], values, &index); \
+        Status s = set ## T(S, (ValueReference)valueReferences[i], values, &index); \
         status = max(status, s); \
         if (status > Warning) return (fmi3Status)status; \
     } \
@@ -75,7 +75,7 @@ do { \
     for (size_t i = 0; i < nvr; i++) { \
         bool v = false; \
         size_t index = 0; \
-        Status s = getBoolean(S, vr[i], &v, &index); \
+        Status s = getBoolean(S, (ValueReference)vr[i], &v, &index); \
         value[i] = v; \
         status = max(status, s); \
         if (status > Warning) return (fmi3Status)status; \
@@ -90,7 +90,7 @@ do { \
     for (size_t i = 0; i < nvr; i++) { \
         bool v = value[i]; \
         size_t index = 0; \
-        Status s = setBoolean(S, vr[i], &v, &index); \
+        Status s = setBoolean(S, (ValueReference)vr[i], &v, &index); \
         status = max(status, s); \
         if (status > Warning) return (fmi3Status)status; \
     } \
@@ -202,8 +202,9 @@ do { \
 #define MASK_fmi3GetEventIndicators            MASK_fmi3GetContinuousStateDerivatives
 #define MASK_fmi3GetContinuousStates           MASK_fmi3GetContinuousStateDerivatives
 #define MASK_fmi3GetNominalsOfContinuousStates MASK_fmi3GetContinuousStateDerivatives
-#define MASK_fmi3GetNumberOfEventIndicators    MASK_fmi3GetContinuousStateDerivatives
-#define MASK_fmi3GetNumberOfContinuousStates   MASK_fmi3GetContinuousStateDerivatives
+
+#define MASK_fmi3GetNumberOfContinuousStates   MASK_AnyState
+#define MASK_fmi3GetNumberOfEventIndicators    MASK_AnyState
 
 /* Functions for Co-Simulation */
 
@@ -462,11 +463,11 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
 }
 
 fmi3Status fmi3EnterEventMode(fmi3Instance instance,
-                              fmi3Boolean stepEvent,
-                              fmi3Boolean stateEvent,
+                              fmi3EventQualifier stepEvent,
+                              fmi3EventQualifier stateEvent,
                               const fmi3Int32 rootsFound[],
                               size_t nEventIndicators,
-                              fmi3Boolean timeEvent) {
+                              fmi3EventQualifier timeEvent) {
 
     UNUSED(stepEvent);
     UNUSED(stateEvent);
@@ -496,9 +497,7 @@ fmi3Status fmi3Reset(fmi3Instance instance) {
 
     ASSERT_STATE(Reset);
 
-    S->state = Instantiated;
-    setStartValues(S);
-    S->isDirtyValues = true;
+    reset(S);
 
     return fmi3OK;
 }
@@ -664,7 +663,7 @@ fmi3Status fmi3GetBinary(fmi3Instance instance,
 
     for (size_t i = 0; i < nValueReferences; i++) {
         size_t index = 0;
-        Status s = getBinary(S, valueReferences[i], valueSizes, (const char**)values, &index);
+        Status s = getBinary(S, (ValueReference)valueReferences[i], valueSizes, (const char**)values, &index);
         status = max(status, s);
         if (status > Warning) return (fmi3Status)status;
     }
@@ -682,7 +681,7 @@ fmi3Status fmi3GetClock(fmi3Instance instance,
     Status status = OK;
 
     for (size_t i = 0; i < nValueReferences; i++) {
-        Status s = getClock(instance, valueReferences[i], &values[i]);
+        Status s = getClock(instance, (ValueReference)valueReferences[i], &values[i]);
         status = max(status, s);
         if (status > Warning) return (fmi3Status)status;
     }
@@ -850,7 +849,7 @@ fmi3Status fmi3SetBinary(fmi3Instance instance,
 
     for (size_t i = 0; i < nValueReferences; i++) {
         size_t index = 0;
-        Status s = setBinary(S, valueReferences[i], valueSizes, (const char* const*)values, &index);
+        Status s = setBinary(S, (ValueReference)valueReferences[i], valueSizes, (const char* const*)values, &index);
         status = max(status, s);
         if (status > Warning) return (fmi3Status)status;
     }
@@ -869,7 +868,7 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
 
     for (size_t i = 0; i < nValueReferences; i++) {
         if (values[i]) {
-            Status s = activateClock(instance, valueReferences[i]);
+            Status s = activateClock(instance, (ValueReference)valueReferences[i]);
             status = max(status, s);
             if (status > Warning) return (fmi3Status)status;
         }
@@ -1014,7 +1013,7 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance,
         sensitivity[i] = 0;
         for (size_t j = 0; j < nKnowns; j++) {
             double partialDerivative = 0;
-            Status s = getPartialDerivative(S, unknowns[i], knowns[j], &partialDerivative);
+            Status s = getPartialDerivative(S, (ValueReference)unknowns[i], (ValueReference)knowns[j], &partialDerivative);
             status = max(status, s);
             if (status > Warning) return (fmi3Status)status;
             sensitivity[i] += partialDerivative * seed[j];
@@ -1047,7 +1046,7 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
         sensitivity[i] = 0;
         for (size_t j = 0; j < nUnknowns; j++) {
             double partialDerivative = 0;
-            Status s = getPartialDerivative(S, unknowns[j], knowns[i], &partialDerivative);
+            Status s = getPartialDerivative(S, (ValueReference)unknowns[j], (ValueReference)knowns[i], &partialDerivative);
             status = max(status, s);
             if (status > Warning) return (fmi3Status)status;
             sensitivity[i] += partialDerivative * seed[j];
@@ -1101,7 +1100,7 @@ fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
     Status status = OK;
 
     for (size_t i = 0; i < nValueReferences; i++) {
-        Status s = getInterval(instance, valueReferences[i], &intervals[i], (int*)&qualifiers[i]);
+        Status s = getInterval(instance, (ValueReference)valueReferences[i], &intervals[i], (int*)&qualifiers[i]);
         status = max(status, s);
         if (status > Warning) return (fmi3Status)status;
     }
@@ -1172,6 +1171,32 @@ fmi3Status fmi3SetIntervalFraction(fmi3Instance instance,
     UNUSED(valueReferences);
     UNUSED(nValueReferences);
     UNUSED(intervalCounters);
+    UNUSED(resolutions);
+
+    NOT_IMPLEMENTED;
+}
+
+fmi3Status fmi3SetShiftDecimal(fmi3Instance instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    const fmi3Float64 shifts[]) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(shifts);
+
+    NOT_IMPLEMENTED;
+}
+
+fmi3Status fmi3SetShiftFraction(fmi3Instance instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    const fmi3UInt64 shiftCounters[],
+    const fmi3UInt64 resolutions[]) {
+
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(shiftCounters);
     UNUSED(resolutions);
 
     NOT_IMPLEMENTED;
@@ -1399,7 +1424,7 @@ fmi3Status fmi3GetOutputDerivatives(fmi3Instance instance,
     Status status = OK;
 
     for (size_t i = 0; i < nValueReferences; i++) {
-        const Status s = getOutputDerivative(S, valueReferences[i], orders[i], &values[i]);
+        const Status s = getOutputDerivative(S, (ValueReference)valueReferences[i], orders[i], &values[i]);
         status = max(status, s);
         if (status > Warning) {
             return (fmi3Status)status;
@@ -1488,7 +1513,7 @@ fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
 
     ASSERT_STATE(ActivateModelPartition);
 
-    return (fmi3Status)activateModelPartition(S, clockReference, activationTime);
+    return (fmi3Status)activateModelPartition(S, (ValueReference)clockReference, activationTime);
 }
 
 

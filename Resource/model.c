@@ -58,9 +58,9 @@ Status calculateValues(ModelInstance *comp) {
     const char *scheme2 = "file:/";
 
     if (strncmp(comp->resourceLocation, scheme1, strlen(scheme1)) == 0) {
-        strncpy(path, &comp->resourceLocation[strlen(scheme1)] - 1, MAX_PATH_LENGTH);
+        strncpy(path, &comp->resourceLocation[strlen(scheme1)] - 1, MAX_PATH_LENGTH-1);
     } else if (strncmp(comp->resourceLocation, scheme2, strlen(scheme2)) == 0) {
-        strncpy(path, &comp->resourceLocation[strlen(scheme2) - 1], MAX_PATH_LENGTH);
+        strncpy(path, &comp->resourceLocation[strlen(scheme2) - 1], MAX_PATH_LENGTH-1);
     } else {
         logError(comp, "The resourceLocation must start with \"file:/\" or \"file:///\"");
         return Error;
@@ -70,12 +70,13 @@ Status calculateValues(ModelInstance *comp) {
 #endif
 
 #if FMI_VERSION == 1
-    strncat(path, "/resources/y.txt", MAX_PATH_LENGTH);
+    strncat(path, "/resources/y.txt", MAX_PATH_LENGTH-strlen(path)-1);
 #elif FMI_VERSION == 2
-    strncat(path, "/y.txt", MAX_PATH_LENGTH);
+    strncat(path, "/y.txt", MAX_PATH_LENGTH-strlen(path)-1);
 #else
-    strncat(path, "y.txt", MAX_PATH_LENGTH);
+    strncat(path, "y.txt", MAX_PATH_LENGTH-strlen(path)-1);
 #endif
+    path[MAX_PATH_LENGTH-1] = 0;
 
 #endif
 

@@ -47,7 +47,7 @@
    - Dec. 3 , 2008: First version by Martin Otter (DLR) and Hans Olsson (Dynasim).
 
 
-   Copyright © 2008-2009, MODELISAR consortium. All rights reserved.
+   Copyright(c) 2017, MODELICA Association Project FMI. All rights reserved.
    This file is licensed by the copyright holders under the BSD License
    (http://www.opensource.org/licenses/bsd-license.html):
 
@@ -134,7 +134,9 @@
    DllExport const char* fmiGetVersion();
 
 /* make sure all compiler use the same alignment policies for structures */
+#ifdef WIN32
 #pragma pack(push,8)
+#endif
 
 /* Type definitions */
    typedef enum  {fmiOK,
@@ -164,7 +166,9 @@
    } fmiEventInfo;
 
 /* reset alignment policy to the one set before reading this file */
+#ifdef WIN32
 #pragma pack(pop)
+#endif
 
 /* Creation and destruction of model instances and setting debug status */
    DllExport fmiComponent fmiInstantiateModel (fmiString            instanceName,

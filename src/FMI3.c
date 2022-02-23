@@ -9,7 +9,6 @@
 #include <direct.h>
 #include "Shlwapi.h"
 #pragma comment(lib, "shlwapi.lib")
-#define strdup _strdup
 #else
 #include <stdarg.h>
 #include <dlfcn.h>
@@ -475,11 +474,11 @@ fmi3Status FMI3ExitInitializationMode(FMIInstance *instance) {
 }
 
 fmi3Status FMI3EnterEventMode(FMIInstance *instance,
-    fmi3Boolean stepEvent,
-    fmi3Boolean stateEvent,
+    fmi3EventQualifier stepEvent,
+    fmi3EventQualifier stateEvent,
     const fmi3Int32 rootsFound[],
     size_t nEventIndicators,
-    fmi3Boolean timeEvent) {
+    fmi3EventQualifier timeEvent) {
 
     fmi3Status status = instance->fmi3Functions->fmi3EnterEventMode(instance->component, stepEvent, stateEvent, rootsFound, nEventIndicators, timeEvent);
 
@@ -911,6 +910,25 @@ fmi3Status FMI3SetIntervalFraction(FMIInstance *instance,
     CALL_ARGS(SetIntervalFraction,
         "valueReferences=0x%p, nValueReferences=%zu, intervalCounters=0x%p, resolutions=0x%p",
         valueReferences, nValueReferences, intervalCounters, resolutions);
+}
+
+fmi3Status FMI3SetShiftDecimal(FMIInstance *instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    const fmi3Float64 shifts[]) {
+    CALL_ARGS(SetShiftDecimal,
+        "valueReferences=0x%p, nValueReferences=%zu, shifts=0x%p",
+        valueReferences, nValueReferences, shifts);
+}
+
+fmi3Status FMI3SetShiftFraction(FMIInstance *instance,
+    const fmi3ValueReference valueReferences[],
+    size_t nValueReferences,
+    const fmi3UInt64 shiftCounters[],
+    const fmi3UInt64 resolutions[]) {
+    CALL_ARGS(SetShiftFraction,
+        "valueReferences=0x%p, nValueReferences=%zu, shiftCounters=0x%p, resolutions=0x%p",
+        valueReferences, nValueReferences, shiftCounters, resolutions);
 }
 
 fmi3Status FMI3EvaluateDiscreteStates(FMIInstance *instance) {
