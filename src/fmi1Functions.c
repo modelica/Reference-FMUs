@@ -323,7 +323,13 @@ fmiStatus fmiDoStep(fmiComponent c, fmiReal currentCommunicationPoint, fmiReal c
 
     ModelInstance* instance = (ModelInstance *)c;
 
-    while (instance->time + FIXED_SOLVER_STEP < currentCommunicationPoint + communicationStepSize + epsilon(instance->time)) {
+    const fmiReal nextCommunicationPoint = currentCommunicationPoint + communicationStepSize + EPSILON;
+
+    while (true) {
+
+        if (instance->time + FIXED_SOLVER_STEP > nextCommunicationPoint) {
+            break;  // next communcation point reached
+        }
 
         bool stateEvent, timeEvent;
 
