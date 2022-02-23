@@ -18,7 +18,7 @@
 #include "fmi3Functions.h"
 #endif
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 #define strdup _strdup
 #endif
 
