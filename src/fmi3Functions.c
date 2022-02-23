@@ -499,9 +499,7 @@ fmi3Status fmi3Reset(fmi3Instance instance) {
 
     ASSERT_STATE(Reset);
 
-    S->state = Instantiated;
-    setStartValues(S);
-    S->isDirtyValues = true;
+    reset(S);
 
     return fmi3OK;
 }

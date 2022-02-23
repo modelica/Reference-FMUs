@@ -92,7 +92,7 @@ ModelInstance *createModelInstance(
         return NULL;
     }
 
-    comp->time                              = 0; // overwrite in fmi*SetupExperiment, fmi*SetTime
+    comp->time                              = 0.0;  // overwrite in fmi*SetupExperiment, fmi*SetTime
     comp->type                              = interfaceType;
 
     comp->state                             = Instantiated;
@@ -104,8 +104,9 @@ ModelInstance *createModelInstance(
     comp->nextEventTimeDefined              = false;
     comp->nextEventTime                     = 0;
 
-    setStartValues(comp); // to be implemented by the includer of this file
-    comp->isDirtyValues = true; // because we just called setStartValues
+    setStartValues(comp);
+
+    comp->isDirtyValues = true;
 
 #if NZ > 0
     comp->z    = calloc(sizeof(double), NZ);
@@ -123,6 +124,15 @@ void freeModelInstance(ModelInstance *comp) {
     free(comp->z);
     free(comp->prez);
     free(comp);
+}
+
+void reset(ModelInstance* comp) {
+    comp->state = Instantiated;
+    comp->time = 0.0;
+    comp->nSteps = 0;
+    comp->status = OK;
+    setStartValues(comp);
+    comp->isDirtyValues = true;
 }
 
 double epsilon(double value) {

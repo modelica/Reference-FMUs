@@ -296,13 +296,9 @@ fmi2Status fmi2Terminate(fmi2Component c) {
 
 fmi2Status fmi2Reset(fmi2Component c) {
 
-    ASSERT_STATE(Reset)
+    ASSERT_STATE(Reset);
 
-    S->state = Instantiated;
-
-    setStartValues(S); // to be implemented by the includer of this file
-
-    S->isDirtyValues = true; // because we just called setStartValues
+    reset(S);
 
     return fmi2OK;
 }

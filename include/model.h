@@ -160,9 +160,13 @@ ModelInstance *createModelInstance(
     const char *resourceLocation,
     bool loggingOn,
     InterfaceType interfaceType);
+
 void freeModelInstance(ModelInstance *comp);
 
-void setStartValues(ModelInstance *comp);
+void reset(ModelInstance* comp);
+
+void setStartValues(ModelInstance* comp);
+
 Status calculateValues(ModelInstance *comp);
 
 Status getFloat64 (ModelInstance* comp, ValueReference vr, double      *value, size_t *index);
