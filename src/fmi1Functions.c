@@ -260,8 +260,7 @@ fmiStatus fmiResetSlave(fmiComponent c) {
     ModelInstance* instance = (ModelInstance *)c;
     if (invalidState(instance, "fmiResetSlave", Initialized))
          return fmiError;
-    instance->state = Instantiated;
-    setStartValues(instance); // to be implemented by the includer of this file
+    reset(instance);
     return fmiOK;
 }
 
