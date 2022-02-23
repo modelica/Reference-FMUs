@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  fmiVersion="3.0-beta.3"
+  modelName="Plant"
+  description="Represents the plant."
+  instantiationToken="{6e81b08d-97be-4de1-957f-8358a4e83184}">
+
+  <ModelExchange
+    modelIdentifier="Plant"
+    canGetAndSetFMUState="true"
+    canSerializeFMUState="true"/>
+
+  <CoSimulation
+    modelIdentifier="Plant"
+    canGetAndSetFMUState="true"
+    canSerializeFMUState="true"
+    canHandleVariableCommunicationStepSize="true"
+    providesIntermediateUpdate="true"
+    canReturnEarlyAfterIntermediateUpdate="true"
+    fixedInternalStepSize="1e-2"
+    hasEventMode="true"/>
+
+  <LogCategories>
+    <Category name="logEvents" description="Log events"/>
+    <Category name="logStatusError" description="Log error messages"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="1e-2"/>
+
+  <ModelVariables>
+    <Float64 name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time"/>
+    <Float64 name="x" valueReference="1" causality="output" variability="continuous" initial="exact" start="0"/>
+    <Float64 name="der(x)" valueReference="2" causality="local" variability="continuous" initial="calculated" derivative="1" description="Derivative of x"/>
+    <Float64 name="u_r" valueReference="3" causality="input" variability="continuous" initial="exact" start="0"/>
+  </ModelVariables>
+
+  <ModelStructure>
+    <Output valueReference="1"/>
+    <ContinuousStateDerivative valueReference="2"/>
+    <InitialUnknown valueReference="2" dependencies="1 3" dependenciesKind="constant constant"/>
+  </ModelStructure>
+
+</fmiModelDescription>

@@ -5,7 +5,7 @@
 
 // define class name and unique id
 #define MODEL_IDENTIFIER Supervisor
-#define INSTANTIATION_TOKEN "{00000000-0000-0000-0000-000000000000}"
+#define INSTANTIATION_TOKEN "{64202d14-799a-4379-9fb3-79354aec17b2}"
 
 #define CO_SIMULATION
 #define MODEL_EXCHANGE

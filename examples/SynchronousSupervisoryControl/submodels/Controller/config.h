@@ -5,7 +5,7 @@
 
 // define class name and unique id
 #define MODEL_IDENTIFIER Controller
-#define INSTANTIATION_TOKEN "{00000000-0000-0000-0000-000000000000}"
+#define INSTANTIATION_TOKEN "{e1f14bf0-302d-4ef9-b11c-e01c7ed456cb}"
 
 #define CO_SIMULATION
 #define MODEL_EXCHANGE

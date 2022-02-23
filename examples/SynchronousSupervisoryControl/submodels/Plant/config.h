@@ -3,7 +3,7 @@
 
 // define class name and unique id
 #define MODEL_IDENTIFIER Plant
-#define INSTANTIATION_TOKEN "{00000000-0000-0000-0000-000000000000}"
+#define INSTANTIATION_TOKEN "{6e81b08d-97be-4de1-957f-8358a4e83184}"
 
 #define CO_SIMULATION
 #define MODEL_EXCHANGE
