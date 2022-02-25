@@ -13,6 +13,8 @@
 
 #include "config.h"
 
+#define FMU_STATE_SIZE (sizeof(ModelInstance) + sizeof(ModelData))
+
 #if FMI_VERSION == 1
 
 #define not_modelError (Instantiated| Initialized | Terminated)
@@ -138,9 +140,10 @@ typedef struct {
 
     ModelData *modelData;
 
+#if NZ > 0
     // event indicators
-    double *z;
-    double *prez;
+    double z[NZ];
+#endif
 
     // internal solver steps
     int nSteps;

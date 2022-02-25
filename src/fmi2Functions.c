@@ -465,27 +465,60 @@ fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {
 
     ASSERT_STATE(GetFMUstate);
 
-    ModelData *modelData = (ModelData *)calloc(1, sizeof(ModelData));
-    memcpy(modelData, S->modelData, sizeof(ModelData));
-    *FMUstate = modelData;
+    ModelInstance* fmuState = (ModelInstance*)malloc(FMU_STATE_SIZE);
+
+    if (!fmuState) return fmi2Error;
+
+    ModelData* m = (ModelData*) & ((char*)fmuState)[sizeof(ModelInstance)];
+
+    memcpy(fmuState, S, sizeof(ModelInstance));
+    memcpy(m, S->modelData, sizeof(ModelData));
+
+    *FMUstate = fmuState;
+    
     return fmi2OK;
 }
 
-fmi2Status fmi2SetFMUstate (fmi2Component c, fmi2FMUstate FMUstate) {
+fmi2Status fmi2SetFMUstate(fmi2Component c, fmi2FMUstate FMUstate) {
 
     ASSERT_STATE(SetFMUstate);
 
-    ModelData *modelData = FMUstate;
+    if (nullPointer(S, "fmi2SetFMUstate", "FMUstate", FMUstate)) {
+        return fmi2Error;
+    }
+
+    ModelData *modelData = (ModelData*) & ((char*)FMUstate)[sizeof(ModelInstance)];
+    
+    ModelInstance* s = (ModelInstance*)FMUstate;
+
+    // TODO: assert interface type
+
+    S->time = s->time;
+    S->status = s->status;
+    S->state = s->state;
+    S->newDiscreteStatesNeeded = s->newDiscreteStatesNeeded;
+    S->terminateSimulation = s->terminateSimulation;
+    S->nominalsOfContinuousStatesChanged = s->nominalsOfContinuousStatesChanged;
+    S->valuesOfContinuousStatesChanged = s->valuesOfContinuousStatesChanged;
+    S->nextEventTimeDefined = s->nextEventTimeDefined;
+    S->nextEventTime = s->nextEventTime;
+    S->clocksTicked = s->clocksTicked;
+    S->isDirtyValues = s->isDirtyValues;
     memcpy(S->modelData, modelData, sizeof(ModelData));
+#if NZ > 0
+    memcpy(S->z, s->z, NZ * sizeof(double));
+#endif
+    S->nSteps = s->nSteps;
+
     return fmi2OK;
 }
 
 fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate* FMUstate) {
 
-    ASSERT_STATE(FreeFMUstate)
+    ASSERT_STATE(FreeFMUstate);
 
-    ModelData *modelData = *FMUstate;
-    free(modelData);
+    free(*FMUstate);
+    
     *FMUstate = NULL;
 
     return fmi2OK;
@@ -496,39 +529,43 @@ fmi2Status fmi2SerializedFMUstateSize(fmi2Component c, fmi2FMUstate FMUstate, si
     UNUSED(c);
     UNUSED(FMUstate);
 
-    ASSERT_STATE(SerializedFMUstateSize)
+    ASSERT_STATE(SerializedFMUstateSize);
 
-    *size = sizeof(ModelData);
+    *size = FMU_STATE_SIZE;
+
     return fmi2OK;
 }
 
 fmi2Status fmi2SerializeFMUstate(fmi2Component c, fmi2FMUstate FMUstate, fmi2Byte serializedState[], size_t size) {
 
-    ASSERT_STATE(SerializeFMUstate)
+    ASSERT_STATE(SerializeFMUstate);
 
-    if (nullPointer(S, "fmi2SerializeFMUstate", "FMUstate", FMUstate))
+    if (nullPointer(S, "fmi2SerializeFMUstate", "FMUstate", FMUstate)) {
         return fmi2Error;
+    }
 
-    if (invalidNumber(S, "fmi2SerializeFMUstate", "size", size, sizeof(ModelData)))
+    if (invalidNumber(S, "fmi2SerializeFMUstate", "size", size, FMU_STATE_SIZE)) {
         return fmi2Error;
+    }
 
-    memcpy(serializedState, FMUstate, sizeof(ModelData));
+    memcpy(serializedState, FMUstate, FMU_STATE_SIZE);
 
     return fmi2OK;
 }
 
 fmi2Status fmi2DeSerializeFMUstate (fmi2Component c, const fmi2Byte serializedState[], size_t size, fmi2FMUstate* FMUstate) {
 
-    ASSERT_STATE(DeSerializeFMUstate)
+    ASSERT_STATE(DeSerializeFMUstate);
 
-    if (*FMUstate == NULL) {
-        *FMUstate = (fmi2FMUstate *)calloc(1, sizeof(ModelData));
+    if (invalidNumber(S, "fmi2DeSerializeFMUstate", "size", size, FMU_STATE_SIZE)) {
+        return fmi2Error;
     }
 
-    if (invalidNumber(S, "fmi2DeSerializeFMUstate", "size", size, sizeof(ModelData)))
-        return fmi2Error;
+    if (*FMUstate == NULL) {
+        *FMUstate = malloc(FMU_STATE_SIZE);
+    }
 
-    memcpy(*FMUstate, serializedState, sizeof(ModelData));
+    memcpy(*FMUstate, serializedState, FMU_STATE_SIZE);
 
     return fmi2OK;
 }

@@ -108,21 +108,21 @@ ModelInstance *createModelInstance(
 
     comp->isDirtyValues = true;
 
-#if NZ > 0
-    comp->z    = calloc(sizeof(double), NZ);
-    comp->prez = calloc(sizeof(double), NZ);
-#else
-    comp->z    = NULL;
-    comp->prez = NULL;
-#endif
+//#if NZ > 0
+//    comp->z    = calloc(sizeof(double), NZ);
+//    comp->prez = calloc(sizeof(double), NZ);
+//#else
+//    comp->z    = NULL;
+//    comp->prez = NULL;
+//#endif
 
     return comp;
 }
 
 void freeModelInstance(ModelInstance *comp) {
     free((void *)comp->instanceName);
-    free(comp->z);
-    free(comp->prez);
+    //free(comp->z);
+    //free(comp->prez);
     free(comp);
 }
 
@@ -489,17 +489,17 @@ void doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
     *stateEvent = false;
 
 #if NZ > 0
-    getEventIndicators(comp, comp->z, NZ);
+    double z[NZ] = { 0.0 };
+
+    getEventIndicators(comp, z, NZ);
 
     // check for zero-crossings
     for (int i = 0; i < NZ; i++) {
-        *stateEvent |= comp->prez[i] * comp->z[i] < 0;
+        *stateEvent |= comp->z[i] * z[i] < 0;
     }
 
     // remember the current event indicators
-    double* temp = comp->z;
-    comp->z = comp->prez;
-    comp->prez = temp;
+    memcpy(comp->z, z, sizeof(double) * NZ);
 #endif
 
     // time event
