@@ -205,7 +205,7 @@ Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], co
     switch (vr) {
         case vr_binary_in:
             if (size[*index] > BINARY_MAX_LEN) {
-                logError(comp, "Max. binary size is %d bytes.", STRING_MAX_LEN);
+                logError(comp, "Max. binary size is %d bytes.", BINARY_MAX_LEN);
                 return Error;
             }
             M(binary_size) = size[*index];

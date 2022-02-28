@@ -13,7 +13,6 @@
 
 #include "config.h"
 
-
 #if FMI_VERSION == 1
 
 #define not_modelError (Instantiated| Initialized | Terminated)
