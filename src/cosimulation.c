@@ -464,6 +464,42 @@ Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueRe
 }
 #endif
 
+void* getFMUState(ModelInstance* comp) {
+
+    ModelInstance* fmuState = (ModelInstance*)calloc(1, FMU_STATE_SIZE);
+
+    ModelData* m = (ModelData*)&((char*)fmuState)[sizeof(ModelInstance)];
+
+    memcpy(fmuState, comp, sizeof(ModelInstance));
+    memcpy(m, comp->modelData, sizeof(ModelData));
+
+    return fmuState;
+}
+
+void setFMUState(ModelInstance* comp, void* FMUState) {
+
+    ModelData* modelData = (ModelData*)&((char*)FMUState)[sizeof(ModelInstance)];
+
+    ModelInstance* s = (ModelInstance*)FMUState;
+
+    comp->time = s->time;
+    comp->status = s->status;
+    comp->state = s->state;
+    comp->newDiscreteStatesNeeded = s->newDiscreteStatesNeeded;
+    comp->terminateSimulation = s->terminateSimulation;
+    comp->nominalsOfContinuousStatesChanged = s->nominalsOfContinuousStatesChanged;
+    comp->valuesOfContinuousStatesChanged = s->valuesOfContinuousStatesChanged;
+    comp->nextEventTimeDefined = s->nextEventTimeDefined;
+    comp->nextEventTime = s->nextEventTime;
+    comp->clocksTicked = s->clocksTicked;
+    comp->isDirtyValues = s->isDirtyValues;
+    memcpy(comp->modelData, modelData, sizeof(ModelData));
+#if NZ > 0
+    memcpy(comp->z, s->z, NZ * sizeof(double));
+#endif
+    comp->nSteps = s->nSteps;
+}
+
 void doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
 
 #if NX > 0

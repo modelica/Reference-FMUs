@@ -465,16 +465,7 @@ fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {
 
     ASSERT_STATE(GetFMUstate);
 
-    ModelInstance* fmuState = (ModelInstance*)malloc(FMU_STATE_SIZE);
-
-    if (!fmuState) return fmi2Error;
-
-    ModelData* m = (ModelData*) & ((char*)fmuState)[sizeof(ModelInstance)];
-
-    memcpy(fmuState, S, sizeof(ModelInstance));
-    memcpy(m, S->modelData, sizeof(ModelData));
-
-    *FMUstate = fmuState;
+    *FMUstate = getFMUState(S);
     
     return fmi2OK;
 }
@@ -487,28 +478,7 @@ fmi2Status fmi2SetFMUstate(fmi2Component c, fmi2FMUstate FMUstate) {
         return fmi2Error;
     }
 
-    ModelData *modelData = (ModelData*) & ((char*)FMUstate)[sizeof(ModelInstance)];
-    
-    ModelInstance* s = (ModelInstance*)FMUstate;
-
-    // TODO: assert interface type
-
-    S->time = s->time;
-    S->status = s->status;
-    S->state = s->state;
-    S->newDiscreteStatesNeeded = s->newDiscreteStatesNeeded;
-    S->terminateSimulation = s->terminateSimulation;
-    S->nominalsOfContinuousStatesChanged = s->nominalsOfContinuousStatesChanged;
-    S->valuesOfContinuousStatesChanged = s->valuesOfContinuousStatesChanged;
-    S->nextEventTimeDefined = s->nextEventTimeDefined;
-    S->nextEventTime = s->nextEventTime;
-    S->clocksTicked = s->clocksTicked;
-    S->isDirtyValues = s->isDirtyValues;
-    memcpy(S->modelData, modelData, sizeof(ModelData));
-#if NZ > 0
-    memcpy(S->z, s->z, NZ * sizeof(double));
-#endif
-    S->nSteps = s->nSteps;
+    setFMUState(S, FMUstate);
 
     return fmi2OK;
 }

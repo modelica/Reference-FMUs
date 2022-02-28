@@ -213,6 +213,9 @@ Status setDebugLogging(ModelInstance *comp, bool loggingOn, size_t nCategories, 
 void logEvent(ModelInstance *comp, const char *message, ...);
 void logError(ModelInstance *comp, const char *message, ...);
 
+void* getFMUState(ModelInstance* comp);
+void setFMUState(ModelInstance* comp, void* FMUState);
+
 // shorthand to access the variables
 #define M(v) (comp->modelData->v)
 
