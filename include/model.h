@@ -13,7 +13,6 @@
 
 #include "config.h"
 
-#define FMU_STATE_SIZE (sizeof(ModelInstance) + sizeof(ModelData))
 
 #if FMI_VERSION == 1
 
@@ -138,7 +137,7 @@ typedef struct {
 
     bool isDirtyValues;
 
-    ModelData *modelData;
+    ModelData modelData;
 
 #if NZ > 0
     // event indicators
@@ -217,7 +216,7 @@ void* getFMUState(ModelInstance* comp);
 void setFMUState(ModelInstance* comp, void* FMUState);
 
 // shorthand to access the variables
-#define M(v) (comp->modelData->v)
+#define M(v) (comp->modelData.v)
 
 // "stringification" macros
 #define xstr(s) str(s)

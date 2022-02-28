@@ -948,7 +948,7 @@ fmi3Status fmi3SerializedFMUStateSize(fmi3Instance instance,
 
     ASSERT_STATE(SerializedFMUStateSize);
 
-    *size = FMU_STATE_SIZE;
+    *size = sizeof(ModelInstance);
 
     return fmi3OK;
 }
@@ -964,11 +964,11 @@ fmi3Status fmi3SerializeFMUState(fmi3Instance instance,
         return fmi3Error;
     }
 
-    if (invalidNumber(S, "fmi3SerializeFMUState", "size", size, FMU_STATE_SIZE)) {
+    if (invalidNumber(S, "fmi3SerializeFMUState", "size", size, sizeof(ModelInstance))) {
         return fmi3Error;
     }
 
-    memcpy(serializedState, FMUState, FMU_STATE_SIZE);
+    memcpy(serializedState, FMUState, sizeof(ModelInstance));
 
     return fmi3OK;
 }
@@ -980,15 +980,15 @@ fmi3Status fmi3DeSerializeFMUState(fmi3Instance instance,
 
     ASSERT_STATE(DeSerializeFMUState);
 
-    if (invalidNumber(S, "fmi3DeSerializeFMUState", "size", size, FMU_STATE_SIZE)) {
+    if (invalidNumber(S, "fmi3DeSerializeFMUState", "size", size, sizeof(ModelInstance))) {
         return fmi3Error;
     }
 
     if (*FMUState == NULL) {
-        *FMUState = malloc(FMU_STATE_SIZE);
+        *FMUState = calloc(1, sizeof(ModelInstance));
     }
 
-    memcpy(*FMUState, serializedState, FMU_STATE_SIZE);
+    memcpy(*FMUState, serializedState, sizeof(ModelInstance));
 
     return fmi3OK;
 }

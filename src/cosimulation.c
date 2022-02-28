@@ -79,7 +79,6 @@ ModelInstance *createModelInstance(
         comp->instanceName         = strdup(instanceName);
         comp->resourceLocation     = resourceLocation ? strdup(resourceLocation) : NULL;
         comp->status               = OK;
-        comp->modelData            = (ModelData *)calloc(1, sizeof(ModelData));
         comp->logEvents            = loggingOn;
         comp->logErrors            = true; // always log errors
         comp->nSteps               = 0;
@@ -87,7 +86,7 @@ ModelInstance *createModelInstance(
         comp->eventModeUsed        = false;
     }
 
-    if (!comp || !comp->modelData || !comp->instanceName) {
+    if (!comp || !comp->instanceName) {
         logError(comp, "Out of memory.");
         return NULL;
     }
@@ -456,19 +455,14 @@ Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueRe
 
 void* getFMUState(ModelInstance* comp) {
 
-    ModelInstance* fmuState = (ModelInstance*)calloc(1, FMU_STATE_SIZE);
-
-    ModelData* m = (ModelData*)&((char*)fmuState)[sizeof(ModelInstance)];
+    ModelInstance* fmuState = (ModelInstance*)calloc(1, sizeof(ModelInstance));
 
     memcpy(fmuState, comp, sizeof(ModelInstance));
-    memcpy(m, comp->modelData, sizeof(ModelData));
 
     return fmuState;
 }
 
 void setFMUState(ModelInstance* comp, void* FMUState) {
-
-    ModelData* modelData = (ModelData*)&((char*)FMUState)[sizeof(ModelInstance)];
 
     ModelInstance* s = (ModelInstance*)FMUState;
 
@@ -483,7 +477,7 @@ void setFMUState(ModelInstance* comp, void* FMUState) {
     comp->nextEventTime = s->nextEventTime;
     comp->clocksTicked = s->clocksTicked;
     comp->isDirtyValues = s->isDirtyValues;
-    memcpy(comp->modelData, modelData, sizeof(ModelData));
+    comp->modelData = s->modelData;
 #if NZ > 0
     memcpy(comp->z, s->z, NZ * sizeof(double));
 #endif

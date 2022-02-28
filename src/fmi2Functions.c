@@ -501,7 +501,7 @@ fmi2Status fmi2SerializedFMUstateSize(fmi2Component c, fmi2FMUstate FMUstate, si
 
     ASSERT_STATE(SerializedFMUstateSize);
 
-    *size = FMU_STATE_SIZE;
+    *size = sizeof(ModelInstance);
 
     return fmi2OK;
 }
@@ -514,11 +514,11 @@ fmi2Status fmi2SerializeFMUstate(fmi2Component c, fmi2FMUstate FMUstate, fmi2Byt
         return fmi2Error;
     }
 
-    if (invalidNumber(S, "fmi2SerializeFMUstate", "size", size, FMU_STATE_SIZE)) {
+    if (invalidNumber(S, "fmi2SerializeFMUstate", "size", size, sizeof(ModelInstance))) {
         return fmi2Error;
     }
 
-    memcpy(serializedState, FMUstate, FMU_STATE_SIZE);
+    memcpy(serializedState, FMUstate, sizeof(ModelInstance));
 
     return fmi2OK;
 }
@@ -527,15 +527,15 @@ fmi2Status fmi2DeSerializeFMUstate (fmi2Component c, const fmi2Byte serializedSt
 
     ASSERT_STATE(DeSerializeFMUstate);
 
-    if (invalidNumber(S, "fmi2DeSerializeFMUstate", "size", size, FMU_STATE_SIZE)) {
+    if (invalidNumber(S, "fmi2DeSerializeFMUstate", "size", size, sizeof(ModelInstance))) {
         return fmi2Error;
     }
 
     if (*FMUstate == NULL) {
-        *FMUstate = malloc(FMU_STATE_SIZE);
+        *FMUstate = calloc(1, sizeof(ModelInstance));
     }
 
-    memcpy(*FMUstate, serializedState, FMU_STATE_SIZE);
+    memcpy(*FMUstate, serializedState, sizeof(ModelInstance));
 
     return fmi2OK;
 }
