@@ -108,21 +108,11 @@ ModelInstance *createModelInstance(
 
     comp->isDirtyValues = true;
 
-//#if NZ > 0
-//    comp->z    = calloc(sizeof(double), NZ);
-//    comp->prez = calloc(sizeof(double), NZ);
-//#else
-//    comp->z    = NULL;
-//    comp->prez = NULL;
-//#endif
-
     return comp;
 }
 
 void freeModelInstance(ModelInstance *comp) {
     free((void *)comp->instanceName);
-    //free(comp->z);
-    //free(comp->prez);
     free(comp);
 }
 
