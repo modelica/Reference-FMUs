@@ -466,7 +466,7 @@ fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {
     ASSERT_STATE(GetFMUstate);
 
     *FMUstate = getFMUState(S);
-    
+
     return fmi2OK;
 }
 
@@ -488,7 +488,7 @@ fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate* FMUstate) {
     ASSERT_STATE(FreeFMUstate);
 
     free(*FMUstate);
-    
+
     *FMUstate = NULL;
 
     return fmi2OK;
