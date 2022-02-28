@@ -79,7 +79,6 @@ ModelInstance *createModelInstance(
         comp->instanceName         = strdup(instanceName);
         comp->resourceLocation     = resourceLocation ? strdup(resourceLocation) : NULL;
         comp->status               = OK;
-        comp->modelData            = (ModelData *)calloc(1, sizeof(ModelData));
         comp->logEvents            = loggingOn;
         comp->logErrors            = true; // always log errors
         comp->nSteps               = 0;
@@ -87,7 +86,7 @@ ModelInstance *createModelInstance(
         comp->eventModeUsed        = false;
     }
 
-    if (!comp || !comp->modelData || !comp->instanceName) {
+    if (!comp || !comp->instanceName) {
         logError(comp, "Out of memory.");
         return NULL;
     }
@@ -108,21 +107,11 @@ ModelInstance *createModelInstance(
 
     comp->isDirtyValues = true;
 
-#if NZ > 0
-    comp->z    = calloc(sizeof(double), NZ);
-    comp->prez = calloc(sizeof(double), NZ);
-#else
-    comp->z    = NULL;
-    comp->prez = NULL;
-#endif
-
     return comp;
 }
 
 void freeModelInstance(ModelInstance *comp) {
     free((void *)comp->instanceName);
-    free(comp->z);
-    free(comp->prez);
     free(comp);
 }
 
@@ -464,6 +453,37 @@ Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueRe
 }
 #endif
 
+void* getFMUState(ModelInstance* comp) {
+
+    ModelInstance* fmuState = (ModelInstance*)calloc(1, sizeof(ModelInstance));
+
+    memcpy(fmuState, comp, sizeof(ModelInstance));
+
+    return fmuState;
+}
+
+void setFMUState(ModelInstance* comp, void* FMUState) {
+
+    ModelInstance* s = (ModelInstance*)FMUState;
+
+    comp->time = s->time;
+    comp->status = s->status;
+    comp->state = s->state;
+    comp->newDiscreteStatesNeeded = s->newDiscreteStatesNeeded;
+    comp->terminateSimulation = s->terminateSimulation;
+    comp->nominalsOfContinuousStatesChanged = s->nominalsOfContinuousStatesChanged;
+    comp->valuesOfContinuousStatesChanged = s->valuesOfContinuousStatesChanged;
+    comp->nextEventTimeDefined = s->nextEventTimeDefined;
+    comp->nextEventTime = s->nextEventTime;
+    comp->clocksTicked = s->clocksTicked;
+    comp->isDirtyValues = s->isDirtyValues;
+    comp->modelData = s->modelData;
+#if NZ > 0
+    memcpy(comp->z, s->z, NZ * sizeof(double));
+#endif
+    comp->nSteps = s->nSteps;
+}
+
 void doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
 
 #if NX > 0
@@ -489,17 +509,17 @@ void doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
     *stateEvent = false;
 
 #if NZ > 0
-    getEventIndicators(comp, comp->z, NZ);
+    double z[NZ] = { 0.0 };
+
+    getEventIndicators(comp, z, NZ);
 
     // check for zero-crossings
     for (int i = 0; i < NZ; i++) {
-        *stateEvent |= comp->prez[i] * comp->z[i] < 0;
+        *stateEvent |= comp->z[i] * z[i] < 0;
     }
 
     // remember the current event indicators
-    double* temp = comp->z;
-    comp->z = comp->prez;
-    comp->prez = temp;
+    memcpy(comp->z, z, sizeof(double) * NZ);
 #endif
 
     // time event

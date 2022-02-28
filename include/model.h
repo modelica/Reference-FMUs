@@ -136,11 +136,12 @@ typedef struct {
 
     bool isDirtyValues;
 
-    ModelData *modelData;
+    ModelData modelData;
 
+#if NZ > 0
     // event indicators
-    double *z;
-    double *prez;
+    double z[NZ];
+#endif
 
     // internal solver steps
     int nSteps;
@@ -210,8 +211,11 @@ Status setDebugLogging(ModelInstance *comp, bool loggingOn, size_t nCategories, 
 void logEvent(ModelInstance *comp, const char *message, ...);
 void logError(ModelInstance *comp, const char *message, ...);
 
+void* getFMUState(ModelInstance* comp);
+void setFMUState(ModelInstance* comp, void* FMUState);
+
 // shorthand to access the variables
-#define M(v) (comp->modelData->v)
+#define M(v) (comp->modelData.v)
 
 // "stringification" macros
 #define xstr(s) str(s)

@@ -460,7 +460,7 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
 
 #if NZ > 0
     // initialize event indicators
-    getEventIndicators(S, S->prez, NZ);
+    getEventIndicators(S, S->z, NZ);
 #endif
 
     return status;
@@ -910,9 +910,7 @@ fmi3Status fmi3GetFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
 
     ASSERT_STATE(GetFMUState);
 
-    ModelData *modelData = (ModelData *)calloc(1, sizeof(ModelData));
-    memcpy(modelData, S->modelData, sizeof(ModelData));
-    *FMUState = modelData;
+    *FMUState = getFMUState(S);
 
     return fmi3OK;
 }
@@ -921,8 +919,11 @@ fmi3Status fmi3SetFMUState(fmi3Instance instance, fmi3FMUState FMUState) {
 
     ASSERT_STATE(SetFMUState);
 
-    ModelData *modelData = FMUState;
-    memcpy(S->modelData, modelData, sizeof(ModelData));
+    if (nullPointer(S, "fmi3SetFMUState", "FMUState", FMUState)) {
+        return fmi3Error;
+    }
+
+    setFMUState(S, FMUState);
 
     return fmi3OK;
 }
@@ -931,8 +932,8 @@ fmi3Status fmi3FreeFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
 
     ASSERT_STATE(FreeFMUState);
 
-    ModelData *modelData = *FMUState;
-    free(modelData);
+    free(*FMUState);
+
     *FMUState = NULL;
 
     return fmi3OK;
@@ -944,9 +945,10 @@ fmi3Status fmi3SerializedFMUStateSize(fmi3Instance instance,
 
     UNUSED(instance);
     UNUSED(FMUState);
+
     ASSERT_STATE(SerializedFMUStateSize);
 
-    *size = sizeof(ModelData);
+    *size = sizeof(ModelInstance);
 
     return fmi3OK;
 }
@@ -962,11 +964,11 @@ fmi3Status fmi3SerializeFMUState(fmi3Instance instance,
         return fmi3Error;
     }
 
-    if (invalidNumber(S, "fmi3SerializeFMUState", "size", size, sizeof(ModelData))) {
+    if (invalidNumber(S, "fmi3SerializeFMUState", "size", size, sizeof(ModelInstance))) {
         return fmi3Error;
     }
 
-    memcpy(serializedState, FMUState, sizeof(ModelData));
+    memcpy(serializedState, FMUState, sizeof(ModelInstance));
 
     return fmi3OK;
 }
@@ -978,14 +980,15 @@ fmi3Status fmi3DeSerializeFMUState(fmi3Instance instance,
 
     ASSERT_STATE(DeSerializeFMUState);
 
-    if (*FMUState == NULL) {
-        *FMUState = (fmi3FMUState *)calloc(1, sizeof(ModelData));
+    if (invalidNumber(S, "fmi3DeSerializeFMUState", "size", size, sizeof(ModelInstance))) {
+        return fmi3Error;
     }
 
-    if (invalidNumber(S, "fmi3DeSerializeFMUState", "size", size, sizeof(ModelData)))
-        return fmi3Error;
+    if (*FMUState == NULL) {
+        *FMUState = calloc(1, sizeof(ModelInstance));
+    }
 
-    memcpy(*FMUState, serializedState, sizeof(ModelData));
+    memcpy(*FMUState, serializedState, sizeof(ModelInstance));
 
     return fmi3OK;
 }

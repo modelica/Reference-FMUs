@@ -32,6 +32,9 @@
 #define FIXED_SOLVER_STEP 0.1
 #define DEFAULT_STOP_TIME 2
 
+#define STRING_MAX_LEN 128
+#define BINARY_MAX_LEN 128
+
 typedef enum {
     vr_time,
     vr_fixed_real_parameter,
@@ -56,9 +59,9 @@ typedef struct {
     double      real_discrete;
     int         integer;
     bool        boolean;
-    const char* string;
+    char        string[STRING_MAX_LEN];
     size_t      binary_size;
-    const char* binary;
+    char        binary[BINARY_MAX_LEN];
 } ModelData;
 
 extern const char* STRING_START;
