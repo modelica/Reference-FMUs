@@ -1464,7 +1464,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
         return fmi3Error;
     }
 
-    const fmi3Float64 nextCommunicationPoint = currentCommunicationPoint + communicationStepSize + epsilon(S->time);
+    const fmi3Float64 nextCommunicationPoint = currentCommunicationPoint + communicationStepSize + EPSILON;
 
     fmi3Boolean nextCommunicationPointReached;
 

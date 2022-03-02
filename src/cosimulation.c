@@ -124,10 +124,6 @@ void reset(ModelInstance* comp) {
     comp->isDirtyValues = true;
 }
 
-double epsilon(double value) {
-    return (1.0 + fabs(value)) * DBL_EPSILON;
-}
-
 bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected) {
 
     if (actual != expected) {
