@@ -47,7 +47,7 @@ if (${FMI_VERSION} GREATER 2)
   if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
     set (FMI_PLATFORM x86_64-${FMI_PLATFORM})
   else ()
-    set (FMI_PLATFORM i686-${FMI_PLATFORM})
+    set (FMI_PLATFORM x86-${FMI_PLATFORM})
   endif ()
 
 else ()
