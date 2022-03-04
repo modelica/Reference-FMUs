@@ -87,7 +87,7 @@ struct FMI3Functions_ {
     fmi3FreeFMUStateTYPE                    *fmi3FreeFMUState;
     fmi3SerializedFMUStateSizeTYPE          *fmi3SerializedFMUStateSize;
     fmi3SerializeFMUStateTYPE               *fmi3SerializeFMUState;
-    fmi3DeSerializeFMUStateTYPE             *fmi3DeSerializeFMUState;
+    fmi3DeserializeFMUStateTYPE             *fmi3DeserializeFMUState;
 
     /* Getting partial derivatives */
     fmi3GetDirectionalDerivativeTYPE        *fmi3GetDirectionalDerivative;
@@ -412,7 +412,7 @@ FMI_STATIC fmi3Status FMI3SerializeFMUState(FMIInstance *instance,
     fmi3Byte serializedState[],
     size_t size);
 
-FMI_STATIC fmi3Status FMI3DeSerializeFMUState(FMIInstance *instance,
+FMI_STATIC fmi3Status FMI3DeserializeFMUState(FMIInstance *instance,
     const fmi3Byte serializedState[],
     size_t size,
     fmi3FMUState* FMUState);
