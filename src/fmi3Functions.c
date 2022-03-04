@@ -174,7 +174,7 @@ do { \
 #define MASK_fmi3FreeFMUState             MASK_AnyState
 #define MASK_fmi3SerializedFMUStateSize   MASK_AnyState
 #define MASK_fmi3SerializeFMUState        MASK_AnyState
-#define MASK_fmi3DeSerializeFMUState      MASK_AnyState
+#define MASK_fmi3DeserializeFMUState      MASK_AnyState
 
 /* Getting partial derivatives */
 #define MASK_fmi3GetDirectionalDerivative (InitializationMode | EventMode | ContinuousTimeMode | Terminated)
@@ -973,14 +973,14 @@ fmi3Status fmi3SerializeFMUState(fmi3Instance instance,
     return fmi3OK;
 }
 
-fmi3Status fmi3DeSerializeFMUState(fmi3Instance instance,
+fmi3Status fmi3DeserializeFMUState(fmi3Instance instance,
     const fmi3Byte serializedState[],
     size_t size,
     fmi3FMUState* FMUState) {
 
-    ASSERT_STATE(DeSerializeFMUState);
+    ASSERT_STATE(DeserializeFMUState);
 
-    if (invalidNumber(S, "fmi3DeSerializeFMUState", "size", size, sizeof(ModelInstance))) {
+    if (invalidNumber(S, "fmi3DeserializeFMUState", "size", size, sizeof(ModelInstance))) {
         return fmi3Error;
     }
 

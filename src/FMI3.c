@@ -190,7 +190,7 @@ static fmi3Status loadSymbols3(FMIInstance *instance) {
     LOAD_SYMBOL(FreeFMUState);
     LOAD_SYMBOL(SerializedFMUStateSize);
     LOAD_SYMBOL(SerializeFMUState);
-    LOAD_SYMBOL(DeSerializeFMUState);
+    LOAD_SYMBOL(DeserializeFMUState);
 
     /* Getting partial derivatives */
     LOAD_SYMBOL(GetDirectionalDerivative);
@@ -806,11 +806,11 @@ fmi3Status FMI3SerializeFMUState(FMIInstance *instance,
     CALL_ARGS(SerializeFMUState, "FMUstate=0x%p, serializedState=0x%p, size=%zu", FMUState, serializedState, size);
 }
 
-fmi3Status FMI3DeSerializeFMUState(FMIInstance *instance,
+fmi3Status FMI3DeserializeFMUState(FMIInstance *instance,
     const fmi3Byte serializedState[],
     size_t size,
     fmi3FMUState* FMUState) {
-    CALL_ARGS(DeSerializeFMUState, "serializedState=0x%p, size=%zu, FMUState=0x%p", serializedState, size, FMUState);
+    CALL_ARGS(DeserializeFMUState, "serializedState=0x%p, size=%zu, FMUState=0x%p", serializedState, size, FMUState);
 }
 
 /* Getting partial derivatives */
