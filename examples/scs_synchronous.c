@@ -46,15 +46,15 @@ int main(int argc, char* argv[]) {
     while (time < 10) {
 
         // Model Partition 1 is active every second
-        CALL(FMI3ActivateModelPartition(S, vr_inClock1, 0, time));
+        CALL(FMI3ActivateModelPartition(S, vr_inClock1, time));
 
         // Model Partition 2 is active at 0, 1, 8, and 9
         if (time % 8 == 0 || (time - 1) % 8 == 0) {
-            CALL(FMI3ActivateModelPartition(S, vr_inClock2, 0, time));
+            CALL(FMI3ActivateModelPartition(S, vr_inClock2, time));
         }
 
         if (countdownClocksQualifier[0] == fmi3IntervalChanged) {
-            CALL(FMI3ActivateModelPartition(S, vr_inClock3, 0, time));
+            CALL(FMI3ActivateModelPartition(S, vr_inClock3, time));
             countdownClocksQualifier[0] = fmi3IntervalUnchanged;
         }
 

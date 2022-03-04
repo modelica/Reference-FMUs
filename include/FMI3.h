@@ -570,7 +570,6 @@ Functions for Scheduled Execution
 
 FMI_STATIC fmi3Status FMI3ActivateModelPartition(FMIInstance *instance,
     fmi3ValueReference clockReference,
-    size_t clockElementIndex,
     fmi3Float64 activationTime);
 
 #ifdef __cplusplus

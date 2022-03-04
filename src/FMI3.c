@@ -1112,7 +1112,6 @@ fmi3Status FMI3DoStep(FMIInstance *instance,
 
 fmi3Status FMI3ActivateModelPartition(FMIInstance *instance,
     fmi3ValueReference clockReference,
-    size_t clockElementIndex,
     fmi3Float64 activationTime) {
     CALL_ARGS(ActivateModelPartition,
         "clockReference=%u, activationTime=%.16g",
