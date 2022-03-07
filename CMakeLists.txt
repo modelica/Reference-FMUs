@@ -123,6 +123,10 @@ target_compile_definitions(${TARGET_NAME} PRIVATE
   DISABLE_PREFIX
 )
 
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Intel")
+  target_link_options(${TARGET_NAME} PRIVATE "-static")
+endif()
+
 if (${FMI_VERSION} EQUAL 1 AND "${FMI_TYPE}" STREQUAL CS)
   target_compile_definitions(${TARGET_NAME} PRIVATE FMI_COSIMULATION)
 endif()
