@@ -3,6 +3,7 @@
   fmiVersion="2.0"
   modelName="BouncingBall"
   description="This model calculates the trajectory, over time, of a ball dropped from a height of 1 m."
+  generationTool="Reference FMUs (development build)"
   guid="{8c4e810f-3df3-4a00-8276-176fa3c9f003}"
   numberOfEventIndicators="1">
 
@@ -56,7 +57,7 @@
     <Category name="logStatusError" description="Log error messages"/>
   </LogCategories>
 
-  <DefaultExperiment startTime="0" stopTime="3" stepSize="1e-3"/>
+  <DefaultExperiment startTime="0" stopTime="3" stepSize="1e-2"/>
 
   <ModelVariables>
     <ScalarVariable name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time">

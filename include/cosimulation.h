@@ -3,6 +3,8 @@
 
 #include "model.h"
 
-Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn, double* lastSuccessfulTime);
+#define EPSILON (FIXED_SOLVER_STEP * 1e-6)
+
+void doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent);
 
 #endif /* cosimulation_h */

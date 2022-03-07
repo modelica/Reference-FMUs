@@ -18,6 +18,10 @@
 #include "fmi3Functions.h"
 #endif
 
+#ifdef _MSC_VER
+#define strdup _strdup
+#endif
+
 
 ModelInstance *createModelInstance(
     loggerType cbLogger,
@@ -27,101 +31,97 @@ ModelInstance *createModelInstance(
     const char *instantiationToken,
     const char *resourceLocation,
     bool loggingOn,
-    InterfaceType interfaceType,
-    bool returnEarly) {
+    InterfaceType interfaceType) {
 
     ModelInstance *comp = NULL;
 
-    if (!cbLogger) {
-        return NULL;
-    }
-
     if (!instanceName || strlen(instanceName) == 0) {
-        cbLogger(componentEnvironment, "?", Error, "error", "Missing instance name.");
+        if (cbLogger) {
+#if FMI_VERSION < 3
+            cbLogger(componentEnvironment, "?", Error, "error", "Missing instance name.");
+#else
+            cbLogger(componentEnvironment, Error, "error", "Missing instance name.");
+#endif
+        }
         return NULL;
     }
 
     if (!instantiationToken || strlen(instantiationToken) == 0) {
-        cbLogger(componentEnvironment, instanceName, Error, "error", "Missing GUID.");
+        if (cbLogger) {
+#if FMI_VERSION < 3
+            cbLogger(componentEnvironment, instanceName, Error, "error", "Missing GUID.");
+#else
+            cbLogger(componentEnvironment, Error, "error", "Missing instantiationToken.");
+#endif
+        }
         return NULL;
     }
 
     if (strcmp(instantiationToken, INSTANTIATION_TOKEN)) {
-        cbLogger(componentEnvironment, instanceName, Error, "error", "Wrong GUID.");
+        if (cbLogger) {
+#if FMI_VERSION < 3
+            cbLogger(componentEnvironment, instanceName, Error, "error", "Wrong GUID.");
+#else
+            cbLogger(componentEnvironment, Error, "error", "Wrong instantiationToken.");
+#endif
+        }
         return NULL;
     }
 
     comp = (ModelInstance *)calloc(1, sizeof(ModelInstance));
 
     if (comp) {
-
-        // set the callbacks
         comp->componentEnvironment = componentEnvironment;
-        comp->logger = cbLogger;
-        comp->intermediateUpdate = intermediateUpdate;
-        comp->lockPreemtion = NULL;
-        comp->unlockPreemtion = NULL;
-
-        comp->instanceName = (char *)calloc(1 + strlen(instanceName), sizeof(char));
-
-        // resourceLocation is NULL for FMI 1.0 ME
-        if (resourceLocation) {
-            comp->resourceLocation = (char *)calloc(1 + strlen(resourceLocation), sizeof(char));
-            strcpy((char *)comp->resourceLocation, (char *)resourceLocation);
-        } else {
-            comp->resourceLocation = NULL;
-        }
-
-        comp->status = OK;
-
-        comp->modelData = (ModelData *)calloc(1, sizeof(ModelData));
-
-        comp->logEvents = loggingOn;
-        comp->logErrors = true; // always log errors
-
-        comp->nSteps = 0;
-
-        comp->returnEarly = false;
+        comp->logger               = cbLogger;
+        comp->intermediateUpdate   = intermediateUpdate;
+        comp->lockPreemtion        = NULL;
+        comp->unlockPreemtion      = NULL;
+        comp->instanceName         = strdup(instanceName);
+        comp->resourceLocation     = resourceLocation ? strdup(resourceLocation) : NULL;
+        comp->status               = OK;
+        comp->logEvents            = loggingOn;
+        comp->logErrors            = true; // always log errors
+        comp->nSteps               = 0;
+        comp->earlyReturnAllowed   = false;
+        comp->eventModeUsed        = false;
     }
 
-    if (!comp || !comp->modelData || !comp->instanceName) {
+    if (!comp || !comp->instanceName) {
         logError(comp, "Out of memory.");
         return NULL;
     }
 
-    comp->time = 0; // overwrite in fmi*SetupExperiment, fmi*SetTime
-    strcpy((char *)comp->instanceName, (char *)instanceName);
-    comp->type = interfaceType;
+    comp->time                              = 0.0;  // overwrite in fmi*SetupExperiment, fmi*SetTime
+    comp->type                              = interfaceType;
 
-    comp->state = Instantiated;
-    comp->isNewEventIteration = false;
+    comp->state                             = Instantiated;
 
-    comp->newDiscreteStatesNeeded = false;
-    comp->terminateSimulation = false;
+    comp->newDiscreteStatesNeeded           = false;
+    comp->terminateSimulation               = false;
     comp->nominalsOfContinuousStatesChanged = false;
-    comp->valuesOfContinuousStatesChanged = false;
-    comp->nextEventTimeDefined = false;
-    comp->nextEventTime = 0;
+    comp->valuesOfContinuousStatesChanged   = false;
+    comp->nextEventTimeDefined              = false;
+    comp->nextEventTime                     = 0;
 
-    setStartValues(comp); // to be implemented by the includer of this file
-    comp->isDirtyValues = true; // because we just called setStartValues
+    setStartValues(comp);
 
-#if NZ > 0
-    comp->z    = calloc(sizeof(double), NZ);
-    comp->prez = calloc(sizeof(double), NZ);
-#else
-    comp->z    = NULL;
-    comp->prez = NULL;
-#endif
+    comp->isDirtyValues = true;
 
     return comp;
 }
 
 void freeModelInstance(ModelInstance *comp) {
     free((void *)comp->instanceName);
-    free(comp->z);
-    free(comp->prez);
     free(comp);
+}
+
+void reset(ModelInstance* comp) {
+    comp->state = Instantiated;
+    comp->time = 0.0;
+    comp->nSteps = 0;
+    comp->status = OK;
+    setStartValues(comp);
+    comp->isDirtyValues = true;
 }
 
 bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected) {
@@ -136,6 +136,9 @@ bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t a
 }
 
 bool invalidState(ModelInstance *comp, const char *f, int statesExpected) {
+
+    UNUSED(f);
+    UNUSED(statesExpected);
 
     if (!comp) {
         return true;
@@ -191,6 +194,10 @@ Status setDebugLogging(ModelInstance *comp, bool loggingOn, size_t nCategories, 
 
 static void logMessage(ModelInstance *comp, int status, const char *category, const char *message, va_list args) {
 
+    if (!comp->logger) {
+        return;
+    }
+
     va_list args1;
     size_t len = 0;
     char *buf = "";
@@ -205,7 +212,11 @@ static void logMessage(ModelInstance *comp, int status, const char *category, co
     va_end(args1);
 
     // no need to distinguish between FMI versions since we're not using variadic arguments
+#if FMI_VERSION < 3
     comp->logger(comp->componentEnvironment, comp->instanceName, status, category, buf);
+#else
+    comp->logger(comp->componentEnvironment, status, category, buf);
+#endif
 
     free(buf);
 }
@@ -233,328 +244,296 @@ void logError(ModelInstance *comp, const char *message, ...) {
 // default implementations
 #if NZ < 1
 void getEventIndicators(ModelInstance *comp, double z[], size_t nz) {
-    UNUSED(comp)
-    UNUSED(z)
-    UNUSED(nz)
+    UNUSED(comp);
+    UNUSED(z);
+    UNUSED(nz);
     // do nothing
 }
 #endif
 
 #ifndef GET_UINT16
 Status getUInt16(ModelInstance* comp, ValueReference vr, uint16_t *value, size_t *index) {
-    UNUSED(comp)
-    UNUSED(vr)
-    UNUSED(value)
-    UNUSED(index)
+    UNUSED(comp);
+    UNUSED(vr);
+    UNUSED(value);
+    UNUSED(index);
     return Error;
 }
 #endif
 
 #ifndef GET_INT32
 Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
-    UNUSED(comp)
-    UNUSED(vr)
-    UNUSED(value)
-    UNUSED(index)
+    UNUSED(comp);
+    UNUSED(vr);
+    UNUSED(value);
+    UNUSED(index);
+    return Error;
+}
+#endif
+
+#ifndef GET_UINT64
+Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t *value, size_t *index) {
+    UNUSED(comp);
+    UNUSED(vr);
+    UNUSED(value);
+    UNUSED(index);
     return Error;
 }
 #endif
 
 #ifndef GET_BOOLEAN
 Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *index) {
-    UNUSED(comp)
-    UNUSED(vr)
-    UNUSED(value)
-    UNUSED(index)
+    UNUSED(comp);
+    UNUSED(vr);
+    UNUSED(value);
+    UNUSED(index);
     return Error;
 }
 #endif
 
 #ifndef GET_STRING
 Status getString(ModelInstance* comp, ValueReference vr, const char **value, size_t *index) {
-    UNUSED(comp)
-    UNUSED(vr)
-    UNUSED(value)
-    UNUSED(index)
+    UNUSED(comp);
+    UNUSED(vr);
+    UNUSED(value);
+    UNUSED(index);
     return Error;
 }
 #endif
 
 #ifndef GET_BINARY
 Status getBinary(ModelInstance* comp, ValueReference vr, size_t size[], const char *value[], size_t *index) {
-    UNUSED(comp)
-    UNUSED(vr)
-    UNUSED(size)
-    UNUSED(value)
-    UNUSED(index)
+    UNUSED(comp);
+    UNUSED(vr);
+    UNUSED(size);
+    UNUSED(value);
+    UNUSED(index);
     return Error;
 }
 #endif
 
 #ifndef SET_FLOAT64
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
-    UNUSED(comp)
-    UNUSED(vr)
-    UNUSED(value)
-    UNUSED(index)
+    UNUSED(comp);
+    UNUSED(vr);
+    UNUSED(value);
+    UNUSED(index);
     return Error;
 }
 #endif
 
 #ifndef SET_UINT16
 Status setUInt16(ModelInstance* comp, ValueReference vr, const uint16_t *value, size_t *index) {
-    UNUSED(comp)
-    UNUSED(vr)
-    UNUSED(value)
-    UNUSED(index)
+    UNUSED(comp);
+    UNUSED(vr);
+    UNUSED(value);
+    UNUSED(index);
     return Error;
 }
 #endif
 
 #ifndef SET_INT32
 Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t *index) {
-    UNUSED(comp)
-    UNUSED(vr)
-    UNUSED(value)
-    UNUSED(index)
+    UNUSED(comp);
+    UNUSED(vr);
+    UNUSED(value);
+    UNUSED(index);
+    return Error;
+}
+#endif
+
+#ifndef SET_UINT64
+Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t *value, size_t *index) {
+    UNUSED(comp);
+    UNUSED(vr);
+    UNUSED(value);
+    UNUSED(index);
     return Error;
 }
 #endif
 
 #ifndef SET_BOOLEAN
 Status setBoolean(ModelInstance* comp, ValueReference vr, const bool *value, size_t *index) {
-    UNUSED(comp)
-    UNUSED(vr)
-    UNUSED(value)
-    UNUSED(index)
+    UNUSED(comp);
+    UNUSED(vr);
+    UNUSED(value);
+    UNUSED(index);
     return Error;
 }
 #endif
 
 #ifndef SET_STRING
 Status setString(ModelInstance* comp, ValueReference vr, const char *const *value, size_t *index) {
-    UNUSED(comp)
-    UNUSED(vr)
-    UNUSED(value)
-    UNUSED(index)
+    UNUSED(comp);
+    UNUSED(vr);
+    UNUSED(value);
+    UNUSED(index);
     return Error;
 }
 #endif
 
 #ifndef SET_BINARY
 Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], const char *const value[], size_t *index) {
-    UNUSED(comp)
-    UNUSED(vr)
-    UNUSED(size)
-    UNUSED(value)
-    UNUSED(index)
+    UNUSED(comp);
+    UNUSED(vr);
+    UNUSED(size);
+    UNUSED(value);
+    UNUSED(index);
     return Error;
 }
 #endif
 
 #ifndef ACTIVATE_CLOCK
 Status activateClock(ModelInstance* comp, ValueReference vr) {
-    UNUSED(comp)
-    UNUSED(vr)
+    UNUSED(comp);
+    UNUSED(vr);
     return Error;
 }
 #endif
 
 #ifndef GET_CLOCK
 Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
-    UNUSED(comp)
-    UNUSED(vr)
-    UNUSED(value)
+    UNUSED(comp);
+    UNUSED(vr);
+    UNUSED(value);
     return Error;
 }
 #endif
 
 #ifndef GET_INTERVAL
 Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier) {
-    UNUSED(comp)
-    UNUSED(vr)
-    UNUSED(interval)
-    UNUSED(qualifier)
+    UNUSED(comp);
+    UNUSED(vr);
+    UNUSED(interval);
+    UNUSED(qualifier);
     return Error;
 }
 #endif
 
 #ifndef ACTIVATE_MODEL_PARTITION
 Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime) {
-    UNUSED(comp)
-    UNUSED(vr)
-    UNUSED(activationTime)
+    UNUSED(comp);
+    UNUSED(vr);
+    UNUSED(activationTime);
     return Error;
 }
 #endif
 
 #if NX < 1
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
-    UNUSED(comp)
-    UNUSED(x)
-    UNUSED(nx)
+    UNUSED(comp);
+    UNUSED(x);
+    UNUSED(nx);
 }
 
 void setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
-    UNUSED(comp)
-    UNUSED(x)
-    UNUSED(nx)
+    UNUSED(comp);
+    UNUSED(x);
+    UNUSED(nx);
 }
 
 void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
-    UNUSED(comp)
-    UNUSED(dx)
-    UNUSED(nx)
+    UNUSED(comp);
+    UNUSED(dx);
+    UNUSED(nx);
 }
 #endif
 
 #ifndef GET_PARTIAL_DERIVATIVE
 Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative) {
-    UNUSED(comp)
-    UNUSED(unknown)
-    UNUSED(known)
-    UNUSED(partialDerivative)
+    UNUSED(comp);
+    UNUSED(unknown);
+    UNUSED(known);
+    UNUSED(partialDerivative);
     return Error;
 }
 #endif
 
-Status doStep(ModelInstance *comp, double t, double tNext, int* earlyReturn, double* lastSuccessfulTime) {
+void* getFMUState(ModelInstance* comp) {
 
-    UNUSED(t)  // TODO: check t == comp->time ?
+    ModelInstance* fmuState = (ModelInstance*)calloc(1, sizeof(ModelInstance));
 
-    bool stateEvent, timeEvent;
-    Status status = OK;
+    memcpy(fmuState, comp, sizeof(ModelInstance));
 
+    return fmuState;
+}
+
+void setFMUState(ModelInstance* comp, void* FMUState) {
+
+    ModelInstance* s = (ModelInstance*)FMUState;
+
+    comp->time = s->time;
+    comp->status = s->status;
+    comp->state = s->state;
+    comp->newDiscreteStatesNeeded = s->newDiscreteStatesNeeded;
+    comp->terminateSimulation = s->terminateSimulation;
+    comp->nominalsOfContinuousStatesChanged = s->nominalsOfContinuousStatesChanged;
+    comp->valuesOfContinuousStatesChanged = s->valuesOfContinuousStatesChanged;
+    comp->nextEventTimeDefined = s->nextEventTimeDefined;
+    comp->nextEventTime = s->nextEventTime;
+    comp->clocksTicked = s->clocksTicked;
+    comp->isDirtyValues = s->isDirtyValues;
+    comp->modelData = s->modelData;
 #if NZ > 0
-    double *temp = NULL;
+    memcpy(comp->z, s->z, NZ * sizeof(double));
 #endif
+    comp->nSteps = s->nSteps;
+}
+
+void doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
 
 #if NX > 0
     double  x[NX] = { 0 };
     double dx[NX] = { 0 };
+
+    getContinuousStates(comp, x, NX);
+    getDerivatives(comp, dx, NX);
+
+    // forward Euler step
+    for (int i = 0; i < NX; i++) {
+        x[i] += FIXED_SOLVER_STEP * dx[i];
+    }
+
+    setContinuousStates(comp, x, NX);
 #endif
 
-    double epsilon = (1.0 + fabs(comp->time)) * DBL_EPSILON;
+    comp->nSteps++;
 
-    while (comp->time + FIXED_SOLVER_STEP < tNext + epsilon) {
+    comp->time = comp->nSteps * FIXED_SOLVER_STEP;
 
-#if NX > 0
-        getContinuousStates(comp, x, NX);
-        getDerivatives(comp, dx, NX);
-
-        // forward Euler step
-        for (int i = 0; i < NX; i++) {
-            x[i] += FIXED_SOLVER_STEP * dx[i];
-        }
-
-        setContinuousStates(comp, x, NX);
-#endif
-
-        stateEvent = false;
+    // state event
+    *stateEvent = false;
 
 #if NZ > 0
-        getEventIndicators(comp, comp->z, NZ);
+    double z[NZ] = { 0.0 };
 
-        // check for zero-crossings
-        for (int i = 0; i < NZ; i++) {
-            stateEvent |= comp->prez[i] < 0 && comp->z[i] >= 0;
-            stateEvent |= comp->prez[i] > 0 && comp->z[i] <= 0;
-        }
+    getEventIndicators(comp, z, NZ);
 
-        // remember the current event indicators
-        temp = comp->z;
-        comp->z = comp->prez;
-        comp->prez = temp;
-#endif
-
-        // check for time event
-        timeEvent = comp->nextEventTimeDefined && (comp->time + FIXED_SOLVER_STEP * 1e-2) >= comp->nextEventTime;
-
-        // log events
-        if (timeEvent) logEvent(comp, "Time event detected at t=%g s.", comp->time);
-        if (stateEvent) logEvent(comp, "State event detected at t=%g s.", comp->time);
-
-        if (stateEvent || timeEvent) {
-
-            eventUpdate(comp);
-
-            comp->returnEarly = comp->nextEventTime < t + tNext;
-
-#if NZ > 0
-            // update previous event indicators
-            getEventIndicators(comp, comp->prez, NZ);
-#endif
-
-#if FMI_VERSION == 3
-            if (comp->intermediateUpdate) {
-
-                comp->state = IntermediateUpdateMode;
-
-                bool earlyReturnRequested;
-                double earlyReturnTime;
-
-                comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
-                                          comp->time,         // intermediateUpdateTime
-                                          comp->clocksTicked, // clocksTicked
-                                          false,              // intermediateVariableSetRequested
-                                          true,               // intermediateVariableGetAllowed
-                                          false,              // intermediateStepFinished
-                                          true,               // canReturnEarly
-                                          &earlyReturnRequested,
-                                          &earlyReturnTime);
-
-                comp->state = StepMode;
-
-                if (earlyReturnRequested) {
-                    *earlyReturn = 1;
-                    // TODO: continue to earlyReturnTime?
-                    return status;
-                }
-            }
-#endif
-        }
-
-        // terminate simulation, if requested by the model in the previous step
-        if (comp->terminateSimulation) {
-#if FMI_VERSION == 2
-            comp->state = StepFailed;
-#endif
-            return Discard; // enforce termination of the simulation loop
-        }
-
-        comp->time = FIXED_SOLVER_STEP * (++comp->nSteps);
-
-#if FMI_VERSION == 3
-        if (comp->intermediateUpdate) {
-
-            comp->state = IntermediateUpdateMode;
-
-            bool earlyReturnRequested;
-            double earlyReturnTime;
-
-            // call intermediate update callback
-            comp->intermediateUpdate((fmi3InstanceEnvironment)comp->componentEnvironment,
-                                      comp->time, // intermediateUpdateTime
-                                      false,      // clocksTicked
-                                      false,      // intermediateVariableSetRequested
-                                      true,       // intermediateVariableGetAllowed
-                                      true,       // intermediateStepFinished
-                                      true,       // canReturnEarly
-                                      &earlyReturnRequested,
-                                      &earlyReturnTime);
-
-            comp->state = StepMode;
-        }
-#endif
+    // check for zero-crossings
+    for (int i = 0; i < NZ; i++) {
+        *stateEvent |= comp->z[i] * z[i] < 0;
     }
 
-    if (earlyReturn) {
-        *earlyReturn = 0;
-    }
+    // remember the current event indicators
+    memcpy(comp->z, z, sizeof(double) * NZ);
+#endif
 
-    if (lastSuccessfulTime) {
-        *lastSuccessfulTime = comp->time;
-    }
+    // time event
+    *timeEvent = comp->nextEventTimeDefined && comp->time >= comp->nextEventTime;
 
-    return status;
+    bool earlyReturnRequested;
+    double earlyReturnTime;
+
+    // intermediate update
+    if (comp->intermediateUpdate) {
+        comp->intermediateUpdate(
+            comp->componentEnvironment, // instanceEnvironment
+            comp->time,                 // intermediateUpdateTime
+            false,                      // intermediateVariableSetRequested
+            true,                       // intermediateVariableGetAllowed
+            true,                       // intermediateStepFinished
+            false,                      // canReturnEarly
+            &earlyReturnRequested,      // earlyReturnRequested
+            &earlyReturnTime);          // earlyReturnTime
+    }
 }

@@ -3,6 +3,7 @@
   fmiVersion="2.0"
   modelName="Feedthrough"
   description="A model to test different variable types, causalities and variabilities"
+  generationTool="Reference FMUs (development build)"
   guid="{8c4e810f-3df3-4a00-8276-176fa3c9f004}"
   numberOfEventIndicators="0">
 

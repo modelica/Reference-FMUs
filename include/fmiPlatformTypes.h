@@ -10,7 +10,7 @@
    - October 2010: First public Version
 
 
-   Copyright © 2008-2010, MODELISAR consortium. All rights reserved.
+   Copyright(c) 2017, MODELICA Association Project FMI. All rights reserved.
    This file is licensed by the copyright holders under the BSD License
    (http://www.opensource.org/licenses/bsd-license.html):
 

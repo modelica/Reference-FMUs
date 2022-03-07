@@ -1,6 +1,8 @@
 #ifndef config_h
 #define config_h
 
+#include <stdint.h>
+
 // define class name and unique id
 #define MODEL_IDENTIFIER LinearTransform
 #define INSTANTIATION_TOKEN "{8c4e810f-3df3-4a00-8276-176fa3c9f000}"
@@ -13,8 +15,8 @@
 #define MODEL_EXCHANGE
 
 #define SET_FLOAT64
-#define GET_INT32
-#define SET_INT32
+#define GET_UINT64
+#define SET_UINT64
 #define EVENT_UPDATE
 
 #define FIXED_SOLVER_STEP 1
@@ -24,17 +26,20 @@
 #define N_MAX 5
 
 typedef enum {
-    vr_time, vr_m, vr_n, vr_u, vr_A, vr_y
+    vr_time,
+    vr_m,
+    vr_n,
+    vr_u,
+    vr_A,
+    vr_y
 } ValueReference;
 
 typedef struct {
-
-    int m;
-    int n;
+    uint64_t m;
+    uint64_t n;
     double u[N_MAX];
     double A[M_MAX][N_MAX];
     double y[M_MAX];
-
 } ModelData;
 
 #endif /* config_h */

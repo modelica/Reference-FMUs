@@ -7,6 +7,7 @@ A set of hand-coded FMUs for development, testing and debugging of the [Function
 - [BouncingBall](BouncingBall) - a bouncing ball model with state events
 - [Dahlquist](Dahlquist) - Dahlquist test equation
 - [Feedthrough](Feedthrough) - all variable types
+- [LinearTransform](LinearTransform) - arrays and structural parameters
 - [Resource](Resource) - load data from a file
 - [Stair](Stair) - a counter with time events
 - [VanDerPol](VanDerPol) - Van der Pol test equation
@@ -33,7 +34,7 @@ A set of hand-coded FMUs for development, testing and debugging of the [Function
 
 ## Build the FMUs
 
-To build the FMUs you need [CMake](https://cmake.org/) and a supported [build tool](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html) e.g. Visual Studio, Xcode or make:
+To build the FMUs you need [CMake](https://cmake.org/) and a supported [build tool](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html) e.g. Visual Studio &GreaterEqual; 2013 , Xcode or make:
 
 - download or clone the repository
 
@@ -57,7 +58,7 @@ The FMUs will be in the `dist` folder inside the selected build folder.
 
 ## License and attribution
 
-Copyright &copy; 2020 Modelica Association Project "FMI".
+Copyright &copy; 2021 Modelica Association Project "FMI".
 All rights reserved.
 The code is released under the [2-Clause BSD License](LICENSE.txt).
 

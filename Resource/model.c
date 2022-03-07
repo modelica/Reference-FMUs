@@ -16,57 +16,65 @@ void setStartValues(ModelInstance *comp) {
     M(y) = 0;
 }
 
-void calculateValues(ModelInstance *comp) {
-    // load the file
+Status calculateValues(ModelInstance *comp) {
 
+    // load the file
     FILE *file = NULL;
     char path[MAX_PATH_LENGTH] = "";
     char c = '\0';
-    const char *scheme1 = "file:///";
-    const char *scheme2 = "file:/";
 
     if (!comp->resourceLocation) {
-        // FMI 1.0 for Model Exchange doesn't have a resource location
-        return;
+        logError(comp, "Resource location must not be NULL.");
+        return Error;
     }
 
 #ifdef _WIN32
+
+#if FMI_VERSION < 3
     DWORD pathLen = MAX_PATH_LENGTH;
 
-#if FMI_VERSION < 3
-    if (PathCreateFromUrl(comp->resourceLocation, path, &pathLen, 0) != S_OK) {
-        return;
+    if (PathCreateFromUrlA(comp->resourceLocation, path, &pathLen, 0) != S_OK) {
+        logError(comp, "Failed to convert resource location to file system path.");
+        return Error;
     }
 #else
     strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
 #endif
 
-#if FMI_VERSION < 2
-    if (!PathAppend(path, "resources")) return;
+#if FMI_VERSION == 1
+    if (!PathAppendA(path, "resources") || !PathAppendA(path, "y.txt")) return Error;
+#elif FMI_VERSION == 2
+    if (!PathAppendA(path, "y.txt")) return Error;
+#else
+    if (!strncat(path, "y.txt", MAX_PATH_LENGTH)) return Error;
 #endif
-
-    if (!PathAppend(path, "y.txt")) return;
 
 #else
 
 #if FMI_VERSION < 3
+    const char *scheme1 = "file:///";
+    const char *scheme2 = "file:/";
+
     if (strncmp(comp->resourceLocation, scheme1, strlen(scheme1)) == 0) {
-        strncpy(path, &comp->resourceLocation[strlen(scheme1)] - 1, MAX_PATH_LENGTH);
+        strncpy(path, &comp->resourceLocation[strlen(scheme1)] - 1, MAX_PATH_LENGTH-1);
     } else if (strncmp(comp->resourceLocation, scheme2, strlen(scheme2)) == 0) {
-        strncpy(path, &comp->resourceLocation[strlen(scheme2) - 1], MAX_PATH_LENGTH);
+        strncpy(path, &comp->resourceLocation[strlen(scheme2) - 1], MAX_PATH_LENGTH-1);
     } else {
         logError(comp, "The resourceLocation must start with \"file:/\" or \"file:///\"");
-        return;
+        return Error;
     }
 #else
     strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
 #endif
 
-#if FMI_VERSION < 2
-    strncat(path, "/resources/y.txt", MAX_PATH_LENGTH);
+#if FMI_VERSION == 1
+    strncat(path, "/resources/y.txt", MAX_PATH_LENGTH-strlen(path)-1);
+#elif FMI_VERSION == 2
+    strncat(path, "/y.txt", MAX_PATH_LENGTH-strlen(path)-1);
 #else
-    strncat(path, "/y.txt", MAX_PATH_LENGTH);
+    strncat(path, "y.txt", MAX_PATH_LENGTH-strlen(path)-1);
 #endif
+    path[MAX_PATH_LENGTH-1] = 0;
 
 #endif
 
@@ -75,17 +83,19 @@ void calculateValues(ModelInstance *comp) {
 
     if (!file) {
         logError(comp, "Failed to open resource file %s.", path);
-        return;
+        return Error;
     }
 
     // read the first character
     c = (char)fgetc(file);
 
     // assign it to y
-    comp->modelData->y = c;
+    M(y) = c;
 
     // close the file
     fclose(file);
+
+    return OK;
 }
 
 

@@ -1,6 +1,41 @@
 #ifndef util_h
 #define util_h
 
+#include <math.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#ifdef _WIN32
+#include "shlwapi.h"
+#pragma comment(lib, "shlwapi.lib")
+#endif
+
+#if FMI_VERSION == 2
+#include "FMI2.h"
+#else
+#include "FMI3.h"
+#endif
+#include "config.h"
+
+
+// "stringification" macros
+#define xstr(s) str(s)
+#define str(s) #s
+
+#if FMI_VERSION == 2
+
+#if defined(_WIN32)
+
+#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "\\binaries\\win64\\" xstr(MODEL_IDENTIFIER) ".dll"
+#elif defined(__APPLE__)
+#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/darwin64/" xstr(MODEL_IDENTIFIER) ".dylib"
+#else
+#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/linux64/" xstr(MODEL_IDENTIFIER) ".so"
+#endif
+
+#else
 
 #if defined(_WIN32)
 #define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "\\binaries\\x86_64-windows\\" xstr(MODEL_IDENTIFIER) ".dll"
@@ -8,6 +43,8 @@
 #define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/x86_64-darwin/" xstr(MODEL_IDENTIFIER) ".dylib"
 #else
 #define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/x86_64-linux/" xstr(MODEL_IDENTIFIER) ".so"
+#endif
+
 #endif
 
 #ifndef min
@@ -19,30 +56,211 @@
 #endif
 
 // tag::CheckStatus[]
-#define CHECK_STATUS(S) status = S; if (status != fmi3OK) goto TERMINATE;
+#define CALL(f) status = f; if (status > FMIOK) goto TERMINATE;
 // end::CheckStatus[]
 
-static void cb_logMessage(fmi3InstanceEnvironment instanceEnvironment, fmi3String instanceName, fmi3Status status, fmi3String category, fmi3String message) {
+FILE *createOutputFile(const char *filename);
 
-    switch (status) {
-        case fmi3OK:
+#if FMI_VERSION == 2
+static const fmi2Real startTime = 0;
+static const fmi2Real stopTime = DEFAULT_STOP_TIME;
+static const fmi2Real h = FIXED_SOLVER_STEP;
+
+static fmi2Boolean eventEncountered;
+static fmi2Boolean earlyReturn;
+static fmi2Real lastSuccessfulTime;
+#else
+static const fmi3Float64 startTime = 0;
+static const fmi3Float64 stopTime = DEFAULT_STOP_TIME;
+static const fmi3Float64 h = FIXED_SOLVER_STEP;
+
+static fmi3Boolean eventEncountered;
+static fmi3Boolean terminateSimulation;
+static fmi3Boolean earlyReturn;
+static fmi3Float64 lastSuccessfulTime;
+#endif
+
+static FMIStatus status = FMIOK;
+static FILE *outputFile = NULL;
+static FMIInstance *S = NULL;
+static FILE *logFile = NULL;
+
+static const char* resourcePath() {
+
+    static char path[4096] = "";
+
+#ifdef _WIN32
+    _fullpath(path, xstr(MODEL_IDENTIFIER) "\\resources\\", 4096);
+#else
+    realpath(xstr(MODEL_IDENTIFIER) "/resources/", path);
+#endif
+
+    return path;
+}
+
+static const char* resourceURI() {
+
+    static char uri[4096] = "";
+
+    const char *path = resourcePath();
+
+#ifdef _WIN32
+    DWORD length = 4096;
+    UrlCreateFromPathA(path, uri, &length, 0);
+#else
+    strcpy(uri, "file://");
+    strcat(uri, path);
+#endif
+
+    return uri;
+}
+
+double nextInputEventTime(double time);
+
+FMIStatus applyStartValues(FMIInstance *S);
+
+FMIStatus applyContinuousInputs(FMIInstance *S, bool afterEvent);
+
+FMIStatus applyDiscreteInputs(FMIInstance *S);
+
+FMIStatus recordVariables(FMIInstance *S, FILE *outputFile);
+
+static void logMessage(FMIInstance *instance, FMIStatus status, const char *category, const char *message) {
+
+        switch (status) {
+        case FMIOK:
             printf("[OK] ");
             break;
-        case fmi3Warning:
+        case FMIWarning:
             printf("[Warning] ");
             break;
-        case fmi3Discard:
+        case FMIDiscard:
             printf("[Discard] ");
             break;
-        case fmi3Error:
+        case FMIError:
             printf("[Error] ");
             break;
-        case fmi3Fatal:
+        case FMIFatal:
             printf("[Fatal] ");
             break;
     }
 
     puts(message);
 }
+
+static void logFunctionCall(FMIInstance *instance, FMIStatus status, const char *message, ...) {
+
+    if (!logFile) {
+        return;
+    }
+
+    va_list args;
+    va_start(args, message);
+
+    vfprintf(logFile, message, args);
+
+    switch (status) {
+    case FMIOK:
+        fprintf(logFile, " -> OK\n");
+        break;
+    case FMIWarning:
+        fprintf(logFile, " -> Warning\n");
+        break;
+    case FMIDiscard:
+        fprintf(logFile, " -> Discard\n");
+        break;
+    case FMIError:
+        fprintf(logFile, " -> Error\n");
+        break;
+    case FMIFatal:
+        fprintf(logFile, " -> Fatal\n");
+        break;
+    case FMIPending:
+        fprintf(logFile, " -> Pending\n");
+        break;
+    default:
+        fprintf(logFile, " -> Unknown status (%d)\n", status);
+        break;
+    }
+
+    va_end(args);
+}
+
+static FMIStatus setUp() {
+
+#ifdef OUTPUT_FILE
+    outputFile = createOutputFile(OUTPUT_FILE);
+
+    if (!outputFile) {
+        printf("Failed to open %s.\n", OUTPUT_FILE);
+        return FMIError;
+    }
+#endif
+
+#ifdef LOG_FILE
+    logFile = fopen(LOG_FILE, "w");
+
+    if (!logFile) {
+        printf("Failed to open %s.\n", LOG_FILE);
+        return FMIError;
+    }
+#endif
+
+    S = FMICreateInstance("instance1", PLATFORM_BINARY, logMessage, logFunctionCall);
+
+    if (!S) {
+        printf("Failed to load shared library %s.\n", PLATFORM_BINARY);
+        return FMIError;
+    }
+
+    return FMIOK;
+}
+
+static FMIStatus tearDown() {
+
+    if (S) {
+
+        if (status < FMIError) {
+#if FMI_VERSION == 3
+            FMIStatus terminateStatus = FMI3Terminate(S);
+#else
+            FMIStatus terminateStatus = FMI2Terminate(S);
+#endif
+            status = max(status, terminateStatus);
+        }
+
+        if (status < FMIFatal) {
+#if FMI_VERSION == 3
+            FMI3FreeInstance(S);
+#else
+            FMI2FreeInstance(S);
+#endif
+        }
+
+        FMIFreeInstance(S);
+    }
+
+    if (outputFile) {
+        fclose(outputFile);
+    }
+
+    if (logFile) {
+        fclose(logFile);
+    }
+
+    return status;
+}
+
+#ifdef NO_INPUTS
+
+double nextInputEventTime(double time) { return INFINITY; }
+
+FMIStatus applyStartValues(FMIInstance *S) { return FMIOK; }
+
+FMIStatus applyContinuousInputs(FMIInstance *S, bool afterEvent) { return FMIOK; }
+
+FMIStatus applyDiscreteInputs(FMIInstance *S) { return FMIOK; }
+
+#endif
 
 #endif /* util_h */

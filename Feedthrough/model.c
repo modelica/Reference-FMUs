@@ -7,9 +7,8 @@
 #define strdup _strdup
 #endif
 
-
-const char *STRING_START = "Set me!";
-const char *BINARY_START = "Set me, too!";
+#define STRING_START "Set me!"
+#define BINARY_START "Set me, too!"
 
 void setStartValues(ModelInstance *comp) {
     M(real_fixed_parameter)   = 0;
@@ -18,14 +17,15 @@ void setStartValues(ModelInstance *comp) {
     M(real_discrete)          = 0;
     M(integer)                = 0;
     M(boolean)                = false;
-    M(string)                 = STRING_START;
+    strcpy(M(string), STRING_START);
     M(binary_size)            = strlen(BINARY_START);
-    M(binary)                 = BINARY_START;
+    strcpy(M(binary), BINARY_START);
 }
 
-void calculateValues(ModelInstance *comp) {
-    UNUSED(comp)
-    // do nothing
+Status calculateValues(ModelInstance *comp) {
+    UNUSED(comp);
+    // nothing to do
+    return OK;
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
@@ -89,7 +89,9 @@ Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *i
 }
 
 Status getBinary(ModelInstance* comp, ValueReference vr, size_t size[], const char* value[], size_t* index) {
+
     calculateValues(comp);
+
     switch (vr) {
         case vr_binary_in:
         case vr_binary_out:
@@ -100,7 +102,6 @@ Status getBinary(ModelInstance* comp, ValueReference vr, size_t size[], const ch
             logError(comp, "Get Binary is not allowed for value reference %u.", vr);
             return Error;
     }
-    return Error;
 }
 
 Status getString(ModelInstance* comp, ValueReference vr, const char **value, size_t *index) {
@@ -188,10 +189,11 @@ Status setBoolean(ModelInstance* comp, ValueReference vr, const bool *value, siz
 Status setString(ModelInstance* comp, ValueReference vr, const char *const *value, size_t *index) {
     switch (vr) {
         case vr_string:
-            if (M(string) != STRING_START) {
-                free((void *)M(string));
+            if (strlen(value[*index]) >= STRING_MAX_LEN) {
+                logError(comp, "Max. string length is %d bytes.", STRING_MAX_LEN);
+                return Error;
             }
-            M(string) = strdup(value[(*index)++]);
+            strcpy(M(string), value[(*index)++]);
             return OK;
         default:
             logError(comp, "Set String is not allowed for value reference %u.", vr);
@@ -202,11 +204,11 @@ Status setString(ModelInstance* comp, ValueReference vr, const char *const *valu
 Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], const char* const value[], size_t* index) {
     switch (vr) {
         case vr_binary_in:
-            if (M(binary) != BINARY_START) {
-                free((void *)M(binary));
+            if (size[*index] > BINARY_MAX_LEN) {
+                logError(comp, "Max. binary size is %d bytes.", BINARY_MAX_LEN);
+                return Error;
             }
             M(binary_size) = size[*index];
-            M(binary) = calloc(1, M(binary_size));
             memcpy((void *)M(binary), value[(*index)++], M(binary_size));
             return OK;
         default:

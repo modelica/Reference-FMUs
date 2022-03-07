@@ -1,23 +1,14 @@
-#include <stdio.h>
 #include <math.h>
-#include <assert.h>
-#include "FMU.h"
-#include "fmi3Functions.h"
-#include "config.h"
+
+#define OUTPUT_FILE  "cs_intermediate_update_out.csv"
+#define LOG_FILE     "cs_intermediate_update_log.txt"
+
 #include "util.h"
 
 
-typedef struct {
-    FMU *fmu;
-    fmi3Instance instance;
-    FILE* outputFile;
-    fmi3Float64 intermediateUpdateTime;
-} InstanceEnvironment;
-
 // tag::IntermediateUpdateCallback[]
-void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
+void intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
                            fmi3Float64 intermediateUpdateTime,
-                           fmi3Boolean clocksTicked,
                            fmi3Boolean intermediateVariableSetRequested,
                            fmi3Boolean intermediateVariableGetAllowed,
                            fmi3Boolean intermediateStepFinished,
@@ -29,12 +20,12 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
         return;
     }
 
+    FMIInstance *S = (FMIInstance *)instanceEnvironment;
+
+    S->time = intermediateUpdateTime;
+
     *earlyReturnRequested = fmi3False;
-
-    InstanceEnvironment* env = (InstanceEnvironment*)instanceEnvironment;
-
-    // remember the intermediateUpdateTime
-    env->intermediateUpdateTime = intermediateUpdateTime;
+    *earlyReturnTime = 0;
 
     fmi3Status status = fmi3OK;
 
@@ -43,7 +34,7 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
 
         // Get the output variables at time == intermediateUpdateTime
         // fmi3Get{VariableType}();
-        status = recordVariables(env->outputFile, env->fmu, env->instance, intermediateUpdateTime);
+        status = recordVariables(S, outputFile);
 
         // If integration step in FMU solver is finished
         if (intermediateStepFinished) {
@@ -65,94 +56,74 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     // Internal execution in FMU will now continue
 
     // TODO: handle status
+
+    // log function call
+    fprintf(logFile, "intermediateUpdate("
+        "instanceEnvironment=0x%p, "
+        "intermediateUpdateTime=%.16g, "
+        "intermediateVariableSetRequested=%d, "
+        "intermediateVariableGetAllowed=%d, "
+        "intermediateStepFinished=%d, "
+        "canReturnEarly=%d, "
+        "earlyReturnRequested=%d, "
+        "earlyReturnTime=%.16g)\n",
+        instanceEnvironment,
+        intermediateUpdateTime,
+        intermediateVariableSetRequested,
+        intermediateVariableGetAllowed,
+        intermediateStepFinished,
+        canReturnEarly,
+        *earlyReturnRequested,
+        *earlyReturnTime
+    );
 }
 // end::IntermediateUpdateCallback[]
 
 int main(int argc, char* argv[]) {
 
-    puts("Running BouncingBall test... ");
-
-    // Start and stop time
-    const fmi3Float64 startTime = 0;
-    const fmi3Float64 stopTime = 3;
-    // Communication constant step size
-    const fmi3Float64 h = 0.1;
-
-    FMU *S = loadFMU(PLATFORM_BINARY);
-
-    if (!S) {
-        return EXIT_FAILURE;
-    }
-
-    FILE *outputFile = openOutputFile("cs_intermediate_update.csv");
-
-    if (!outputFile) {
-        puts("Failed to open output file.");
-        return EXIT_FAILURE;
-    }
-
-    InstanceEnvironment instanceEnvironment = {
-        .fmu                    = S,
-        .instance               = NULL,
-        .outputFile             = outputFile,
-        .intermediateUpdateTime = startTime
-    };
+    CALL(setUp());
 
     // Instantiate the FMU
-    fmi3Instance s = S->fmi3InstantiateCoSimulation(
-        "instance1",            // instanceName
-        INSTANTIATION_TOKEN,    // instantiationToken
-        NULL,                   // resourceLocation
-        fmi3False,              // visible
-        fmi3False,              // loggingOn
-        fmi3False,              // eventModeUsed
-        fmi3False,              // earlyReturnAllowed
-        NULL,                   // requiredIntermediateVariables
-        0,                      // nRequiredIntermediateVariables
-        &instanceEnvironment,   // instanceEnvironment
-        cb_logMessage,          // logMessage
-        cb_intermediateUpdate); // intermediateUpdate
+    CALL(FMI3InstantiateCoSimulation(S,
+        INSTANTIATION_TOKEN, // instantiationToken
+        NULL,                // resourcePath
+        fmi3False,           // visible
+        fmi3False,           // loggingOn
+        fmi3False,           // eventModeUsed
+        fmi3False,           // earlyReturnAllowed
+        NULL,                // requiredIntermediateVariables
+        0,                   // nRequiredIntermediateVariables
+        intermediateUpdate   // intermediateUpdate
+    ));
 
-    if (s == NULL) {
-        puts("Failed to instantiate FMU.");
-        return EXIT_FAILURE;
-    }
-
-    instanceEnvironment.instance = s;
-
-    // Set all start values
-    // fmi3Set{VariableType}()
-
-    fmi3Status status = fmi3OK;
-
-    CHECK_STATUS(S->fmi3EnterInitializationMode(s, fmi3False, 0.0, startTime, fmi3True, stopTime))
-    CHECK_STATUS(S->fmi3ExitInitializationMode(s))
+    // set start values
+    CALL(applyStartValues(S));
 
     fmi3Float64 time = startTime;
+
+    CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, time, fmi3True, stopTime));
+    CALL(FMI3ExitInitializationMode(S));
+
+    // communication step size
+    const fmi3Float64 stepSize = 10 * FIXED_SOLVER_STEP;
 
     while (time < stopTime) {
 
         fmi3Boolean eventEncountered, terminateSimulation, earlyReturn;
-        fmi3Float64 lastSuccessfulTime;
 
-        CHECK_STATUS(S->fmi3DoStep(s, time, h, fmi3False, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime))
+        CALL(FMI3DoStep(S,
+            time,                 // currentCommunicationPoint
+            stepSize,             // communicationStepSize
+            fmi3True,             // noSetFMUStatePriorToCurrentPoint
+            &eventEncountered,    // eventEncountered
+            &terminateSimulation, // terminate
+            &earlyReturn,         // earlyReturn
+            &time                 // lastSuccessfulTime
+        ));
 
-        time += h;
+        time += stepSize;
     };
 
-    fmi3Status terminateStatus;
-
 TERMINATE:
-
-    if (status < fmi3Fatal) {
-        terminateStatus = S->fmi3Terminate(s);
-    }
-
-    if (status < fmi3Fatal && terminateStatus < fmi3Fatal) {
-        S->fmi3FreeInstance(s);
-    }
-
-    puts("done.");
-
-    return status == fmi3OK ? EXIT_SUCCESS : EXIT_FAILURE;
+    return tearDown();
 }
