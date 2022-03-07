@@ -139,6 +139,14 @@ else()
   target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  target_link_options(${TARGET_NAME} PRIVATE "-static-libgcc")
+endif()
+
+if(CMAKE_C_COMPILER_ID STREQUAL "Intel")
+  target_link_options(${TARGET_NAME} PRIVATE "-static-intel" "-static-libgcc")
+endif()
+
 if (${FMI_VERSION} EQUAL 1 AND "${FMI_TYPE}" STREQUAL CS)
   target_compile_definitions(${TARGET_NAME} PRIVATE FMI_COSIMULATION)
 endif()
