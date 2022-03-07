@@ -123,8 +123,13 @@ target_compile_definitions(${TARGET_NAME} PRIVATE
   DISABLE_PREFIX
 )
 
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU" OR CMAKE_C_COMPILER_ID STREQUAL "Intel")
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_link_options(${TARGET_NAME} PRIVATE "-static")
+endif()
+
+if(CMAKE_C_COMPILER_ID STREQUAL "Intel")
+  target_link_options(${TARGET_NAME} PRIVATE "-static")
+  target_link_options(${TARGET_NAME} PRIVATE "-static-intel")
 endif()
 
 if (${FMI_VERSION} EQUAL 1 AND "${FMI_TYPE}" STREQUAL CS)
