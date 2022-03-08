@@ -134,13 +134,14 @@ target_compile_definitions(${TARGET_NAME} PRIVATE
 )
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-  target_link_options(${TARGET_NAME} PRIVATE "-static")
+  target_link_options(${TARGET_NAME} PRIVATE "-static-libgcc" "-lc_pic")
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "Intel")
-  target_link_options(${TARGET_NAME} PRIVATE "-static")
-  target_link_options(${TARGET_NAME} PRIVATE "-static-intel")
+  target_link_options(${TARGET_NAME} PRIVATE "-static-intel" "-static-libgcc" "-lc_pic")
 endif()
+
+# target_link_libraries(${TARGET_NAME} PRIVATE "-static-intel" "-static-libgcc" libc.a libm.a libdl.a)
 
 if(MSVC)
   target_compile_options(${TARGET_NAME} PRIVATE /W4 /WX)
