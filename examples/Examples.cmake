@@ -1,8 +1,6 @@
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(EXAMPLE_SOURCES
-    include/fmi${FMI_VERSION}Functions.h
-    include/fmi${FMI_VERSION}FunctionTypes.h
     include/FMI.h
     include/FMI${FMI_VERSION}.h
     include/model.h
@@ -162,9 +160,22 @@ if (${FMI_VERSION} EQUAL 3)
 endif()
 
 # Examples
-# foreach (MODEL_NAME BouncingBall Dahlquist Feedthrough LinearTransform Resource Stair VanDerPol)
-foreach (MODEL_NAME BouncingBall Dahlquist Feedthrough Resource Stair VanDerPol)
-    foreach (INTERFACE_TYPE cs me)
+set(MODEL_NAMES BouncingBall Dahlquist Feedthrough Stair VanDerPol)
+
+if (${FMI_VERSION} EQUAL 1)
+    if (${FMI_TYPE} STREQUAL CS)
+        set(MODEL_NAMES ${MODEL_NAMES} Resource)
+        set(INTERFACE_TYPES cs)
+    else()
+        set(INTERFACE_TYPES me)
+    endif()
+else()
+    set(MODEL_NAMES ${MODEL_NAMES} Resource)
+    set(INTERFACE_TYPES cs me)
+endif()
+
+foreach (MODEL_NAME ${MODEL_NAMES})
+    foreach (INTERFACE_TYPE ${INTERFACE_TYPES})
         set(TARGET_NAME ${MODEL_NAME}_${INTERFACE_TYPE})
         add_executable (${TARGET_NAME}
             ${EXAMPLE_SOURCES}

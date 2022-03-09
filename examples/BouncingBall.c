@@ -16,11 +16,15 @@ FILE *createOutputFile(const char *filename) {
 
 FMIStatus recordVariables(FMIInstance *S, FILE *outputFile) {
 
-#if FMI_VERSION == 2
+#if FMI_VERSION == 1
+    const fmi1ValueReference valueReferences[2] = { vr_h, vr_v };
+    fmi1Real values[2] = { 0 };
+    FMIStatus status = FMI1GetReal(S, valueReferences, 2, values);
+#elif FMI_VERSION == 2
     const fmi2ValueReference valueReferences[2] = { vr_h, vr_v };
     fmi2Real values[2] = { 0 };
     FMIStatus status = FMI2GetReal(S, valueReferences, 2, values);
-#else
+#elif FMI_VERSION == 3
     const fmi3ValueReference valueReferences[2] = { vr_h, vr_v };
     fmi3Float64 values[2] = { 0 };
     FMIStatus status = FMI3GetFloat64(S, valueReferences, 2, values, 2);

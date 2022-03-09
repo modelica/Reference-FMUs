@@ -163,7 +163,6 @@ FMI_STATIC FMIStatus FMIPathToURI(const char *path, char *uri, const size_t uriL
 
 FMI_STATIC FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *modelIdentifier, FMIVersion fmiVersion, char *platformBinaryPath, size_t size);
 
-
 #ifdef __cplusplus
 }  /* end of extern "C" { */
 #endif
