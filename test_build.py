@@ -103,11 +103,17 @@ def test_fmi1_me():
 
     build_fmus(build_dir, fmi_version=1, fmi_type='ME')
 
-    model_names = ['BouncingBall', 'Dahlquist', 'Stair', 'VanDerPol']
+    models = ['BouncingBall', 'Dahlquist', 'Stair', 'VanDerPol']
 
-    validate(build_dir, fmi_types=['ModelExchange'], models=model_names)
+    validate(build_dir, fmi_types=['ModelExchange'], models=models)
 
-    copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=model_names, fmi_version='1.0', fmi_types=['me'])
+    for model in models:
+        example = f'{model}_me'
+    print(f"Running {example}...")
+    filename = os.path.join(build_dir, 'temp', example)
+    subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
+
+    copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=models, fmi_version='1.0', fmi_types=['me'])
 
 
 def test_fmi1_cs():
@@ -116,11 +122,17 @@ def test_fmi1_cs():
 
     build_fmus(build_dir, fmi_version=1, fmi_type='CS')
 
-    model_names = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol']
+    models = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol']
 
-    validate(build_dir, fmi_types=['CoSimulation'], models=model_names)
+    validate(build_dir, fmi_types=['CoSimulation'], models=models)
 
-    copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=model_names, fmi_version='1.0', fmi_types=['cs'])
+    for model in models:
+        example = f'{model}_cs'
+        print(f"Running {example}...")
+        filename = os.path.join(build_dir, 'temp', example)
+        subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
+
+    copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=models, fmi_version='1.0', fmi_types=['cs'])
 
 
 def test_fmi2():

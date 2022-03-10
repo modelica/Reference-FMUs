@@ -12,19 +12,21 @@
 #pragma comment(lib, "shlwapi.lib")
 #endif
 
-#if FMI_VERSION == 2
+#if FMI_VERSION == 1
+#include "FMI1.h"
+#elif FMI_VERSION == 2
 #include "FMI2.h"
 #else
 #include "FMI3.h"
 #endif
-#include "config.h"
 
+#include "config.h"
 
 // "stringification" macros
 #define xstr(s) str(s)
 #define str(s) #s
 
-#if FMI_VERSION == 2
+#if FMI_VERSION == 1 || FMI_VERSION == 2
 
 #if defined(_WIN32)
 
@@ -61,7 +63,15 @@
 
 FILE *createOutputFile(const char *filename);
 
-#if FMI_VERSION == 2
+#if FMI_VERSION == 1
+static const fmi1Real startTime = 0;
+static const fmi1Real stopTime = DEFAULT_STOP_TIME;
+static const fmi1Real h = FIXED_SOLVER_STEP;
+
+static fmi1Boolean eventEncountered;
+static fmi1Boolean earlyReturn;
+static fmi1Real lastSuccessfulTime;
+#elif FMI_VERSION == 2
 static const fmi2Real startTime = 0;
 static const fmi2Real stopTime = DEFAULT_STOP_TIME;
 static const fmi2Real h = FIXED_SOLVER_STEP;
@@ -69,7 +79,7 @@ static const fmi2Real h = FIXED_SOLVER_STEP;
 static fmi2Boolean eventEncountered;
 static fmi2Boolean earlyReturn;
 static fmi2Real lastSuccessfulTime;
-#else
+#elif FMI_VERSION == 3
 static const fmi3Float64 startTime = 0;
 static const fmi3Float64 stopTime = DEFAULT_STOP_TIME;
 static const fmi3Float64 h = FIXED_SOLVER_STEP;
@@ -89,10 +99,22 @@ static const char* resourcePath() {
 
     static char path[4096] = "";
 
+#if FMI_VERSION == 1
+
+#ifdef _WIN32
+    _fullpath(path, xstr(MODEL_IDENTIFIER), 4096);
+#else
+    realpath(xstr(MODEL_IDENTIFIER), path);
+#endif
+
+#else
+
 #ifdef _WIN32
     _fullpath(path, xstr(MODEL_IDENTIFIER) "\\resources\\", 4096);
 #else
     realpath(xstr(MODEL_IDENTIFIER) "/resources/", path);
+#endif
+
 #endif
 
     return path;
@@ -221,19 +243,28 @@ static FMIStatus tearDown() {
     if (S) {
 
         if (status < FMIError) {
-#if FMI_VERSION == 3
-            FMIStatus terminateStatus = FMI3Terminate(S);
-#else
-            FMIStatus terminateStatus = FMI2Terminate(S);
+            FMIStatus terminateStatus =
+#if FMI_VERSION == 1 && defined(SIMULATE_CO_SIMULATION)
+                FMI1TerminateSlave(S);
+#elif FMI_VERSION == 1 && defined(SIMULATE_MODEL_EXCHANGE)
+                FMI1Terminate(S);
+#elif FMI_VERSION == 2
+                FMI2Terminate(S);
+#elif FMI_VERSION == 3
+                FMI3Terminate(S);
 #endif
             status = max(status, terminateStatus);
         }
 
         if (status < FMIFatal) {
-#if FMI_VERSION == 3
-            FMI3FreeInstance(S);
-#else
+#if FMI_VERSION == 1 && defined(SIMULATE_CO_SIMULATION)
+            FMI1FreeSlaveInstance(S);
+#elif FMI_VERSION == 1 && defined(SIMULATE_MODEL_EXCHANGE)
+            FMI1FreeModelInstance(S);
+#elif FMI_VERSION == 2
             FMI2FreeInstance(S);
+#elif FMI_VERSION == 3
+            FMI3FreeInstance(S);
 #endif
         }
 

@@ -26,7 +26,15 @@ double nextInputEventTime(double time) {
 
 FMIStatus applyStartValues(FMIInstance *S) {
 
-#if FMI_VERSION == 2
+#if FMI_VERSION == 1
+    const fmi1ValueReference float64ValueReferences[1] = { vr_fixed_real_parameter };
+    const fmi1Real realValues[1] = { 1.0 };
+    FMI1SetReal(S, float64ValueReferences, 1, realValues);
+
+    const fmi1ValueReference stringValueReferences[1] = { vr_string };
+    const fmi1String stringValues[1] = { "FMI is awesome!" };
+    FMI1SetString(S, stringValueReferences, 1, stringValues);
+#elif FMI_VERSION == 2
     const fmi2ValueReference float64ValueReferences[1] = { vr_fixed_real_parameter };
     const fmi2Real realValues[1] = { 1.0 };
     FMI2SetReal(S, float64ValueReferences, 1, realValues);
@@ -34,7 +42,7 @@ FMIStatus applyStartValues(FMIInstance *S) {
     const fmi2ValueReference stringValueReferences[1] = { vr_string };
     const fmi2String stringValues[1] = { "FMI is awesome!" };
     FMI2SetString(S, stringValueReferences, 1, stringValues);
-#else
+#elif FMI_VERSION == 3
     const fmi3ValueReference float64ValueReferences[1] = { vr_fixed_real_parameter };
     const fmi3Float64 float64Values[1] = { 1.0 };
     FMI3SetFloat64(S, float64ValueReferences, 1, float64Values, 1);
@@ -49,10 +57,13 @@ FMIStatus applyStartValues(FMIInstance *S) {
 
 FMIStatus applyContinuousInputs(FMIInstance *S, bool afterEvent) {
 
-#if FMI_VERSION == 2
+#if FMI_VERSION ==1
+    const fmi1ValueReference valueReferences[1] = { vr_continuous_real_in };
+    fmi1Real values[1];
+#elif FMI_VERSION == 2
     const fmi2ValueReference valueReferences[1] = { vr_continuous_real_in };
     fmi2Real values[1];
-#else
+#elif FMI_VERSION == 3
     const fmi3ValueReference valueReferences[1] = { vr_continuous_real_in };
     fmi3Float64 values[1];
 #endif
@@ -67,8 +78,10 @@ FMIStatus applyContinuousInputs(FMIInstance *S, bool afterEvent) {
         values[0] = 1.0;
     }
 
-#if FMI_VERSION == 2
-    return FMI2SetReal((FMIInstance *)S, valueReferences, 1, values);
+#if FMI_VERSION == 1
+    return FMI1SetReal((FMIInstance*)S, valueReferences, 1, values);
+#elif FMI_VERSION == 2
+    return FMI2SetReal((FMIInstance*)S, valueReferences, 1, values);
 #else
     return FMI3SetFloat64((FMIInstance *)S, valueReferences, 1, values, 1);
 #endif
@@ -76,7 +89,19 @@ FMIStatus applyContinuousInputs(FMIInstance *S, bool afterEvent) {
 
 FMIStatus applyDiscreteInputs(FMIInstance *S) {
 
-#if FMI_VERSION == 2
+#if FMI_VERSION == 1
+    const fmi1ValueReference float64ValueReferences[2] = { vr_tunable_real_parameter, vr_discrete_real_in };
+    const fmi1Real float64Values[2] = { S->time < 1.5 ? 0.0 : -1.0, S->time < 1.0 ? 0 : 1.0 };
+    FMI1SetReal(S, float64ValueReferences, 1, float64Values);
+
+    const fmi1ValueReference int32ValueReferences[1] = { vr_int_in };
+    const fmi1Integer int32Values[1] = { S->time < 1.0 ? 0 : 1 };
+    FMI1SetInteger(S, int32ValueReferences, 1, int32Values);
+
+    const fmi1ValueReference booleanValueReferences[1] = { vr_bool_in };
+    const fmi1Boolean booleanValues[1] = { S->time < 1.0 ? false : true };
+    FMI1SetBoolean(S, booleanValueReferences, 1, booleanValues);
+#elif FMI_VERSION == 2
     const fmi2ValueReference float64ValueReferences[2] = { vr_tunable_real_parameter, vr_discrete_real_in };
     const fmi2Real float64Values[2] = { S->time < 1.5 ? 0.0 : -1.0, S->time < 1.0 ? 0 : 1.0 };
     FMI2SetReal(S, float64ValueReferences, 1, float64Values);
@@ -88,7 +113,7 @@ FMIStatus applyDiscreteInputs(FMIInstance *S) {
     const fmi2ValueReference booleanValueReferences[1] = { vr_bool_in };
     const fmi2Boolean booleanValues[1] = { S->time < 1.0 ? false : true };
     FMI2SetBoolean(S, booleanValueReferences, 1, booleanValues);
-#else
+#elif FMI_VERSION == 3
     const fmi3ValueReference float64ValueReferences[2] = { vr_tunable_real_parameter, vr_discrete_real_in };
     const fmi3Float64 float64Values[2] = { S->time < 1.5 ? 0.0 : -1.0, S->time < 1.0 ? 0 : 1.0 };
     FMI3SetFloat64(S, float64ValueReferences, 1, float64Values, 1);
@@ -107,19 +132,31 @@ FMIStatus applyDiscreteInputs(FMIInstance *S) {
 
 FMIStatus recordVariables(FMIInstance *S, FILE *outputFile) {
 
-#if FMI_VERSION == 2
+#if FMI_VERSION == 1
+    const fmi1ValueReference float64ValueReferences[2] = { vr_continuous_real_out, vr_discrete_real_out };
+    fmi1Real float64Values[2] = { 0 };
+    FMIStatus status = FMI1GetReal((FMIInstance*)S, float64ValueReferences, 2, float64Values);
+
+    const fmi1ValueReference int32ValueReferences[1] = { vr_int_out };
+    fmi1Integer int32Values[1] = { 0 };
+    status = FMI1GetInteger((FMIInstance*)S, int32ValueReferences, 1, int32Values);
+
+    const fmi1ValueReference booleanValueReferences[1] = { vr_bool_out };
+    fmi1Boolean booleanValues[1] = { 0 };
+    status = FMI1GetBoolean((FMIInstance*)S, booleanValueReferences, 1, booleanValues);
+#elif FMI_VERSION == 2
     const fmi2ValueReference float64ValueReferences[2] = { vr_continuous_real_out, vr_discrete_real_out };
     fmi2Real float64Values[2] = { 0 };
-    FMIStatus status = FMI2GetReal((FMIInstance *)S, float64ValueReferences, 2, float64Values);
+    FMIStatus status = FMI2GetReal((FMIInstance*)S, float64ValueReferences, 2, float64Values);
 
     const fmi2ValueReference int32ValueReferences[1] = { vr_int_out };
     fmi2Integer int32Values[1] = { 0 };
-    status = FMI2GetInteger((FMIInstance *)S, int32ValueReferences, 1, int32Values);
+    status = FMI2GetInteger((FMIInstance*)S, int32ValueReferences, 1, int32Values);
 
     const fmi2ValueReference booleanValueReferences[1] = { vr_bool_out };
     fmi2Boolean booleanValues[1] = { 0 };
-    status = FMI2GetBoolean((FMIInstance *)S, booleanValueReferences, 1, booleanValues);
-#else
+    status = FMI2GetBoolean((FMIInstance*)S, booleanValueReferences, 1, booleanValues);
+#elif FMI_VERSION == 3
     const fmi3ValueReference float64ValueReferences[2] = { vr_continuous_real_out, vr_discrete_real_out };
     fmi3Float64 float64Values[2] = { 0 };
     FMIStatus status = FMI3GetFloat64((FMIInstance *)S, float64ValueReferences, 2, float64Values, 2);

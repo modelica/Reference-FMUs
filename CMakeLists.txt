@@ -276,8 +276,5 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dist/${MODEL_NAME}.fmu DESTINATION .)
 
 endforeach(MODEL_NAME)
 
-
 # Examples
-if (${FMI_VERSION} EQUAL 2 OR ${FMI_VERSION} EQUAL 3)
-  include(examples/Examples.cmake)
-endif()
+include(examples/Examples.cmake)
