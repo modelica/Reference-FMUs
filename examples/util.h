@@ -165,6 +165,9 @@ static void logMessage(FMIInstance *instance, FMIStatus status, const char *cate
         case FMIFatal:
             printf("[Fatal] ");
             break;
+        case FMIPending:
+            printf("[Pending] ");
+            break;
     }
 
     puts(message);
