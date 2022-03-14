@@ -66,7 +66,7 @@ do { \
     if (instance->logFunctionCall) { \
         instance->logFunctionCall(instance, status, "fmi3" #f "()"); \
     } \
-    instance->status = status > instance->status ? status : instance->status; \
+    instance->status = (FMIStatus)status > instance->status ? status : instance->status; \
     return status; \
 } while (0)
 
@@ -76,7 +76,7 @@ do { \
     if (instance->logFunctionCall) { \
         instance->logFunctionCall(instance, status, "fmi3" #f "(" m ")", __VA_ARGS__); \
     } \
-    instance->status = status > instance->status ? status : instance->status; \
+    instance->status = (FMIStatus)status > instance->status ? status : instance->status; \
     return status; \
 } while (0)
 
@@ -88,7 +88,7 @@ do { \
         FMIValuesToString(instance, nValues, values, FMI ## t ## Type); \
         instance->logFunctionCall(instance, status, "fmi3" #s #t "(valueReferences=%s, nValueReferences=%zu, values=%s, nValues=%zu)", instance->buf1, nValueReferences, instance->buf2, nValues); \
     } \
-    instance->status = status > instance->status ? status : instance->status; \
+    instance->status = (FMIStatus)status > instance->status ? status : instance->status; \
     return status; \
 } while (0)
 
