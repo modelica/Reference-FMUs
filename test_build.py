@@ -29,7 +29,7 @@ def validate(build_dir, fmi_types, models, compile=False):
         assert not problems
 
         if model == 'Feedthrough':
-            start_values = {'real_fixed_param': 1, 'string_param': "FMI is awesome!"}
+            start_values = {'Float64_fixed_parameter': 1, 'String_parameter': "FMI is awesome!"}
             in_csv = os.path.join(test_fmus_dir, model, model + '_in.csv')
             input = read_csv(in_csv)
         else:
@@ -103,7 +103,7 @@ def test_fmi1_me():
 
     build_fmus(build_dir, fmi_version=1, fmi_type='ME')
 
-    models = ['BouncingBall', 'Dahlquist', 'Stair', 'VanDerPol']
+    models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Stair', 'VanDerPol']
 
     validate(build_dir, fmi_types=['ModelExchange'], models=models)
 
@@ -122,7 +122,7 @@ def test_fmi1_cs():
 
     build_fmus(build_dir, fmi_version=1, fmi_type='CS')
 
-    models = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol']
+    models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
 
     validate(build_dir, fmi_types=['CoSimulation'], models=models)
 

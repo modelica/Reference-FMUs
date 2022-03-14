@@ -105,6 +105,8 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
     for (int loop = 1; loop < 1000000000; loop++) {
         sum += loop;
     }
+    (void)sum; // use variable to avoid compiler warnings
+
     // ... end of burning CPU cycles
     M(output3) = 1000;   // this is suposed to find its way into mp2
     M(totalInClockTicks)++;

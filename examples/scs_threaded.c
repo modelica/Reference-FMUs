@@ -180,7 +180,7 @@ int main(int argc, char* argv[]) {
     // Initialize logging
     fmi3String logCategory = "logEvents";
 
-    CALL(FMI3SetDebugLogging(S, fmi3True, 1, &logCategory))
+    CALL(FMI3SetDebugLogging(S, fmi3True, 1, &logCategory));
 
     logEvent("Running Scheduled Execution example...");
 
@@ -195,8 +195,8 @@ int main(int argc, char* argv[]) {
     CALL(initializeOutputFiles());
 
     // Initialize the instance
-    CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, time, fmi3True, stopTime))
-    CALL(FMI3ExitInitializationMode(S))
+    CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, time, fmi3True, stopTime));
+    CALL(FMI3ExitInitializationMode(S));
 
     // update clocks
     CALL(FMI3GetClock(S, vrOutputClocks, 1, outputClocks, 1));
