@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
         }
 
         // call instance s1 and check status
-        const fmi1Status doStepStatus = FMI1DoStep(S, time, h, fmi1True);
+        const FMIStatus doStepStatus = FMI1DoStep(S, time, h, fmi1True);
 
         if (doStepStatus == fmi1Discard) {
 

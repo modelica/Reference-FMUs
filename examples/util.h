@@ -58,7 +58,7 @@
 #endif
 
 // tag::CheckStatus[]
-#define CALL(f) status = f; if (status > FMIOK) goto TERMINATE;
+#define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 // end::CheckStatus[]
 
 FILE *createOutputFile(const char *filename);
@@ -248,16 +248,16 @@ static FMIStatus tearDown() {
 
         if (status < FMIError) {
             FMIStatus terminateStatus =
-#if FMI_VERSION == 1 && defined(SIMULATE_CO_SIMULATION)
-                FMI1TerminateSlave(S);
-#elif FMI_VERSION == 1 && defined(SIMULATE_MODEL_EXCHANGE)
-                FMI1Terminate(S);
+#if FMI_VERSION == 1
+                S->interfaceType == FMICoSimulation ? FMI1TerminateSlave(S) : FMI1Terminate(S);
 #elif FMI_VERSION == 2
                 FMI2Terminate(S);
 #elif FMI_VERSION == 3
                 FMI3Terminate(S);
 #endif
-            status = max(status, terminateStatus);
+            if (terminateStatus > status) {
+                status = terminateStatus;
+            }
         }
 
         if (status < FMIFatal) {

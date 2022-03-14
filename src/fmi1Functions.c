@@ -167,17 +167,8 @@ fmiStatus fmiSetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr
 }
 
 fmiStatus fmiSetString(fmiComponent c, const fmiValueReference vr[], size_t nvr, const fmiString value[]){
-
-    UNUSED(c);
-    UNUSED(vr);
-    UNUSED(nvr);
-    UNUSED(value);
-
     ASSERT_STATE("fmiSetString", not_modelError);
-
-    // TODO
-
-    return fmiError;
+    SET_VARIABLES(String);
 }
 
 fmiStatus fmiGetReal(fmiComponent c, const fmiValueReference vr[], size_t nvr, fmiReal value[]) {
@@ -196,17 +187,8 @@ fmiStatus fmiGetBoolean(fmiComponent c, const fmiValueReference vr[], size_t nvr
 }
 
 fmiStatus fmiGetString(fmiComponent c, const fmiValueReference vr[], size_t nvr, fmiString  value[]) {
-
-    UNUSED(c);
-    UNUSED(vr);
-    UNUSED(nvr);
-    UNUSED(value);
-
     ASSERT_STATE("fmiGetString", not_modelError);
-
-    // TODO
-
-    return fmiError;
+    GET_VARIABLES(String);
 }
 
 #ifdef FMI_COSIMULATION

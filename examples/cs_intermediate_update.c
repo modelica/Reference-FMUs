@@ -27,8 +27,6 @@ void intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     *earlyReturnRequested = fmi3False;
     *earlyReturnTime = 0;
 
-    fmi3Status status = fmi3OK;
-
     // if getting intermediate output variables is allowed
     if (intermediateVariableGetAllowed) {
 

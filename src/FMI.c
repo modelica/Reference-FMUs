@@ -124,67 +124,85 @@ const char* FMIValueReferencesToString(FMIInstance *instance, const FMIValueRefe
     return instance->buf1;
 }
 
-const char* FMIValuesToString(FMIInstance *instance, size_t nvr, const void *value, FMIVariableType variableType) {
+const char* FMIValuesToString(FMIInstance *instance, size_t vValues, const size_t sizes[], const void* values, FMIVariableType variableType) {
 
     size_t pos = 0;
 
     do {
         pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, "{");
 
-        for (size_t i = 0; i < nvr; i++) {
-            
+        for (size_t i = 0; i < vValues; i++) {
+
+            char* s = &instance->buf2[pos];
+            size_t n = instance->bufsize2 - pos;
+
             switch (variableType) {
                 case FMIFloat32Type:
                 case FMIDiscreteFloat32Type:
-                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%.7g, " : "%.7g", ((float *)value)[i]);
+                    pos += snprintf(s, n, "%.7g", ((float *)values)[i]);
                     break;
                 case FMIFloat64Type:
                 case FMIDiscreteFloat64Type:
-                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%.16g, " : "%.16g", ((double *)value)[i]);
+                    pos += snprintf(s, n, "%.16g", ((double *)values)[i]);
                     break;
                 case FMIInt8Type:
-                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%" PRId8 ", " : "%" PRId8, ((int8_t *)value)[i]);
+                    pos += snprintf(s, n, "%" PRId8, ((int8_t *)values)[i]);
                     break;
                 case FMIUInt8Type:
-                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%" PRIu8 ", " : "%" PRIu8, ((uint8_t *)value)[i]);
+                    pos += snprintf(s, n, "%" PRIu8, ((uint8_t *)values)[i]);
                     break;
                 case FMIInt16Type:
-                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%" PRId16 ", " : "%" PRId16, ((int16_t *)value)[i]);
+                    pos += snprintf(s, n, "%" PRId16, ((int16_t *)values)[i]);
                     break;
                 case FMIUInt16Type:
-                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%" PRIu16 ", " : "%" PRIu16, ((uint16_t *)value)[i]);
+                    pos += snprintf(s, n, "%" PRIu16, ((uint16_t *)values)[i]);
                     break;
                 case FMIInt32Type:
-                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%" PRId32 ", " : "%" PRId32, ((int32_t *)value)[i]);
+                    pos += snprintf(s, n, "%" PRId32, ((int32_t *)values)[i]);
                     break;
                 case FMIUInt32Type:
-                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%" PRIu32 ", " : "%" PRIu32, ((uint32_t *)value)[i]);
+                    pos += snprintf(s, n, "%" PRIu32, ((uint32_t *)values)[i]);
                     break;
                 case FMIInt64Type:
-                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%" PRId64 ", " : "%" PRId64, ((int64_t *)value)[i]);
+                    pos += snprintf(s, n, "%" PRId64, ((int64_t *)values)[i]);
                     break;
                 case FMIUInt64Type:
-                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%" PRIu64 ", " : "%" PRIu64, ((uint64_t *)value)[i]);
+                    pos += snprintf(s, n, "%" PRIu64, ((uint64_t *)values)[i]);
                     break;
                 case FMIBooleanType:
-                    if (instance->fmiVersion == FMIVersion1) {
-                        //pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%d, " : "%d", ((fmi1Boolean *)value)[i]);
-                    } else {
-                        pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%d, " : "%d", ((int *)value)[i]);
+                    switch (instance->fmiVersion) {
+                        case FMIVersion1:
+                            pos += snprintf(s, n, "%d", ((char*)values)[i]);
+                            break;
+                        case FMIVersion2:
+                            pos += snprintf(s, n, "%d", ((int*)values)[i]);
+                            break;
+                        case FMIVersion3:
+                            pos += snprintf(s, n, "%d", ((bool*)values)[i]);
+                            break;
                     }
                     break;
                 case FMIStringType:
-                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "\"%s\", " : "\"%s\"", ((const char **)value)[i]);
+                    pos += snprintf(s, n, "\"%s\"", ((const char**)values)[i]);
                     break;
-                case FMIBinaryType:
-                    // TODO: convert to base64
-                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, "?");
+                case FMIBinaryType: {
+                    const size_t size = sizes[i];
+                    const unsigned char* v = ((const unsigned char**)values)[i];
+                    for (size_t j = 0; j < size; j++) {
+                        pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, "%02hhx", v[j]);
+                    }
                     break;
+                }
                 case FMIClockType:
-                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%d, " : "%d", ((bool *)value)[i]);
+                    pos += snprintf(s, n, "%d", ((bool *)values)[i]);
                     break;
             }
 
+            if (i < vValues - 1) {
+                pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, ", ");
+            }
+
+            // resize the buffer if we ran out of space
             if (pos > instance->bufsize2 - 2) {
                 pos = 0;
                 instance->bufsize2 *= 2;
@@ -192,7 +210,8 @@ const char* FMIValuesToString(FMIInstance *instance, size_t nvr, const void *val
                 break;
             }
         }
-    } while (pos == 0);
+
+    } while (pos == 0);  // run again if the buffer has been resized
 
     pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, "}");
 

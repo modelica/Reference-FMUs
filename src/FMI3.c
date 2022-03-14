@@ -32,7 +32,7 @@ static void cb_logMessage3(fmi3InstanceEnvironment instanceEnvironment,
 
     if (!instance->logMessage) return;
 
-    instance->logMessage(instance, status, category, message);
+    instance->logMessage(instance, (FMIStatus)status, category, message);
 }
 
 #if defined(FMI2_FUNCTION_PREFIX)
@@ -55,14 +55,14 @@ do { \
     instance->fmi3Functions->fmi3 ## f = (fmi3 ## f ## TYPE*)dlsym(instance->libraryHandle, "fmi3" #f); \
     if (!instance->fmi3Functions->fmi3 ## f) { \
         instance->logMessage(instance, FMIFatal, "fatal", "Symbol fmi3" #f " is missing in shared library."); \
-        return fmi3Fatal; \
+        return FMIFatal; \
     } \
 } while (0)
 #endif
 
 #define CALL(f) \
 do { \
-    fmi3Status status = instance->fmi3Functions->fmi3 ## f (instance->component); \
+    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3 ## f (instance->component); \
     if (instance->logFunctionCall) { \
         instance->logFunctionCall(instance, status, "fmi3" #f "()"); \
     } \
@@ -72,7 +72,7 @@ do { \
 
 #define CALL_ARGS(f, m, ...) \
 do { \
-    fmi3Status status = instance->fmi3Functions-> fmi3 ## f (instance->component, __VA_ARGS__); \
+    FMIStatus status = (FMIStatus)instance->fmi3Functions-> fmi3 ## f (instance->component, __VA_ARGS__); \
     if (instance->logFunctionCall) { \
         instance->logFunctionCall(instance, status, "fmi3" #f "(" m ")", __VA_ARGS__); \
     } \
@@ -82,10 +82,10 @@ do { \
 
 #define CALL_ARRAY(s, t) \
 do { \
-    fmi3Status status = instance->fmi3Functions->fmi3 ## s ## t(instance->component, valueReferences, nValueReferences, values, nValues); \
+    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3 ## s ## t(instance->component, valueReferences, nValueReferences, values, nValues); \
     if (instance->logFunctionCall) { \
         FMIValueReferencesToString(instance, valueReferences, nValueReferences); \
-        FMIValuesToString(instance, nValues, values, FMI ## t ## Type); \
+        FMIValuesToString(instance, nValues, NULL, values, FMI ## t ## Type); \
         instance->logFunctionCall(instance, status, "fmi3" #s #t "(valueReferences=%s, nValueReferences=%zu, values=%s, nValues=%zu)", instance->buf1, nValueReferences, instance->buf2, nValues); \
     } \
     instance->status = status > instance->status ? status : instance->status; \
@@ -104,27 +104,27 @@ const char* FMI3GetVersion(FMIInstance *instance) {
     return instance->fmi3Functions->fmi3GetVersion();
 }
 
-fmi3Status FMI3SetDebugLogging(FMIInstance *instance,
+FMIStatus FMI3SetDebugLogging(FMIInstance *instance,
     fmi3Boolean loggingOn,
     size_t nCategories,
     const fmi3String categories[]) {
-    fmi3Status status = instance->fmi3Functions->fmi3SetDebugLogging(instance->component, loggingOn, nCategories, categories);
+    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3SetDebugLogging(instance->component, loggingOn, nCategories, categories);
     if (instance->logFunctionCall) {
-        FMIValuesToString(instance, nCategories, categories, FMIStringType);
+        FMIValuesToString(instance, nCategories, NULL, categories, FMIStringType);
         instance->logFunctionCall(instance, status, "fmi3SetDebugLogging(loggingOn=%d, nCategories=%zu, categories=%s)",
             loggingOn, nCategories, instance->buf2);
     }
     return status;
 }
 
-static fmi3Status loadSymbols3(FMIInstance *instance) {
+static FMIStatus loadSymbols3(FMIInstance *instance) {
 
 #if !defined(FMI_VERSION) || FMI_VERSION == 3
 
     instance->fmi3Functions = calloc(1, sizeof(FMI3Functions));
 
     if (!instance->fmi3Functions) {
-        return fmi3Error;
+        return FMIError;
     }
 
     instance->fmiVersion = FMIVersion3;
@@ -241,24 +241,24 @@ static fmi3Status loadSymbols3(FMIInstance *instance) {
 
     instance->state = FMI2StartAndEndState;
 
-    return fmi3OK;
+    return FMIOK;
 
 #else
 
-    return fmi3Error;
+    return FMIError;
 
 #endif
 }
 
 /* Creation and destruction of FMU instances and setting debug status */
-fmi3Status FMI3InstantiateModelExchange(
+FMIStatus FMI3InstantiateModelExchange(
     FMIInstance               *instance,
     fmi3String                 instantiationToken,
     fmi3String                 resourcePath,
     fmi3Boolean                visible,
     fmi3Boolean                loggingOn) {
 
-    fmi3Status status = loadSymbols3(instance);
+    FMIStatus status = loadSymbols3(instance);
 
     fmi3LogMessageCallback logMessage = instance->logMessage ? cb_logMessage3 : NULL;
 
@@ -285,7 +285,7 @@ fmi3Status FMI3InstantiateModelExchange(
     }
 
     if (!instance->component) {
-        return fmi3Error;
+        return FMIError;
     }
 
     instance->interfaceType = FMIModelExchange;
@@ -294,7 +294,7 @@ fmi3Status FMI3InstantiateModelExchange(
     return status;
 }
 
-fmi3Status FMI3InstantiateCoSimulation(
+FMIStatus FMI3InstantiateCoSimulation(
     FMIInstance                   *instance,
     fmi3String                     instantiationToken,
     fmi3String                     resourcePath,
@@ -307,7 +307,7 @@ fmi3Status FMI3InstantiateCoSimulation(
     fmi3IntermediateUpdateCallback intermediateUpdate) {
 
     if (loadSymbols3(instance) != FMIOK) {
-        return fmi3Fatal;
+        return FMIFatal;
     }
 
     fmi3LogMessageCallback logMessage = instance->logMessage ? cb_logMessage3 : NULL;
@@ -359,16 +359,16 @@ fmi3Status FMI3InstantiateCoSimulation(
     }
 
     if (!instance->component) {
-        return fmi3Error;
+        return FMIError;
     }
 
     instance->interfaceType = FMICoSimulation;
     instance->state = FMI2InstantiatedState;
 
-    return fmi3OK;
+    return FMIOK;
 }
 
-fmi3Status FMI3InstantiateScheduledExecution(
+FMIStatus FMI3InstantiateScheduledExecution(
     FMIInstance                   *instance,
     fmi3String                     instantiationToken,
     fmi3String                     resourcePath,
@@ -381,7 +381,7 @@ fmi3Status FMI3InstantiateScheduledExecution(
     fmi3UnlockPreemptionCallback   unlockPreemption) {
 
     if (loadSymbols3(instance) != FMIOK) {
-        return fmi3Error;
+        return FMIError;
     }
 
     fmi3LogMessageCallback _logMessage = instance->logMessage ? cb_logMessage3 : NULL;
@@ -425,30 +425,30 @@ fmi3Status FMI3InstantiateScheduledExecution(
     }
 
     if (!instance->component) {
-        return fmi3Error;
+        return FMIError;
     }
 
     instance->interfaceType = FMIScheduledExecution;
     instance->state = FMI2InstantiatedState;
 
-    return fmi3OK;
+    return FMIOK;
 }
 
-fmi3Status FMI3FreeInstance(FMIInstance *instance) {
+FMIStatus FMI3FreeInstance(FMIInstance *instance) {
 
     instance->fmi3Functions->fmi3FreeInstance(instance->component);
 
     instance->component = NULL;
 
     if (instance->logFunctionCall) {
-        instance->logFunctionCall(instance, fmi3OK, "fmi3FreeInstance()");
+        instance->logFunctionCall(instance, FMIOK, "fmi3FreeInstance()");
     }
 
-    return fmi3OK;
+    return FMIOK;
 }
 
 /* Enter and exit initialization mode, enter event mode, terminate and reset */
-fmi3Status FMI3EnterInitializationMode(FMIInstance *instance,
+FMIStatus FMI3EnterInitializationMode(FMIInstance *instance,
     fmi3Boolean toleranceDefined,
     fmi3Float64 tolerance,
     fmi3Float64 startTime,
@@ -462,7 +462,7 @@ fmi3Status FMI3EnterInitializationMode(FMIInstance *instance,
         toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime);
 }
 
-fmi3Status FMI3ExitInitializationMode(FMIInstance *instance) {
+FMIStatus FMI3ExitInitializationMode(FMIInstance *instance) {
 
     if (instance->interfaceType == FMIModelExchange || (instance->fmiVersion == FMIVersion3 && instance->interfaceType == FMICoSimulation && instance->fmi3Functions->eventModeUsed)) {
         instance->state = FMI2EventModeState;
@@ -473,17 +473,17 @@ fmi3Status FMI3ExitInitializationMode(FMIInstance *instance) {
     CALL(ExitInitializationMode);
 }
 
-fmi3Status FMI3EnterEventMode(FMIInstance *instance,
+FMIStatus FMI3EnterEventMode(FMIInstance *instance,
     fmi3EventQualifier stepEvent,
     fmi3EventQualifier stateEvent,
     const fmi3Int32 rootsFound[],
     size_t nEventIndicators,
     fmi3EventQualifier timeEvent) {
 
-    fmi3Status status = instance->fmi3Functions->fmi3EnterEventMode(instance->component, stepEvent, stateEvent, rootsFound, nEventIndicators, timeEvent);
+    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3EnterEventMode(instance->component, stepEvent, stateEvent, rootsFound, nEventIndicators, timeEvent);
 
     if (instance->logFunctionCall) {
-        FMIValuesToString(instance, nEventIndicators, rootsFound, FMIInt32Type);
+        FMIValuesToString(instance, nEventIndicators, NULL, rootsFound, FMIInt32Type);
         instance->logFunctionCall(instance, status,
             "fmi3EnterEventMode(stepEvent=%d, stateEvent=%d, rootsFound=%s, nEventIndicators=%zu, timeEvent=%d)",
             stepEvent, stateEvent, instance->buf2, nEventIndicators, timeEvent);
@@ -492,18 +492,18 @@ fmi3Status FMI3EnterEventMode(FMIInstance *instance,
     return status;
 }
 
-fmi3Status FMI3Terminate(FMIInstance *instance) {
+FMIStatus FMI3Terminate(FMIInstance *instance) {
     instance->state = FMI2TerminatedState;
     CALL(Terminate);
 }
 
-fmi3Status FMI3Reset(FMIInstance *instance) {
+FMIStatus FMI3Reset(FMIInstance *instance) {
     instance->state = FMI2InstantiatedState;
     CALL(Reset);
 }
 
 /* Getting and setting variable values */
-fmi3Status FMI3GetFloat32(FMIInstance *instance,
+FMIStatus FMI3GetFloat32(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3Float32 values[],
@@ -511,7 +511,7 @@ fmi3Status FMI3GetFloat32(FMIInstance *instance,
     CALL_ARRAY(Get, Float32);
 }
 
-fmi3Status FMI3GetFloat64(FMIInstance *instance,
+FMIStatus FMI3GetFloat64(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3Float64 values[],
@@ -519,7 +519,7 @@ fmi3Status FMI3GetFloat64(FMIInstance *instance,
     CALL_ARRAY(Get, Float64);
 }
 
-fmi3Status FMI3GetInt8(FMIInstance *instance,
+FMIStatus FMI3GetInt8(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3Int8 values[],
@@ -527,7 +527,7 @@ fmi3Status FMI3GetInt8(FMIInstance *instance,
     CALL_ARRAY(Get, Int8);
 }
 
-fmi3Status FMI3GetUInt8(FMIInstance *instance,
+FMIStatus FMI3GetUInt8(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3UInt8 values[],
@@ -535,7 +535,7 @@ fmi3Status FMI3GetUInt8(FMIInstance *instance,
     CALL_ARRAY(Get, UInt8);
 }
 
-fmi3Status FMI3GetInt16(FMIInstance *instance,
+FMIStatus FMI3GetInt16(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3Int16 values[],
@@ -543,7 +543,7 @@ fmi3Status FMI3GetInt16(FMIInstance *instance,
     CALL_ARRAY(Get, Int16);
 }
 
-fmi3Status FMI3GetUInt16(FMIInstance *instance,
+FMIStatus FMI3GetUInt16(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3UInt16 values[],
@@ -551,7 +551,7 @@ fmi3Status FMI3GetUInt16(FMIInstance *instance,
     CALL_ARRAY(Get, UInt16);
 }
 
-fmi3Status FMI3GetInt32(FMIInstance *instance,
+FMIStatus FMI3GetInt32(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3Int32 values[],
@@ -559,7 +559,7 @@ fmi3Status FMI3GetInt32(FMIInstance *instance,
     CALL_ARRAY(Get, Int32);
 }
 
-fmi3Status FMI3GetUInt32(FMIInstance *instance,
+FMIStatus FMI3GetUInt32(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3UInt32 values[],
@@ -567,7 +567,7 @@ fmi3Status FMI3GetUInt32(FMIInstance *instance,
     CALL_ARRAY(Get, UInt32);
 }
 
-fmi3Status FMI3GetInt64(FMIInstance *instance,
+FMIStatus FMI3GetInt64(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3Int64 values[],
@@ -575,7 +575,7 @@ fmi3Status FMI3GetInt64(FMIInstance *instance,
     CALL_ARRAY(Get, Int64);
 }
 
-fmi3Status FMI3GetUInt64(FMIInstance *instance,
+FMIStatus FMI3GetUInt64(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3UInt64 values[],
@@ -583,7 +583,7 @@ fmi3Status FMI3GetUInt64(FMIInstance *instance,
     CALL_ARRAY(Get, UInt64);
 }
 
-fmi3Status FMI3GetBoolean(FMIInstance *instance,
+FMIStatus FMI3GetBoolean(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3Boolean values[],
@@ -591,7 +591,7 @@ fmi3Status FMI3GetBoolean(FMIInstance *instance,
     CALL_ARRAY(Get, Boolean);
 }
 
-fmi3Status FMI3GetString(FMIInstance *instance,
+FMIStatus FMI3GetString(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3String values[],
@@ -599,42 +599,42 @@ fmi3Status FMI3GetString(FMIInstance *instance,
     CALL_ARRAY(Get, String);
 }
 
-fmi3Status FMI3GetBinary(FMIInstance *instance,
+FMIStatus FMI3GetBinary(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     size_t sizes[],
     fmi3Binary values[],
     size_t nValues) {
 
-    fmi3Status status = instance->fmi3Functions->fmi3GetBinary(instance->component, valueReferences, nValueReferences, sizes, values, nValues);
+    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3GetBinary(instance->component, valueReferences, nValueReferences, sizes, values, nValues);
 
     if (instance->logFunctionCall) {
         FMIValueReferencesToString(instance, valueReferences, nValueReferences);
-        FMIValuesToString(instance, nValues, values, FMIBinaryType);
+        FMIValuesToString(instance, nValues, sizes, values, FMIBinaryType);
         instance->logFunctionCall(instance, status, "fmi3GetBinary(valueReferences=%s, nValueReferences=%zu, sizes=%p, values=%s, nValues=%zu)", instance->buf1, nValueReferences, sizes, instance->buf2, nValues);
     }
 
     return status;
 }
 
-fmi3Status FMI3GetClock(FMIInstance *instance,
+FMIStatus FMI3GetClock(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3Clock values[],
     size_t nValues) {
 
-    fmi3Status status = instance->fmi3Functions->fmi3GetClock(instance->component, valueReferences, nValueReferences, values);
+    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3GetClock(instance->component, valueReferences, nValueReferences, values);
 
     if (instance->logFunctionCall) {
         FMIValueReferencesToString(instance, valueReferences, nValueReferences);
-        FMIValuesToString(instance, nValues, values, FMIClockType);
+        FMIValuesToString(instance, nValues, NULL, values, FMIClockType);
         instance->logFunctionCall(instance, status, "fmi3GetClock(valueReferences=%s, nValueReferences=%zu, values=%s)", instance->buf1, nValueReferences, instance->buf2);
     }
 
     return status;
 }
 
-fmi3Status FMI3SetFloat32(FMIInstance *instance,
+FMIStatus FMI3SetFloat32(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3Float32 values[],
@@ -642,7 +642,7 @@ fmi3Status FMI3SetFloat32(FMIInstance *instance,
     CALL_ARRAY(Set, Float32);
 }
 
-fmi3Status FMI3SetFloat64(FMIInstance *instance,
+FMIStatus FMI3SetFloat64(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3Float64 values[],
@@ -650,7 +650,7 @@ fmi3Status FMI3SetFloat64(FMIInstance *instance,
     CALL_ARRAY(Set, Float64);
 }
 
-fmi3Status FMI3SetInt8(FMIInstance *instance,
+FMIStatus FMI3SetInt8(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3Int8 values[],
@@ -658,7 +658,7 @@ fmi3Status FMI3SetInt8(FMIInstance *instance,
     CALL_ARRAY(Set, Int8);
 }
 
-fmi3Status FMI3SetUInt8(FMIInstance *instance,
+FMIStatus FMI3SetUInt8(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3UInt8 values[],
@@ -666,7 +666,7 @@ fmi3Status FMI3SetUInt8(FMIInstance *instance,
     CALL_ARRAY(Set, UInt8);
 }
 
-fmi3Status FMI3SetInt16(FMIInstance *instance,
+FMIStatus FMI3SetInt16(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3Int16 values[],
@@ -674,7 +674,7 @@ fmi3Status FMI3SetInt16(FMIInstance *instance,
     CALL_ARRAY(Set, Int16);
 }
 
-fmi3Status FMI3SetUInt16(FMIInstance *instance,
+FMIStatus FMI3SetUInt16(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3UInt16 values[],
@@ -682,7 +682,7 @@ fmi3Status FMI3SetUInt16(FMIInstance *instance,
     CALL_ARRAY(Set, UInt16);
 }
 
-fmi3Status FMI3SetInt32(FMIInstance *instance,
+FMIStatus FMI3SetInt32(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3Int32 values[],
@@ -690,7 +690,7 @@ fmi3Status FMI3SetInt32(FMIInstance *instance,
     CALL_ARRAY(Set, Int32);
 }
 
-fmi3Status FMI3SetUInt32(FMIInstance *instance,
+FMIStatus FMI3SetUInt32(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3UInt32 values[],
@@ -698,7 +698,7 @@ fmi3Status FMI3SetUInt32(FMIInstance *instance,
     CALL_ARRAY(Set, UInt32);
 }
 
-fmi3Status FMI3SetInt64(FMIInstance *instance,
+FMIStatus FMI3SetInt64(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3Int64 values[],
@@ -706,7 +706,7 @@ fmi3Status FMI3SetInt64(FMIInstance *instance,
     CALL_ARRAY(Set, Int64);
 }
 
-fmi3Status FMI3SetUInt64(FMIInstance *instance,
+FMIStatus FMI3SetUInt64(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3UInt64 values[],
@@ -714,7 +714,7 @@ fmi3Status FMI3SetUInt64(FMIInstance *instance,
     CALL_ARRAY(Set, UInt64);
 }
 
-fmi3Status FMI3SetBoolean(FMIInstance *instance,
+FMIStatus FMI3SetBoolean(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3Boolean values[],
@@ -722,7 +722,7 @@ fmi3Status FMI3SetBoolean(FMIInstance *instance,
     CALL_ARRAY(Set, Boolean);
 }
 
-fmi3Status FMI3SetString(FMIInstance *instance,
+FMIStatus FMI3SetString(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3String values[],
@@ -730,41 +730,41 @@ fmi3Status FMI3SetString(FMIInstance *instance,
     CALL_ARRAY(Set, String);
 }
 
-fmi3Status FMI3SetBinary(FMIInstance *instance,
+FMIStatus FMI3SetBinary(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const size_t sizes[],
     const fmi3Binary values[],
     size_t nValues) {
 
-    fmi3Status status = instance->fmi3Functions->fmi3SetBinary(instance->component, valueReferences, nValueReferences, sizes, values, nValues);
+    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3SetBinary(instance->component, valueReferences, nValueReferences, sizes, values, nValues);
 
     if (instance->logFunctionCall) {
         FMIValueReferencesToString(instance, valueReferences, nValueReferences);
-        FMIValuesToString(instance, nValues, values, FMIBinaryType);
+        FMIValuesToString(instance, nValues, sizes, values, FMIBinaryType);
         instance->logFunctionCall(instance, status, "fmi3SetBinary(valueReferences=%s, nValueReferences=%zu, sizes=0x%p, values=%s, nValues=%zu", instance->buf1, nValueReferences, sizes, instance->buf2, nValues);
     }
 
     return status;
 }
 
-fmi3Status FMI3SetClock(FMIInstance *instance,
+FMIStatus FMI3SetClock(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3Clock values[],
     size_t nValues) {
     // TODO: implement
-    return fmi3Error;
+    return FMIError;
 }
 
 /* Getting Variable Dependency Information */
-fmi3Status FMI3GetNumberOfVariableDependencies(FMIInstance *instance,
+FMIStatus FMI3GetNumberOfVariableDependencies(FMIInstance *instance,
     fmi3ValueReference valueReference,
     size_t* nDependencies) {
     CALL_ARGS(GetNumberOfVariableDependencies, "valueReference=%u, nDependencies=0x%p", valueReference, nDependencies);
 }
 
-fmi3Status FMI3GetVariableDependencies(FMIInstance *instance,
+FMIStatus FMI3GetVariableDependencies(FMIInstance *instance,
     fmi3ValueReference dependent,
     size_t elementIndicesOfDependent[],
     fmi3ValueReference independents[],
@@ -776,37 +776,37 @@ fmi3Status FMI3GetVariableDependencies(FMIInstance *instance,
 }
 
 /* Getting and setting the internal FMU state */
-fmi3Status FMI3GetFMUState(FMIInstance *instance, fmi3FMUState* FMUState) {
+FMIStatus FMI3GetFMUState(FMIInstance *instance, fmi3FMUState* FMUState) {
     CALL_ARGS(GetFMUState, "FMUState=0x%p", FMUState);
 }
 
-fmi3Status FMI3SetFMUState(FMIInstance *instance, fmi3FMUState  FMUState) {
+FMIStatus FMI3SetFMUState(FMIInstance *instance, fmi3FMUState  FMUState) {
     CALL_ARGS(SetFMUState, "FMUState=0x%p", FMUState);
 }
 
-fmi3Status FMI3FreeFMUState(FMIInstance *instance, fmi3FMUState* FMUState) {
+FMIStatus FMI3FreeFMUState(FMIInstance *instance, fmi3FMUState* FMUState) {
     CALL_ARGS(FreeFMUState, "FMUState=0x%p", FMUState);
 }
 
 
-fmi3Status FMI3SerializedFMUStateSize(FMIInstance *instance,
+FMIStatus FMI3SerializedFMUStateSize(FMIInstance *instance,
     fmi3FMUState  FMUState,
     size_t* size) {
-    fmi3Status status = instance->fmi3Functions->fmi3SerializedFMUStateSize(instance->component, FMUState, size);
+    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3SerializedFMUStateSize(instance->component, FMUState, size);
     if (instance->logFunctionCall) {
         instance->logFunctionCall(instance, status, "fmi3SerializedFMUStateSize(FMUState=0x%p, size=%zu)", FMUState, *size);
     }
     return status;
 }
 
-fmi3Status FMI3SerializeFMUState(FMIInstance *instance,
+FMIStatus FMI3SerializeFMUState(FMIInstance *instance,
     fmi3FMUState  FMUState,
     fmi3Byte serializedState[],
     size_t size) {
     CALL_ARGS(SerializeFMUState, "FMUstate=0x%p, serializedState=0x%p, size=%zu", FMUState, serializedState, size);
 }
 
-fmi3Status FMI3DeserializeFMUState(FMIInstance *instance,
+FMIStatus FMI3DeserializeFMUState(FMIInstance *instance,
     const fmi3Byte serializedState[],
     size_t size,
     fmi3FMUState* FMUState) {
@@ -814,7 +814,7 @@ fmi3Status FMI3DeserializeFMUState(FMIInstance *instance,
 }
 
 /* Getting partial derivatives */
-fmi3Status FMI3GetDirectionalDerivative(FMIInstance *instance,
+FMIStatus FMI3GetDirectionalDerivative(FMIInstance *instance,
     const fmi3ValueReference unknowns[],
     size_t nUnknowns,
     const fmi3ValueReference knowns[],
@@ -828,7 +828,7 @@ fmi3Status FMI3GetDirectionalDerivative(FMIInstance *instance,
         unknowns, nUnknowns, knowns, nKnowns, seed, nSeed, sensitivity, nSensitivity);
 }
 
-fmi3Status FMI3GetAdjointDerivative(FMIInstance *instance,
+FMIStatus FMI3GetAdjointDerivative(FMIInstance *instance,
     const fmi3ValueReference unknowns[],
     size_t nUnknowns,
     const fmi3ValueReference knowns[],
@@ -843,17 +843,17 @@ fmi3Status FMI3GetAdjointDerivative(FMIInstance *instance,
 }
 
 /* Entering and exiting the Configuration or Reconfiguration Mode */
-fmi3Status FMI3EnterConfigurationMode(FMIInstance *instance) {
+FMIStatus FMI3EnterConfigurationMode(FMIInstance *instance) {
     CALL(EnterConfigurationMode);
 }
 
-fmi3Status FMI3ExitConfigurationMode(FMIInstance *instance) {
+FMIStatus FMI3ExitConfigurationMode(FMIInstance *instance) {
     CALL(ExitConfigurationMode);
 }
 
 /* Clock related functions */
 
-FMI_STATIC fmi3Status FMI3GetIntervalDecimal(FMIInstance *instance,
+FMI_STATIC FMIStatus FMI3GetIntervalDecimal(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3Float64 intervals[],
@@ -863,7 +863,7 @@ FMI_STATIC fmi3Status FMI3GetIntervalDecimal(FMIInstance *instance,
         valueReferences, nValueReferences, intervals, qualifiers);
 }
 
-fmi3Status FMI3GetIntervalFraction(FMIInstance *instance,
+FMIStatus FMI3GetIntervalFraction(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3UInt64 intervalCounters[],
@@ -874,7 +874,7 @@ fmi3Status FMI3GetIntervalFraction(FMIInstance *instance,
         valueReferences, nValueReferences, intervalCounters, resolutions, qualifiers);
 }
 
-fmi3Status FMI3GetShiftDecimal(FMIInstance *instance,
+FMIStatus FMI3GetShiftDecimal(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3Float64 shifts[]) {
@@ -883,7 +883,7 @@ fmi3Status FMI3GetShiftDecimal(FMIInstance *instance,
         valueReferences, nValueReferences, shifts);
 }
 
-fmi3Status FMI3GetShiftFraction(FMIInstance *instance,
+FMIStatus FMI3GetShiftFraction(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3UInt64 shiftCounters[],
@@ -893,7 +893,7 @@ fmi3Status FMI3GetShiftFraction(FMIInstance *instance,
         valueReferences, nValueReferences, shiftCounters, resolutions);
 }
 
-fmi3Status FMI3SetIntervalDecimal(FMIInstance *instance,
+FMIStatus FMI3SetIntervalDecimal(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3Float64 intervals[]) {
@@ -902,7 +902,7 @@ fmi3Status FMI3SetIntervalDecimal(FMIInstance *instance,
         valueReferences, nValueReferences, intervals);
 }
 
-fmi3Status FMI3SetIntervalFraction(FMIInstance *instance,
+FMIStatus FMI3SetIntervalFraction(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3UInt64 intervalCounters[],
@@ -912,7 +912,7 @@ fmi3Status FMI3SetIntervalFraction(FMIInstance *instance,
         valueReferences, nValueReferences, intervalCounters, resolutions);
 }
 
-fmi3Status FMI3SetShiftDecimal(FMIInstance *instance,
+FMIStatus FMI3SetShiftDecimal(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3Float64 shifts[]) {
@@ -921,7 +921,7 @@ fmi3Status FMI3SetShiftDecimal(FMIInstance *instance,
         valueReferences, nValueReferences, shifts);
 }
 
-fmi3Status FMI3SetShiftFraction(FMIInstance *instance,
+FMIStatus FMI3SetShiftFraction(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3UInt64 shiftCounters[],
@@ -931,11 +931,11 @@ fmi3Status FMI3SetShiftFraction(FMIInstance *instance,
         valueReferences, nValueReferences, shiftCounters, resolutions);
 }
 
-fmi3Status FMI3EvaluateDiscreteStates(FMIInstance *instance) {
+FMIStatus FMI3EvaluateDiscreteStates(FMIInstance *instance) {
     CALL(EvaluateDiscreteStates);
 }
 
-fmi3Status FMI3UpdateDiscreteStates(FMIInstance *instance,
+FMIStatus FMI3UpdateDiscreteStates(FMIInstance *instance,
     fmi3Boolean* discreteStatesNeedUpdate,
     fmi3Boolean* terminateSimulation,
     fmi3Boolean* nominalsOfContinuousStatesChanged,
@@ -943,7 +943,7 @@ fmi3Status FMI3UpdateDiscreteStates(FMIInstance *instance,
     fmi3Boolean* nextEventTimeDefined,
     fmi3Float64* nextEventTime) {
 
-    fmi3Status status = instance->fmi3Functions->fmi3UpdateDiscreteStates(instance->component, discreteStatesNeedUpdate, terminateSimulation, nominalsOfContinuousStatesChanged, valuesOfContinuousStatesChanged, nextEventTimeDefined, nextEventTime);
+    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3UpdateDiscreteStates(instance->component, discreteStatesNeedUpdate, terminateSimulation, nominalsOfContinuousStatesChanged, valuesOfContinuousStatesChanged, nextEventTimeDefined, nextEventTime);
 
     if (instance->logFunctionCall) {
         instance->logFunctionCall(instance, status,
@@ -958,17 +958,17 @@ fmi3Status FMI3UpdateDiscreteStates(FMIInstance *instance,
 Types for Functions for Model Exchange
 ****************************************************/
 
-fmi3Status FMI3EnterContinuousTimeMode(FMIInstance *instance) {
+FMIStatus FMI3EnterContinuousTimeMode(FMIInstance *instance) {
     instance->state = FMI2ContinuousTimeModeState;
     CALL(EnterContinuousTimeMode);
 }
 
-fmi3Status FMI3CompletedIntegratorStep(FMIInstance *instance,
+FMIStatus FMI3CompletedIntegratorStep(FMIInstance *instance,
     fmi3Boolean noSetFMUStatePriorToCurrentPoint,
     fmi3Boolean* enterEventMode,
     fmi3Boolean* terminateSimulation) {
 
-    fmi3Status status = instance->fmi3Functions->fmi3CompletedIntegratorStep(instance->component, noSetFMUStatePriorToCurrentPoint, enterEventMode, terminateSimulation);
+    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3CompletedIntegratorStep(instance->component, noSetFMUStatePriorToCurrentPoint, enterEventMode, terminateSimulation);
 
     if (instance->logFunctionCall) {
         instance->logFunctionCall(instance, status,
@@ -980,19 +980,19 @@ fmi3Status FMI3CompletedIntegratorStep(FMIInstance *instance,
 }
 
 /* Providing independent variables and re-initialization of caching */
-fmi3Status FMI3SetTime(FMIInstance *instance, fmi3Float64 time) {
+FMIStatus FMI3SetTime(FMIInstance *instance, fmi3Float64 time) {
     instance->time = time;
     CALL_ARGS(SetTime, "time=%.16g", time);
 }
 
-fmi3Status FMI3SetContinuousStates(FMIInstance *instance,
+FMIStatus FMI3SetContinuousStates(FMIInstance *instance,
     const fmi3Float64 continuousStates[],
     size_t nContinuousStates) {
 
-    fmi3Status status = instance->fmi3Functions->fmi3SetContinuousStates(instance->component, continuousStates, nContinuousStates);
+    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3SetContinuousStates(instance->component, continuousStates, nContinuousStates);
 
     if (instance->logFunctionCall) {
-        FMIValuesToString(instance, nContinuousStates, continuousStates, FMIFloat64Type);
+        FMIValuesToString(instance, nContinuousStates, NULL, continuousStates, FMIFloat64Type);
         instance->logFunctionCall(instance, status,
             "fmi3SetContinuousStates(continuousStates=%s, nContinuousStates=%zu)",
             instance->buf2, nContinuousStates);
@@ -1002,14 +1002,14 @@ fmi3Status FMI3SetContinuousStates(FMIInstance *instance,
 }
 
 /* Evaluation of the model equations */
-fmi3Status FMI3GetContinuousStateDerivatives(FMIInstance *instance,
+FMIStatus FMI3GetContinuousStateDerivatives(FMIInstance *instance,
     fmi3Float64 derivatives[],
     size_t nContinuousStates) {
 
-    fmi3Status status = instance->fmi3Functions->fmi3GetContinuousStateDerivatives(instance->component, derivatives, nContinuousStates);
+    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3GetContinuousStateDerivatives(instance->component, derivatives, nContinuousStates);
 
     if (instance->logFunctionCall) {
-        FMIValuesToString(instance, nContinuousStates, derivatives, FMIFloat64Type);
+        FMIValuesToString(instance, nContinuousStates, NULL, derivatives, FMIFloat64Type);
         instance->logFunctionCall(instance, status,
             "fmi3GetDerivatives(derivatives=%s, nContinuousStates=%zu)",
             instance->buf2, nContinuousStates);
@@ -1018,14 +1018,14 @@ fmi3Status FMI3GetContinuousStateDerivatives(FMIInstance *instance,
     return status;
 }
 
-fmi3Status FMI3GetEventIndicators(FMIInstance *instance,
+FMIStatus FMI3GetEventIndicators(FMIInstance *instance,
     fmi3Float64 eventIndicators[],
     size_t nEventIndicators) {
 
-    fmi3Status status = instance->fmi3Functions->fmi3GetEventIndicators(instance->component, eventIndicators, nEventIndicators);
+    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3GetEventIndicators(instance->component, eventIndicators, nEventIndicators);
 
     if (instance->logFunctionCall) {
-        FMIValuesToString(instance, nEventIndicators, eventIndicators, FMIFloat64Type);
+        FMIValuesToString(instance, nEventIndicators, NULL, eventIndicators, FMIFloat64Type);
         instance->logFunctionCall(instance, status,
             "fmi3GetEventIndicators(eventIndicators=%s, nEventIndicators=%zu)",
             instance->buf2, nEventIndicators);
@@ -1034,14 +1034,14 @@ fmi3Status FMI3GetEventIndicators(FMIInstance *instance,
     return status;
 }
 
-fmi3Status FMI3GetContinuousStates(FMIInstance *instance,
+FMIStatus FMI3GetContinuousStates(FMIInstance *instance,
     fmi3Float64 continuousStates[],
     size_t nContinuousStates) {
 
-    fmi3Status status = instance->fmi3Functions->fmi3GetContinuousStates(instance->component, continuousStates, nContinuousStates);
+    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3GetContinuousStates(instance->component, continuousStates, nContinuousStates);
 
     if (instance->logFunctionCall) {
-        FMIValuesToString(instance, nContinuousStates, continuousStates, FMIFloat64Type);
+        FMIValuesToString(instance, nContinuousStates, NULL, continuousStates, FMIFloat64Type);
         instance->logFunctionCall(instance, status,
             "fmi3GetContinuousStates(continuousStates=%s, nContinuousStates=%zu)",
             instance->buf2, nContinuousStates);
@@ -1050,19 +1050,19 @@ fmi3Status FMI3GetContinuousStates(FMIInstance *instance,
     return status;
 }
 
-fmi3Status FMI3GetNominalsOfContinuousStates(FMIInstance *instance,
+FMIStatus FMI3GetNominalsOfContinuousStates(FMIInstance *instance,
     fmi3Float64 nominals[],
     size_t nContinuousStates) {
     CALL_ARGS(GetNominalsOfContinuousStates, "nominals=0x%p, nContinuousStates=%zu", nominals, nContinuousStates);
 }
 
 
-fmi3Status FMI3GetNumberOfEventIndicators(FMIInstance *instance,
+FMIStatus FMI3GetNumberOfEventIndicators(FMIInstance *instance,
     size_t* nEventIndicators) {
     CALL_ARGS(GetNumberOfEventIndicators, "nEventIndicators=0x%p", nEventIndicators);
 }
 
-fmi3Status FMI3GetNumberOfContinuousStates(FMIInstance *instance,
+FMIStatus FMI3GetNumberOfContinuousStates(FMIInstance *instance,
     size_t* nContinuousStates) {
     CALL_ARGS(GetNumberOfContinuousStates, "nContinuousStates=0x%p", nContinuousStates);
 }
@@ -1073,11 +1073,11 @@ Types for Functions for Co-Simulation
 
 /* Simulating the FMU */
 
-fmi3Status FMI3EnterStepMode(FMIInstance *instance) {
+FMIStatus FMI3EnterStepMode(FMIInstance *instance) {
     CALL(EnterStepMode);
 }
 
-fmi3Status FMI3GetOutputDerivatives(FMIInstance *instance,
+FMIStatus FMI3GetOutputDerivatives(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3Int32 orders[],
@@ -1088,7 +1088,7 @@ fmi3Status FMI3GetOutputDerivatives(FMIInstance *instance,
         valueReferences, nValueReferences, orders, values, nValues);
 }
 
-fmi3Status FMI3DoStep(FMIInstance *instance,
+FMIStatus FMI3DoStep(FMIInstance *instance,
     fmi3Float64 currentCommunicationPoint,
     fmi3Float64 communicationStepSize,
     fmi3Boolean noSetFMUStatePriorToCurrentPoint,
@@ -1097,11 +1097,11 @@ fmi3Status FMI3DoStep(FMIInstance *instance,
     fmi3Boolean* earlyReturn,
     fmi3Float64* lastSuccessfulTime) {
 
-    fmi3Status status = instance->fmi3Functions->fmi3DoStep(instance->component, currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint, eventEncountered, terminate, earlyReturn, lastSuccessfulTime);
+    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3DoStep(instance->component, currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint, eventEncountered, terminate, earlyReturn, lastSuccessfulTime);
 
     if (instance->logFunctionCall) {
         instance->logFunctionCall(instance, status,
-            "fmi3DoStep(currentCommunicationPoint=%.16g, communicationStepSize=%.16g, noSetFMUStatePriorToCurrentPoint=%d, eventEncountered=%d, terminate=%d, earlyReturn=%d, lastSuccessfulTime=%.16g",
+            "fmi3DoStep(currentCommunicationPoint=%.16g, communicationStepSize=%.16g, noSetFMUStatePriorToCurrentPoint=%d, eventEncountered=%d, terminate=%d, earlyReturn=%d, lastSuccessfulTime=%.16g)",
             currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint, *eventEncountered, *terminate, *earlyReturn, *lastSuccessfulTime);
     }
 
@@ -1110,7 +1110,7 @@ fmi3Status FMI3DoStep(FMIInstance *instance,
     return status;
 }
 
-fmi3Status FMI3ActivateModelPartition(FMIInstance *instance,
+FMIStatus FMI3ActivateModelPartition(FMIInstance *instance,
     fmi3ValueReference clockReference,
     fmi3Float64 activationTime) {
     CALL_ARGS(ActivateModelPartition,

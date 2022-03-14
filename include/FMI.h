@@ -155,7 +155,7 @@ FMI_STATIC void FMIFreeInstance(FMIInstance *instance);
 
 FMI_STATIC const char* FMIValueReferencesToString(FMIInstance *instance, const FMIValueReference vr[], size_t nvr);
 
-FMI_STATIC const char* FMIValuesToString(FMIInstance *instance, size_t nvr, const void *value, FMIVariableType variableType);
+FMI_STATIC const char* FMIValuesToString(FMIInstance *instance, size_t vValues, const size_t sizes[], const void* values, FMIVariableType variableType);
 
 FMI_STATIC FMIStatus FMIURIToPath(const char *uri, char *path, const size_t pathLength);
 
