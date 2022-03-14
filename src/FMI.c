@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <inttypes.h>
 
 #ifdef _WIN32
 #include <shlwapi.h>
@@ -131,27 +132,57 @@ const char* FMIValuesToString(FMIInstance *instance, size_t nvr, const void *val
         pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, "{");
 
         for (size_t i = 0; i < nvr; i++) {
-
+            
             switch (variableType) {
-            case FMIFloat64Type:
-                pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%.16g, " : "%.16g", ((double *)value)[i]);
-                break;
-            case FMIInt32Type:
-                pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%d, " : "%d", ((int *)value)[i]);
-                break;
-            case FMIBooleanType:
-                if (instance->fmiVersion == FMIVersion1) {
-                    //pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%d, " : "%d", ((fmi1Boolean *)value)[i]);
-                } else {
-                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%d, " : "%d", ((int *)value)[i]);
-                }
-                break;
-            case FMIStringType:
-                pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "\"%s\", " : "\"%s\"", ((const char **)value)[i]);
-                break;
-            case FMIClockType:
-                pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%d, " : "%d", ((bool *)value)[i]);
-                break;
+                case FMIFloat32Type:
+                case FMIDiscreteFloat32Type:
+                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%.7g, " : "%.7g", ((float *)value)[i]);
+                    break;
+                case FMIFloat64Type:
+                case FMIDiscreteFloat64Type:
+                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%.16g, " : "%.16g", ((double *)value)[i]);
+                    break;
+                case FMIInt8Type:
+                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%" PRId8 ", " : "%" PRId8, ((int8_t *)value)[i]);
+                    break;
+                case FMIUInt8Type:
+                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%" PRIu8 ", " : "%" PRIu8, ((uint8_t *)value)[i]);
+                    break;
+                case FMIInt16Type:
+                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%" PRId16 ", " : "%" PRId16, ((int16_t *)value)[i]);
+                    break;
+                case FMIUInt16Type:
+                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%" PRIu16 ", " : "%" PRIu16, ((uint16_t *)value)[i]);
+                    break;
+                case FMIInt32Type:
+                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%" PRId32 ", " : "%" PRId32, ((int32_t *)value)[i]);
+                    break;
+                case FMIUInt32Type:
+                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%" PRIu32 ", " : "%" PRIu32, ((uint32_t *)value)[i]);
+                    break;
+                case FMIInt64Type:
+                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%" PRId64 ", " : "%" PRId64, ((int64_t *)value)[i]);
+                    break;
+                case FMIUInt64Type:
+                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%" PRIu64 ", " : "%" PRIu64, ((uint64_t *)value)[i]);
+                    break;
+                case FMIBooleanType:
+                    if (instance->fmiVersion == FMIVersion1) {
+                        //pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%d, " : "%d", ((fmi1Boolean *)value)[i]);
+                    } else {
+                        pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%d, " : "%d", ((int *)value)[i]);
+                    }
+                    break;
+                case FMIStringType:
+                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "\"%s\", " : "\"%s\"", ((const char **)value)[i]);
+                    break;
+                case FMIBinaryType:
+                    // TODO: convert to base64
+                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, "?");
+                    break;
+                case FMIClockType:
+                    pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, i < nvr - 1 ? "%d, " : "%d", ((bool *)value)[i]);
+                    break;
             }
 
             if (pos > instance->bufsize2 - 2) {
