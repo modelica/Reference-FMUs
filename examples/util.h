@@ -112,7 +112,8 @@ static const char* resourcePath() {
 #ifdef _WIN32
     _fullpath(path, xstr(MODEL_IDENTIFIER) "\\resources\\", 4096);
 #else
-    realpath(xstr(MODEL_IDENTIFIER) "/resources/", path);
+    realpath(xstr(MODEL_IDENTIFIER) "/resources", path);
+    strcat(path, "/");
 #endif
 
 #endif
