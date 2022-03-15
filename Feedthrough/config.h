@@ -12,20 +12,33 @@
 #define CO_SIMULATION
 #define MODEL_EXCHANGE
 
-// define model size
 #define NX 0
 #define NZ 0
 
 #define GET_FLOAT32
+#define GET_FLOAT64
 #define GET_INT8
+#define GET_UINT8
+#define GET_INT16
+#define GET_UINT16
 #define GET_INT32
+#define GET_UINT32
+#define GET_INT64
+#define GET_UINT64
 #define GET_BOOLEAN
 #define GET_STRING
 #define GET_BINARY
 
 #define SET_FLOAT32
 #define SET_FLOAT64
+#define SET_INT8
+#define SET_UINT8
+#define SET_INT16
+#define SET_UINT16
 #define SET_INT32
+#define SET_UINT32
+#define SET_INT64
+#define SET_UINT64
 #define SET_BOOLEAN
 #define SET_STRING
 #define SET_BINARY
@@ -54,8 +67,29 @@ typedef enum {
     vr_Float64_discrete_input,
     vr_Float64_discrete_output,
 
+    vr_Int8_input,
+    vr_Int8_output,
+    
+    vr_UInt8_input,
+    vr_UInt8_output,
+    
+    vr_Int16_input,
+    vr_Int16_output,
+    
+    vr_UInt16_input,
+    vr_UInt16_output,
+    
     vr_Int32_input,
     vr_Int32_output,
+    
+    vr_UInt32_input,
+    vr_UInt32_output,
+    
+    vr_Int64_input,
+    vr_Int64_output,
+    
+    vr_UInt64_input,
+    vr_UInt64_output,
     
     vr_Boolean_input,
     vr_Boolean_output,
@@ -80,9 +114,30 @@ typedef struct {
     double Float64_continuous_output;
     double Float64_discrete_input;
     double Float64_discrete_output;
+
+    int8_t Int8_input;
+    int8_t Int8_output;
+    
+    uint8_t UInt8_input;
+    uint8_t UInt8_output;
+
+    int16_t Int16_input;
+    int16_t Int16_output;
+    
+    uint16_t UInt16_input;
+    uint16_t UInt16_output;
     
     int32_t Int32_input;
     int32_t Int32_output;
+    
+    uint32_t UInt32_input;
+    uint32_t UInt32_output;
+    
+    int64_t Int64_input;
+    int64_t Int64_output;
+    
+    uint64_t UInt64_input;
+    uint64_t UInt64_output;
     
     bool Boolean_input;
     bool Boolean_output;

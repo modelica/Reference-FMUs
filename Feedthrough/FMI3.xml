@@ -39,20 +39,41 @@
     <Float64 name="Float64_discrete_input" valueReference="9" causality="input" variability="discrete" start="0"/>
     <Float64 name="Float64_discrete_output" valueReference="10" causality="output" variability="discrete" initial="calculated"/>
 
-    <Int32 name="Int32_input" valueReference="11" causality="input" variability="discrete" start="0"/>
-    <Int32 name="Int32_output" valueReference="12" causality="output" variability="discrete" initial="calculated"/>
-    
-    <Boolean name="Boolean_input" valueReference="13" causality="input" variability="discrete" start="false"/>
-    <Boolean name="Boolean_output" valueReference="14" causality="output" variability="discrete" initial="calculated"/>
+    <Int8 name="Int8_input" valueReference="11" causality="input" start="0"/>
+    <Int8 name="Int8_output" valueReference="12" causality="output"/>
 
-    <String name="String_parameter" valueReference="15" causality="parameter" variability="fixed">
+    <UInt8 name="UInt8_input" valueReference="13" causality="input" start="0"/>
+    <UInt8 name="UInt8_output" valueReference="14" causality="output"/>
+
+    <Int16 name="Int16_input" valueReference="15" causality="input" start="0"/>
+    <Int16 name="Int16_output" valueReference="16" causality="output"/>
+
+    <UInt16 name="UInt16_input" valueReference="17" causality="input" start="0"/>
+    <UInt16 name="UInt16_output" valueReference="18" causality="output"/>
+
+    <Int32 name="Int32_input" valueReference="19" causality="input" start="0"/>
+    <Int32 name="Int32_output" valueReference="20" causality="output"/>
+
+    <UInt32 name="UInt32_input" valueReference="21" causality="input" start="0"/>
+    <UInt32 name="UInt32_output" valueReference="22" causality="output"/>
+
+    <Int64 name="Int64_input" valueReference="23" causality="input" start="0"/>
+    <Int64 name="Int64_output" valueReference="24" causality="output"/>
+
+    <UInt64 name="UInt64_input" valueReference="25" causality="input" start="0"/>
+    <UInt64 name="UInt64_output" valueReference="26" causality="output"/>
+
+    <Boolean name="Boolean_input" valueReference="27" causality="input" start="false"/>
+    <Boolean name="Boolean_output" valueReference="28" causality="output" initial="calculated"/>
+
+    <String name="String_parameter" valueReference="29" causality="parameter" variability="fixed">
         <Start value="Set me!"/>
     </String>
 
-    <Binary name="Binary_input" valueReference="16" causality="input">
+    <Binary name="Binary_input" valueReference="30" causality="input">
         <Start value="536574206d652c20746f6f21"/>
     </Binary>
-    <Binary name="binary_out" valueReference="17" causality="output"/>
+    <Binary name="binary_out" valueReference="31" causality="output"/>
 
   </ModelVariables>
 

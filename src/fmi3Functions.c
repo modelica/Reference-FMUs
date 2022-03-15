@@ -705,12 +705,9 @@ fmi3Status fmi3SetInt8(fmi3Instance instance,
     const fmi3Int8 values[],
     size_t nValues) {
 
-    UNUSED(valueReferences);
-    UNUSED(nValueReferences);
-    UNUSED(values);
     UNUSED(nValues);
-
-    NOT_IMPLEMENTED;
+    ASSERT_STATE(SetInt8);
+    SET_VARIABLES(Int8);
 }
 
 fmi3Status fmi3SetUInt8(fmi3Instance instance,
@@ -719,12 +716,9 @@ fmi3Status fmi3SetUInt8(fmi3Instance instance,
     const fmi3UInt8 values[],
     size_t nValues) {
 
-    UNUSED(valueReferences);
-    UNUSED(nValueReferences);
-    UNUSED(values);
     UNUSED(nValues);
-
-    NOT_IMPLEMENTED;
+    ASSERT_STATE(SetUInt8);
+    SET_VARIABLES(UInt8);
 }
 
 fmi3Status fmi3SetInt16(fmi3Instance instance,
@@ -733,12 +727,9 @@ fmi3Status fmi3SetInt16(fmi3Instance instance,
     const fmi3Int16 values[],
     size_t nValues) {
 
-    UNUSED(valueReferences);
-    UNUSED(nValueReferences);
-    UNUSED(values);
     UNUSED(nValues);
-
-    NOT_IMPLEMENTED;
+    ASSERT_STATE(SetInt16);
+    SET_VARIABLES(Int16);
 }
 
 fmi3Status fmi3SetUInt16(fmi3Instance instance,
@@ -746,6 +737,7 @@ fmi3Status fmi3SetUInt16(fmi3Instance instance,
     size_t nValueReferences,
     const fmi3UInt16 values[],
     size_t nValues) {
+    
     UNUSED(nValues);
     ASSERT_STATE(SetUInt16);
     SET_VARIABLES(UInt16);
@@ -756,6 +748,7 @@ fmi3Status fmi3SetInt32(fmi3Instance instance,
     size_t nValueReferences,
     const fmi3Int32 values[],
     size_t nValues) {
+    
     UNUSED(nValues);
     ASSERT_STATE(SetInt32);
     SET_VARIABLES(Int32);
@@ -767,12 +760,9 @@ fmi3Status fmi3SetUInt32(fmi3Instance instance,
     const fmi3UInt32 values[],
     size_t nValues) {
 
-    UNUSED(valueReferences);
-    UNUSED(nValueReferences);
-    UNUSED(values);
     UNUSED(nValues);
-
-    NOT_IMPLEMENTED;
+    ASSERT_STATE(SetUInt32);
+    SET_VARIABLES(UInt32);
 }
 
 fmi3Status fmi3SetInt64(fmi3Instance instance,
@@ -781,12 +771,9 @@ fmi3Status fmi3SetInt64(fmi3Instance instance,
     const fmi3Int64 values[],
     size_t nValues) {
 
-    UNUSED(valueReferences);
-    UNUSED(nValueReferences);
-    UNUSED(values);
     UNUSED(nValues);
-
-    NOT_IMPLEMENTED;
+    ASSERT_STATE(SetInt64);
+    SET_VARIABLES(Int64);
 }
 
 fmi3Status fmi3SetUInt64(fmi3Instance instance,
@@ -794,6 +781,7 @@ fmi3Status fmi3SetUInt64(fmi3Instance instance,
     size_t nValueReferences,
     const fmi3UInt64 values[],
     size_t nValues) {
+    
     UNUSED(nValues);
     ASSERT_STATE(SetUInt64);
     SET_VARIABLES(UInt64);
@@ -804,6 +792,7 @@ fmi3Status fmi3SetBoolean(fmi3Instance instance,
     size_t nValueReferences,
     const fmi3Boolean values[],
     size_t nValues) {
+    
     UNUSED(nValues);
     ASSERT_STATE(SetBoolean);
     SET_VARIABLES(Boolean);
@@ -814,6 +803,7 @@ fmi3Status fmi3SetString(fmi3Instance instance,
     size_t nValueReferences,
     const fmi3String values[],
     size_t nValues) {
+    
     UNUSED(nValues);
     ASSERT_STATE(SetString);
     SET_VARIABLES(String);
