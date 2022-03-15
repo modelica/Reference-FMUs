@@ -3,7 +3,7 @@
 
 #include <stddef.h>  // for size_t
 #include <stdbool.h> // for bool
-
+#include <inttypes.h>
 
 // define class name and unique id
 #define MODEL_IDENTIFIER Feedthrough
@@ -16,11 +16,14 @@
 #define NX 0
 #define NZ 0
 
+#define GET_FLOAT32
+#define GET_INT8
 #define GET_INT32
 #define GET_BOOLEAN
 #define GET_STRING
 #define GET_BINARY
 
+#define SET_FLOAT32
 #define SET_FLOAT64
 #define SET_INT32
 #define SET_BOOLEAN
@@ -36,32 +39,61 @@
 #define BINARY_MAX_LEN 128
 
 typedef enum {
+    
     vr_time,
-    vr_fixed_real_parameter,
-    vr_tunable_real_parameter,
-    vr_continuous_real_in,
-    vr_continuous_real_out,
-    vr_discrete_real_in,
-    vr_discrete_real_out,
-    vr_int_in,
-    vr_int_out,
-    vr_bool_in,
-    vr_bool_out,
-    vr_string,
-    vr_binary_in,
-    vr_binary_out,
+    
+    vr_Float32_continuous_input,
+    vr_Float32_continuous_output,
+    vr_Float32_discrete_input,
+    vr_Float32_discrete_output,
+
+    vr_Float64_fixed_parameter,
+    vr_Float64_tunable_parameter,
+    vr_Float64_continuous_input,
+    vr_Float64_continuous_output,
+    vr_Float64_discrete_input,
+    vr_Float64_discrete_output,
+
+    vr_Int32_input,
+    vr_Int32_output,
+    
+    vr_Boolean_input,
+    vr_Boolean_output,
+    
+    vr_String_parameter,
+    
+    vr_Binary_input,
+    vr_Binary_output,
+    
 } ValueReference;
 
 typedef struct {
-    double      real_fixed_parameter;
-    double      real_tunable_parameter;
-    double      real_continuous_in;
-    double      real_discrete;
-    int         integer;
-    bool        boolean;
-    char        string[STRING_MAX_LEN];
-    size_t      binary_size;
-    char        binary[BINARY_MAX_LEN];
+    
+    float Float32_continuous_input;
+    float Float32_continuous_output;
+    float Float32_discrete_input;
+    float Float32_discrete_output;
+    
+    double Float64_fixed_parameter;
+    double Float64_tunable_parameter;
+    double Float64_continuous_input;
+    double Float64_continuous_output;
+    double Float64_discrete_input;
+    double Float64_discrete_output;
+    
+    int32_t Int32_input;
+    int32_t Int32_output;
+    
+    bool Boolean_input;
+    bool Boolean_output;
+
+    char String_parameter[STRING_MAX_LEN];
+    
+    size_t Binary_input_size;
+    char Binary_input[BINARY_MAX_LEN];
+    size_t Binary_output_size;
+    char Binary_output[BINARY_MAX_LEN];
+
 } ModelData;
 
 extern const char* STRING_START;

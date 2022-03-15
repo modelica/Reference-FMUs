@@ -24,24 +24,36 @@
   <DefaultExperiment startTime="0" stopTime="2"/>
 
   <ModelVariables>
-    <Float64 name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time"/>
-    <Float64 name="real_fixed_param" valueReference="1" causality="parameter" variability="fixed" start="0"/>
-    <Float64 name="real_tunable_param" valueReference="2" causality="parameter" variability="tunable" start="0"/>
-    <Float64 name="real_continuous_in" valueReference="3" description="" causality="input" start="0"/>
-    <Float64 name="real_continuous_out" valueReference="4" description="" causality="output" initial="calculated"/>
-    <Float64 name="real_discrete_in" valueReference="5" description="" causality="input" variability="discrete" start="0"/>
-    <Float64 name="real_discrete_out" valueReference="6" description="" causality="output" variability="discrete" initial="calculated"/>
-    <Int32 name="int_in" valueReference="7" description="" causality="input" variability="discrete" start="0"/>
-    <Int32 name="int_out" valueReference="8" description="" causality="output" variability="discrete" initial="calculated"/>
-    <Boolean name="bool_in" valueReference="9" description="boolean input" causality="input" variability="discrete" start="false"/>
-    <Boolean name="bool_out" valueReference="10" description="boolean output" causality="output" variability="discrete" initial="calculated"/>
-    <String name="string_param" valueReference="11" description="String parameter" causality="parameter" variability="fixed">
+
+    <Float64 name="time" valueReference="0" causality="independent" variability="continuous"/>
+
+    <Float32 name="Float32_continuous_input"  valueReference="1" causality="input" start="0"/>
+    <Float32 name="Float32_continuous_output" valueReference="2" causality="output"/>
+    <Float32 name="Float32_discrete_input"    valueReference="3" causality="input" start="0"/>
+    <Float32 name="Float32_discrete_output"   valueReference="4" causality="output"/>
+
+    <Float64 name="Float64_fixed_parameter" valueReference="5" causality="parameter" variability="fixed" start="0"/>
+    <Float64 name="Float64_tunable_parameter" valueReference="6" causality="parameter" variability="tunable" start="0"/>
+    <Float64 name="Float64_continuous_input" valueReference="7" causality="input" start="0"/>
+    <Float64 name="Float64_continuous_output" valueReference="8" causality="output" initial="calculated"/>
+    <Float64 name="Float64_discrete_input" valueReference="9" causality="input" variability="discrete" start="0"/>
+    <Float64 name="Float64_discrete_output" valueReference="10" causality="output" variability="discrete" initial="calculated"/>
+
+    <Int32 name="Int32_input" valueReference="11" causality="input" variability="discrete" start="0"/>
+    <Int32 name="Int32_output" valueReference="12" causality="output" variability="discrete" initial="calculated"/>
+    
+    <Boolean name="Boolean_input" valueReference="13" causality="input" variability="discrete" start="false"/>
+    <Boolean name="Boolean_output" valueReference="14" causality="output" variability="discrete" initial="calculated"/>
+
+    <String name="String_parameter" valueReference="15" causality="parameter" variability="fixed">
         <Start value="Set me!"/>
     </String>
-    <Binary name="binary_in" valueReference="12" description="Binary input" causality="input">
+
+    <Binary name="Binary_input" valueReference="16" causality="input">
         <Start value="536574206d652c20746f6f21"/>
     </Binary>
-    <Binary name="binary_out" valueReference="13" description="Binary output" causality="output"/>
+    <Binary name="binary_out" valueReference="17" causality="output"/>
+
   </ModelVariables>
 
   <ModelStructure>

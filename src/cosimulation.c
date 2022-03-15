@@ -251,135 +251,164 @@ void getEventIndicators(ModelInstance *comp, double z[], size_t nz) {
 }
 #endif
 
+#define GET_NOT_ALLOWED(t) do { \
+    UNUSED(vr); \
+    UNUSED(value); \
+    UNUSED(index); \
+    logError(comp, "Getting " t " is not allowed.");\
+    return Error; \
+} while (false)
+
+#ifndef GET_FLOAT32
+Status getFloat32(ModelInstance* comp, ValueReference vr, float value[], size_t* index) {
+    GET_NOT_ALLOWED("Float32");
+}
+#endif
+
+#ifndef GET_INT8
+Status getInt8(ModelInstance* comp, ValueReference vr, int8_t value[], size_t *index) {
+    GET_NOT_ALLOWED("Int8");
+}
+#endif
+
+#ifndef GET_UINT8
+Status getUInt8(ModelInstance* comp, ValueReference vr, uint8_t value[], size_t *index) {
+    GET_NOT_ALLOWED("UInt8");
+}
+#endif
+
+#ifndef GET_INT16
+Status getInt16(ModelInstance* comp, ValueReference vr, int16_t value[], size_t *index) {
+    GET_NOT_ALLOWED("Int16");
+
+}
+#endif
+
 #ifndef GET_UINT16
-Status getUInt16(ModelInstance* comp, ValueReference vr, uint16_t *value, size_t *index) {
-    UNUSED(comp);
-    UNUSED(vr);
-    UNUSED(value);
-    UNUSED(index);
-    return Error;
+Status getUInt16(ModelInstance* comp, ValueReference vr, uint16_t value[], size_t *index) {
+    GET_NOT_ALLOWED("UInt16");
 }
 #endif
 
 #ifndef GET_INT32
-Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
-    UNUSED(comp);
-    UNUSED(vr);
-    UNUSED(value);
-    UNUSED(index);
-    return Error;
+Status getInt32(ModelInstance* comp, ValueReference vr, int32_t value[], size_t *index) {
+    GET_NOT_ALLOWED("Int32");
+}
+#endif
+
+#ifndef GET_UINT32
+Status getUInt32(ModelInstance* comp, ValueReference vr, uint32_t value[], size_t *index) {
+    GET_NOT_ALLOWED("UInt32");
+}
+#endif
+
+#ifndef GET_INT64
+Status getInt64(ModelInstance* comp, ValueReference vr, int64_t value[], size_t *index) {
+    GET_NOT_ALLOWED("Int64");
 }
 #endif
 
 #ifndef GET_UINT64
-Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t *value, size_t *index) {
-    UNUSED(comp);
-    UNUSED(vr);
-    UNUSED(value);
-    UNUSED(index);
-    return Error;
+Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t value[], size_t *index) {
+    GET_NOT_ALLOWED("UInt64");
 }
 #endif
 
 #ifndef GET_BOOLEAN
-Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *index) {
-    UNUSED(comp);
-    UNUSED(vr);
-    UNUSED(value);
-    UNUSED(index);
-    return Error;
+Status getBoolean(ModelInstance* comp, ValueReference vr, bool value[], size_t *index) {
+    GET_NOT_ALLOWED("Boolean");
 }
 #endif
 
 #ifndef GET_STRING
-Status getString(ModelInstance* comp, ValueReference vr, const char **value, size_t *index) {
-    UNUSED(comp);
-    UNUSED(vr);
-    UNUSED(value);
-    UNUSED(index);
-    return Error;
+Status getString(ModelInstance* comp, ValueReference vr, const char* value[], size_t *index) {
+    GET_NOT_ALLOWED("String");
 }
 #endif
 
 #ifndef GET_BINARY
-Status getBinary(ModelInstance* comp, ValueReference vr, size_t size[], const char *value[], size_t *index) {
-    UNUSED(comp);
-    UNUSED(vr);
-    UNUSED(size);
-    UNUSED(value);
-    UNUSED(index);
-    return Error;
+Status getBinary(ModelInstance* comp, ValueReference vr, size_t size[], const char* value[], size_t *index) {
+    GET_NOT_ALLOWED("Binary");
+}
+#endif
+
+#define SET_NOT_ALLOWED(t) do { \
+    UNUSED(vr); \
+    UNUSED(value); \
+    UNUSED(index); \
+    logError(comp, "Setting " t " is not allowed.");\
+    return Error; \
+} while (false)
+
+#ifndef SET_FLOAT32
+Status setFloat32(ModelInstance* comp, ValueReference vr, const float value[], size_t *index) {
+    SET_NOT_ALLOWED("Float32");
 }
 #endif
 
 #ifndef SET_FLOAT64
-Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
-    UNUSED(comp);
-    UNUSED(vr);
-    UNUSED(value);
-    UNUSED(index);
-    return Error;
+Status setFloat64(ModelInstance* comp, ValueReference vr, const double value[], size_t *index) {
+    SET_NOT_ALLOWED("Float64");
+}
+#endif
+
+#ifndef SET_INT8
+Status set8Int(ModelInstance* comp, ValueReference vr, const int8_t value[], size_t *index) {
+    SET_NOT_ALLOWED("8Int");
+}
+#endif
+
+#ifndef SET_UINT8
+Status setUInt8(ModelInstance* comp, ValueReference vr, const uint8_t value[], size_t *index) {
+    SET_NOT_ALLOWED("UInt8");
+}
+#endif
+
+#ifndef SET_INT16
+Status setInt16(ModelInstance* comp, ValueReference vr, const int16_t value[], size_t *index) {
+    SET_NOT_ALLOWED("Int16");
 }
 #endif
 
 #ifndef SET_UINT16
-Status setUInt16(ModelInstance* comp, ValueReference vr, const uint16_t *value, size_t *index) {
-    UNUSED(comp);
-    UNUSED(vr);
-    UNUSED(value);
-    UNUSED(index);
-    return Error;
+Status setUInt16(ModelInstance* comp, ValueReference vr, const uint16_t value[], size_t *index) {
+    SET_NOT_ALLOWED("UInt16");
 }
 #endif
 
 #ifndef SET_INT32
-Status setInt32(ModelInstance* comp, ValueReference vr, const int *value, size_t *index) {
-    UNUSED(comp);
-    UNUSED(vr);
-    UNUSED(value);
-    UNUSED(index);
-    return Error;
+Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t value[], size_t *index) {
+    SET_NOT_ALLOWED("Int32");
+}
+#endif
+
+#ifndef SET_UINT32
+Status setUInt32(ModelInstance* comp, ValueReference vr, const uint32_t value[], size_t *index) {
+    SET_NOT_ALLOWED("UInt32");
 }
 #endif
 
 #ifndef SET_UINT64
-Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t *value, size_t *index) {
-    UNUSED(comp);
-    UNUSED(vr);
-    UNUSED(value);
-    UNUSED(index);
-    return Error;
+Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t value[], size_t *index) {
+    SET_NOT_ALLOWED("UInt64");
 }
 #endif
 
 #ifndef SET_BOOLEAN
-Status setBoolean(ModelInstance* comp, ValueReference vr, const bool *value, size_t *index) {
-    UNUSED(comp);
-    UNUSED(vr);
-    UNUSED(value);
-    UNUSED(index);
-    return Error;
+Status setBoolean(ModelInstance* comp, ValueReference vr, const bool value[], size_t *index) {
+    SET_NOT_ALLOWED("Boolean");
 }
 #endif
 
 #ifndef SET_STRING
-Status setString(ModelInstance* comp, ValueReference vr, const char *const *value, size_t *index) {
-    UNUSED(comp);
-    UNUSED(vr);
-    UNUSED(value);
-    UNUSED(index);
-    return Error;
+Status setString(ModelInstance* comp, ValueReference vr, const char *const value[], size_t *index) {
+    SET_NOT_ALLOWED("String");
 }
 #endif
 
 #ifndef SET_BINARY
 Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], const char *const value[], size_t *index) {
-    UNUSED(comp);
-    UNUSED(vr);
-    UNUSED(size);
-    UNUSED(value);
-    UNUSED(index);
-    return Error;
+    SET_NOT_ALLOWED("Binary");
 }
 #endif
 
