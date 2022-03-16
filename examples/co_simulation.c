@@ -81,16 +81,16 @@ stopTime = 10;
 h = 0.01;
 
 // set all variable start values (of "ScalarVariable / <type> / start")
-// s1_fmi3SetReal/Integer/Boolean/String(s1, ...);
-// s2_fmi3SetReal/Integer/Boolean/String(s2, ...);
+// s1_fmi3Set{VariableType}(s1, ...);
+// s2_fmi3Set{VariableType}(s2, ...);
 
 // initialize the FMUs
 s1_fmi3EnterInitializationMode(s1, fmi3False, 0.0, startTime, fmi3True, stopTime);
 s2_fmi3EnterInitializationMode(s2, fmi3False, 0.0, startTime, fmi3True, stopTime);
 
 // set the input values at time = startTime
-// fmi3SetReal/Integer/Boolean/String(s1, ...);
-// fmi3SetReal/Integer/Boolean/String(s2, ...);
+// fmi3Set{VariableType}(s1, ...);
+// fmi3Set{VariableType}(s2, ...);
 
 s1_fmi3ExitInitializationMode(s1);
 s2_fmi3ExitInitializationMode(s2);
@@ -102,12 +102,12 @@ tc = startTime; // current time
 while ((tc < stopTime) && (status == fmi3OK)) {
 
     // retrieve outputs
-    // fmi3GetReal(s1, ..., 1, &y1);
-    // fmi3GetReal(s2, ..., 1, &y2);
+    // fmi3Get{VariableType}(s1, ..., 1, &y1);
+    // fmi3Get{VariableType}(s2, ..., 1, &y2);
 
     // set inputs
-    // fmi3SetReal(s1, ..., 1, &y2);
-    // fmi3SetReal(s2, ..., 1, &y1);
+    // fmi3Set{VariableType}(s1, ..., 1, &y2);
+    // fmi3Set{VariableType}(s2, ..., 1, &y1);
 
     // call instance s1 and check status
     fmi3Boolean eventEncountered, terminateSimulation, earlyReturn;
