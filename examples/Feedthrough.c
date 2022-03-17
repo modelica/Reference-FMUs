@@ -28,7 +28,7 @@ double nextInputEventTime(double time) {
 }
 
 FMIStatus applyStartValues(FMIInstance *S) {
-    
+
     FMIStatus status = FMIOK;
 
 #if FMI_VERSION == 1
@@ -64,7 +64,7 @@ TERMINATE:
 FMIStatus applyContinuousInputs(FMIInstance *S, bool afterEvent) {
 
     FMIStatus status = FMIOK;
-    
+
     double value;
 
     if (S->time < 0.5) {
@@ -94,13 +94,13 @@ FMIStatus applyContinuousInputs(FMIInstance *S, bool afterEvent) {
     const fmi3Float64 Float64_values[1] = { value };
     CALL(FMI3SetFloat64((FMIInstance *)S, Float64_vr, 1, Float64_values, 1));
 #endif
-    
+
 TERMINATE:
     return status;
 }
 
 FMIStatus applyDiscreteInputs(FMIInstance *S) {
-    
+
     FMIStatus status = FMIOK;
 
     const bool before_step = S->time < 1.0;
@@ -133,11 +133,11 @@ FMIStatus applyDiscreteInputs(FMIInstance *S) {
     const fmi3ValueReference Float32_vr[1] = { vr_Float32_discrete_input };
     const fmi3Float32 Float32_values[1] = { before_step ? 0 : 1.0f };
     CALL(FMI3SetFloat32(S, Float32_vr, 1, Float32_values, 1));
-    
+
     const fmi3ValueReference Float64_vr[2] = { vr_Float64_tunable_parameter, vr_Float64_discrete_input };
     const fmi3Float64 Float64_values[2] = { S->time < 1.5 ? 0.0 : -1.0, before_step ? 0 : 1.0 };
     CALL(FMI3SetFloat64(S, Float64_vr, 2, Float64_values, 2));
-    
+
     const fmi3ValueReference Int8_vr[1] = { vr_Int8_input };
     const fmi3Int8 Int8_values[1] = { before_step ? INT8_MIN : INT8_MAX };
     CALL(FMI3SetInt8(S, Int8_vr, 1, Int8_values, 1));
@@ -145,7 +145,7 @@ FMIStatus applyDiscreteInputs(FMIInstance *S) {
     const fmi3ValueReference UInt8_vr[1] = { vr_UInt8_input };
     const fmi3UInt8 UInt8_values[1] = { before_step ? 0 : UINT8_MAX };
     CALL(FMI3SetUInt8(S, UInt8_vr, 1, UInt8_values, 1));
-    
+
     const fmi3ValueReference Int16_vr[1] = { vr_Int16_input };
     const fmi3Int16 Int16_values[1] = { before_step ? INT16_MIN : INT16_MAX };
     CALL(FMI3SetInt16(S, Int16_vr, 1, Int16_values, 1));
@@ -153,7 +153,7 @@ FMIStatus applyDiscreteInputs(FMIInstance *S) {
     const fmi3ValueReference UInt16_vr[1] = { vr_UInt16_input };
     const fmi3UInt16 UInt16_values[1] = { before_step ? 0 : UINT16_MAX };
     CALL(FMI3SetUInt16(S, UInt16_vr, 1, UInt16_values, 1));
-    
+
     const fmi3ValueReference Int32_vr[1] = { vr_Int32_input };
     const fmi3Int32 Int32_values[1] = { before_step ? INT32_MIN : INT32_MAX };
     CALL(FMI3SetInt32(S, Int32_vr, 1, Int32_values, 1));
@@ -161,7 +161,7 @@ FMIStatus applyDiscreteInputs(FMIInstance *S) {
     const fmi3ValueReference UInt32_vr[1] = { vr_UInt32_input };
     const fmi3UInt32 UInt32_values[1] = { before_step ? 0 : UINT32_MAX };
     CALL(FMI3SetUInt32(S, UInt32_vr, 1, UInt32_values, 1));
-    
+
     const fmi3ValueReference Int64_vr[1] = { vr_Int64_input };
     const fmi3Int64 Int64_values[1] = { before_step ? INT64_MIN : INT64_MAX };
     CALL(FMI3SetInt64(S, Int64_vr, 1, Int64_values, 1));
@@ -180,7 +180,7 @@ TERMINATE:
 }
 
 FMIStatus recordVariables(FMIInstance *S, FILE *outputFile) {
-    
+
     FMIStatus status = FMIOK;
 
 #if FMI_VERSION == 1
@@ -207,13 +207,13 @@ FMIStatus recordVariables(FMIInstance *S, FILE *outputFile) {
     const fmi2ValueReference Boolean_vr[1] = { vr_Boolean_output };
     fmi2Boolean Boolean_values[1] = { 0 };
     CALL(FMI2GetBoolean((FMIInstance*)S, Boolean_vr, 1, Boolean_values));
-    
+
     fprintf(outputFile, "%g,%.16g,%.16g,%" PRIu32 ",%d\n", ((FMIInstance *)S)->time, Float64_values[0], Float64_values[1], Int32_values[0], Boolean_values[0]);
 #elif FMI_VERSION == 3
     const fmi3ValueReference Float32_vr[2] = { vr_Float32_continuous_output, vr_Float32_discrete_output };
     fmi3Float32 Float32_values[2] = { 0 };
     CALL(FMI3GetFloat32((FMIInstance *)S, Float32_vr, 2, Float32_values, 2));
-    
+
     const fmi3ValueReference Float64_vr[2] = { vr_Float64_continuous_output, vr_Float64_discrete_output };
     fmi3Float64 Float64_values[2] = { 0 };
     CALL(FMI3GetFloat64((FMIInstance *)S, Float64_vr, 2, Float64_values, 2));
@@ -225,7 +225,7 @@ FMIStatus recordVariables(FMIInstance *S, FILE *outputFile) {
     const fmi3ValueReference UInt8_vr[1] = { vr_UInt8_output };
     fmi3UInt8 UInt8_values[1] = { 0 };
     CALL(FMI3GetUInt8((FMIInstance *)S, UInt8_vr, 1, UInt8_values, 1));
-    
+
     const fmi3ValueReference Int16_vr[1] = { vr_Int16_output };
     fmi3Int16 Int16_values[1] = { 0 };
     CALL(FMI3GetInt16((FMIInstance *)S, Int16_vr, 1, Int16_values, 1));
@@ -233,7 +233,7 @@ FMIStatus recordVariables(FMIInstance *S, FILE *outputFile) {
     const fmi3ValueReference UInt16_vr[1] = { vr_UInt16_output };
     fmi3UInt16 UInt16_values[1] = { 0 };
     CALL(FMI3GetUInt16((FMIInstance *)S, UInt16_vr, 1, UInt16_values, 1));
-    
+
     const fmi3ValueReference Int32_vr[1] = { vr_Int32_output };
     fmi3Int32 Int32_values[1] = { 0 };
     CALL(FMI3GetInt32((FMIInstance *)S, Int32_vr, 1, Int32_values, 1));
@@ -241,7 +241,7 @@ FMIStatus recordVariables(FMIInstance *S, FILE *outputFile) {
     const fmi3ValueReference UInt32_vr[1] = { vr_UInt32_output };
     fmi3UInt32 UInt32_values[1] = { 0 };
     CALL(FMI3GetUInt32((FMIInstance *)S, UInt32_vr, 1, UInt32_values, 1));
-    
+
     const fmi3ValueReference Int64_vr[1] = { vr_Int64_output };
     fmi3Int64 Int64_values[1] = { 0 };
     CALL(FMI3GetInt64((FMIInstance *)S, Int64_vr, 1, Int64_values, 1));
@@ -256,7 +256,7 @@ FMIStatus recordVariables(FMIInstance *S, FILE *outputFile) {
 
     fprintf(outputFile, "%g,%.7g,%.7g,%.16g,%.16g,%" PRId8 ",%" PRIu8 ",%" PRId16 ",%" PRIu16 ",%" PRId32 ",%" PRIu32 ",%" PRId64 ",%" PRIu64 ",%d\n", ((FMIInstance *)S)->time, Float32_values[0], Float32_values[1], Float64_values[0], Float64_values[1], Int8_values[0], UInt8_values[0], Int16_values[0], UInt16_values[0], Int32_values[0], UInt32_values[0], Int64_values[0], UInt64_values[0], Boolean_values[0]);
 #endif
-    
+
 TERMINATE:
     return status;
 }

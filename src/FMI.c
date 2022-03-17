@@ -132,10 +132,10 @@ const char* FMIValuesToString(FMIInstance *instance, size_t nvr, const void *val
         pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, "{");
 
         for (size_t i = 0; i < nvr; i++) {
-            
+
             char* s = &instance->buf2[pos];
             size_t n = instance->bufsize2 - pos;
-            
+
             switch (variableType) {
                 case FMIFloat32Type:
                 case FMIDiscreteFloat32Type:
@@ -187,7 +187,7 @@ const char* FMIValuesToString(FMIInstance *instance, size_t nvr, const void *val
                     pos += snprintf(s, n, "%d", ((bool *)value)[i]);
                     break;
             }
-            
+
             if (i < nvr - 1) {
                 pos += snprintf(&instance->buf2[pos], instance->bufsize2 - pos, ", ");
             }

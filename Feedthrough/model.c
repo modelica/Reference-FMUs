@@ -16,32 +16,32 @@ void setStartValues(ModelInstance *comp) {
     M(Float32_continuous_output) = 0.0f;
     M(Float32_discrete_input)    = 0.0f;
     M(Float32_discrete_output)   = 0.0f;
-    
+
     M(Float64_fixed_parameter)   = 0.0;
     M(Float64_tunable_parameter) = 0.0;
     M(Float64_continuous_input)  = 0.0;
     M(Float64_continuous_output) = 0.0;
     M(Float64_discrete_input)    = 0.0;
     M(Float64_discrete_output)   = 0.0;
-    
+
     M(Int8_input)    = 0;
     M(Int8_output)   = 0;
-    
+
     M(UInt8_input)   = 0;
     M(UInt8_output)  = 0;
-    
+
     M(Int16_input)   = 0;
     M(Int16_output)  = 0;
-    
+
     M(UInt16_input)  = 0;
     M(UInt16_output) = 0;
-    
+
     M(Int32_input)   = 0;
     M(Int32_output)  = 0;
-    
+
     M(UInt32_input)  = 0;
     M(UInt32_output) = 0;
-    
+
     M(Int64_input)   = 0;
     M(Int64_output)  = 0;
 
@@ -50,9 +50,9 @@ void setStartValues(ModelInstance *comp) {
 
     M(Boolean_input)  = false;
     M(Boolean_output) = false;
-    
+
     strncpy(M(String_parameter), STRING_START, STRING_MAX_LEN);
-    
+
     M(Binary_input_size) = strlen(BINARY_START);
     strncpy(M(Binary_input), BINARY_START, BINARY_MAX_LEN);
     M(Binary_output_size) = strlen(BINARY_START);
@@ -60,10 +60,10 @@ void setStartValues(ModelInstance *comp) {
 }
 
 Status calculateValues(ModelInstance *comp) {
-    
+
     M(Float32_continuous_output) = M(Float32_continuous_input);
     M(Float32_discrete_output)   = M(Float32_discrete_input) ;
-    
+
     M(Float64_continuous_output) = M(Float64_continuous_input);
     M(Float64_discrete_output)   = M(Float64_discrete_input);
 
@@ -87,7 +87,7 @@ Status calculateValues(ModelInstance *comp) {
 
     M(Binary_output_size) = M(Binary_input_size);
     memcpy(M(Binary_output), M(Binary_input), M(Binary_input_size));
-    
+
     return OK;
 }
 
@@ -142,12 +142,12 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
             logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     return OK;
 }
 
 Status getInt8(ModelInstance* comp, ValueReference vr, int8_t *value, size_t *index) {
-            
+
     switch (vr) {
         case vr_Int8_input:
             value[(*index)++] = M(Int8_input);
@@ -159,12 +159,12 @@ Status getInt8(ModelInstance* comp, ValueReference vr, int8_t *value, size_t *in
             logError(comp, "Get Int8 is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     return OK;
 }
 
 Status getUInt8(ModelInstance* comp, ValueReference vr, uint8_t *value, size_t *index) {
-            
+
     switch (vr) {
         case vr_UInt8_input:
             value[(*index)++] = M(UInt8_input);
@@ -176,12 +176,12 @@ Status getUInt8(ModelInstance* comp, ValueReference vr, uint8_t *value, size_t *
             logError(comp, "Get UInt8 is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     return OK;
 }
 
 Status getInt16(ModelInstance* comp, ValueReference vr, int16_t *value, size_t *index) {
-            
+
     switch (vr) {
         case vr_Int16_input:
             value[(*index)++] = M(Int16_input);
@@ -193,12 +193,12 @@ Status getInt16(ModelInstance* comp, ValueReference vr, int16_t *value, size_t *
             logError(comp, "Get Int16 is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     return OK;
 }
 
 Status getUInt16(ModelInstance* comp, ValueReference vr, uint16_t *value, size_t *index) {
-            
+
     switch (vr) {
         case vr_UInt16_input:
             value[(*index)++] = M(UInt16_input);
@@ -210,12 +210,12 @@ Status getUInt16(ModelInstance* comp, ValueReference vr, uint16_t *value, size_t
             logError(comp, "Get UInt16 is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     return OK;
 }
 
 Status getInt32(ModelInstance* comp, ValueReference vr, int32_t *value, size_t *index) {
-            
+
     switch (vr) {
         case vr_Int32_input:
             value[(*index)++] = M(Int32_input);
@@ -227,12 +227,12 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int32_t *value, size_t *
             logError(comp, "Get Int32 is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     return OK;
 }
 
 Status getUInt32(ModelInstance* comp, ValueReference vr, uint32_t *value, size_t *index) {
-            
+
     switch (vr) {
         case vr_UInt32_input:
             value[(*index)++] = M(UInt32_input);
@@ -244,12 +244,12 @@ Status getUInt32(ModelInstance* comp, ValueReference vr, uint32_t *value, size_t
             logError(comp, "Get UInt32 is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     return OK;
 }
 
 Status getInt64(ModelInstance* comp, ValueReference vr, int64_t *value, size_t *index) {
-            
+
     switch (vr) {
         case vr_Int64_input:
             value[(*index)++] = M(Int64_input);
@@ -261,12 +261,12 @@ Status getInt64(ModelInstance* comp, ValueReference vr, int64_t *value, size_t *
             logError(comp, "Get Int64 is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     return OK;
 }
 
 Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t *value, size_t *index) {
-            
+
     switch (vr) {
         case vr_UInt64_input:
             value[(*index)++] = M(UInt64_input);
@@ -278,12 +278,12 @@ Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t *value, size_t
             logError(comp, "Get UInt64 is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     return OK;
 }
 
 Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *index) {
-        
+
     switch (vr) {
         case vr_Boolean_input:
             value[(*index)++] = M(Boolean_input);
@@ -295,7 +295,7 @@ Status getBoolean(ModelInstance* comp, ValueReference vr, bool *value, size_t *i
             logError(comp, "Get Boolean is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     return OK;
 }
 
@@ -314,7 +314,7 @@ Status getBinary(ModelInstance* comp, ValueReference vr, size_t size[], const ch
             logError(comp, "Get Binary is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     return OK;
 }
 
@@ -333,7 +333,7 @@ Status getString(ModelInstance* comp, ValueReference vr, const char **value, siz
 }
 
 Status setFloat32(ModelInstance* comp, ValueReference vr, const float value[], size_t *index) {
-    
+
     switch (vr) {
         case vr_Float32_continuous_input:
             M(Float32_continuous_input) = value[(*index)++];
@@ -353,12 +353,12 @@ Status setFloat32(ModelInstance* comp, ValueReference vr, const float value[], s
             logError(comp, "Set Float32 is not allowed for value reference %u.", vr);
             return Error;
     }
-        
+
     return OK;
 }
 
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
-    
+
     switch (vr) {
 
         case vr_Float64_fixed_parameter:
@@ -406,12 +406,12 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
             logError(comp, "Set Float64 is not allowed for value reference %u.", vr);
             return Error;
     }
-        
+
     return OK;
 }
 
 Status setInt8(ModelInstance* comp, ValueReference vr, const int8_t *value, size_t *index) {
-    
+
     switch (vr) {
         case vr_Int8_input:
             M(Int8_input) = value[(*index)++];
@@ -420,12 +420,12 @@ Status setInt8(ModelInstance* comp, ValueReference vr, const int8_t *value, size
             logError(comp, "Set Int8 is not allowed for value reference %u.", vr);
             return Error;
     }
-        
+
     return OK;
 }
 
 Status setUInt8(ModelInstance* comp, ValueReference vr, const uint8_t *value, size_t *index) {
-    
+
     switch (vr) {
         case vr_UInt8_input:
             M(UInt8_input) = value[(*index)++];
@@ -434,12 +434,12 @@ Status setUInt8(ModelInstance* comp, ValueReference vr, const uint8_t *value, si
             logError(comp, "Set UInt8 is not allowed for value reference %u.", vr);
             return Error;
     }
-        
+
     return OK;
 }
 
 Status setInt16(ModelInstance* comp, ValueReference vr, const int16_t *value, size_t *index) {
-    
+
     switch (vr) {
         case vr_Int16_input:
             M(Int16_input) = value[(*index)++];
@@ -448,14 +448,14 @@ Status setInt16(ModelInstance* comp, ValueReference vr, const int16_t *value, si
             logError(comp, "Set Int16 is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     comp->isDirtyValues = true;
-    
+
     return OK;
 }
 
 Status setUInt16(ModelInstance* comp, ValueReference vr, const uint16_t *value, size_t *index) {
-    
+
     switch (vr) {
         case vr_UInt16_input:
             M(UInt16_input) = value[(*index)++];
@@ -464,15 +464,15 @@ Status setUInt16(ModelInstance* comp, ValueReference vr, const uint16_t *value, 
             logError(comp, "Set UInt16 is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     comp->isDirtyValues = true;
-    
+
     return OK;
 }
 
 
 Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t *value, size_t *index) {
-    
+
     switch (vr) {
         case vr_Int32_input:
             M(Int32_input) = value[(*index)++];
@@ -481,14 +481,14 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t *value, si
             logError(comp, "Set Int32 is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     comp->isDirtyValues = true;
-    
+
     return OK;
 }
 
 Status setUInt32(ModelInstance* comp, ValueReference vr, const uint32_t *value, size_t *index) {
-    
+
     switch (vr) {
         case vr_UInt32_input:
             M(UInt32_input) = value[(*index)++];
@@ -497,14 +497,14 @@ Status setUInt32(ModelInstance* comp, ValueReference vr, const uint32_t *value, 
             logError(comp, "Set UInt32 is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     comp->isDirtyValues = true;
-    
+
     return OK;
 }
 
 Status setInt64(ModelInstance* comp, ValueReference vr, const int64_t *value, size_t *index) {
-    
+
     switch (vr) {
         case vr_Int64_input:
             M(Int64_input) = value[(*index)++];
@@ -513,14 +513,14 @@ Status setInt64(ModelInstance* comp, ValueReference vr, const int64_t *value, si
             logError(comp, "Set Int64 is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     comp->isDirtyValues = true;
-    
+
     return OK;
 }
 
 Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t *value, size_t *index) {
-    
+
     switch (vr) {
         case vr_UInt64_input:
             M(UInt64_input) = value[(*index)++];
@@ -529,14 +529,14 @@ Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t *value, 
             logError(comp, "Set UInt64 is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     comp->isDirtyValues = true;
-    
+
     return OK;
 }
 
 Status setBoolean(ModelInstance* comp, ValueReference vr, const bool *value, size_t *index) {
-    
+
     switch (vr) {
         case vr_Boolean_input:
             M(Boolean_input) = value[(*index)++];
@@ -548,14 +548,14 @@ Status setBoolean(ModelInstance* comp, ValueReference vr, const bool *value, siz
             logError(comp, "Set Boolean is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     comp->isDirtyValues = true;
-    
+
     return OK;
 }
 
 Status setString(ModelInstance* comp, ValueReference vr, const char *const *value, size_t *index) {
-    
+
     switch (vr) {
         case vr_String_parameter:
             if (strlen(value[*index]) >= STRING_MAX_LEN) {
@@ -568,14 +568,14 @@ Status setString(ModelInstance* comp, ValueReference vr, const char *const *valu
             logError(comp, "Set String is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     comp->isDirtyValues = true;
-    
+
     return OK;
 }
 
 Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], const char* const value[], size_t* index) {
-    
+
     switch (vr) {
         case vr_Binary_input:
             if (size[*index] > BINARY_MAX_LEN) {
@@ -589,9 +589,9 @@ Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], co
             logError(comp, "Set Binary is not allowed for value reference %u.", vr);
             return Error;
     }
-    
+
     comp->isDirtyValues = true;
-    
+
     return OK;
 }
 

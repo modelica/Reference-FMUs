@@ -52,9 +52,9 @@
 #define BINARY_MAX_LEN 128
 
 typedef enum {
-    
+
     vr_time,
-    
+
     vr_Float32_continuous_input,
     vr_Float32_continuous_output,
     vr_Float32_discrete_input,
@@ -69,45 +69,45 @@ typedef enum {
 
     vr_Int8_input,
     vr_Int8_output,
-    
+
     vr_UInt8_input,
     vr_UInt8_output,
-    
+
     vr_Int16_input,
     vr_Int16_output,
-    
+
     vr_UInt16_input,
     vr_UInt16_output,
-    
+
     vr_Int32_input,
     vr_Int32_output,
-    
+
     vr_UInt32_input,
     vr_UInt32_output,
-    
+
     vr_Int64_input,
     vr_Int64_output,
-    
+
     vr_UInt64_input,
     vr_UInt64_output,
-    
+
     vr_Boolean_input,
     vr_Boolean_output,
-    
+
     vr_String_parameter,
-    
+
     vr_Binary_input,
     vr_Binary_output,
-    
+
 } ValueReference;
 
 typedef struct {
-    
+
     float Float32_continuous_input;
     float Float32_continuous_output;
     float Float32_discrete_input;
     float Float32_discrete_output;
-    
+
     double Float64_fixed_parameter;
     double Float64_tunable_parameter;
     double Float64_continuous_input;
@@ -117,33 +117,33 @@ typedef struct {
 
     int8_t Int8_input;
     int8_t Int8_output;
-    
+
     uint8_t UInt8_input;
     uint8_t UInt8_output;
 
     int16_t Int16_input;
     int16_t Int16_output;
-    
+
     uint16_t UInt16_input;
     uint16_t UInt16_output;
-    
+
     int32_t Int32_input;
     int32_t Int32_output;
-    
+
     uint32_t UInt32_input;
     uint32_t UInt32_output;
-    
+
     int64_t Int64_input;
     int64_t Int64_output;
-    
+
     uint64_t UInt64_input;
     uint64_t UInt64_output;
-    
+
     bool Boolean_input;
     bool Boolean_output;
 
     char String_parameter[STRING_MAX_LEN];
-    
+
     size_t Binary_input_size;
     char Binary_input[BINARY_MAX_LEN];
     size_t Binary_output_size;

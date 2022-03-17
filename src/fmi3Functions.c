@@ -575,7 +575,7 @@ fmi3Status fmi3GetInt32(fmi3Instance instance,
     size_t nValueReferences,
     fmi3Int32 values[],
     size_t nValues) {
-    
+
     UNUSED(nValues);
     ASSERT_STATE(GetInt32);
     GET_VARIABLES(Int32);
@@ -608,7 +608,7 @@ fmi3Status fmi3GetUInt64(fmi3Instance instance,
     size_t nValueReferences,
     fmi3UInt64 values[],
     size_t nValues) {
-    
+
     UNUSED(nValues);
     ASSERT_STATE(GetUInt64);
     GET_VARIABLES(UInt64);
@@ -619,7 +619,7 @@ fmi3Status fmi3GetBoolean(fmi3Instance instance,
     size_t nValueReferences,
     fmi3Boolean values[],
     size_t nValues) {
-    
+
     UNUSED(nValues);
     ASSERT_STATE(GetBoolean);
     GET_VARIABLES(Boolean);
@@ -630,7 +630,7 @@ fmi3Status fmi3GetString(fmi3Instance instance,
     size_t nValueReferences,
     fmi3String values[],
     size_t nValues) {
-    
+
     UNUSED(nValues);
     ASSERT_STATE(GetString);
     GET_VARIABLES(String);
@@ -737,7 +737,7 @@ fmi3Status fmi3SetUInt16(fmi3Instance instance,
     size_t nValueReferences,
     const fmi3UInt16 values[],
     size_t nValues) {
-    
+
     UNUSED(nValues);
     ASSERT_STATE(SetUInt16);
     SET_VARIABLES(UInt16);
@@ -748,7 +748,7 @@ fmi3Status fmi3SetInt32(fmi3Instance instance,
     size_t nValueReferences,
     const fmi3Int32 values[],
     size_t nValues) {
-    
+
     UNUSED(nValues);
     ASSERT_STATE(SetInt32);
     SET_VARIABLES(Int32);
@@ -781,7 +781,7 @@ fmi3Status fmi3SetUInt64(fmi3Instance instance,
     size_t nValueReferences,
     const fmi3UInt64 values[],
     size_t nValues) {
-    
+
     UNUSED(nValues);
     ASSERT_STATE(SetUInt64);
     SET_VARIABLES(UInt64);
@@ -792,7 +792,7 @@ fmi3Status fmi3SetBoolean(fmi3Instance instance,
     size_t nValueReferences,
     const fmi3Boolean values[],
     size_t nValues) {
-    
+
     UNUSED(nValues);
     ASSERT_STATE(SetBoolean);
     SET_VARIABLES(Boolean);
@@ -803,7 +803,7 @@ fmi3Status fmi3SetString(fmi3Instance instance,
     size_t nValueReferences,
     const fmi3String values[],
     size_t nValues) {
-    
+
     UNUSED(nValues);
     ASSERT_STATE(SetString);
     SET_VARIABLES(String);
