@@ -339,12 +339,14 @@ Status setFloat32(ModelInstance* comp, ValueReference vr, const float value[], s
             M(Float32_continuous_input) = value[(*index)++];
             break;
         case vr_Float32_discrete_input:
+#if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
                 comp->state != InitializationMode &&
                 comp->state != EventMode) {
                 logError(comp, "Variable Float32_discrete_input can only be set in initialization mode or event mode.");
                 return Error;
             }
+#endif
             M(Float32_discrete_input) = value[(*index)++];
             break;
         default:

@@ -328,6 +328,7 @@ Status getString(ModelInstance* comp, ValueReference vr, const char* value[], si
 
 #ifndef GET_BINARY
 Status getBinary(ModelInstance* comp, ValueReference vr, size_t size[], const char* value[], size_t *index) {
+    UNUSED(size);
     GET_NOT_ALLOWED("Binary");
 }
 #endif
@@ -353,8 +354,8 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double value[], 
 #endif
 
 #ifndef SET_INT8
-Status set8Int(ModelInstance* comp, ValueReference vr, const int8_t value[], size_t *index) {
-    SET_NOT_ALLOWED("8Int");
+Status setInt8(ModelInstance* comp, ValueReference vr, const int8_t value[], size_t *index) {
+    SET_NOT_ALLOWED("Int8");
 }
 #endif
 
@@ -388,6 +389,12 @@ Status setUInt32(ModelInstance* comp, ValueReference vr, const uint32_t value[],
 }
 #endif
 
+#ifndef SET_INT64
+Status setInt64(ModelInstance* comp, ValueReference vr, const int64_t value[], size_t *index) {
+    SET_NOT_ALLOWED("Int64");
+}
+#endif
+
 #ifndef SET_UINT64
 Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t value[], size_t *index) {
     SET_NOT_ALLOWED("UInt64");
@@ -408,6 +415,7 @@ Status setString(ModelInstance* comp, ValueReference vr, const char *const value
 
 #ifndef SET_BINARY
 Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], const char *const value[], size_t *index) {
+    UNUSED(size);
     SET_NOT_ALLOWED("Binary");
 }
 #endif
