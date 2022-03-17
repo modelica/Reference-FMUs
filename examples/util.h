@@ -58,7 +58,7 @@
 #endif
 
 // tag::CheckStatus[]
-#define CALL(f) status = f; if (status > FMIOK) goto TERMINATE;
+#define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 // end::CheckStatus[]
 
 FILE *createOutputFile(const char *filename);
