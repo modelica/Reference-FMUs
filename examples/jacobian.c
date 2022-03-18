@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
 
     CALL(FMI3EnterContinuousTimeMode(S));
 
-    CALL(FMI3GetContinuousStates(S, x, nx))
+    CALL(FMI3GetContinuousStates(S, x, nx));
 
     // tag::JacobianVariables[]
     // from the XML file:
@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
     // if required at this step, compute the Jacobian as a dense matrix
     for (i = 0; i < nx; i++) {
         // construct the Jacobian matrix column wise
-        CALL(FMI3GetDirectionalDerivative(S, vr_dx, nx, &vr_x[i], 1, &dk, 1, c, nx))
+        CALL(FMI3GetDirectionalDerivative(S, vr_dx, nx, &vr_x[i], 1, &dk, 1, c, nx));
         for (j = 0; j < nx; j++) {
             J[j][i] = c[j];
         }

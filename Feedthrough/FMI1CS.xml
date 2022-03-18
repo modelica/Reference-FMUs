@@ -12,40 +12,40 @@
   <DefaultExperiment startTime="0" stopTime="2"/>
 
   <ModelVariables>
-    <ScalarVariable name="time" valueReference="0" causality="internal" variability="continuous" description="Simulation time">
+    <ScalarVariable name="time" valueReference="0" causality="independent" variability="continuous">
       <Real/>
     </ScalarVariable>
-    <ScalarVariable name="real_fixed_param" valueReference="1" variability="parameter">
-      <Real start="0" fixed="true"/>
-    </ScalarVariable>
-      <ScalarVariable name="real_tunable_param" valueReference="2" variability="parameter">
-    <Real start="0"/>
-    </ScalarVariable>
-    <ScalarVariable name="real_continuous_in" valueReference="3" description="" causality="input">
+    <ScalarVariable name="Float64_fixed_parameter" valueReference="5" causality="parameter" variability="fixed">
       <Real start="0"/>
     </ScalarVariable>
-    <ScalarVariable name="real_continuous_out" valueReference="4" description="" causality="output">
-      <Real/>
-    </ScalarVariable>
-    <ScalarVariable name="real_discrete_in" valueReference="5" description="" causality="input" variability="discrete">
+    <ScalarVariable name="Float64_tunable_parameter" valueReference="6" causality="parameter" variability="tunable">
       <Real start="0"/>
     </ScalarVariable>
-    <ScalarVariable name="real_discrete_out" valueReference="6" description="" causality="output" variability="discrete">
+    <ScalarVariable name="Float64_continuous_input" valueReference="7" causality="input">
+      <Real start="0"/>
+    </ScalarVariable>
+    <ScalarVariable name="Float64_continuous_output" valueReference="8" causality="output" initial="calculated">
       <Real/>
     </ScalarVariable>
-    <ScalarVariable name="int_in" valueReference="7" description="integer input" causality="input">
-      <Integer start="2"/>
+    <ScalarVariable name="Float64_discrete_input" valueReference="9" causality="input" variability="discrete">
+      <Real start="0"/>
     </ScalarVariable>
-    <ScalarVariable name="int_out" valueReference="8" description="index in string array 'month'" causality="output">
-      <Integer start="0" fixed="true"/>
+    <ScalarVariable name="Float64_discrete_output" valueReference="10" causality="output" variability="discrete" initial="calculated">
+      <Real/>
     </ScalarVariable>
-    <ScalarVariable name="bool_in" valueReference="9" description="boolean input" causality="input">
-      <Boolean start="true"/>
+    <ScalarVariable name="Int32_input" valueReference="19" causality="input" variability="discrete">
+      <Integer start="0"/>
     </ScalarVariable>
-    <ScalarVariable name="bool_out" valueReference="10" description="boolean output" causality="output">
+    <ScalarVariable name="Int32_output" valueReference="20" causality="output" variability="discrete" initial="calculated">
+      <Integer/>
+    </ScalarVariable>
+    <ScalarVariable name="Boolean_input" valueReference="27" causality="input" variability="discrete">
+      <Boolean start="false"/>
+    </ScalarVariable>
+    <ScalarVariable name="Boolean_output" valueReference="28" causality="output" variability="discrete" initial="calculated">
       <Boolean/>
     </ScalarVariable>
-    <ScalarVariable name="string_param" valueReference="11" description="String parameter" variability="parameter">
+    <ScalarVariable name="String_parameter" valueReference="29" causality="parameter" variability="fixed">
       <String start="Set me!"/>
     </ScalarVariable>
   </ModelVariables>
