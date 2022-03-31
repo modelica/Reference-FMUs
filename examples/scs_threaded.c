@@ -26,15 +26,7 @@ static bool checkOutputClocks(FMIInstance *S);
 
 static bool checkCountdownClocks(FMIInstance *S);
 
-void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
-    fmi3Float64 intermediateUpdateTime,
-    fmi3Boolean clocksTicked,
-    fmi3Boolean intermediateVariableSetRequested,
-    fmi3Boolean intermediateVariableGetAllowed,
-    fmi3Boolean intermediateStepFinished,
-    fmi3Boolean canReturnEarly,
-    fmi3Boolean *earlyReturnRequested,
-    fmi3Float64 *earlyReturnTime);
+void cb_clockUpdate(fmi3InstanceEnvironment instanceEnvironment);
 
 void cb_lockPreemption();
 
@@ -170,7 +162,7 @@ int main(int argc, char* argv[]) {
         fmi3True,              // loggingOn,
         NULL,                  // requiredIntermediateVariables,
         0,                     // nRequiredIntermediateVariables,
-        cb_intermediateUpdate, // intermediateUpdate,
+        cb_clockUpdate,        // clockUpdate,
         cb_lockPreemption,     // lockPreemption,
         cb_unlockPreemption    // unlockPreemption
     ));
@@ -199,7 +191,7 @@ int main(int argc, char* argv[]) {
     CALL(FMI3ExitInitializationMode(S));
 
     // update clocks
-    CALL(FMI3GetClock(S, vrOutputClocks, 1, outputClocks, 1));
+    CALL(FMI3GetClock(S, vrOutputClocks, 1, outputClocks));
 
     /*
      * Thread related stuff below
@@ -322,7 +314,7 @@ fmi3Status recordVariables2(fmi3Instance s, fmi3Float64 time, int modelPart) {
 }
 
 /*
- * cb_intermediateUpdate()
+ * cb_clockUpdate()
  *
  * callback function, initiated when a modelpartition calculates the ticking of an output clock
  * This function checks, if any ticking output clock is connected to a dependent input clock.
@@ -330,15 +322,7 @@ fmi3Status recordVariables2(fmi3Instance s, fmi3Float64 time, int modelPart) {
  *
  * returns always fmi3OK (practically a void funtion)
  */
-void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
-    fmi3Float64 intermediateUpdateTime,
-    fmi3Boolean clocksTicked,
-    fmi3Boolean intermediateVariableSetRequested,
-    fmi3Boolean intermediateVariableGetAllowed,
-    fmi3Boolean intermediateStepFinished,
-    fmi3Boolean canReturnEarly,
-    fmi3Boolean *earlyReturnRequested,
-    fmi3Float64 *earlyReturnTime) {
+void cb_clockUpdate(fmi3InstanceEnvironment instanceEnvironment) {
 
     //InstanceEnvironment *env = (InstanceEnvironment *)instanceEnvironment;
 
@@ -349,12 +333,6 @@ void cb_intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
     int returnval;
     // Local copy for this thread of the states of the output clocks
     fmi3Clock localOutputClocks[1];
-
-    // In this example we only check for ticking output clocks.
-    if (!clocksTicked) {
-        logEvent("No clock active in intermediateUpdate callback");
-        return;
-    }
 
     // In order to be threadsafe we have to check the clocks under lock
     // and copy their states
@@ -451,7 +429,7 @@ static bool setAndCheckInputClocks(fmi3Float64 time) {
 static bool checkOutputClocks(FMIInstance *S) {
     outputClocks[0] = fmi3ClockInactive;
     // TODO: handle status
-    FMI3GetClock(S, vrOutputClocks, 1, outputClocks, 1);
+    FMI3GetClock(S, vrOutputClocks, 1, outputClocks);
     return outputClocks[0];
 }
 
@@ -464,7 +442,7 @@ static bool checkCountdownClocks(FMIInstance *S) {
     countdownClockIntervals[0] = 0.0;
     countdownClocksQualifier[0] = fmi3IntervalNotYetKnown;
     // TODO: handle status
-    FMI3GetIntervalDecimal(S, vrCountdownClocks, 1, countdownClockIntervals, countdownClocksQualifier, 1);
+    FMI3GetIntervalDecimal(S, vrCountdownClocks, 1, countdownClockIntervals, countdownClocksQualifier);
     return countdownClocksQualifier[0] == fmi3IntervalChanged;
 }
 
