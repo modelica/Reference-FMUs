@@ -6,6 +6,7 @@ void setStartValues(ModelInstance *comp) {
     M(s) = false;       // Clock
     M(x) = 0.0;         // Sample
     M(as) = 1.0;        // Discrete state/output
+    M(stateEvent) = false;
 }
 
 Status calculateValues(ModelInstance *comp) {
@@ -16,7 +17,7 @@ Status calculateValues(ModelInstance *comp) {
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
     switch (vr) {
         case vr_as:
-            if (comp->state == EventMode && comp->isBecauseOfStateEvent) {
+            if (comp->state == EventMode && M(stateEvent)) {
                 value[(*index)++] = M(as)*-1.0;
             }
             else {
@@ -43,7 +44,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
 Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
     switch (vr) {
         case vr_s:
-            if (comp->state == EventMode && comp->isBecauseOfStateEvent) {
+            if (comp->state == EventMode && M(stateEvent)) {
                 (*value) = true;
             }
             else {
@@ -56,12 +57,21 @@ Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
     }
 }
 
+void enterEventMode(ModelInstance* comp, int stepEvent, int stateEvent, const int rootsFound[], size_t nEventIndicators, int timeEvent) {
+    UNUSED(stepEvent);
+    UNUSED(rootsFound);
+    UNUSED(nEventIndicators);
+    UNUSED(timeEvent);
+
+    M(stateEvent) = stateEvent == 1;
+}
+
 void eventUpdate(ModelInstance *comp) {
     comp->nominalsOfContinuousStatesChanged = false;
     comp->terminateSimulation  = false;
     comp->nextEventTimeDefined = false;
 
-    if (comp->isBecauseOfStateEvent) {
+    if (M(stateEvent)) {
         // Execute state transition
         M(as) = M(as) * -1.0;
     }

@@ -473,13 +473,17 @@ fmi3Status fmi3EnterEventMode(fmi3Instance instance,
                               size_t nEventIndicators,
                               fmi3EventQualifier timeEvent) {
 
+    ASSERT_STATE(EnterEventMode);
+
+#ifdef ENTER_EVENT_MODE
+    enterEventMode(S, stepEvent, stateEvent, rootsFound, nEventIndicators, timeEvent);
+#else
     UNUSED(stepEvent);
     UNUSED(stateEvent);
     UNUSED(rootsFound);
     UNUSED(nEventIndicators);
     UNUSED(timeEvent);
-
-    ASSERT_STATE(EnterEventMode);
+#endif
 
     S->state = EventMode;
 

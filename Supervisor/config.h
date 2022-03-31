@@ -16,6 +16,7 @@
 
 #define SET_FLOAT64
 #define GET_FLOAT64
+#define ENTER_EVENT_MODE
 #define EVENT_UPDATE
 #define GET_CLOCK
 
@@ -31,6 +32,7 @@ typedef struct {
     bool s;    // Clock
     double x;  // Sample
     double as; // Output that is fed to the Controller
+    bool stateEvent;
 } ModelData;
 
 #endif /* config_h */

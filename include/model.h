@@ -212,6 +212,7 @@ void getDerivatives(ModelInstance *comp, double dx[], size_t nx);
 Status getOutputDerivative(ModelInstance *comp, ValueReference valueReference, int order, double *value);
 Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative);
 void getEventIndicators(ModelInstance *comp, double z[], size_t nz);
+void enterEventMode(ModelInstance* comp, int stepEvent, int stateEvent, const int rootsFound[], size_t nEventIndicators, int timeEvent);
 void eventUpdate(ModelInstance *comp);
 //void updateEventTime(ModelInstance *comp);
 
