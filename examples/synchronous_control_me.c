@@ -137,12 +137,12 @@ static FMIStatus handleTimeEventController(FMIInstance* controller, FMIInstance*
     // Activate Controller's clock r
     fmi3Clock controller_r_vals[] = { fmi3ClockActive };
     CALL(FMI3SetClock(controller, controller_r_refs, 1, controller_r_vals));
-    
+
     // Set inputs to clocked partition: Exchange data Plantmodel -> Controller
     fmi3Float64 plantmodel_vals[] = { 0.0 };
     CALL(FMI3GetFloat64(plant, plantmodel_y_refs, 1, plantmodel_vals, 1));
     CALL(FMI3SetFloat64(controller, controller_u_refs, 1, plantmodel_vals, 1));
-    
+
     // Compute outputs to clocked partition: Exchange data Controller -> Plantmodel
     fmi3Float64 controller_vals[] = { 0.0 };
     CALL(FMI3GetFloat64(controller, controller_y_refs, 1, controller_vals, 1));
@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
     fmi3Float64 h = FIXED_STEP;
     fmi3Float64 tNext = h;
     fmi3Float64 time = 0;
-    
+
     // Will hold exchanged values: Controller -> Plantmodel
     fmi3Float64 controller_vals[] = { 0.0 };
     // Will hold exchanged values: Plantmodel -> Controller
@@ -189,7 +189,7 @@ int main(int argc, char *argv[])
     // Will hold event indicator values of supervisor;
     fmi3Float64 supervisor_evt_vals[1] = { 0.0 };
     fmi3Float64 supervisor_event_indicator = 0.0;
-    
+
     // Controller's clock r timer
     fmi3Float64 controller_r_period = 0.1;
     fmi3Float64 controller_r_timer = controller_r_period;
@@ -237,7 +237,7 @@ int main(int argc, char *argv[])
     CALL(FMI3ExitInitializationMode(controller));
     CALL(FMI3ExitInitializationMode(plant));
     CALL(FMI3ExitInitializationMode(supervisor));
-    
+
     time = tStart;
 
     CALL(FMI3EnterContinuousTimeMode(controller));
@@ -251,10 +251,10 @@ int main(int argc, char *argv[])
         // Advance time and update timers
         time += h;
         controller_r_timer -= h;
-        
+
         // Check for state events or time events.
         bool timeEvent = controller_r_timer <= 0.0;
-        
+
         CALL(FMI3GetEventIndicators(supervisor, supervisor_evt_vals, 1));
         bool stateEvent = supervisor_event_indicator * supervisor_evt_vals[0] < 0.0;
         supervisor_event_indicator = supervisor_evt_vals[0];
@@ -311,7 +311,7 @@ int main(int argc, char *argv[])
                 fmi3Float64 nextEventTime = INFINITY;
                 CALL(FMI3UpdateDiscreteStates(supervisor, &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime));
                 CALL(FMI3UpdateDiscreteStates(controller, &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime));
-                
+
                 // Exit event mode
                 CALL(FMI3EnterContinuousTimeMode(supervisor));
                 CALL(FMI3EnterContinuousTimeMode(controller));

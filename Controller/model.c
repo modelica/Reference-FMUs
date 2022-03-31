@@ -84,7 +84,7 @@ void eventUpdate(ModelInstance *comp) {
     comp->nominalsOfContinuousStatesChanged = false;
     comp->terminateSimulation  = false;
     comp->nextEventTimeDefined = false;
-    
+
     // State transition
     logEvent(comp, "Controller clock state transition.");
     M(pre_ur) = M(ur);
