@@ -1,56 +1,97 @@
-#include <float.h>  // for DBL_EPSILON
-#include <math.h>   // for fabs()
+#include <math.h>  // for fabs()
 #include "config.h"
 #include "model.h"
 
-
 void setStartValues(ModelInstance *comp) {
-    M(counter) = 1;
-
-    // TODO: move this to initialize()?
-    comp->nextEventTime        = 1;
-    comp->nextEventTimeDefined = true;
+    M(r) = false;       // Clock
+    M(xr) = 0.0;                    // Sample
+    M(ur) = 0.0;                    // Discrete state/output
+    M(pre_ur) = 0.0;                // Previous ur
+    M(as) = 1.0;                    // In var from Supervisor
+    M(s) = false;       // Clock from Supervisor
 }
 
 Status calculateValues(ModelInstance *comp) {
     UNUSED(comp);
-    // nothing to do
     return OK;
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
     switch (vr) {
-    case vr_time:
-        value[(*index)++] = comp->time;
-        return OK;
-    default:
-        logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
-        return Error;
+        case vr_xr:
+            value[(*index)++] = M(xr);
+            return OK;
+        case vr_ur:
+            if (M(r) == true) {
+                value[(*index)++] = M(ur) + M(as);
+            }
+            else {
+                value[(*index)++] = M(ur);
+            }
+            return OK;
+        case vr_pre_ur:
+            value[(*index)++] = M(pre_ur);
+            return OK;
+        case vr_as:
+            value[(*index)++] = M(as);
+            return OK;
+        default:
+            logError(comp, "Unexpected value reference: %d.", vr);
+            return Error;
     }
 }
 
-Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
+Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
     switch (vr) {
-        case vr_counter:
-            value[(*index)++] = M(counter);
+        case vr_xr:
+            M(xr) = value[(*index)++];
+            return OK;
+        case vr_as:
+            M(as) = value[(*index)++];
             return OK;
         default:
-            logError(comp, "Get Int32 is not allowed for value reference %u.", vr);
+            logError(comp, "Unexpected value reference: %d.", vr);
+            return Error;
+    }
+}
+
+Status activateClock(ModelInstance* comp, ValueReference vr) {
+    switch (vr) {
+        case vr_r:
+            M(r) = true;
+            return OK;
+        case vr_s:
+            M(s) = true;
+            return OK;
+        default:
+            logError(comp, "Unexpected value reference: %d.", vr);
+            return Error;
+    }
+}
+
+Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
+    switch (vr) {
+        case vr_r:
+            (*value) = M(r);
+            return OK;
+        default:
+            logError(comp, "Unexpected value reference: %d.", vr);
             return Error;
     }
 }
 
 void eventUpdate(ModelInstance *comp) {
-
-    double epsilon = (1.0 + fabs(comp->time)) * DBL_EPSILON;
-
-    if (comp->nextEventTimeDefined && comp->time + epsilon >= comp->nextEventTime) {
-        M(counter)++;
-        comp->nextEventTime += 1;
-    }
-
-    comp->valuesOfContinuousStatesChanged   = false;
     comp->nominalsOfContinuousStatesChanged = false;
-    comp->terminateSimulation               = M(counter) >= 10;
-    comp->nextEventTimeDefined              = true;
+    comp->terminateSimulation  = false;
+    comp->nextEventTimeDefined = false;
+    
+    // State transition
+    logEvent(comp, "Controller clock state transition.");
+    M(pre_ur) = M(ur);
+    M(ur) = M(ur) + M(as);
+
+    // Deactivate clocks
+    M(r) = false;
+    M(s) = false;
+
 }

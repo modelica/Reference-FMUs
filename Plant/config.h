@@ -2,30 +2,32 @@
 #define config_h
 
 // define class name and unique id
-#define MODEL_IDENTIFIER Stair
-#define INSTANTIATION_TOKEN "{8c4e810f-3df3-4a00-8276-176fa3c9f008}"
+#define MODEL_IDENTIFIER Plant
+#define INSTANTIATION_TOKEN "{6e81b08d-97be-4de1-957f-8358a4e83184}"
 
 #define CO_SIMULATION
 #define MODEL_EXCHANGE
 
 // define model size
-#define NX 0
+#define NX 1
 #define NZ 0
 
-#define GET_INT32
+#define GET_FLOAT64
+#define SET_FLOAT64
 #define EVENT_UPDATE
 
-#define FIXED_SOLVER_STEP 0.2
-#define DEFAULT_STOP_TIME 10
+#define FIXED_SOLVER_STEP 1e-2
 
 typedef enum {
-    vr_time, vr_counter
+    vr_x = 1,
+    vr_der_x,
+    vr_u
 } ValueReference;
 
 typedef struct {
-
-    int counter;
-
+    double x;
+    double der_x;
+    double u;
 } ModelData;
 
 #endif /* config_h */

@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fmiModelDescription fmiVersion="3.0-beta.5" modelName="Stair" generationTool="Reference FMUs (development build)" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f008}">
+<fmiModelDescription
+  fmiVersion="3.0-beta.3"
+  version="1.0"
+  modelName="Controller"
+  description="This FMU represents the controller"
+  instantiationToken="{e1f14bf0-302d-4ef9-b11c-e01c7ed456cb}">
 
   <ModelExchange
-    modelIdentifier="Stair"
+    modelIdentifier="Controller"
     canGetAndSetFMUState="true"
     canSerializeFMUState="true"/>
 
   <CoSimulation
-    modelIdentifier="Stair"
+    modelIdentifier="Controller"
     canGetAndSetFMUState="true"
     canSerializeFMUState="true"
     canHandleVariableCommunicationStepSize="true"
     providesIntermediateUpdate="true"
     canReturnEarlyAfterIntermediateUpdate="true"
-    fixedInternalStepSize="0.2"
+    fixedInternalStepSize="1e-2"
     hasEventMode="true"/>
 
   <LogCategories>
@@ -21,15 +26,18 @@
     <Category name="logStatusError" description="Log error messages"/>
   </LogCategories>
 
-  <DefaultExperiment startTime="0" stopTime="10" stepSize="0.2"/>
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="1e-2"/>
 
   <ModelVariables>
     <Float64 name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time"/>
-    <Int32 name="counter" valueReference="1" description="counts the seconds" causality="output" variability="discrete" initial="exact" start="1"/>
+    <Clock name="r" valueReference="1" causality="input" intervalVariability="constant" intervalDecimal="0.1"/>
+    <Float64 name="x" valueReference="2" causality="input" variability="continuous" initial="exact" start="0"/>
+    <Float64 name="ur" valueReference="3" causality="output" variability="discrete" initial="exact" start="0" clocks="1"/>
+    <Float64 name="as" valueReference="5" causality="input" variability="continuous" initial="exact" start="0"/>
+    <Clock name="s" valueReference="6" causality="input" intervalVariability="triggered"/>
   </ModelVariables>
 
   <ModelStructure>
-    <Output valueReference="1"/>
+    <Output valueReference="3" dependencies="5"/>
   </ModelStructure>
-
 </fmiModelDescription>

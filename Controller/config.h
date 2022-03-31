@@ -1,9 +1,11 @@
 #ifndef config_h
 #define config_h
 
+#include <stdbool.h> // for bool
+
 // define class name and unique id
-#define MODEL_IDENTIFIER Stair
-#define INSTANTIATION_TOKEN "{8c4e810f-3df3-4a00-8276-176fa3c9f008}"
+#define MODEL_IDENTIFIER Controller
+#define INSTANTIATION_TOKEN "{e1f14bf0-302d-4ef9-b11c-e01c7ed456cb}"
 
 #define CO_SIMULATION
 #define MODEL_EXCHANGE
@@ -12,20 +14,30 @@
 #define NX 0
 #define NZ 0
 
-#define GET_INT32
+#define GET_FLOAT64
+#define SET_FLOAT64
 #define EVENT_UPDATE
+#define ACTIVATE_CLOCK
+#define GET_CLOCK
 
-#define FIXED_SOLVER_STEP 0.2
-#define DEFAULT_STOP_TIME 10
+#define FIXED_SOLVER_STEP 1e-2
 
 typedef enum {
-    vr_time, vr_counter
+    vr_r = 1,   // Clock
+    vr_xr,      // Sample
+    vr_ur,      // Discrete state/output
+    vr_pre_ur,  // Previous ur
+    vr_as,      // Local var
+    vr_s        // Clock from supervisor
 } ValueReference;
 
 typedef struct {
-
-    int counter;
-
+    bool r;         // Clock
+    double xr;      // Sample
+    double ur;      // Discrete state/output
+    double pre_ur;  // Previous ur
+    double as;      // Local var
+    bool s;         // Clock from supervisor
 } ModelData;
 
 #endif /* config_h */

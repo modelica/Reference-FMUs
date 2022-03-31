@@ -1,31 +1,36 @@
 #ifndef config_h
 #define config_h
 
+#include <stdbool.h> // for bool
+
 // define class name and unique id
-#define MODEL_IDENTIFIER Stair
-#define INSTANTIATION_TOKEN "{8c4e810f-3df3-4a00-8276-176fa3c9f008}"
+#define MODEL_IDENTIFIER Supervisor
+#define INSTANTIATION_TOKEN "{64202d14-799a-4379-9fb3-79354aec17b2}"
 
 #define CO_SIMULATION
 #define MODEL_EXCHANGE
 
 // define model size
 #define NX 0
-#define NZ 0
+#define NZ 1
 
-#define GET_INT32
+#define SET_FLOAT64
+#define GET_FLOAT64
 #define EVENT_UPDATE
+#define GET_CLOCK
 
-#define FIXED_SOLVER_STEP 0.2
-#define DEFAULT_STOP_TIME 10
+#define FIXED_SOLVER_STEP 1e-2
 
 typedef enum {
-    vr_time, vr_counter
+    vr_s = 1,   // Clock s
+    vr_x,       // Sample from Plant
+    vr_as       // Output that is fed to the Controller
 } ValueReference;
 
 typedef struct {
-
-    int counter;
-
+    bool s;    // Clock
+    double x;  // Sample
+    double as; // Output that is fed to the Controller
 } ModelData;
 
 #endif /* config_h */

@@ -1,56 +1,61 @@
-#include <float.h>  // for DBL_EPSILON
-#include <math.h>   // for fabs()
+#include <math.h>    // for fabs()
 #include "config.h"
 #include "model.h"
 
-
 void setStartValues(ModelInstance *comp) {
-    M(counter) = 1;
-
-    // TODO: move this to initialize()?
-    comp->nextEventTime        = 1;
-    comp->nextEventTimeDefined = true;
+    M(x) =  0.0;
+    M(der_x) =  0.0;
+    M(u) = 0.0;
 }
 
 Status calculateValues(ModelInstance *comp) {
-    UNUSED(comp);
-    // nothing to do
+    M(der_x) = - M(x) + M(u);
     return OK;
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
     switch (vr) {
-    case vr_time:
-        value[(*index)++] = comp->time;
-        return OK;
-    default:
-        logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
-        return Error;
+        case vr_x:
+            value[(*index)++] = M(x);
+            return OK;
+        case vr_der_x:
+            value[(*index)++] = M(der_x);
+            return OK;
+        default:
+            logError(comp, "Unexpected value reference: %d.", vr);
+            return Error;
     }
 }
 
-Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
+Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
     switch (vr) {
-        case vr_counter:
-            value[(*index)++] = M(counter);
+        case vr_u:
+            M(u) = value[(*index)++];
             return OK;
         default:
-            logError(comp, "Get Int32 is not allowed for value reference %u.", vr);
+            logError(comp, "Unexpected value reference: %d.", vr);
             return Error;
     }
 }
 
 void eventUpdate(ModelInstance *comp) {
-
-    double epsilon = (1.0 + fabs(comp->time)) * DBL_EPSILON;
-
-    if (comp->nextEventTimeDefined && comp->time + epsilon >= comp->nextEventTime) {
-        M(counter)++;
-        comp->nextEventTime += 1;
-    }
-
-    comp->valuesOfContinuousStatesChanged   = false;
     comp->nominalsOfContinuousStatesChanged = false;
-    comp->terminateSimulation               = M(counter) >= 10;
-    comp->nextEventTimeDefined              = true;
+    comp->terminateSimulation  = false;
+    comp->nextEventTimeDefined = false;
+}
+
+void getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
+    UNUSED(nx);
+    x[0] = M(x);
+}
+
+void setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
+    UNUSED(nx);
+    M(x) = x[0];
+}
+
+void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
+    UNUSED(nx);
+    calculateValues(comp);
+    dx[0] = M(der_x);
 }
