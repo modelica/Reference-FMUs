@@ -157,6 +157,24 @@ if (${FMI_VERSION} EQUAL 3)
         )
     endif ()
 
+    # synchronous_control_me
+    add_executable (synchronous_control_me
+        ${EXAMPLE_SOURCES}
+        Controller/config.h
+        Plant/config.h
+        Supervisor/config.h
+        examples/synchronous_control_me.c
+    )
+    add_dependencies(synchronous_control_me Controller Plant Supervisor)
+    set_target_properties(synchronous_control_me PROPERTIES FOLDER examples)
+    target_include_directories(synchronous_control_me PRIVATE include Controller Plant Supervisor)
+    target_link_libraries(synchronous_control_me ${LIBRARIES})
+    set_target_properties(synchronous_control_me PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY         temp
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+    )
+
 endif()
 
 # Examples
