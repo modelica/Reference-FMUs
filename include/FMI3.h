@@ -295,8 +295,7 @@ FMI_STATIC FMIStatus FMI3GetBinary(FMIInstance *instance,
 FMI_STATIC FMIStatus FMI3GetClock(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
-    fmi3Clock values[],
-    size_t nValues);
+    fmi3Clock values[]);
 
 FMI_STATIC FMIStatus FMI3SetFloat32(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
@@ -380,8 +379,7 @@ FMI_STATIC FMIStatus FMI3SetBinary(FMIInstance *instance,
 FMI_STATIC FMIStatus FMI3SetClock(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
-    const fmi3Clock values[],
-    size_t nValues);
+    const fmi3Clock values[]);
 
 /* Getting Variable Dependency Information */
 FMI_STATIC FMIStatus FMI3GetNumberOfVariableDependencies(FMIInstance *instance,

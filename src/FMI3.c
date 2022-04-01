@@ -620,14 +620,13 @@ FMIStatus FMI3GetBinary(FMIInstance *instance,
 FMIStatus FMI3GetClock(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
-    fmi3Clock values[],
-    size_t nValues) {
+    fmi3Clock values[]) {
 
     FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3GetClock(instance->component, valueReferences, nValueReferences, values);
 
     if (instance->logFunctionCall) {
         FMIValueReferencesToString(instance, valueReferences, nValueReferences);
-        FMIValuesToString(instance, nValues, NULL, values, FMIClockType);
+        FMIValuesToString(instance, nValueReferences, NULL, values, FMIClockType);
         instance->logFunctionCall(instance, status, "fmi3GetClock(valueReferences=%s, nValueReferences=%zu, values=%s)", instance->buf1, nValueReferences, instance->buf2);
     }
 
@@ -751,10 +750,17 @@ FMIStatus FMI3SetBinary(FMIInstance *instance,
 FMIStatus FMI3SetClock(FMIInstance *instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
-    const fmi3Clock values[],
-    size_t nValues) {
-    // TODO: implement
-    return FMIError;
+    const fmi3Clock values[]) {
+
+    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3SetClock(instance->component, valueReferences, nValueReferences, values);
+
+    if (instance->logFunctionCall) {
+        FMIValueReferencesToString(instance, valueReferences, nValueReferences);
+        FMIValuesToString(instance, nValueReferences, NULL, values, FMIClockType);
+        instance->logFunctionCall(instance, status, "fmi3SetClock(valueReferences=%s, nValueReferences=%zu, values=%s)", instance->buf1, nValueReferences, instance->buf2);
+    }
+
+    return status;
 }
 
 /* Getting Variable Dependency Information */

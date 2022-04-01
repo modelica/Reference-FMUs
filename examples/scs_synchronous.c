@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
             countdownClocksQualifier[0] = fmi3IntervalUnchanged;
         }
 
-        CALL(FMI3GetClock(S, outClockVRs, 1, outClockValues, 1));
+        CALL(FMI3GetClock(S, outClockVRs, 1, outClockValues));
 
         CALL(recordVariables(S, outputFile));
 
