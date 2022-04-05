@@ -1,3 +1,46 @@
+/*
+The example consists of a controller and a plant, and a supervisor FMU. 
+It uses model exchange in FMI3.0. The Controller fmu declares an input periodic clock, 
+and the supervisor has an output clock that triggers when a state event occurs. 
+The output clock of the supervisor is connected to another input clock of the controller.
+
+The key part of the example is to show that both clocks can activate at the same time, 
+if the conditions are right (and the conditions are right roughly once per co-simulation).
+When that happens, the dependencies between the variables must be taken into account, 
+in order to correctly propagate the values for the clocked partitions.
+
+The supervisor monitors the plant's continuous output and when a particular event happens, 
+activates a clock and changes one of the controller's inputs, 
+which in turn change the controller algorithm.
+The plant is just solving a basic ODE with an input from the controller.
+
+
+The system looks as follows:
+
+              ┌──────────────┐
+              │              │ X
+              │  Supervisor  ◄────────────────────────────┐
+              │              │                            │
+              └───┬──────┬───┘                            │
+     <<Clock>> AS │      │ S                              │
+                  │      │                                │
+                  │      │                                │
+     <<Clock>> AS │      │ S                              │
+              ┌───▼──────▼───┐             ┌─────────┐    │
+  <<Clock>> R │              │   UR     U  │         │ X  │
+       ───────►  Controller  ├─────────────►──Plant──┼────┤
+              │              │             │         │    │
+              └──────▲───────┘             └─────────┘    │
+                   X │                                    │
+                     └────────────────────────────────────┘
+
+Where,
+- R is a time based clock.
+- AS is an event based clock.
+
+*/
+
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -12,7 +55,7 @@
 
 // Controller vrefs
 #define Controller_UR_ref 3
-#define Controller_XR_ref 2
+#define Controller_X_ref 2
 #define Controller_R_ref  1
 #define Controller_S_ref  6
 #define Controller_AS_ref 5
@@ -40,7 +83,7 @@ const char* names[N_INSTANCES] = { "plantmodel", "controller", "supervisor" };
 // Constants with value references
 const fmi3ValueReference plantmodel_u_refs[]  = { Plantmodel_U_ref  };
 const fmi3ValueReference plantmodel_y_refs[]  = { Plantmodel_X_ref  };
-const fmi3ValueReference controller_u_refs[]  = { Controller_XR_ref };
+const fmi3ValueReference controller_u_refs[]  = { Controller_X_ref };
 const fmi3ValueReference controller_y_refs[]  = { Controller_UR_ref };
 const fmi3ValueReference controller_r_refs[]  = { Controller_R_ref  };
 const fmi3ValueReference controller_s_refs[]  = { Controller_S_ref  };
@@ -95,7 +138,7 @@ static FMIStatus recordVariables(FILE *outputFile, FMIInstance* controller, FMII
     fmi3Float64 plantmodel_vals[] = {0};
     CALL(FMI3GetFloat64(plant, plantmodel_vref, 1, plantmodel_vals, 1));
 
-    const fmi3ValueReference controller_vref[] = {Controller_XR_ref, Controller_UR_ref};
+    const fmi3ValueReference controller_vref[] = {Controller_X_ref, Controller_UR_ref};
     fmi3Float64 controller_vals[] = {0.0, 0.0};
     CALL(FMI3GetFloat64(controller, controller_vref, 2, controller_vals, 2));
 
@@ -137,7 +180,7 @@ static FMIStatus handleTimeEventController(FMIInstance* controller, FMIInstance*
     // Activate Controller's clock r
     fmi3Clock controller_r_vals[] = { fmi3ClockActive };
     CALL(FMI3SetClock(controller, controller_r_refs, 1, controller_r_vals));
-
+    
     // Set inputs to clocked partition: Exchange data Plantmodel -> Controller
     fmi3Float64 plantmodel_vals[] = { 0.0 };
     CALL(FMI3GetFloat64(plant, plantmodel_y_refs, 1, plantmodel_vals, 1));
