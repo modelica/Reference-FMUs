@@ -27,7 +27,7 @@ The system looks as follows:
                   │      │                                │
      <<Clock>> AS │      │ S                              │
               ┌───▼──────▼───┐             ┌─────────┐    │
-  <<Clock>> R │              │   UR     U  │         │ X  │
+  <<Clock>> R │              │ UR       U  │         │ X  │
        ───────►  Controller  ├─────────────►──Plant──┼────┤
               │              │             │         │    │
               └──────▲───────┘             └─────────┘    │
@@ -180,11 +180,8 @@ static FMIStatus handleTimeEventController(FMIInstance* controller, FMIInstance*
     // Activate Controller's clock r
     fmi3Clock controller_r_vals[] = { fmi3ClockActive };
     CALL(FMI3SetClock(controller, controller_r_refs, 1, controller_r_vals));
-    
-    // Set inputs to clocked partition: Exchange data Plantmodel -> Controller
-    fmi3Float64 plantmodel_vals[] = { 0.0 };
-    CALL(FMI3GetFloat64(plant, plantmodel_y_refs, 1, plantmodel_vals, 1));
-    CALL(FMI3SetFloat64(controller, controller_u_refs, 1, plantmodel_vals, 1));
+
+    // Inputs to the clocked partition are assumed to have been set already, in the continuous time
 
     // Compute outputs to clocked partition: Exchange data Controller -> Plantmodel
     fmi3Float64 controller_vals[] = { 0.0 };
@@ -304,7 +301,7 @@ int main(int argc, char *argv[])
 
         printf("Time event: %d \t State Event: %d \n", timeEvent, stateEvent);
 
-        // Check if controller needs to execute
+        // Check if controller or supervisor need to execute
         if (timeEvent || stateEvent) {
             if (timeEvent && !stateEvent) {
                 printf("Entering event mode for ticking clock r. \n");
@@ -398,10 +395,6 @@ int main(int argc, char *argv[])
             }
         }
 
-        // Exchange data Plantmodel -> Supervisor
-        CALL(FMI3GetFloat64(plant, plantmodel_y_refs, 1, plantmodel_vals, 1));
-        CALL(FMI3SetFloat64(supervisor, supervisor_in_refs, 1, plantmodel_vals, 1));
-
         // Estimate next Plantmodel state
         CALL(FMI3GetContinuousStates(plant, plantmodel_vals, 1));
         CALL(FMI3GetContinuousStateDerivatives(plant, plantmodel_der_vals, 1));
@@ -414,6 +407,12 @@ int main(int argc, char *argv[])
 
         // Update Plantmodel state
         CALL(FMI3SetContinuousStates(plant, plantmodel_vals, 1));
+
+        // Exchange data Plantmodel -> Supervisor
+        CALL(FMI3GetFloat64(plant, plantmodel_y_refs, 1, plantmodel_vals, 1));
+        CALL(FMI3SetFloat64(supervisor, supervisor_in_refs, 1, plantmodel_vals, 1));
+        // Exchange data Plantmodel -> Controller
+        CALL(FMI3SetFloat64(controller, controller_u_refs, 1, plantmodel_vals, 1));
 
         // Record data
         CALL(recordVariables(outputFile, controller, plant, time));
