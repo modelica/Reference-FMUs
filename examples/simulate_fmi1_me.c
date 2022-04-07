@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
             for (size_t i = 0; i < NZ; i++) {
 
                 // check for zero crossings
-                if (previous_z[i] < 0 && z[i] >= 0) {
+                if (previous_z[i] <= 0 && z[i] > 0) {
                     rootsFound[i] = 1;   // -\+
                 } else  if (previous_z[i] > 0 && z[i] <= 0) {
                     rootsFound[i] = -1;  // +/-
