@@ -548,7 +548,7 @@ void doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
 
     // check for zero-crossings
     for (int i = 0; i < NZ; i++) {
-        *stateEvent |= comp->z[i] * z[i] < 0;
+        *stateEvent |= (comp->z[i] <= 0 && z[i] > 0) || (comp->z[i] > 0 && z[i] <= 0);
     }
 
     // remember the current event indicators
