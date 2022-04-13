@@ -473,23 +473,9 @@ FMIStatus FMI3ExitInitializationMode(FMIInstance *instance) {
     CALL(ExitInitializationMode);
 }
 
-FMIStatus FMI3EnterEventMode(FMIInstance *instance,
-    fmi3EventQualifier stepEvent,
-    fmi3EventQualifier stateEvent,
-    const fmi3Int32 rootsFound[],
-    size_t nEventIndicators,
-    fmi3EventQualifier timeEvent) {
-
-    FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3EnterEventMode(instance->component, stepEvent, stateEvent, rootsFound, nEventIndicators, timeEvent);
-
-    if (instance->logFunctionCall) {
-        FMIValuesToString(instance, nEventIndicators, NULL, rootsFound, FMIInt32Type);
-        instance->logFunctionCall(instance, status,
-            "fmi3EnterEventMode(stepEvent=%d, stateEvent=%d, rootsFound=%s, nEventIndicators=%zu, timeEvent=%d)",
-            stepEvent, stateEvent, instance->buf2, nEventIndicators, timeEvent);
-    }
-
-    return status;
+FMIStatus FMI3EnterEventMode(FMIInstance *instance) {
+    instance->state = FMI2EventModeState;
+    CALL(EnterEventMode);
 }
 
 FMIStatus FMI3Terminate(FMIInstance *instance) {

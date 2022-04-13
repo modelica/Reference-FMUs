@@ -201,12 +201,7 @@ FMI_STATIC FMIStatus FMI3EnterInitializationMode(FMIInstance *instance,
 
 FMI_STATIC FMIStatus FMI3ExitInitializationMode(FMIInstance *instance);
 
-FMI_STATIC FMIStatus FMI3EnterEventMode(FMIInstance *instance,
-    fmi3EventQualifier stepEvent,
-    fmi3EventQualifier stateEvent,
-    const fmi3Int32 rootsFound[],
-    size_t nEventIndicators,
-    fmi3EventQualifier timeEvent);
+FMI_STATIC FMIStatus FMI3EnterEventMode(FMIInstance *instance);
 
 FMI_STATIC FMIStatus FMI3Terminate(FMIInstance *instance);
 
