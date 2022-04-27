@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
         // handle events
         if (eventOccurred) {
 
-            CALL(FMI3EnterEventMode(S, stepEvent, stateEvent, rootsFound, NZ, timeEvent));
+            CALL(FMI3EnterEventMode(S));
 
             if (inputEvent) {
                 CALL(applyContinuousInputs(S, true));

@@ -466,18 +466,7 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
     return status;
 }
 
-fmi3Status fmi3EnterEventMode(fmi3Instance instance,
-                              fmi3EventQualifier stepEvent,
-                              fmi3EventQualifier stateEvent,
-                              const fmi3Int32 rootsFound[],
-                              size_t nEventIndicators,
-                              fmi3EventQualifier timeEvent) {
-
-    UNUSED(stepEvent);
-    UNUSED(stateEvent);
-    UNUSED(rootsFound);
-    UNUSED(nEventIndicators);
-    UNUSED(timeEvent);
+fmi3Status fmi3EnterEventMode(fmi3Instance instance) {
 
     ASSERT_STATE(EnterEventMode);
 
