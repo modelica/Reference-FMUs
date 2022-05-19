@@ -1,0 +1,159 @@
+name: Build the Reference FMUs
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  FMPY: https://github.com/CATIA-Systems/FMPy/archive/d9547792af143b9e25f23073cb44a327289e0f5e.zip
+  CONDA_PACKAGES: dask lark-parser lxml numpy pathlib pip pytest requests scipy
+
+jobs:
+
+  lint-files:
+
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Lint files
+      run: python3 lint_files.py
+
+  build-linux:
+
+    runs-on: ubuntu-18.04
+    needs: lint-files
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Check python version
+      run: |
+        python --version
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+
+    - name: Add conda to system path
+      run: |
+        echo $CONDA/bin >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: |
+        conda install --channel conda-forge $CONDA_PACKAGES
+        python -m pip install --no-deps $FMPY
+
+    - name: Run tests
+      run: |
+        pytest --junitxml=junit/test-results.xml
+
+    - name: Upload FMUs
+      uses: actions/upload-artifact@v3
+      with:
+        name: Linux-FMUs
+        path: fmus
+        if-no-files-found: error
+
+  build-windows:
+
+    runs-on: windows-2022
+    needs: lint-files
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Check python version
+      run: |
+        python --version
+
+    - name: Install dependencies
+      run: |
+        python -m pip install $env:FMPY pytest scipy
+
+    - name: Run tests
+      run: |
+        pytest --junitxml=junit/test-results.xml
+
+    - name: Upload FMUs
+      uses: actions/upload-artifact@v3
+      with:
+        name: Windows-FMUs
+        path: fmus
+        if-no-files-found: error
+
+  build-macos:
+
+    runs-on: macos-10.15
+    needs: lint-files
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Check python version
+      run: |
+        python --version
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+
+    - name: Add conda to system path
+      run: |
+        echo $CONDA/bin >> $GITHUB_PATH
+
+    - name: Install dependencies
+      run: |
+        conda install --channel conda-forge $CONDA_PACKAGES
+        python -m pip install --no-deps $FMPY
+
+    - name: Run tests
+      run: |
+        pytest --junitxml=junit/test-results.xml
+
+    - name: Upload FMUs
+      uses: actions/upload-artifact@v3
+      with:
+        name: macOS-FMUs
+        path: fmus
+        if-no-files-found: error
+
+  merge-fmus:
+
+    runs-on: ubuntu-18.04
+    needs: [build-linux, build-windows, build-macos]
+
+    steps:
+
+    - uses: actions/checkout@v3
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: Linux-FMUs
+        path: fmus
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: macOS-FMUs
+        path: fmus
+
+    - uses: actions/download-artifact@v3
+      with:
+        name: Windows-FMUs
+        path: fmus
+
+    - name: Merge FMUs
+      run: |
+        python3 merge_platform_binaries.py
+
+    - name: Upload FMUs
+      uses: actions/upload-artifact@v3
+      with:
+        name: merged-FMUs
+        path: merged
+        if-no-files-found: error
