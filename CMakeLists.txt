@@ -1,4 +1,6 @@
-cmake_minimum_required (VERSION 3.12)
+cmake_minimum_required (VERSION 3.15)
+
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 FUNCTION(cat IN_FILE OUT_FILE)
   file(READ ${IN_FILE} CONTENTS)
@@ -21,8 +23,6 @@ if (${FMI_VERSION} GREATER 1)
 endif ()
 
 if (MSVC)
-  string(REPLACE "/MD"  "/MT"  CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
-  string(REPLACE "/MDd" "/MTd" CMAKE_C_FLAGS_DEBUG   "${CMAKE_C_FLAGS_DEBUG}")
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
   # Minimum supported MSVC version is 1800 = Visual Studio 12.0/2013

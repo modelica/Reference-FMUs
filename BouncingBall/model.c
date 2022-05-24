@@ -1,4 +1,5 @@
 #include <math.h>  // for fabs()
+#include <float.h> // for DBL_MIN
 #include "config.h"
 #include "model.h"
 
@@ -115,7 +116,7 @@ void eventUpdate(ModelInstance *comp) {
 
     if (M(h) <= 0 && M(v) < 0) {
 
-        M(h) = 0;
+        M(h) = DBL_MIN;  // slightly above 0 to avoid zero-crossing
         M(v) = -M(v) * M(e);
 
         if (M(v) < V_MIN) {
@@ -124,12 +125,10 @@ void eventUpdate(ModelInstance *comp) {
             M(g) = 0;
         }
 
-        comp->valuesOfContinuousStatesChanged = true;
-    }
+        // reset previous event indicators
+        getEventIndicators(comp, comp->z, NZ);
 
-    // reset the previous event indicators
-    for (int i = 0; i < NZ; i++) {
-        comp->z[i] = 0;
+        comp->valuesOfContinuousStatesChanged = true;
     }
 
     comp->nominalsOfContinuousStatesChanged = false;

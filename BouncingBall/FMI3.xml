@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription
-  fmiVersion="3.0-beta.5"
+  fmiVersion="3.0"
   modelName="BouncingBall"
   description="This model calculates the trajectory, over time, of a ball dropped from a height of 1 m."
   generationTool="Reference FMUs (development build)"

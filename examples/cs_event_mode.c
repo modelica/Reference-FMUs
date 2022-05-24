@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
             CALL(recordVariables(S, outputFile));
 
             // enter Event Mode
-            CALL(FMI3EnterEventMode(S, fmi3False, fmi3False, NULL, 0, fmi3False));
+            CALL(FMI3EnterEventMode(S));
 
             // apply continuous and discrete inputs
             CALL(applyContinuousInputs(S, true));

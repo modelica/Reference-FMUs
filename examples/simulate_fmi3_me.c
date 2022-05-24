@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
         // handle events
         if (eventOccurred) {
 
-            CALL(FMI3EnterEventMode(S, stepEvent, stateEvent, rootsFound, NZ, timeEvent));
+            CALL(FMI3EnterEventMode(S));
 
             if (inputEvent) {
                 CALL(applyContinuousInputs(S, true));
@@ -203,7 +203,7 @@ int main(int argc, char* argv[]) {
             for (size_t i = 0; i < NZ; i++) {
 
                 // check for zero crossings
-                if (previous_z[i] < 0 && z[i] >= 0) {
+                if (previous_z[i] <= 0 && z[i] > 0) {
                     rootsFound[i] = 1;   // -\+
                 } else  if (previous_z[i] > 0 && z[i] <= 0) {
                     rootsFound[i] = -1;  // +/-
