@@ -32,7 +32,9 @@ typedef struct {
     bool s;    // Clock
     double x;  // Sample
     double as; // Output that is fed to the Controller
-    bool stateEvent;
+    bool stateEvent; // State event
+    double z; // Event indicator
+    double pz; // Previous Event Indicator
 } ModelData;
 
 #endif /* config_h */

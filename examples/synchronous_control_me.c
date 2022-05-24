@@ -231,8 +231,11 @@ int main(int argc, char *argv[])
     fmi3Float64 supervisor_event_indicator = 0.0;
 
     // Controller's clock r timer
-    fmi3Float64 controller_r_period = 0.1;
-    fmi3Float64 controller_r_timer = controller_r_period;
+    fmi3Float64 controller_r_period = 0.0;
+    fmi3Float64 controller_r_timer = 0.0;
+    // Will hold output from FMI3GetIntervalDecimal
+    fmi3Float64 controller_interval_vals[] = { 0.0 };
+    fmi3IntervalQualifier controller_interval_qualifiers[] = { fmi3IntervalNotYetKnown };
 
     // Open file
     FILE * outputFile = initializeFile("synchronous_control_me_out.csv");
@@ -263,12 +266,17 @@ int main(int argc, char *argv[])
     CALL(FMI3GetFloat64(controller, controller_y_refs, 1, controller_vals, 1));
     CALL(FMI3SetFloat64(plant,      plantmodel_u_refs, 1, controller_vals, 1));
 
-    //Exchange data Plantmodel -> Controller
+    // Exchange data Plantmodel -> Controller
     CALL(FMI3GetFloat64(plant,      plantmodel_y_refs, 1, plantmodel_vals, 1));
     CALL(FMI3SetFloat64(controller, controller_u_refs, 1, plantmodel_vals, 1));
 
-    //Exchange data Plantmodel -> Supervisor
+    // Exchange data Plantmodel -> Supervisor
     CALL(FMI3SetFloat64(supervisor, supervisor_in_refs, 1, plantmodel_vals, 1));
+
+    // Get clock r's interval
+    CALL(FMI3GetIntervalDecimal(controller, controller_r_refs, 1, controller_interval_vals, controller_interval_qualifiers));
+    controller_r_period = controller_interval_vals[0];
+    controller_r_timer = controller_r_period;
 
     // Initialize event indicators
     CALL(FMI3GetEventIndicators(supervisor, supervisor_evt_vals, 1));

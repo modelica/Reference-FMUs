@@ -19,6 +19,7 @@
 #define EVENT_UPDATE
 #define ACTIVATE_CLOCK
 #define GET_CLOCK
+#define GET_INTERVAL
 
 #define FIXED_SOLVER_STEP 1e-2
 

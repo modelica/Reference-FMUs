@@ -80,6 +80,18 @@ Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
     }
 }
 
+Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier) {
+    switch (vr) {
+        case vr_r:
+            (*interval) = 0.1;
+            (*qualifier) = 1; // 1 means fmi3IntervalUnchanged
+            return OK;
+        default:
+            logError(comp, "Unexpected value reference: %d.", vr);
+            return Error;
+    }
+}
+
 void eventUpdate(ModelInstance *comp) {
     comp->nominalsOfContinuousStatesChanged = false;
     comp->terminateSimulation  = false;

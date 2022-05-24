@@ -6,7 +6,9 @@ void setStartValues(ModelInstance *comp) {
     M(s) = false;       // Clock
     M(x) = 0.0;         // Sample
     M(as) = 1.0;        // Discrete state/output
-    M(stateEvent) = false;
+    M(stateEvent) = false; // State Event
+    M(z) = 0.0;
+    M(pz) = 0.0;
 }
 
 Status calculateValues(ModelInstance *comp) {
@@ -42,28 +44,29 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
 }
 
 Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
+    
+    // Do state event detection.
+    // It's important that getClock is invoked before getFloat64, 
+    //  so the variable M(as) can take on the value corresponding to the event.
+    // This is ok because as is part of the clocked partition of clock s, 
+    //  and therefore should not be queried when clock s is inactive.
+    if (M(pz) * M(z) < 0.0 && !M(stateEvent)) {
+        M(stateEvent) = true;
+    }
+
     switch (vr) {
         case vr_s:
             if (comp->state == EventMode && M(stateEvent)) {
                 (*value) = true;
             }
             else {
-                (*value) = true;
+                (*value) = false;
             }
             return OK;
         default:
             logError(comp, "Unexpected value reference: %d.", vr);
             return Error;
     }
-}
-
-void enterEventMode(ModelInstance* comp, int stepEvent, int stateEvent, const int rootsFound[], size_t nEventIndicators, int timeEvent) {
-    UNUSED(stepEvent);
-    UNUSED(rootsFound);
-    UNUSED(nEventIndicators);
-    UNUSED(timeEvent);
-
-    M(stateEvent) = stateEvent == 1;
 }
 
 void eventUpdate(ModelInstance *comp) {
@@ -74,10 +77,13 @@ void eventUpdate(ModelInstance *comp) {
     if (M(stateEvent)) {
         // Execute state transition
         M(as) = M(as) * -1.0;
+        M(stateEvent) = false;
     }
 }
 
 void getEventIndicators(ModelInstance* comp, double z[], size_t nz) {
     UNUSED(nz);
-    z[0] = 2.0 - M(x);
+    M(pz) = M(z);
+    M(z) = 2.0 - M(x);
+    z[0] = M(z);
 }
