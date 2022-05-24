@@ -468,6 +468,8 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
 
 fmi3Status fmi3EnterEventMode(fmi3Instance instance) {
 
+    ASSERT_STATE(EnterEventMode);
+
     S->state = EventMode;
 
     return fmi3OK;
