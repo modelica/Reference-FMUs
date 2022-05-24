@@ -318,9 +318,9 @@ int main(int argc, char *argv[])
                 controller_r_timer = controller_r_period;
 
                 // Put Controller into event mode, as clocks are about to tick
-                CALL(FMI3EnterEventMode(controller, fmi3False, fmi3False, NULL, 0, fmi3True));
+                CALL(FMI3EnterEventMode(controller));
                 // Put Plantmodel into event mode, as its input is a discrete time variable
-                CALL(FMI3EnterEventMode(plant, fmi3False, fmi3False, NULL, 0, fmi3False));
+                CALL(FMI3EnterEventMode(plant));
 
                 // Handle time event in controller
                 handleTimeEventController(controller, plant);
@@ -344,8 +344,8 @@ int main(int argc, char *argv[])
                 printf("Entering event mode for ticking clock s. \n");
 
                 // Put Supervisor and Controller into event mode, as clocks are about to tick. Note the flags used.
-                CALL(FMI3EnterEventMode(supervisor, fmi3False, fmi3True, NULL, 0, fmi3False));
-                CALL(FMI3EnterEventMode(controller, fmi3False, fmi3False, NULL, 0, fmi3False));
+                CALL(FMI3EnterEventMode(supervisor));
+                CALL(FMI3EnterEventMode(controller));
 
                 // Handle state event supervisor
                 handleStateEventSupervisor(controller, supervisor);
@@ -375,11 +375,11 @@ int main(int argc, char *argv[])
                 printf("Entering event mode for ticking clocks s and r. \n");
                 // Now we must respect the dependencies. The supervisor gets priority, and then the controller.
 
-                // Put Supervisor and Controller into event mode, as clocks are about to tick. Note the flags used.
-                CALL(FMI3EnterEventMode(supervisor, fmi3False, fmi3True, NULL, 0, fmi3False));
-                CALL(FMI3EnterEventMode(controller, fmi3False, fmi3False, NULL, 0, fmi3True));
+                // Put Supervisor and Controller into event mode, as clocks are about to tick.
+                CALL(FMI3EnterEventMode(supervisor));
+                CALL(FMI3EnterEventMode(controller));
                 // Put Plantmodel into event mode, as its input is a discrete time variable
-                CALL(FMI3EnterEventMode(plant, fmi3False, fmi3False, NULL, 0, fmi3False));
+                CALL(FMI3EnterEventMode(plant));
 
                 handleStateEventSupervisor(controller, supervisor);
                 handleTimeEventController(controller, plant);
