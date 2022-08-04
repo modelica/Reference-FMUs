@@ -39,11 +39,11 @@ do { \
 
 #define GET_VARIABLES(T) \
 do { \
+    Status status = OK; \
+    if (nvr == 0) return (fmi2Status)status; \
     ASSERT_NOT_NULL(vr); \
     ASSERT_NOT_NULL(value); \
     size_t index = 0; \
-    Status status = OK; \
-    if (nvr == 0) return (fmi2Status)status; \
     if (S->isDirtyValues) { \
         Status s = calculateValues(S); \
         status = max(status, s); \
@@ -60,10 +60,11 @@ do { \
 
 #define SET_VARIABLES(T) \
 do { \
+    Status status = OK; \
+    if (nvr == 0) return (fmi2Status)status; \
     ASSERT_NOT_NULL(vr); \
     ASSERT_NOT_NULL(value); \
     size_t index = 0; \
-    Status status = OK; \
     for (size_t i = 0; i < nvr; i++) { \
         Status s = set ## T(S, vr[i], value, &index); \
         status = max(status, s); \
