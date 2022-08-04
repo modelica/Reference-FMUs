@@ -38,10 +38,11 @@ do { \
 
 #define GET_VARIABLES(T) \
 do { \
+    Status status = OK; \
+    if (nValueReferences == 0) return(fmi3Status)status; \
     ASSERT_NOT_NULL(valueReferences); \
     ASSERT_NOT_NULL(values); \
     size_t index = 0; \
-    Status status = OK; \
     if (nValueReferences == 0) return (fmi3Status)status; \
     if (S->isDirtyValues) { \
         Status s = calculateValues(S); \
@@ -59,10 +60,11 @@ do { \
 
 #define SET_VARIABLES(T) \
 do { \
+    Status status = OK; \
+    if (nValueReferences == 0) return(fmi3Status)status; \
     ASSERT_NOT_NULL(valueReferences); \
     ASSERT_NOT_NULL(values); \
     size_t index = 0; \
-    Status status = OK; \
     for (size_t i = 0; i < nValueReferences; i++) { \
         Status s = set ## T(S, (ValueReference)valueReferences[i], values, &index); \
         status = max(status, s); \
