@@ -4,6 +4,8 @@
 #include "model.h"
 
 #define V_MIN (0.1)
+#define EVENT_EPSILON (1e-10)
+
 
 void setStartValues(ModelInstance *comp) {
     M(h) =  1;
@@ -155,6 +157,12 @@ void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
 }
 
 void getEventIndicators(ModelInstance *comp, double z[], size_t nz) {
+
     UNUSED(nz);
-    z[0] = (M(h) == 0 && M(v) == 0) ? 1 : M(h);
+
+    z[0] = M(h);
+
+    if (z[0] > -EVENT_EPSILON && z[0] <= 0) {
+        z[0] = -EVENT_EPSILON;  // hysteresis for better stability
+    }
 }
