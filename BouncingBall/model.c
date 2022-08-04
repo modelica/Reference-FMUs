@@ -162,9 +162,10 @@ void getEventIndicators(ModelInstance *comp, double z[], size_t nz) {
 
     UNUSED(nz);
 
-    z[0] = M(h);
-
-    if (z[0] > -EVENT_EPSILON && z[0] <= 0) {
-        z[0] = -EVENT_EPSILON;  // hysteresis for better stability
+    if (M(h) > -EVENT_EPSILON && M(h) <= 0 && M(v) > 0) {
+        // hysteresis for better stability
+        z[0] = -EVENT_EPSILON;
+    } else {
+        z[0] = M(h);
     }
 }
