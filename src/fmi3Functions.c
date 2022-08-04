@@ -72,35 +72,6 @@ do { \
     return (fmi3Status)status; \
 } while (0)
 
-// TODO: make this work with arrays
-#define GET_BOOLEAN_VARIABLES \
-do { \
-    Status status = OK; \
-    for (size_t i = 0; i < nvr; i++) { \
-        bool v = false; \
-        size_t index = 0; \
-        Status s = getBoolean(S, (ValueReference)vr[i], &v, &index); \
-        value[i] = v; \
-        status = max(status, s); \
-        if (status > Warning) return (fmi3Status)status; \
-    } \
-    return (fmi3Status)status; \
-} while (0)
-
-// TODO: make this work with arrays
-#define SET_BOOLEAN_VARIABLES \
-do { \
-    Status status = OK; \
-    for (size_t i = 0; i < nvr; i++) { \
-        bool v = value[i]; \
-        size_t index = 0; \
-        Status s = setBoolean(S, (ValueReference)vr[i], &v, &index); \
-        status = max(status, s); \
-        if (status > Warning) return (fmi3Status)status; \
-    } \
-    return (fmi3Status)status; \
-} while (0)
-
 #ifndef max
 #define max(a,b) ((a)>(b) ? (a) : (b))
 #endif
