@@ -131,6 +131,8 @@ void eventUpdate(ModelInstance *comp) {
         getEventIndicators(comp, comp->z, NZ);
 
         comp->valuesOfContinuousStatesChanged = true;
+    } else {
+        comp->valuesOfContinuousStatesChanged = false;
     }
 
     comp->nominalsOfContinuousStatesChanged = false;
