@@ -150,7 +150,7 @@ do { \
 #define MASK_fmi3DeserializeFMUState      MASK_AnyState
 
 /* Getting partial derivatives */
-#define MASK_fmi3GetDirectionalDerivative (InitializationMode | EventMode | ContinuousTimeMode | Terminated)
+#define MASK_fmi3GetDirectionalDerivative (InitializationMode | StepMode | EventMode | ContinuousTimeMode | Terminated)
 #define MASK_fmi3GetAdjointDerivative     MASK_fmi3GetDirectionalDerivative
 
 /* Entering and exiting the Configuration or Reconfiguration Mode */
