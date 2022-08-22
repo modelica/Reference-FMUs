@@ -1,6 +1,6 @@
 # BouncingBall
 
-The BouncingBall implements the following equation:
+The BouncingBall implements the following system of equations:
 
 ```
 der(h) = v
@@ -24,4 +24,4 @@ with the variables
 
 The plot shows the [reference result](BouncingBall_ref.csv) computed with [simulate_fmi3_me.c](https://github.com/modelica/Reference-FMUs/blob/master/examples/simulate_fmi3_me.c).
 
-![plot](BouncingBall_ref.svg)
+![Plot](BouncingBall_ref.svg)

@@ -6,7 +6,7 @@ The model implements the [Dahlquist](https://en.wikipedia.org/wiki/Germund_Dahlq
 der(x) = -k * x
 ```
 
-whith
+with
 
 | Variable      | Description    | Start |
 |:--------------|:---------------| -----:|
@@ -22,4 +22,4 @@ x(t) = exp(-k * t)
 
 The plot shows the [reference result](Dahlquist_ref.csv) computed with [simulate_fmi3_me.c](https://github.com/modelica/Reference-FMUs/blob/master/examples/simulate_fmi3_me.c).
 
-![plot](Dahlquist_ref.svg)
+![Plot](Dahlquist_ref.svg)
