@@ -38,6 +38,9 @@ FMIInstance *FMICreateInstance(const char *instanceName, const char *libraryPath
     // convert path to unicode
     mbstowcs(dllDirectory, libraryPath, MAX_PATH);
 
+    // remove the file name
+    PathRemoveFileSpecW(dllDirectory);
+
     // add the binaries directory temporarily to the DLL path to allow discovery of dependencies
     DLL_DIRECTORY_COOKIE dllDirectoryCookie = AddDllDirectory(dllDirectory);
 
