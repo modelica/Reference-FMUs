@@ -22,6 +22,6 @@ with the variables
 | e        |   0.7 |      | parameter | tunable     | Coefficient of restitution
 | v_min    |   0.1 | m/s  | parameter | constant    | Velocity below which the ball stops bouncing
 
-The plot shows the [reference result](BouncingBall_ref.csv) computed with [simulate_fmi3_me.c](https://github.com/modelica/Reference-FMUs/blob/master/examples/simulate_fmi3_me.c).
+The plot shows the [reference result](BouncingBall_ref.csv) computed with [simulate\_fmi3\_me.c](https://github.com/modelica/Reference-FMUs/blob/master/examples/simulate_fmi3_me.c).
 
 ![Plot](BouncingBall_ref.svg)

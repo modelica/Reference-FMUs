@@ -17,6 +17,6 @@ with
 | der(x1)       | Derivative of x1 |    -2 |
 | mu            | Parameter        |     1 |
 
-The plot shows the [reference result](VanDerPol_ref.csv) computed with [simulate_fmi3_me.c](https://github.com/modelica/Reference-FMUs/blob/master/examples/simulate_fmi3_me.c).
+The plot shows the [reference result](VanDerPol_ref.csv) computed with [simulate\_fmi3\_me.c](https://github.com/modelica/Reference-FMUs/blob/master/examples/simulate_fmi3_me.c).
 
 ![Plot](VanDerPol_ref.svg)
