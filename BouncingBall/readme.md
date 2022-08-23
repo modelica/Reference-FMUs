@@ -20,7 +20,7 @@ with the variables
 | der(v)   |       | m/s2 | local     | continuous  | Derivative of v
 | g        | -9.81 | m/s2 | parameter | fixed       | Gravity acting on the ball
 | e        |   0.7 |      | parameter | tunable     | Coefficient of restitution
-| v_min    |   0.1 | m/s  | parameter | constant    | Velocity below which the ball stops bouncing
+| v_min    |   0.1 | m/s  |           | constant    | Velocity below which the ball stops bouncing
 
 The plot shows the [reference result](BouncingBall_ref.csv) computed with [simulate\_fmi3\_me.c](https://github.com/modelica/Reference-FMUs/blob/master/examples/simulate_fmi3_me.c).
 
