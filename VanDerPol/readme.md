@@ -12,9 +12,9 @@ with
 | Variable      | Description      | Start |
 |:--------------|:-----------------| -----:|
 | x0            | Position         |     2 |
-| der(x0)       | Derivative of x0 |     0 |
+| der(x0)       | Derivative of x0 |       |
 | x1            | Velocity         |     0 |
-| der(x1)       | Derivative of x1 |    -2 |
+| der(x1)       | Derivative of x1 |       |
 | mu            | Parameter        |     1 |
 
 The plot shows the [reference result](VanDerPol_ref.csv) computed with [simulate\_fmi3\_me.c](https://github.com/modelica/Reference-FMUs/blob/master/examples/simulate_fmi3_me.c).
