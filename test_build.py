@@ -9,7 +9,7 @@ from fmpy.util import compile_platform_binary
 from fmpy.validation import validate_fmu
 
 
-test_fmus_version = '0.0.17'
+test_fmus_version = '0.0.18'
 
 
 def validate(build_dir, fmi_types, models, compile=False):
