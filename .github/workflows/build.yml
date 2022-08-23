@@ -51,7 +51,7 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest --junitxml=junit/test-results.xml
+        pytest -s -v --junitxml=junit/test-results.xml
 
     - name: Upload FMUs
       uses: actions/upload-artifact@v3
@@ -78,7 +78,7 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest --junitxml=junit/test-results.xml
+        pytest -s -v --junitxml=junit/test-results.xml
 
     - name: Upload FMUs
       uses: actions/upload-artifact@v3
@@ -115,7 +115,7 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest --junitxml=junit/test-results.xml
+        pytest -s -v --junitxml=junit/test-results.xml
 
     - name: Upload FMUs
       uses: actions/upload-artifact@v3
