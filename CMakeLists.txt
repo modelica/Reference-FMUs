@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.15)
+cmake_minimum_required (VERSION 3.17)
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
@@ -133,17 +133,17 @@ target_compile_definitions(${TARGET_NAME} PRIVATE
   DISABLE_PREFIX
 )
 
-if(MSVC)
+if (MSVC)
   target_compile_options(${TARGET_NAME} PRIVATE /W4 /WX)
 else()
   target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_link_options(${TARGET_NAME} PRIVATE "-static-libgcc")
 endif()
 
-if(CMAKE_C_COMPILER_ID STREQUAL "Intel")
+if (CMAKE_C_COMPILER_ID STREQUAL "Intel")
   target_link_options(${TARGET_NAME} PRIVATE "-static-intel" "-static-libgcc")
 endif()
 
@@ -265,11 +265,21 @@ if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/resources")
   set(ARCHIVE_FILES ${ARCHIVE_FILES} "resources")
 endif()
 
+# delete unintended files from binaries (Release configuration only)
+if (MSVC)
+  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND if $<CONFIG:Release> neq 0 (
+      ${CMAKE_COMMAND} -E rm -f
+      "${FMU_BUILD_DIR}/binaries/${FMI_PLATFORM}/${MODEL_NAME}.exp"
+      "${FMU_BUILD_DIR}/binaries/${FMI_PLATFORM}/${MODEL_NAME}.lib"
+     )
+  )
+endif()
+
 # create ZIP archive
 add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E tar "cfv" ${CMAKE_CURRENT_BINARY_DIR}/dist/${MODEL_NAME}.fmu --format=zip
   ${ARCHIVE_FILES}
-  WORKING_DIRECTORY ${FMU_BUILD_DIR}
+  WORKING_DIRECTORY ${FMU_BUILD_DIR} COMMENT "Creating ZIP archive"
 )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dist/${MODEL_NAME}.fmu DESTINATION .)
