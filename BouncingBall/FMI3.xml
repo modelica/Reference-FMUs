@@ -54,6 +54,7 @@
     <Float64 name="der(v)" valueReference="4" causality="local" variability="continuous" initial="calculated" declaredType="Acceleration" derivative="3" description="Derivative of v"/>
     <Float64 name="g" valueReference="5" causality="parameter" variability="fixed" initial="exact" declaredType="Acceleration" start="-9.81" derivative="1" description="Gravity acting on the ball"/>
     <Float64 name="e" valueReference="6" causality="parameter" variability="tunable" initial="exact" start="0.7" min="0.5" max="1" description="Coefficient of restitution"/>
+    <Float64 name="v_min" valueReference="7" variability="constant" declaredType="Velocity" start="0.1" description="Velocity below which the ball stops bouncing"/>
   </ModelVariables>
 
   <ModelStructure>
