@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fmiModelDescription fmiVersion="3.0" modelName="van der Pol oscillator" generationTool="Reference FMUs (development build)" instantiationToken="{8c4e810f-3da3-4a00-8276-176fa3c9f000}">
+<fmiModelDescription fmiVersion="3.0" modelName="Van der Pol oscillator" description="This model implements the van der Pol oscillator."
+ generationTool="Reference FMUs (development build)" instantiationToken="{8c4e810f-3da3-4a00-8276-176fa3c9f000}">
 
   <ModelExchange
     modelIdentifier="VanDerPol"
@@ -24,11 +25,11 @@
 
   <ModelVariables>
     <Float64 name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time"/>
-    <Float64 name="x0" valueReference="1" description="the first state" causality="output" variability="continuous" initial="exact" start="2"/>
-    <Float64 name="der(x0)" valueReference="2" causality="local" variability="continuous" initial="calculated" derivative="1"/>
-    <Float64 name="x1" valueReference="3" description="the second state" causality="output" variability="continuous" initial="exact" start="0"/>
-    <Float64 name="der(x1)" valueReference="4" causality="local" variability="continuous" initial="calculated" derivative="3"/>
-    <Float64 name="mu" valueReference="5" causality="parameter" variability="fixed" initial="exact" start="1"/>
+    <Float64 name="x0" valueReference="1" description="Position" causality="output" variability="continuous" initial="exact" start="2"/>
+    <Float64 name="der(x0)" valueReference="2" description="Derivative of x0" causality="local" variability="continuous" initial="calculated" derivative="1"/>
+    <Float64 name="x1" valueReference="3" description="Velocity" causality="output" variability="continuous" initial="exact" start="0"/>
+    <Float64 name="der(x1)" valueReference="4" description="Derivative of x1" causality="local" variability="continuous" initial="calculated" derivative="3"/>
+    <Float64 name="mu" valueReference="5" description="Parameter" causality="parameter" variability="fixed" initial="exact" start="1"/>
   </ModelVariables>
 
   <ModelStructure>

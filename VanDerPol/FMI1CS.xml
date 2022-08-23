@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription
   fmiVersion="1.0"
-  modelName="van der Pol oscillator"
+  modelName="Van der Pol oscillator"
   modelIdentifier="VanDerPol"
-  description="This model implements the van der Pol oscillator"
+  description="This model implements the van der Pol oscillator."
   generationTool="Reference FMUs (development build)"
   guid="{8c4e810f-3da3-4a00-8276-176fa3c9f000}"
   numberOfContinuousStates="2"
@@ -15,19 +15,19 @@
     <ScalarVariable name="time" valueReference="0" causality="internal" variability="continuous" description="Simulation time">
       <Real/>
     </ScalarVariable>
-    <ScalarVariable name="x0" valueReference="1" causality="output" description="the first state">
+    <ScalarVariable name="x0" valueReference="1" causality="output" description="Position">
       <Real start="2" fixed="true"/>
     </ScalarVariable>
-    <ScalarVariable name="der(x0)" valueReference="2">
+    <ScalarVariable name="der(x0)" valueReference="2" description="Derivative of x0">
       <Real/>
     </ScalarVariable>
-    <ScalarVariable name="x1" valueReference="3" causality="output" description="the second state">
+    <ScalarVariable name="x1" valueReference="3" causality="output" description="Velocity">
       <Real start="0" fixed="true"/>
     </ScalarVariable>
-    <ScalarVariable name="der(x1)" valueReference="4">
+    <ScalarVariable name="der(x1)" valueReference="4" description="Derivative of x1">
       <Real/>
     </ScalarVariable>
-    <ScalarVariable name="mu" valueReference="5" variability="parameter">
+    <ScalarVariable name="mu" valueReference="5" variability="parameter" description="Parameter">
       <Real start="1" fixed="true"/>
     </ScalarVariable>
   </ModelVariables>

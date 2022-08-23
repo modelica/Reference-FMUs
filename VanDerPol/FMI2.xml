@@ -2,7 +2,7 @@
 <fmiModelDescription
   fmiVersion="2.0"
   modelName="Van der Pol oscillator"
-  description="This model implements the van der Pol oscillator"
+  description="This model implements the van der Pol oscillator."
   generationTool="Reference FMUs (development build)"
   guid="{8c4e810f-3da3-4a00-8276-176fa3c9f000}"
   numberOfEventIndicators="0">
@@ -39,19 +39,19 @@
     <ScalarVariable name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time">
       <Real/>
     </ScalarVariable>
-    <ScalarVariable name="x0" valueReference="1" description="the first state" causality="output" variability="continuous" initial="exact">
+    <ScalarVariable name="x0" valueReference="1" description="Position" causality="output" variability="continuous" initial="exact">
       <Real start="2"/>
     </ScalarVariable>
-    <ScalarVariable name="der(x0)" valueReference="2" causality="local" variability="continuous" initial="calculated">
+    <ScalarVariable name="der(x0)" valueReference="2" description="Derivative of x0" causality="local" variability="continuous" initial="calculated">
       <Real derivative="1"/>
     </ScalarVariable>
-    <ScalarVariable name="x1" valueReference="3" description="the second state" causality="output" variability="continuous" initial="exact">
+    <ScalarVariable name="x1" valueReference="3" description="Velocity" causality="output" variability="continuous" initial="exact">
       <Real start="0"/>
     </ScalarVariable>
-    <ScalarVariable name="der(x1)" valueReference="4" causality="local" variability="continuous" initial="calculated">
+    <ScalarVariable name="der(x1)" valueReference="4" description="Derivative of x1" causality="local" variability="continuous" initial="calculated">
       <Real derivative="3"/>
     </ScalarVariable>
-    <ScalarVariable name="mu" valueReference="5" causality="parameter" variability="fixed" initial="exact">
+    <ScalarVariable name="mu" valueReference="5" description="Parameter" causality="parameter" variability="fixed" initial="exact">
       <Real start="1"/>
     </ScalarVariable>
   </ModelVariables>

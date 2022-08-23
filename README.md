@@ -8,7 +8,7 @@ A set of hand-coded FMUs for development, testing and debugging of the [Function
 - [LinearTransform](LinearTransform) - arrays and structural parameters
 - [Resource](Resource) - load data from a file
 - [Stair](Stair) - a counter with time events
-- [VanDerPol](VanDerPol) - Van der Pol test equation
+- [VanDerPol](VanDerPol) - Van der Pol oscillator
 
 ## Repository structure
 
