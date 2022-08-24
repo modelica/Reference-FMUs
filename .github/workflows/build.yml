@@ -23,6 +23,60 @@ jobs:
     - name: Lint files
       run: python3 lint_files.py
 
+  clang-format-check-files:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Clang format check files
+      uses: DoozyX/clang-format-lint-action@v0.14
+      with:
+        source: 'examples BouncingBall Clocks Dahlquist Feedthrough LinearTransform Resource Stair VanDerPol'
+        extensions: 'c,h'
+        clangFormatVersion: 14
+        inplace: False
+
+  clang-format-files:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Clang format files
+      uses: DoozyX/clang-format-lint-action@v0.14
+      with:
+        source: 'examples BouncingBall Clocks Dahlquist Feedthrough LinearTransform Resource Stair VanDerPol'
+        extensions: 'c,h'
+        clangFormatVersion: 14
+        inplace: True
+
+    - name: Upload Clang formatted files
+      uses: actions/upload-artifact@v3
+      with:
+        name: clang-formatted-files
+        path: |
+          examples/*.c
+          BouncingBall/*.c
+          Clocks/*.c
+          Dahlquist/*.c
+          Feedthrough/*.c
+          LinearTransform/*.c
+          Resource/*.c
+          Stair/*.c
+          VanDerPol/*.c
+          examples/*.h
+          BouncingBall/*.h
+          Clocks/*.h
+          Dahlquist/*.h
+          Feedthrough/*.h
+          LinearTransform/*.h
+          Resource/*.h
+          Stair/*.h
+          VanDerPol/*.h
+
   build-linux:
 
     runs-on: ubuntu-18.04
