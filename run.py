@@ -1,71 +1,16 @@
 """ Simulate the FMUs, generate the reference results and plots and convert the readme.md files to HTML """
 import shutil
+from pathlib import Path
 from subprocess import check_call
-
+import jinja2
 from fmpy.util import plot_result, read_csv
 import os
 import markdown2
 
 
-header1 = """
-<html>
-<head>
-"""
-
-header2 = """
-<style>
-body {
-    font-family: Helvetica, Arial, Sans-Serif;
-    margin: 2em;
-}
-
-div.container {
-    max-width: 750px;
-    margin: auto;
-}
-
-
-h1, h2 {
-    border-bottom: 1px solid #eaecef;
-    padding-bottom: .3em;
-}
-
-pre {
-    background-color: #f6f8fa;
-    border-radius: 3px;
-    font-size: 85%;
-    line-height: 1.45;
-    overflow: auto;
-    padding: 16px;
-}
-
-table {
-    border-collapse: collapse;
-    border-spacing: 0;
-}
-
-th, td {
-    font-size: 0.9em;
-    border: 1px solid #dfe2e5;
-    padding: 6px 13px;
-}
-</style>
-</head>
-<body>
-<div class="container">
-"""
-
-footer = """
-</div>
-</body>
-</html>
-"""
-
-root_dir = os.path.dirname(__file__)
-dist_dir = os.path.join(root_dir, 'build', 'dist')
-temp_dir = os.path.join(root_dir, 'build', 'temp')
-
-src_dir = os.path.dirname(__file__)
+root_dir = Path(__file__).parent
+dist_dir = root_dir / 'build' / 'dist'
+temp_dir = root_dir / 'build' / 'temp'
 
 info = [
     ('BouncingBall',    {}, 0.01),
@@ -77,23 +22,23 @@ info = [
     ('VanDerPol',       {}, 0.1),
 ]
 
+loader = jinja2.FileSystemLoader(searchpath=root_dir)
+environment = jinja2.Environment(loader=loader, trim_blocks=True)
+template = environment.get_template(f'template.html')
+
 for model_name, start_values, output_interval in info:
 
     print(model_name)
 
-    fmu = os.path.join(dist_dir, model_name + '.fmu')
+    ref_csv = root_dir / model_name / f'{model_name}_ref.csv'
+    ref_svg = root_dir / model_name / f'{model_name}_ref.svg'
 
-    ref_csv = os.path.join(src_dir, model_name, model_name + '_ref.csv')
-    ref_svg = os.path.join(src_dir, model_name, model_name + '_ref.svg')
-    in_csv  = os.path.join(src_dir, model_name, model_name + '_in.csv')
-
-    if os.path.isfile(in_csv):
-        input = read_csv(in_csv)
+    if os.name == 'nt':
+        exe = temp_dir / f'{model_name}_me.exe'
     else:
-        input = None
+        exe = temp_dir / f'{model_name}_me'
 
-    exe = os.path.join(temp_dir, model_name + '_me.exe')
-    out_csv = os.path.join(temp_dir, model_name + '_me_out.csv')
+    out_csv = temp_dir / f'{model_name}_me_out.csv'
 
     check_call([exe], cwd=temp_dir)
 
@@ -102,14 +47,12 @@ for model_name, start_values, output_interval in info:
     ref = read_csv(ref_csv)
     plot_result(ref, events=True, filename=ref_svg)
 
-    md_file = os.path.join(src_dir, model_name, 'readme.md')
-    html_file = os.path.join(src_dir, model_name, 'readme.html')
+    md_file = root_dir / model_name / 'readme.md'
+    html_file = root_dir / model_name / 'readme.html'
 
-    md = markdown2.markdown_path(md_file, extras=['tables', 'fenced-code-blocks'])
+    content = markdown2.markdown_path(md_file, extras=['tables', 'fenced-code-blocks'])
 
-    with open(html_file, 'w') as html:
-        html.write(header1)
-        html.write("<title>%s</title>" % model_name)
-        html.write(header2)
-        html.write(md)
-        html.write(footer)
+    html = template.render(model_name=model_name, content=content)
+
+    with open(html_file, 'w') as f:
+        f.write(html)
