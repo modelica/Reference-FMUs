@@ -13,3 +13,5 @@ merged/
 *.zip
 *_out.csv
 /venv/
+!schema/fmi2/
+!schema/fmi3/
