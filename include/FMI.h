@@ -63,9 +63,9 @@ typedef enum {
 } FMIVariableType;
 
 typedef enum {
-    FMIVersion1,
-    FMIVersion2,
-    FMIVersion3
+    FMIVersion1 = 1,
+    FMIVersion2 = 2,
+    FMIVersion3 = 3
 } FMIVersion;
 
 typedef enum {
