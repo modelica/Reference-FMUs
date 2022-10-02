@@ -170,7 +170,7 @@ int main(int argc, char* argv[]) {
         }
 
 #if NX > 0
-        // compute continous state derivatives
+        // compute continuous state derivatives
         CALL(FMI3GetContinuousStateDerivatives(S, der_x, NX));
 #endif
         // advance time
