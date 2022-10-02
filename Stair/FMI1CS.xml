@@ -4,7 +4,8 @@
   modelName="Stair"
   modelIdentifier="Stair"
   description="This model generates a stair signal using time events"
-  generationTool="Reference FMUs (development build)"
+  generationTool="Reference FMUs"
+  version="development build"
   guid="{8c4e810f-3df3-4a00-8276-176fa3c9f008}"
   numberOfContinuousStates="0"
   numberOfEventIndicators="0">

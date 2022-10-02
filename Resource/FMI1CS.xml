@@ -4,7 +4,8 @@
   modelName="Resource"
   modelIdentifier="Resource"
   description="This model loads data from a resource file"
-  generationTool="Reference FMUs (development build)"
+  generationTool="Reference FMUs"
+  version="development build"
   guid="{7b9c2114-2ce5-4076-a138-2cbc69e069e5}"
   numberOfContinuousStates="0"
   numberOfEventIndicators="0">
