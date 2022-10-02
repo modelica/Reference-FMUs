@@ -225,6 +225,10 @@ fail:
 
 void FMI1FreeModelInstance(FMIInstance *instance) {
 
+    if (!instance) {
+        return;
+    }
+
     currentInstance = instance;
 
     instance->fmi1Functions->fmi1FreeModelInstance(instance->component);
@@ -427,6 +431,10 @@ FMIStatus    FMI1ResetSlave(FMIInstance *instance) {
 }
 
 void FMI1FreeSlaveInstance(FMIInstance *instance) {
+
+    if (!instance) {
+        return;
+    }
 
     currentInstance = instance;
 

@@ -245,6 +245,10 @@ FMIStatus FMI2Instantiate(FMIInstance *instance, const char *fmuResourceLocation
 
 void FMI2FreeInstance(FMIInstance *instance) {
 
+    if (!instance) {
+        return;
+    }
+
     instance->fmi2Functions->fmi2FreeInstance(instance->component);
 
     if (instance->logFunctionCall) {

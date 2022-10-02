@@ -273,6 +273,7 @@ static FMIStatus tearDown() {
         }
 
         FMIFreeInstance(S);
+        S = NULL;
     }
 
     if (outputFile) {

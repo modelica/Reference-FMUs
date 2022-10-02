@@ -436,6 +436,10 @@ FMIStatus FMI3InstantiateScheduledExecution(
 
 FMIStatus FMI3FreeInstance(FMIInstance *instance) {
 
+    if (!instance) {
+        return FMIError;
+    }
+
     instance->fmi3Functions->fmi3FreeInstance(instance->component);
 
     instance->component = NULL;
