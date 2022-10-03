@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
     // initialize the FMU
     CALL(FMI1InitializeSlave(S, startTime, fmi1True, stopTime));
 
-    for (size_t step = 0;; step++) {
+    for (uint64_t step = 0;; step++) {
 
         CALL(recordVariables(S, outputFile));
 

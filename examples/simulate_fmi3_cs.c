@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
 
     CALL(FMI3ExitInitializationMode(S));
 
-    for (size_t step = 0;; step++) {
+    for (uint64_t step = 0;; step++) {
 
         CALL(recordVariables(S, outputFile));
 

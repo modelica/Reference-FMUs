@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
 
     CALL(recordVariables(S, outputFile));
 
-    size_t step = 0;
+    uint64_t step = 0;
 
     while (!terminateSimulation) {
 
