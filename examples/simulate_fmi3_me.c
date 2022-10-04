@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
 
     CALL(recordVariables(S, outputFile));
 
-    int steps = 0;
+    uint64_t step = 0;
 
     while (!terminateSimulation) {
 
@@ -174,7 +174,7 @@ int main(int argc, char* argv[]) {
         CALL(FMI3GetContinuousStateDerivatives(S, der_x, NX));
 #endif
         // advance time
-        time = ++steps * fixedStep;
+        time = ++step * fixedStep;
 
         CALL(FMI3SetTime(S, time));
 
