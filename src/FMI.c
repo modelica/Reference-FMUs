@@ -85,6 +85,10 @@ FMIInstance *FMICreateInstance(const char *instanceName, const char *libraryPath
 
 void FMIFreeInstance(FMIInstance *instance) {
 
+    if (!instance) {
+        return;
+    }
+
     // unload the shared library
     if (instance->libraryHandle) {
 # ifdef _WIN32
