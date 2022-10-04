@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
         }
 
 #if NX > 0
-        // compute continous state derivatives
+        // compute continuous state derivatives
         CALL(FMI1GetDerivatives(S, der_x, NX));
 #endif
         // advance time
