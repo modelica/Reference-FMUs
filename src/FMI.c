@@ -99,6 +99,10 @@ void FMIFreeInstance(FMIInstance *instance) {
         instance->libraryHandle = NULL;
     }
 
+    free(instance->buf1);
+    free(instance->buf2);
+    free(instance->name);
+
     free(instance->fmi1Functions);
     free(instance->fmi2Functions);
     free(instance->fmi3Functions);
