@@ -3,7 +3,7 @@
 
 // define class name and unique id
 #define MODEL_IDENTIFIER BouncingBall
-#define INSTANTIATION_TOKEN "{8c4e810f-3df3-4a00-8276-176fa3c9f003}"
+#define INSTANTIATION_TOKEN "{1AE5E10D-9521-4DE3-80B9-D0EAAA7D5AF1}"
 
 #define CO_SIMULATION
 #define MODEL_EXCHANGE
