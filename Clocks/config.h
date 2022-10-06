@@ -5,7 +5,7 @@
 
 // define class name and unique id
 #define MODEL_IDENTIFIER Clocks
-#define INSTANTIATION_TOKEN "{8c4e810f-3df3-4a00-8276-176fa3c9f000}"
+#define INSTANTIATION_TOKEN "{C5F142BA-B849-42DA-B4A1-4745BFF3BE28}"
 
 #define WINDOWS
 

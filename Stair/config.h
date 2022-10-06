@@ -3,7 +3,7 @@
 
 // define class name and unique id
 #define MODEL_IDENTIFIER Stair
-#define INSTANTIATION_TOKEN "{8c4e810f-3df3-4a00-8276-176fa3c9f008}"
+#define INSTANTIATION_TOKEN "{BD403596-3166-4232-ABC2-132BDF73E644}"
 
 #define CO_SIMULATION
 #define MODEL_EXCHANGE

@@ -4,7 +4,7 @@
   modelName="Dahlquist"
   description="This model implements the Dahlquist test equation."
   generationTool="Reference FMUs (development build)"
-  guid="{8c4e810f-3df3-4a00-8276-176fa3c9f000}"
+  guid="{221063D2-EF4A-45FE-B954-B5BFEEA9A59B}"
   numberOfEventIndicators="0">
 
   <ModelExchange

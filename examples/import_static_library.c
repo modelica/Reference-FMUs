@@ -5,7 +5,7 @@
 #include "fmi3Functions.h"
 #undef FMI3_FUNCTION_PREFIX
 
-#define INSTANTIATION_TOKEN "{8c4e810f-3da3-4a00-8276-176fa3c9f000}"
+#define INSTANTIATION_TOKEN "{BD403596-3166-4232-ABC2-132BDF73E644}"
 
 
 static void cb_logMessage(fmi3InstanceEnvironment instanceEnvironment, fmi3Status status, fmi3String category, fmi3String message) {
