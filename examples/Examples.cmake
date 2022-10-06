@@ -21,9 +21,12 @@ if (${FMI_VERSION} EQUAL 3)
 
     # import_static_library
     add_executable(import_static_library
+        include/cosimulation.h
         include/fmi3Functions.h
         include/fmi3FunctionTypes.h
         include/fmi3PlatformTypes.h
+        include/model.h
+        VanDerPol/config.h
         src/fmi3Functions.c
         VanDerPol/model.c
         src/cosimulation.c
@@ -39,7 +42,12 @@ if (${FMI_VERSION} EQUAL 3)
 
     # import_shared_library
     add_executable(import_shared_library
-        ${EXAMPLE_SOURCES}
+        include/fmi3FunctionTypes.h
+        include/fmi3PlatformTypes.h
+        include/FMI.h
+        include/FMI${FMI_VERSION}.h
+        src/FMI.c
+        src/FMI${FMI_VERSION}.c
         examples/import_shared_library.c
     )
     add_dependencies(import_shared_library VanDerPol)
