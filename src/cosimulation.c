@@ -536,7 +536,7 @@ void doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
 
     comp->nSteps++;
 
-    comp->time = comp->nSteps * FIXED_SOLVER_STEP;
+    comp->time = (double)(comp->nSteps * FIXED_SOLVER_STEP);
 
     // state event
     *stateEvent = false;

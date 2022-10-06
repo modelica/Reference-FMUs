@@ -144,7 +144,7 @@ typedef struct {
 #endif
 
     // internal solver steps
-    int nSteps;
+    uint64_t nSteps;
 
     // Co-Simulation
     bool earlyReturnAllowed;
