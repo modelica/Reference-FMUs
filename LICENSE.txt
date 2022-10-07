@@ -1,4 +1,5 @@
-Copyright (c) 2021 Modelica Association Project "FMI". All rights reserved.
+Copyright (c) 2021-2022, Modelica Association Project "FMI"
+All rights reserved.
 
 The Reference FMUs are released under the 2-Clause BSD license:
 
