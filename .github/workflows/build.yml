@@ -23,6 +23,24 @@ jobs:
     - name: Lint files
       run: python3 lint_files.py
 
+  build-fmusim-windows:
+    runs-on: windows-2022
+    needs: lint-files
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - uses: s-weigand/setup-conda@v1.1.1
+      with:
+        conda-channels: conda-forge
+    - run: conda --version
+    - run: which python
+    - run: conda install
+    - run: cmake -G "Visual Studio 17 2022" -D "CONDA_DIR=%CONDA%" -B dist -D CMAKE_INSTALL_PREFIX=install fmusim
+    - run: cmake --build dist --target INSTALL --config Release
+
   build-linux:
 
     runs-on: ubuntu-18.04
