@@ -37,7 +37,7 @@ jobs:
         conda-channels: conda-forge
     - run: conda --version
     - run: which python
-    - run: conda install libxml2
+    - run: conda install libxml2 libzip
     - run: cmake -G "Visual Studio 17 2022" -D "CONDA_DIR=C:/Miniconda" -B dist -D CMAKE_INSTALL_PREFIX=install fmusim
     - run: cmake --build dist --target INSTALL --config Release
 
