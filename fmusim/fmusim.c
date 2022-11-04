@@ -91,7 +91,7 @@ void printUsage() {
     );
 }
 
-FMIStatus simulateFMI3CS(FMIInstance* S, const char* instantiationToken, FMISimulationResult* result) {
+FMIStatus simulateFMI3CS(FMIInstance* S, const char* instantiationToken, const char* resourcePath, FMISimulationResult* result) {
 
     fmi3Float64 time = 0;
     fmi3Float64 stopTime = 1;
@@ -106,7 +106,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S, const char* instantiationToken, FMISimu
 
     CALL(FMI3InstantiateCoSimulation(S,
         instantiationToken,  // instantiationToken
-        NULL,                // resourcePath
+        resourcePath,        // resourcePath
         fmi3False,           // visible
         fmi3False,           // loggingOn
         fmi3False,           // eventModeUsed
@@ -139,6 +139,8 @@ TERMINATE:
             FMI3FreeInstance(S);
         }
     }
+
+    return status;
 }
 
 int main(int argc, char* argv[]) {
@@ -156,6 +158,8 @@ int main(int argc, char* argv[]) {
 
     FMIInterfaceType interfaceType = -1;
 
+    char* outputFile = NULL;
+
     for (int i = 1; i < argc - 1; i++) {
         const char* v = argv[i];
         if (!strcmp(v, "--log-fmi-calls")) {
@@ -171,6 +175,8 @@ int main(int argc, char* argv[]) {
                 return EXIT_FAILURE;
             }
             i++;
+        } else if (!strcmp(v, "--output-file")) {
+            outputFile = argv[++i];
         } else {
             printf(PROGNAME ": unrecognized option '%s'\n", v);
             printf("Try '" PROGNAME " --help' for more information.\n");
@@ -202,7 +208,7 @@ int main(int argc, char* argv[]) {
         goto TERMINATE;
     }
 
-    FMIDumpModelDescription(modelDescription, stdout);
+    // FMIDumpModelDescription(modelDescription, stdout);
 
     FMIPlatformBinaryPath(unzipdir, modelDescription->modelIdentifier, modelDescription->fmiVersion, platformBinaryPath, FMI_PATH_MAX);
 
@@ -210,7 +216,11 @@ int main(int argc, char* argv[]) {
 
     FMISimulationResult* result = FMICreateSimulationResult(modelDescription);
 
-    FMIStatus status = simulateFMI3CS(S, modelDescription->instantiationToken, result);
+    char resourcePath[FMI_PATH_MAX] = "";
+
+    snprintf(resourcePath, FMI_PATH_MAX, "%s\\resources\\", unzipdir);
+
+    FMIStatus status = simulateFMI3CS(S, modelDescription->instantiationToken, resourcePath, result);
 
 TERMINATE:
 
@@ -227,7 +237,15 @@ TERMINATE:
     }
 
     if (result) {
-        FMIDumpResult(result, stdout);
+
+        if (outputFile) {
+            FILE* file = fopen(outputFile, "w");
+            FMIDumpResult(result, file);
+            fclose(file);
+        } else {
+            FMIDumpResult(result, stdout);
+        }
+
         FMIFreeSimulationResult(result);
     }
 
