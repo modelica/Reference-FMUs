@@ -194,6 +194,11 @@ int main(int argc, char* argv[]) {
 
     bool earlyReturnAllowed = false;
 
+    FMIInstance* S = NULL;
+    FMISimulationResult* result = NULL;
+    const char* unzipdir = NULL;
+    FMIStatus status = FMIFatal;
+
     for (int i = 1; i < argc - 1; i++) {
         const char* v = argv[i];
         if (!strcmp(v, "--log-fmi-calls")) {
@@ -240,7 +245,7 @@ int main(int argc, char* argv[]) {
 
     const char* fmuPath = argv[argc - 1];
 
-    const char* unzipdir = FMICreateTemporaryDirectory();
+    unzipdir = FMICreateTemporaryDirectory();
 
     char modelDescriptionPath[FMI_PATH_MAX] = "";
     
@@ -285,15 +290,15 @@ int main(int argc, char* argv[]) {
 
     FMIPlatformBinaryPath(unzipdir, modelDescription->modelIdentifier, modelDescription->fmiVersion, platformBinaryPath, FMI_PATH_MAX);
 
-    FMIInstance* S = FMICreateInstance("instance1", platformBinaryPath, logMessage, logFMICalls ? logFunctionCall : NULL);
+    S = FMICreateInstance("instance1", platformBinaryPath, logMessage, logFMICalls ? logFunctionCall : NULL);
 
-    FMISimulationResult* result = FMICreateSimulationResult(modelDescription);
+    result = FMICreateSimulationResult(modelDescription);
 
     char resourcePath[FMI_PATH_MAX] = "";
 
     snprintf(resourcePath, FMI_PATH_MAX, "%s\\resources\\", unzipdir);
 
-    FMIStatus status = simulateFMI3CS(S, modelDescription->instantiationToken, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, earlyReturnAllowed);
+    status = simulateFMI3CS(S, modelDescription->instantiationToken, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, earlyReturnAllowed);
 
 TERMINATE:
 

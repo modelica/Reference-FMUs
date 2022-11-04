@@ -33,7 +33,20 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
         return NULL;
     }
 
-    modelDescription->fmiVersion = FMIVersion3; // xmlGetProp(root, "fmiVersion");
+    xmlChar* fmiVersion = xmlGetProp(root, "fmiVersion");
+
+    //if (!strcmp(fmiVersion, "1.0")) {
+    //    modelDescription->fmiVersion = FMIVersion1;
+    //} else if (!strcmp(fmiVersion, "2.0")) {
+    //    modelDescription->fmiVersion = FMIVersion2;
+    //} else 
+        
+    if (!strncmp(fmiVersion, "3.", 2)) {
+        modelDescription->fmiVersion = FMIVersion3; 
+    } else {
+        printf("Unsupported FMI version: %s.\n", fmiVersion);
+        return NULL;
+    }
 
     xmlSchemaParserCtxtPtr pctxt;
 
