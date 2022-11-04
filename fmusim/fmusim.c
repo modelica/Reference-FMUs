@@ -6,6 +6,7 @@
 #include <limits.h>
 #include <Shlwapi.h>
 #include <strsafe.h>
+#include <errno.h>
 
 #include <direct.h>
 
@@ -91,11 +92,9 @@ void printUsage() {
     );
 }
 
-FMIStatus simulateFMI3CS(FMIInstance* S, const char* instantiationToken, const char* resourcePath, FMISimulationResult* result) {
+FMIStatus simulateFMI3CS(FMIInstance* S, const char* instantiationToken, const char* resourcePath, FMISimulationResult* result, size_t nStartValues, const FMIModelVariable* startVariables[], const char* startValues[], double startTime, double stepSize, double stopTime) {
 
-    fmi3Float64 time = 0;
-    fmi3Float64 stopTime = 1;
-    fmi3Float64 h = 0.1;
+    fmi3Float64 time = startTime;
 
     fmi3Boolean eventEncountered;
     fmi3Boolean terminateSimulation;
@@ -116,17 +115,35 @@ FMIStatus simulateFMI3CS(FMIInstance* S, const char* instantiationToken, const c
         NULL                 // intermediateUpdate
     ));
 
+    for (size_t i = 0; i < nStartValues; i++) {
+    
+        const FMIModelVariable* variable = startVariables[i];
+        const FMIValueReference vr = variable->valueReference;
+        const char* literal = startValues[i];
+
+        switch (variable->type) {
+        case FMIFloat64Type: {
+            const fmi3Float64 value = strtod(literal, NULL);
+            // TODO: handle errors
+            CALL(FMI3SetFloat64(S, &vr, 1, &value, 1));
+            break;
+        }
+        }
+    }
+
     CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, time, fmi3True, stopTime));
 
     CALL(FMI3ExitInitializationMode(S));
 
-    while (time < stopTime) {
+    long nSteps = 0;
+
+    while (time <= stopTime) {
 
         CALL(FMISample(S, time, result));
 
-        CALL(FMI3DoStep(S, time, h, fmi3True, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime));
+        CALL(FMI3DoStep(S, time, stepSize, fmi3True, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime));
 
-        time += h;
+        time = (++nSteps) * stepSize;
     }
 
 TERMINATE:
@@ -159,6 +176,13 @@ int main(int argc, char* argv[]) {
     FMIInterfaceType interfaceType = -1;
 
     char* outputFile = NULL;
+    double startTime = 0;
+    double stopTime = 1;
+    double outputInterval = 1e-2;
+
+    size_t nStartValues = 0;
+    char** startNames = NULL;
+    char** startValues = NULL;
 
     for (int i = 1; i < argc - 1; i++) {
         const char* v = argv[i];
@@ -175,8 +199,26 @@ int main(int argc, char* argv[]) {
                 return EXIT_FAILURE;
             }
             i++;
+        } else if (!strcmp(v, "--start-value")) {
+            startNames  = realloc(startNames, nStartValues + 1);
+            startValues = realloc(startValues, nStartValues + 1);
+            startNames[nStartValues] = argv[++i];
+            startValues[nStartValues] = argv[++i];
+            nStartValues++;
         } else if (!strcmp(v, "--output-file")) {
             outputFile = argv[++i];
+        } else if (!strcmp(v, "--start-time")) {
+            char* error;
+            startTime = strtod(argv[++i], &error);
+        } else if (!strcmp(v, "--stop-time")) {
+            char* error;
+            stopTime = strtod(argv[++i], &error);
+            if (errno == ERANGE) {
+                printf("The value provided was out of range\n");
+            }
+        } else if (!strcmp(v, "--output-interval")) {
+            char* error;
+            outputInterval = strtod(argv[++i], &error);
         } else {
             printf(PROGNAME ": unrecognized option '%s'\n", v);
             printf("Try '" PROGNAME " --help' for more information.\n");
@@ -208,6 +250,25 @@ int main(int argc, char* argv[]) {
         goto TERMINATE;
     }
 
+    FMIModelVariable** startVariables = calloc(nStartValues, sizeof(FMIModelVariable*));
+
+    for (size_t i = 0; i < nStartValues; i++) {
+
+        const char* name = startNames[i];
+
+        for (size_t j = 0; j < modelDescription->nModelVariables; j++) {
+            if (!strcmp(name, modelDescription->modelVariables[j].name)) {
+                startVariables[i] = &modelDescription->modelVariables[j];
+                break;
+            }
+        }
+
+        if (!startVariables[i]) {
+            printf("Variable %s does not exist.\n", name);
+            return 1;
+        }
+    }
+
     // FMIDumpModelDescription(modelDescription, stdout);
 
     FMIPlatformBinaryPath(unzipdir, modelDescription->modelIdentifier, modelDescription->fmiVersion, platformBinaryPath, FMI_PATH_MAX);
@@ -220,7 +281,7 @@ int main(int argc, char* argv[]) {
 
     snprintf(resourcePath, FMI_PATH_MAX, "%s\\resources\\", unzipdir);
 
-    FMIStatus status = simulateFMI3CS(S, modelDescription->instantiationToken, resourcePath, result);
+    FMIStatus status = simulateFMI3CS(S, modelDescription->instantiationToken, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime);
 
 TERMINATE:
 
