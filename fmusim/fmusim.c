@@ -92,14 +92,15 @@ void printUsage() {
     );
 }
 
-FMIStatus simulateFMI3CS(FMIInstance* S, const char* instantiationToken, const char* resourcePath, FMISimulationResult* result, size_t nStartValues, const FMIModelVariable* startVariables[], const char* startValues[], double startTime, double stepSize, double stopTime) {
-
-    fmi3Float64 time = startTime;
-
-    fmi3Boolean eventEncountered;
-    fmi3Boolean terminateSimulation;
-    fmi3Boolean earlyReturn;
-    fmi3Float64 lastSuccessfulTime;
+FMIStatus simulateFMI3CS(FMIInstance* S, const char* instantiationToken, const char* resourcePath, 
+    FMISimulationResult* result, 
+    size_t nStartValues, 
+    const FMIModelVariable* startVariables[], 
+    const char* startValues[], 
+    double startTime, 
+    double stepSize, 
+    double stopTime, 
+    bool earlyReturnAllowed) {
 
     FMIStatus status = FMIOK;
 
@@ -109,7 +110,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S, const char* instantiationToken, const c
         fmi3False,           // visible
         fmi3False,           // loggingOn
         fmi3False,           // eventModeUsed
-        fmi3False,           // earlyReturnAllowed
+        earlyReturnAllowed,  // earlyReturnAllowed
         NULL,                // requiredIntermediateVariables
         0,                   // nRequiredIntermediateVariables
         NULL                 // intermediateUpdate
@@ -131,19 +132,26 @@ FMIStatus simulateFMI3CS(FMIInstance* S, const char* instantiationToken, const c
         }
     }
 
-    CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, time, fmi3True, stopTime));
+    CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, startTime, fmi3True, stopTime));
 
     CALL(FMI3ExitInitializationMode(S));
 
-    long nSteps = 0;
+    
+    fmi3Boolean eventEncountered    = fmi3False;
+    fmi3Boolean terminateSimulation = fmi3False;
+    fmi3Boolean earlyReturn         = fmi3False;
+    fmi3Float64 lastSuccessfulTime  = startTime;
 
-    while (time <= stopTime) {
+    while (lastSuccessfulTime <= stopTime) {
 
-        CALL(FMISample(S, time, result));
+        CALL(FMISample(S, lastSuccessfulTime, result));
 
-        CALL(FMI3DoStep(S, time, stepSize, fmi3True, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime));
+        if (terminateSimulation) {
+            break;
+        }
 
-        time = (++nSteps) * stepSize;
+        CALL(FMI3DoStep(S, lastSuccessfulTime, stepSize, fmi3True, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime));
+
     }
 
 TERMINATE:
@@ -184,6 +192,8 @@ int main(int argc, char* argv[]) {
     char** startNames = NULL;
     char** startValues = NULL;
 
+    bool earlyReturnAllowed = false;
+
     for (int i = 1; i < argc - 1; i++) {
         const char* v = argv[i];
         if (!strcmp(v, "--log-fmi-calls")) {
@@ -219,6 +229,8 @@ int main(int argc, char* argv[]) {
         } else if (!strcmp(v, "--output-interval")) {
             char* error;
             outputInterval = strtod(argv[++i], &error);
+        } else if (!strcmp(v, "--early-return-allowed")) {
+            earlyReturnAllowed = true;
         } else {
             printf(PROGNAME ": unrecognized option '%s'\n", v);
             printf("Try '" PROGNAME " --help' for more information.\n");
@@ -281,7 +293,7 @@ int main(int argc, char* argv[]) {
 
     snprintf(resourcePath, FMI_PATH_MAX, "%s\\resources\\", unzipdir);
 
-    FMIStatus status = simulateFMI3CS(S, modelDescription->instantiationToken, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime);
+    FMIStatus status = simulateFMI3CS(S, modelDescription->instantiationToken, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, earlyReturnAllowed);
 
 TERMINATE:
 
@@ -311,7 +323,7 @@ TERMINATE:
     }
 
     if (unzipdir) {
-        free(unzipdir);
+        free((void*)unzipdir);
     }
 
     return status;
