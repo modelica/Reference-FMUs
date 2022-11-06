@@ -18,6 +18,10 @@ add_executable(fmusim
   FMIZip.h
   FMIZip.c
   fmusim.c
+  fmusim_fmi3_cs.h
+  fmusim_fmi3_cs.c
+  fmusim_fmi3_me.h
+  fmusim_fmi3_me.c
 )
 
 target_include_directories(fmusim PRIVATE
