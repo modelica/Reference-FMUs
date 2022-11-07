@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
 
     bool logFMICalls = false;
 
-    FMIInterfaceType interfaceType = FMICoSimulation;
+    FMIInterfaceType interfaceType = -1;
 
     char* outputFile = NULL;
     double startTime = 0;
@@ -195,6 +195,36 @@ int main(int argc, char* argv[]) {
         goto TERMINATE;
     }
 
+    char* modelIdentifier = NULL;
+
+    if (interfaceType == -1) {
+
+        if (modelDescription->coSimulation) {
+            interfaceType = FMICoSimulation;
+            modelIdentifier = modelDescription->coSimulation->modelIdentifier;
+        } else if (modelDescription->modelExchange) {
+            interfaceType = FMIModelExchange;
+            modelIdentifier = modelDescription->modelExchange->modelIdentifier;
+        } else  {
+            printf("No supported interface type found.\n");
+            return EXIT_FAILURE;
+        }
+
+    } else {
+
+        if (interfaceType == FMIModelExchange && modelDescription->modelExchange) {
+            interfaceType = FMIModelExchange;
+            modelIdentifier = modelDescription->modelExchange->modelIdentifier;
+        } else if (interfaceType == FMICoSimulation && modelDescription->coSimulation) {
+            interfaceType = FMICoSimulation;
+            modelIdentifier = modelDescription->coSimulation->modelIdentifier;
+        } else {
+            printf("Selected interface type is not supported by the FMU.\n");
+            return EXIT_FAILURE;
+        }
+
+    }
+
     FMIModelVariable** startVariables = calloc(nStartValues, sizeof(FMIModelVariable*));
 
     for (size_t i = 0; i < nStartValues; i++) {
@@ -216,7 +246,7 @@ int main(int argc, char* argv[]) {
 
     // FMIDumpModelDescription(modelDescription, stdout);
 
-    FMIPlatformBinaryPath(unzipdir, modelDescription->modelIdentifier, modelDescription->fmiVersion, platformBinaryPath, FMI_PATH_MAX);
+    FMIPlatformBinaryPath(unzipdir, modelIdentifier, modelDescription->fmiVersion, platformBinaryPath, FMI_PATH_MAX);
 
     S = FMICreateInstance("instance1", platformBinaryPath, logMessage, logFMICalls ? logFunctionCall : NULL);
 

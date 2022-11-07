@@ -87,17 +87,27 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
         return NULL;
     }
 
+    modelDescription->modelName          = xmlGetProp(root, "modelName");
     modelDescription->instantiationToken = xmlGetProp(root, "instantiationToken");
     modelDescription->description        = xmlGetProp(root, "description");
     modelDescription->generationTool     = xmlGetProp(root, "generationTool");
     modelDescription->generationDate     = xmlGetProp(root, "generationDate");
 
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(doc);
+    
     xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression("/fmiModelDescription/CoSimulation", xpathCtx);
 
-    xmlNodePtr coSimulation = xpathObj->nodesetval->nodeTab[0];
+    if (xpathObj->nodesetval->nodeNr == 1) {
+        modelDescription->coSimulation = (FMICoSimulationInterface*)calloc(1, sizeof(FMICoSimulationInterface));
+        modelDescription->coSimulation->modelIdentifier = xmlGetProp(xpathObj->nodesetval->nodeTab[0], "modelIdentifier");
+    }
 
-    modelDescription->modelIdentifier = xmlGetProp(coSimulation, "modelIdentifier");
+    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelExchange", xpathCtx);
+
+    if (xpathObj->nodesetval->nodeNr == 1) {
+        modelDescription->modelExchange = (FMIModelExchangeInterface*)calloc(1, sizeof(FMIModelExchangeInterface));
+        modelDescription->modelExchange->modelIdentifier = xmlGetProp(xpathObj->nodesetval->nodeTab[0], "modelIdentifier");
+    }
 
     xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelVariables/*[self::Float32 or self::Float64 or self::Int32]", xpathCtx);
 
@@ -196,7 +206,7 @@ void FMIDumpModelDescription(FMIModelDescription* modelDescription, FILE* file) 
 
     fprintf(file, "FMI Version        3.0\n");
     fprintf(file, "FMI Type           Co-Simulation\n");
-    fprintf(file, "Model Name         %s\n", modelDescription->modelIdentifier);
+    fprintf(file, "Model Name         %s\n", modelDescription->modelName);
     fprintf(file, "Description        %s\n", modelDescription->description ? modelDescription->description : "n/a");
     fprintf(file, "Continuous States  %zu\n", modelDescription->nContinuousStates);
     fprintf(file, "Event Indicators   %zu\n", modelDescription->nEventIndicators);

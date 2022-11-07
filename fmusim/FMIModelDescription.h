@@ -26,12 +26,27 @@ typedef struct {
 
 typedef struct {
 
-    FMIVersion fmiVersion;
     const char* modelIdentifier;
+
+} FMIModelExchangeInterface;
+
+typedef struct {
+
+    const char* modelIdentifier;
+
+} FMICoSimulationInterface;
+
+typedef struct {
+
+    FMIVersion fmiVersion;
+    const char* modelName;
     const char* instantiationToken;
     const char* description;
     const char* generationTool;
     const char* generationDate;
+
+    FMIModelExchangeInterface* modelExchange;
+    FMICoSimulationInterface* coSimulation;
 
     size_t nModelVariables;
     FMIModelVariable* modelVariables;
