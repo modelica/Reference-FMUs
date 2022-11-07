@@ -1,3 +1,4 @@
+#include "fmusim_fmi3.h"
 #include "fmusim_fmi3_cs.h"
 
 
@@ -28,26 +29,11 @@ FMIStatus simulateFMI3CS(FMIInstance* S, const char* instantiationToken, const c
         NULL                 // intermediateUpdate
     ));
 
-    for (size_t i = 0; i < nStartValues; i++) {
-
-        const FMIModelVariable* variable = startVariables[i];
-        const FMIValueReference vr = variable->valueReference;
-        const char* literal = startValues[i];
-
-        switch (variable->type) {
-        case FMIFloat64Type: {
-            const fmi3Float64 value = strtod(literal, NULL);
-            // TODO: handle errors
-            CALL(FMI3SetFloat64(S, &vr, 1, &value, 1));
-            break;
-        }
-        }
-    }
+    CALL(applyStartValuesFMI3(S, nStartValues, startVariables, startValues));
 
     CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, startTime, fmi3True, stopTime));
 
     CALL(FMI3ExitInitializationMode(S));
-
 
     fmi3Boolean eventEncountered = fmi3False;
     fmi3Boolean terminateSimulation = fmi3False;

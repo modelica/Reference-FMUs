@@ -36,6 +36,8 @@ size_t FMISizeForVariableType(FMIVariableType type) {
             return 0;
         case FMIClockType:
             return sizeof(fmi3Clock);
+        default:
+            return 0;
     }
 }
 

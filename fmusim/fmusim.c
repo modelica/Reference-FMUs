@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
         goto TERMINATE;
     }
 
-    char* modelIdentifier = NULL;
+    const char* modelIdentifier = NULL;
 
     if (interfaceType == -1) {
 
@@ -261,7 +261,7 @@ int main(int argc, char* argv[]) {
         status = simulateFMI3CS(S, modelDescription->instantiationToken, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, earlyReturnAllowed);
         break;
     case FMIModelExchange:
-        status = simulateFMI3ME(S, modelDescription->instantiationToken, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime);
+        status = simulateFMI3ME(S, modelDescription, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime);
         break;
     default:
         printf("Unsupported interfaceType.\n");

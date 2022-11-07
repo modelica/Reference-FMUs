@@ -5,7 +5,7 @@
 #include "FMISimulationResult.h"
 
 
-FMIStatus simulateFMI3ME(FMIInstance* S, const char* instantiationToken, const char* resourcePath,
+FMIStatus simulateFMI3ME(FMIInstance* S, const FMIModelDescription* modelDescription, const char* resourcePath,
     FMISimulationResult* result,
     size_t nStartValues,
     const FMIModelVariable* startVariables[],
