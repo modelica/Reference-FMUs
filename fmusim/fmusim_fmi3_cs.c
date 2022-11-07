@@ -5,7 +5,9 @@
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMIStatus simulateFMI3CS(FMIInstance* S, const char* instantiationToken, const char* resourcePath,
+FMIStatus simulateFMI3CS(FMIInstance* S,
+    const FMIModelDescription * modelDescription,
+    const char* resourcePath,
     FMISimulationResult* result,
     size_t nStartValues,
     const FMIModelVariable* startVariables[],
@@ -18,15 +20,15 @@ FMIStatus simulateFMI3CS(FMIInstance* S, const char* instantiationToken, const c
     FMIStatus status = FMIOK;
 
     CALL(FMI3InstantiateCoSimulation(S,
-        instantiationToken,  // instantiationToken
-        resourcePath,        // resourcePath
-        fmi3False,           // visible
-        fmi3False,           // loggingOn
-        fmi3False,           // eventModeUsed
-        earlyReturnAllowed,  // earlyReturnAllowed
-        NULL,                // requiredIntermediateVariables
-        0,                   // nRequiredIntermediateVariables
-        NULL                 // intermediateUpdate
+        modelDescription->instantiationToken,  // instantiationToken
+        resourcePath,                          // resourcePath
+        fmi3False,                             // visible
+        fmi3False,                             // loggingOn
+        fmi3False,                             // eventModeUsed
+        earlyReturnAllowed,                    // earlyReturnAllowed
+        NULL,                                  // requiredIntermediateVariables
+        0,                                     // nRequiredIntermediateVariables
+        NULL                                   // intermediateUpdate
     ));
 
     CALL(applyStartValuesFMI3(S, nStartValues, startVariables, startValues));
