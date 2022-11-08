@@ -1,11 +1,11 @@
 #include <stdlib.h>
-#include "fmusim_fmi3.h"
+#include "fmusim_fmi2.h"
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMIStatus applyStartValuesFMI3(
+FMIStatus applyStartValuesFMI2(
     FMIInstance* S,
     size_t nStartValues,
     const FMIModelVariable* startVariables[],
@@ -20,10 +20,10 @@ FMIStatus applyStartValuesFMI3(
         const char* literal = startValues[i];
 
         switch (variable->type) {
-        case FMIFloat64Type: {
-            const fmi3Float64 value = strtod(literal, NULL);
+        case FMIRealType: {
+            const fmi2Real value = strtod(literal, NULL);
             // TODO: handle errors
-            CALL(FMI3SetFloat64(S, &vr, 1, &value, 1));
+            CALL(FMI2SetReal(S, &vr, 1, &value, 1));
             break;
         }
         }

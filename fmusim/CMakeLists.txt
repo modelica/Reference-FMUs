@@ -9,6 +9,8 @@ set(CONDA_DIR "" CACHE STRING "Conda directory")
 add_executable(fmusim
   ../include/FMI.h
   ../src/FMI.c
+  ../include/FMI2.h
+  ../src/FMI2.c
   ../include/FMI3.h
   ../src/FMI3.c
   FMIModelDescription.h
@@ -18,6 +20,12 @@ add_executable(fmusim
   FMIZip.h
   FMIZip.c
   fmusim.c
+  fmusim_fmi2.h
+  fmusim_fmi2.c
+  fmusim_fmi2_cs.h
+  fmusim_fmi2_cs.c
+  fmusim_fmi2_me.h
+  fmusim_fmi2_me.c
   fmusim_fmi3.h
   fmusim_fmi3.c
   fmusim_fmi3_cs.h

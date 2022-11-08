@@ -8,93 +8,16 @@
 #include <Windows.h>
 
 
-FMIModelDescription* FMIReadModelDescription(const char* filename) {
+static void readModelDescriptionFMI3(xmlNodePtr root, FMIModelDescription* modelDescription) {
 
-    // TODO: add stream interface (see https://gitlab.gnome.org/GNOME/libxml2/-/wikis/Parser-interfaces)
-
-    FMIModelDescription* modelDescription = (FMIModelDescription*)calloc(1, sizeof(FMIModelDescription));
-
-    if (!modelDescription) return NULL;
-
-    xmlDocPtr doc = xmlParseFile(filename);
-
-    // xmlKeepBlanksDefault(0);
-    // xmlDocDump(stdout, doc);
-
-    if (!doc) {
-        printf("Invalid XML.\n");
-        return NULL;
-    }
-
-    xmlNodePtr root = xmlDocGetRootElement(doc);
-
-    if (root == NULL) {
-        printf("Empty document\n");
-        return NULL;
-    }
-
-    xmlChar* fmiVersion = xmlGetProp(root, "fmiVersion");
-
-    //if (!strcmp(fmiVersion, "1.0")) {
-    //    modelDescription->fmiVersion = FMIVersion1;
-    //} else if (!strcmp(fmiVersion, "2.0")) {
-    //    modelDescription->fmiVersion = FMIVersion2;
-    //} else 
-        
-    if (!strncmp(fmiVersion, "3.", 2)) {
-        modelDescription->fmiVersion = FMIVersion3; 
-    } else {
-        printf("Unsupported FMI version: %s.\n", fmiVersion);
-        return NULL;
-    }
-
-    xmlSchemaParserCtxtPtr pctxt;
-
-    char path[2048] = "";
-    GetModuleFileNameA(NULL, path, 2048);
-
-    switch (modelDescription->fmiVersion) {
-    case FMIVersion2:
-        strcat(path, "\\..\\schema\\fmi2\\fmi2ModelDescription.xsd");
-        break;
-    case FMIVersion3:
-        strcat(path, "\\..\\schema\\fmi3\\fmi3ModelDescription.xsd");
-        break;
-    default:
-        return NULL;
-    }
-
-    pctxt = xmlSchemaNewParserCtxt(path);
-
-    xmlSchemaPtr schema = xmlSchemaParse(pctxt);
-
-    xmlSchemaFreeParserCtxt(pctxt);
-
-    if (schema == NULL) {
-        return NULL;
-    }
-
-    xmlSchemaValidCtxtPtr vctxt = xmlSchemaNewValidCtxt(schema);
-
-    if (!vctxt) {
-        xmlSchemaFree(schema);
-        return NULL;
-    }
-
-    xmlSchemaSetValidErrors(vctxt, (xmlSchemaValidityErrorFunc)fprintf, (xmlSchemaValidityWarningFunc)fprintf, stderr);
-
-    if (xmlSchemaValidateDoc(vctxt, doc) != 0) {
-        return NULL;
-    }
-
-    modelDescription->modelName          = xmlGetProp(root, "modelName");
+    modelDescription->modelName = xmlGetProp(root, "modelName");
     modelDescription->instantiationToken = xmlGetProp(root, "instantiationToken");
-    modelDescription->description        = xmlGetProp(root, "description");
-    modelDescription->generationTool     = xmlGetProp(root, "generationTool");
-    modelDescription->generationDate     = xmlGetProp(root, "generationDate");
+    modelDescription->description = xmlGetProp(root, "description");
+    modelDescription->generationTool = xmlGetProp(root, "generationTool");
+    modelDescription->generationDate = xmlGetProp(root, "generationDate");
 
-    xmlXPathContextPtr xpathCtx = xmlXPathNewContext(doc);
-    
+    xmlXPathContextPtr xpathCtx = xmlXPathNewContext(root->doc);
+
     xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression("/fmiModelDescription/CoSimulation", xpathCtx);
 
     if (xpathObj->nodesetval->nodeNr == 1) {
@@ -152,11 +75,11 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
         } else if (!strcmp(node->name, "Clock")) {
             type = FMIClockType;
         }
-        
+
         modelDescription->modelVariables[i].type = type;
-        
+
         const char* vr = xmlGetProp(node, "valueReference");
-        
+
         modelDescription->modelVariables[i].valueReference = strtoul(vr, NULL, 0);
 
         const char* causality = xmlGetProp(node, "causality");
@@ -192,6 +115,186 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
 
     xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelStructure/EventIndicator", xpathCtx);
     modelDescription->nEventIndicators = xpathObj->nodesetval->nodeNr;
+}
+
+static void readModelDescriptionFMI2(xmlNodePtr root, FMIModelDescription* modelDescription) {
+
+    modelDescription->modelName          = xmlGetProp(root, "modelName");
+    modelDescription->instantiationToken = xmlGetProp(root, "guid");
+    modelDescription->description        = xmlGetProp(root, "description");
+    modelDescription->generationTool     = xmlGetProp(root, "generationTool");
+    modelDescription->generationDate     = xmlGetProp(root, "generationDate");
+
+    xmlXPathContextPtr xpathCtx = xmlXPathNewContext(root->doc);
+
+    xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression("/fmiModelDescription/CoSimulation", xpathCtx);
+
+    if (xpathObj->nodesetval->nodeNr == 1) {
+        modelDescription->coSimulation = (FMICoSimulationInterface*)calloc(1, sizeof(FMICoSimulationInterface));
+        modelDescription->coSimulation->modelIdentifier = xmlGetProp(xpathObj->nodesetval->nodeTab[0], "modelIdentifier");
+    }
+
+    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelExchange", xpathCtx);
+
+    if (xpathObj->nodesetval->nodeNr == 1) {
+        modelDescription->modelExchange = (FMIModelExchangeInterface*)calloc(1, sizeof(FMIModelExchangeInterface));
+        modelDescription->modelExchange->modelIdentifier = xmlGetProp(xpathObj->nodesetval->nodeTab[0], "modelIdentifier");
+    }
+
+    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelVariables/ScalarVariable/*[self::Real or self::Integer or self::Enumeration or self::Boolean or self::String]", xpathCtx);
+
+    modelDescription->nModelVariables = xpathObj->nodesetval->nodeNr;
+    modelDescription->modelVariables = calloc(xpathObj->nodesetval->nodeNr, sizeof(FMIModelVariable));
+
+    for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
+
+        xmlNodePtr typeNode = xpathObj->nodesetval->nodeTab[i];
+        xmlNodePtr variableNode = typeNode->parent;
+
+        modelDescription->modelVariables[i].name        = xmlGetProp(variableNode, "name");
+        modelDescription->modelVariables[i].description = xmlGetProp(variableNode, "description");
+
+        FMIVariableType type;
+        const char* typeName = typeNode->name;
+
+        if (!strcmp(typeName, "Real")) {
+            type = FMIRealType;
+        } else if (!strcmp(typeName, "Integer") || !strcmp(typeName, "Enumeration")) {
+            type = FMIIntegerType;
+        } else if (!strcmp(typeName, "Boolean")) {
+            type = FMIBooleanType;
+        } else if (!strcmp(typeName, "String")) {
+            type = FMIStringType;
+        } else {
+            continue;
+        }
+
+        modelDescription->modelVariables[i].type = type;
+
+        const char* vr = xmlGetProp(variableNode, "valueReference");
+
+        modelDescription->modelVariables[i].valueReference = strtoul(vr, NULL, 0);
+
+        const char* causality = xmlGetProp(variableNode, "causality");
+
+        if (!causality) {
+            modelDescription->modelVariables[i].causality = FMILocal;
+        } else if (!strcmp(causality, "parameter")) {
+            modelDescription->modelVariables[i].causality = FMIParameter;
+        } else if (!strcmp(causality, "input")) {
+            modelDescription->modelVariables[i].causality = FMIInput;
+        } else if (!strcmp(causality, "output")) {
+            modelDescription->modelVariables[i].causality = FMIOutput;
+        } else if (!strcmp(causality, "independent")) {
+            modelDescription->modelVariables[i].causality = FMIIndependent;
+        } else {
+            modelDescription->modelVariables[i].causality = FMILocal;
+        }
+
+    }
+
+    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelStructure/Output", xpathCtx);
+    modelDescription->nOutputs = xpathObj->nodesetval->nodeNr;
+
+    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelStructure/ContinuousStateDerivative", xpathCtx);
+    modelDescription->nContinuousStates = xpathObj->nodesetval->nodeNr;
+
+    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelStructure/InitialUnknown", xpathCtx);
+    modelDescription->nInitialUnknowns = xpathObj->nodesetval->nodeNr;
+
+    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelStructure/EventIndicator", xpathCtx);
+    modelDescription->nEventIndicators = xpathObj->nodesetval->nodeNr;
+}
+
+FMIModelDescription* FMIReadModelDescription(const char* filename) {
+
+    // TODO: add stream interface (see https://gitlab.gnome.org/GNOME/libxml2/-/wikis/Parser-interfaces)
+
+    FMIModelDescription* modelDescription = (FMIModelDescription*)calloc(1, sizeof(FMIModelDescription));
+
+    if (!modelDescription) return NULL;
+
+    xmlDocPtr doc = xmlParseFile(filename);
+
+    // xmlKeepBlanksDefault(0);
+    // xmlDocDump(stdout, doc);
+
+    if (!doc) {
+        printf("Invalid XML.\n");
+        return NULL;
+    }
+
+    xmlNodePtr root = xmlDocGetRootElement(doc);
+
+    if (root == NULL) {
+        printf("Empty document\n");
+        return NULL;
+    }
+
+    xmlChar* fmiVersion = xmlGetProp(root, "fmiVersion");
+
+    //if (!strcmp(fmiVersion, "1.0")) {
+    //    modelDescription->fmiVersion = FMIVersion1;
+    //} else if (!strcmp(fmiVersion, "2.0")) {
+    //    modelDescription->fmiVersion = FMIVersion2;
+    //} else 
+        
+    if (!strcmp(fmiVersion, "2.0")) {
+        modelDescription->fmiVersion = FMIVersion2;
+    } else if(!strncmp(fmiVersion, "3.", 2)) {
+        modelDescription->fmiVersion = FMIVersion3;
+    } else {
+        printf("Unsupported FMI version: %s.\n", fmiVersion);
+        return NULL;
+    }
+
+    xmlSchemaParserCtxtPtr pctxt;
+
+    char path[2048] = "";
+    GetModuleFileNameA(NULL, path, 2048);
+
+    switch (modelDescription->fmiVersion) {
+    case FMIVersion2:
+        strcat(path, "\\..\\schema\\fmi2\\fmi2ModelDescription.xsd");
+        break;
+    case FMIVersion3:
+        strcat(path, "\\..\\schema\\fmi3\\fmi3ModelDescription.xsd");
+        break;
+    default:
+        return NULL;
+    }
+
+    pctxt = xmlSchemaNewParserCtxt(path);
+
+    xmlSchemaPtr schema = xmlSchemaParse(pctxt);
+
+    xmlSchemaFreeParserCtxt(pctxt);
+
+    if (schema == NULL) {
+        return NULL;
+    }
+
+    xmlSchemaValidCtxtPtr vctxt = xmlSchemaNewValidCtxt(schema);
+
+    if (!vctxt) {
+        xmlSchemaFree(schema);
+        return NULL;
+    }
+
+    xmlSchemaSetValidErrors(vctxt, (xmlSchemaValidityErrorFunc)fprintf, (xmlSchemaValidityWarningFunc)fprintf, stderr);
+
+    if (xmlSchemaValidateDoc(vctxt, doc) != 0) {
+        return NULL;
+    }
+
+    switch (modelDescription->fmiVersion) {
+    case FMIVersion2:
+        readModelDescriptionFMI2(root, modelDescription);
+        break;
+    case FMIVersion3:
+        readModelDescriptionFMI3(root, modelDescription);
+        break;
+    }
 
     xmlFreeDoc(doc);
 

@@ -15,6 +15,8 @@
 #include "FMIModelDescription.h"
 #include "FMISimulationResult.h"
 
+#include "fmusim_fmi2_cs.h"
+#include "fmusim_fmi2_me.h"
 #include "fmusim_fmi3_cs.h"
 #include "fmusim_fmi3_me.h"
 
@@ -256,16 +258,25 @@ int main(int argc, char* argv[]) {
 
     snprintf(resourcePath, FMI_PATH_MAX, "%s\\resources\\", unzipdir);
 
-    switch (interfaceType) {
-    case FMICoSimulation:
-        status = simulateFMI3CS(S, modelDescription, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, earlyReturnAllowed);
-        break;
-    case FMIModelExchange:
-        status = simulateFMI3ME(S, modelDescription, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime);
-        break;
-    default:
-        printf("Unsupported interfaceType.\n");
-        break;
+    if (modelDescription->fmiVersion == FMIVersion2) {
+
+        char resourceURI[FMI_PATH_MAX] = "";
+        CALL(FMIPathToURI(resourcePath, resourceURI, FMI_PATH_MAX));
+
+        if (interfaceType == FMICoSimulation) {
+            status = simulateFMI2CS(S, modelDescription, resourceURI, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime);
+        } else {
+            status = simulateFMI2ME(S, modelDescription, resourceURI, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime);
+        }
+
+    } else {
+
+        if (interfaceType == FMICoSimulation) {
+            status = simulateFMI3CS(S, modelDescription, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, earlyReturnAllowed);
+        } else {
+            status = simulateFMI3ME(S, modelDescription, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime);
+        }
+
     }
 
 TERMINATE:

@@ -1,4 +1,5 @@
 #include <inttypes.h>
+#include "FMI2.h"
 #include "FMI3.h"
 #include "FMISimulationResult.h"
 #include <stdlib.h>
@@ -110,24 +111,45 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMISimulationResult* res
 
     for (size_t i = 0; i < result->nVariables; i++) {
 
-        FMIModelVariable* variable = result->variables[i];
+        const FMIModelVariable* variable = result->variables[i];
+        const FMIValueReference* vr = &variable->valueReference;
 
         char* value = &result->data[offset];
 
-        switch (variable->type) {
-        case FMIFloat32Type:
-        case FMIDiscreteFloat32Type:
-            FMI3GetFloat32(instance, &variable->valueReference, 1, (fmi3Float32*)value, 1);
-            break;
-        case FMIFloat64Type:
-        case FMIDiscreteFloat64Type:
-            FMI3GetFloat64(instance, &variable->valueReference, 1, (fmi3Float64*)value, 1);
-            break;
-        case FMIInt32Type:
-            FMI3GetInt32(instance, &variable->valueReference, 1, (fmi3Int32*)value, 1);
-            break;
-        default:
-            return FMIFatal;
+        if (instance->fmiVersion == FMIVersion2) {
+
+            switch (variable->type) {
+            case FMIRealType:
+                FMI2GetReal(instance, vr, 1, (fmi2Real*)value);
+                break;
+            case FMIIntegerType:
+                FMI2GetInteger(instance, vr, 1, (fmi2Integer*)value);
+                break;
+            case FMIBooleanType:
+                FMI2GetBoolean(instance, vr, 1, (fmi2Boolean*)value);
+                break;
+            default:
+                return FMIFatal;
+            }
+
+        } else if (instance->fmiVersion == FMIVersion3) {
+
+            switch (variable->type) {
+            case FMIFloat32Type:
+            case FMIDiscreteFloat32Type:
+                FMI3GetFloat32(instance, vr, 1, (fmi3Float32*)value, 1);
+                break;
+            case FMIFloat64Type:
+            case FMIDiscreteFloat64Type:
+                FMI3GetFloat64(instance, vr, 1, (fmi3Float64*)value, 1);
+                break;
+            case FMIInt32Type:
+                FMI3GetInt32(instance, vr, 1, (fmi3Int32*)value, 1);
+                break;
+            default:
+                return FMIFatal;
+            }
+
         }
 
         offset += FMISizeForVariableType(variable->type);
