@@ -125,6 +125,12 @@ static void readModelDescriptionFMI2(xmlNodePtr root, FMIModelDescription* model
     modelDescription->generationTool     = xmlGetProp(root, "generationTool");
     modelDescription->generationDate     = xmlGetProp(root, "generationDate");
 
+    const char* numberOfEventIndicators = xmlGetProp(root, "numberOfEventIndicators");
+
+    if (numberOfEventIndicators) {
+        modelDescription->nEventIndicators = atoi(numberOfEventIndicators);
+    }
+
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(root->doc);
 
     xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression("/fmiModelDescription/CoSimulation", xpathCtx);
@@ -193,17 +199,14 @@ static void readModelDescriptionFMI2(xmlNodePtr root, FMIModelDescription* model
 
     }
 
-    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelStructure/Output", xpathCtx);
+    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelStructure/Outputs/Unknown", xpathCtx);
     modelDescription->nOutputs = xpathObj->nodesetval->nodeNr;
 
-    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelStructure/ContinuousStateDerivative", xpathCtx);
+    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelStructure/Derivatives/Unknown", xpathCtx);
     modelDescription->nContinuousStates = xpathObj->nodesetval->nodeNr;
 
-    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelStructure/InitialUnknown", xpathCtx);
+    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelStructure/InitialUnknowns/Unknown", xpathCtx);
     modelDescription->nInitialUnknowns = xpathObj->nodesetval->nodeNr;
-
-    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelStructure/EventIndicator", xpathCtx);
-    modelDescription->nEventIndicators = xpathObj->nodesetval->nodeNr;
 }
 
 FMIModelDescription* FMIReadModelDescription(const char* filename) {

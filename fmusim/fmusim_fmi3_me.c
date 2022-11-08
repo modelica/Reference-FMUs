@@ -110,7 +110,7 @@ FMIStatus simulateFMI3ME(
     while (!terminateSimulation) {
 
         // detect input and time events
-        inputEvent = fmi3False; // time >= nextInputEventTime(time);
+        inputEvent = fmi3False; // TODO: time >= nextInputEventTime(time);
         timeEvent = nextEventTimeDefined && time >= nextEventTime;
 
         const bool eventOccurred = inputEvent || timeEvent || stateEvent || stepEvent;
