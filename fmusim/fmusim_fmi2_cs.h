@@ -17,4 +17,4 @@ FMIStatus simulateFMI2CS(
     double startTime,
     double stepSize,
     double stopTime,
-    FMUStaticInput* input);
+    const FMUStaticInput* input);

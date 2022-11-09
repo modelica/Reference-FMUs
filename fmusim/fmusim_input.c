@@ -1,4 +1,7 @@
+#include <math.h>
 #include "csv.h"
+#include "FMI2.h"
+#include "FMI3.h"
 #include "fmusim_input.h"
 
 
@@ -21,7 +24,7 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 	while (col = CsvReadNextCol(row, handle)) {
 
-		FMIModelVariable* variable = FMIModelVariableForName(modelDescription, col);
+		const FMIModelVariable* variable = FMIModelVariableForName(modelDescription, col);
 
 		if (!variable) {
 			printf("Variable %s not found.\n", col);
@@ -72,7 +75,52 @@ void FMIFreeInput(FMUStaticInput* input) {
 	// TODO
 }
 
+double FMINextInputEvent(FMUStaticInput* input, double time) {
+
+	if (!input) {
+		return INFINITY;
+	}
+
+	for (size_t i = 0; i < input->nRows - 1; i++) {
+		
+		const double t0 = input->time[i];
+		const double t1 = input->time[i + 1];
+
+		if (time < t0) {
+			continue;
+		}
+
+		if (t0 == t1) {
+			return t0;  // discrete change of a continuous variable
+		}
+
+		for (size_t j = 0; j < input->nVariables; j++) {
+			
+			const FMIModelVariable* variable = input->variables[j];
+			const FMIVariableType   type     = variable->type;
+
+			if (type == FMIFloat32Type || type == FMIFloat64Type) {
+				continue;  // skip continuous variables
+			}
+
+			const double v0 = input->values[i * input->nVariables + j];
+			const double v1 = input->values[(i + 1) * input->nVariables + j];
+
+			if (v0 != v1) {
+				return t1;  // discrete variable change
+			}
+		}
+
+	}
+
+	return INFINITY;
+}
+
 FMIStatus FMIApplyInput(FMIInstance* instance, FMUStaticInput* input, double time, bool discrete, bool continuous, bool afterEvent) {
+
+	if (!input) {
+		return FMIOK;
+	}
 
 	FMIStatus status = FMIOK;
 
@@ -112,6 +160,24 @@ FMIStatus FMIApplyInput(FMIInstance* instance, FMUStaticInput* input, double tim
 				const fmi2Boolean booleanValue = doubleValue != fmi2False ? fmi2True : fmi2False;
 				CALL(FMI2SetBoolean(instance, &vr, 1, (fmi2Boolean*)&booleanValue));
 			
+			}
+
+		} else if (instance->fmiVersion == FMIVersion3) {
+		
+			if ((type == FMIFloat64Type && continuous) || (type == FMIDiscreteFloat64Type && discrete)) {
+
+				CALL(FMI3SetFloat64(instance, &vr, 1, (fmi3Float64*)&doubleValue, 1));
+
+			} else if (type == FMIInt32Type && discrete) {
+
+				const fmi3Int32 int32Value = (fmi2Integer)doubleValue;
+				CALL(FMI3SetInt32(instance, &vr, 1, (fmi3Int32*)&int32Value, 1));
+
+			} else if (type == FMIBooleanType && discrete) {
+
+				const fmi3Boolean booleanValue = doubleValue != fmi3False ? fmi3True : fmi3False;
+				CALL(FMI3SetBoolean(instance, &vr, 1, (fmi3Boolean*)&booleanValue, 1));
+
 			}
 
 		}

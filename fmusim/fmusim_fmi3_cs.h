@@ -3,6 +3,7 @@
 #include "FMI3.h"
 #include "FMIModelDescription.h"
 #include "FMISimulationResult.h"
+#include "fmusim_input.h"
 
 
 FMIStatus simulateFMI3CS(
@@ -16,4 +17,5 @@ FMIStatus simulateFMI3CS(
     double startTime,
     double stepSize,
     double stopTime,
+    const FMUStaticInput* input,
     bool earlyReturnAllowed);

@@ -15,9 +15,15 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
     double startTime,
     double stepSize,
     double stopTime,
+    const FMUStaticInput* input,
     bool earlyReturnAllowed) {
 
     FMIStatus status = FMIOK;
+
+    fmi3Boolean eventEncountered = fmi3False;
+    fmi3Boolean terminateSimulation = fmi3False;
+    fmi3Boolean earlyReturn = fmi3False;
+    fmi3Float64 lastSuccessfulTime = startTime;
 
     CALL(FMI3InstantiateCoSimulation(S,
         modelDescription->instantiationToken,  // instantiationToken
@@ -32,26 +38,23 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
     ));
 
     CALL(applyStartValuesFMI3(S, nStartValues, startVariables, startValues));
+    CALL(FMIApplyInput(S, input, startTime, true, true, false));
 
+    // initialize
     CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, startTime, fmi3True, stopTime));
-
     CALL(FMI3ExitInitializationMode(S));
-
-    fmi3Boolean eventEncountered = fmi3False;
-    fmi3Boolean terminateSimulation = fmi3False;
-    fmi3Boolean earlyReturn = fmi3False;
-    fmi3Float64 lastSuccessfulTime = startTime;
 
     while (lastSuccessfulTime <= stopTime) {
 
         CALL(FMISample(S, lastSuccessfulTime, result));
+
+        CALL(FMIApplyInput(S, input, lastSuccessfulTime, true, true, false));
 
         if (terminateSimulation) {
             break;
         }
 
         CALL(FMI3DoStep(S, lastSuccessfulTime, stepSize, fmi3True, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime));
-
     }
 
 TERMINATE:

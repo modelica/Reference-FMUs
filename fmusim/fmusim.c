@@ -115,6 +115,7 @@ int main(int argc, char* argv[]) {
 
     FMIInterfaceType interfaceType = -1;
 
+    char* inputFile = NULL;
     char* outputFile = NULL;
     double startTime = 0;
     double stopTime = 1;
@@ -152,6 +153,8 @@ int main(int argc, char* argv[]) {
             startNames[nStartValues] = argv[++i];
             startValues[nStartValues] = argv[++i];
             nStartValues++;
+        } else if (!strcmp(v, "--input-file")) {
+            inputFile = argv[++i];
         } else if (!strcmp(v, "--output-file")) {
             outputFile = argv[++i];
         } else if (!strcmp(v, "--start-time")) {
@@ -260,7 +263,11 @@ int main(int argc, char* argv[]) {
 
     snprintf(resourcePath, FMI_PATH_MAX, "%s\\resources\\", unzipdir);
 
-    FMUStaticInput* input = FMIReadInput(modelDescription, "E:\\Development\\Reference-FMUs\\fmusim\\BouncingBall_in.csv");
+    FMUStaticInput* input = NULL;
+    
+    if (inputFile) {
+        input = FMIReadInput(modelDescription, inputFile);
+    }
 
     //FMIModelVariable* inputVariables[1] = { &modelDescription->modelVariables[6] };
 
@@ -274,15 +281,15 @@ int main(int argc, char* argv[]) {
         if (interfaceType == FMICoSimulation) {
             status = simulateFMI2CS(S, modelDescription, resourceURI, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, input);
         } else {
-            status = simulateFMI2ME(S, modelDescription, resourceURI, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime);
+            status = simulateFMI2ME(S, modelDescription, resourceURI, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, input);
         }
 
     } else {
 
         if (interfaceType == FMICoSimulation) {
-            status = simulateFMI3CS(S, modelDescription, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, earlyReturnAllowed);
+            status = simulateFMI3CS(S, modelDescription, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, input, earlyReturnAllowed);
         } else {
-            status = simulateFMI3ME(S, modelDescription, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime);
+            status = simulateFMI3ME(S, modelDescription, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, input);
         }
 
     }

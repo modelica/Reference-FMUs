@@ -3,6 +3,7 @@
 #include "FMI2.h"
 #include "FMIModelDescription.h"
 #include "FMISimulationResult.h"
+#include "fmusim_input.h"
 
 
 FMIStatus simulateFMI2ME(
@@ -15,4 +16,5 @@ FMIStatus simulateFMI2ME(
     const char* startValues[],
     double startTime,
     double stepSize,
-    double stopTime);
+    double stopTime,
+    const FMUStaticInput* input);

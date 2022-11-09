@@ -1,6 +1,5 @@
 #pragma once
 
-#include "FMI2.h"
 #include "FMIModelDescription.h"
 
 
@@ -17,5 +16,7 @@ typedef struct {
 FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const char* filename);
 
 void FMIFreeInput(FMUStaticInput* input);
+
+double FMINextInputEvent(FMUStaticInput* input, double time);
 
 FMIStatus FMIApplyInput(FMIInstance* instance, FMUStaticInput* input, double time, bool discrete, bool continuous, bool afterEvent);

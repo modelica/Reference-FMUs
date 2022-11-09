@@ -32,7 +32,23 @@ static void readModelDescriptionFMI3(xmlNodePtr root, FMIModelDescription* model
         modelDescription->modelExchange->modelIdentifier = xmlGetProp(xpathObj->nodesetval->nodeTab[0], "modelIdentifier");
     }
 
-    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelVariables/*[self::Float32 or self::Float64 or self::Int32]", xpathCtx);
+    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelVariables/" 
+        "*[self::Float32"
+        " or self::Float64"
+        " or self::Int8"
+        " or self::UInt8"
+        " or self::Int16"
+        " or self::UInt16"
+        " or self::Int32"
+        " or self::UInt32"
+        " or self::Int64"
+        " or self::UInt64"
+        " or self::UInt64"
+        " or self::Boolean"
+        " or self::String"
+        " or self::Binary"
+        " or self::Clock]", 
+        xpathCtx);
 
     modelDescription->nModelVariables = xpathObj->nodesetval->nodeNr;
     modelDescription->modelVariables = calloc(xpathObj->nodesetval->nodeNr, sizeof(FMIModelVariable));

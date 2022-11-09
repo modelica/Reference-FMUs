@@ -18,13 +18,12 @@ FMIStatus simulateFMI3ME(
     const char* startValues[],
     double startTime,
     double stepSize,
-    double stopTime) {
+    double stopTime,
+    const FMUStaticInput* input) {
 
     const size_t nx = modelDescription->nContinuousStates;
     const size_t nz = modelDescription->nEventIndicators;
     
-    const fmi3Float64 fixedStep = 1e-2;
-
     fmi3Int32*   rootsFound = (fmi3Int32*)  calloc(nz, sizeof(fmi3Int32));
     fmi3Float64* z          = (fmi3Float64*)calloc(nz, sizeof(fmi3Float64));
     fmi3Float64* previous_z = (fmi3Float64*)calloc(nz, sizeof(fmi3Float64));
@@ -55,19 +54,18 @@ FMIStatus simulateFMI3ME(
         fmi3False                              // loggingOn
     ));
 
-    // set the start time
-    fmi3Float64 time = 0;
+    fmi3Float64 time = startTime;
 
     // set start values
     CALL(applyStartValuesFMI3(S, nStartValues, startVariables, startValues));
+    CALL(FMIApplyInput(S, input, time, 
+        true,  // discrete
+        true,  // continous
+        false  // after event
+    ));
 
     // initialize
-    // determine continuous and discrete states
     CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, time, fmi3True, stopTime));
-
-    //CALL(applyContinuousInputs(S, false));
-    //CALL(applyDiscreteInputs(S));
-
     CALL(FMI3ExitInitializationMode(S));
 
     // intial event iteration
@@ -110,7 +108,7 @@ FMIStatus simulateFMI3ME(
     while (!terminateSimulation) {
 
         // detect input and time events
-        inputEvent = fmi3False; // TODO: time >= nextInputEventTime(time);
+        inputEvent = time >= FMINextInputEvent(input, time);
         timeEvent = nextEventTimeDefined && time >= nextEventTime;
 
         const bool eventOccurred = inputEvent || timeEvent || stateEvent || stepEvent;
@@ -121,8 +119,11 @@ FMIStatus simulateFMI3ME(
             CALL(FMI3EnterEventMode(S));
 
             if (inputEvent) {
-                //CALL(applyContinuousInputs(S, true));
-                //CALL(applyDiscreteInputs(S));
+                CALL(FMIApplyInput(S, input, time, 
+                    true,  // discrete
+                    true,  // continous
+                    true   // after event
+                ));
             }
 
             nominalsOfContinuousStatesChanged = fmi3False;
@@ -181,17 +182,21 @@ FMIStatus simulateFMI3ME(
         }
 
         // advance time
-        time = ++step * fixedStep;
+        time = ++step * stepSize;
 
         CALL(FMI3SetTime(S, time));
 
         // apply continuous inputs
-        //CALL(applyContinuousInputs(S, false));
+        CALL(FMIApplyInput(S, input, time,
+            false,  // discrete
+            true,   // continous
+            false   // after event
+        ));
 
         if (nx > 0) {
             // set states at t = time and perform one step
             for (size_t i = 0; i < nx; i++) {
-                x[i] += fixedStep * der_x[i]; // forward Euler method
+                x[i] += stepSize * der_x[i]; // forward Euler method
             }
 
             CALL(FMI3SetContinuousStates(S, x, nx));

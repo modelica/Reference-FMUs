@@ -5,7 +5,11 @@
 #include <stdlib.h>
 
 
+#define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
+
+
 size_t FMISizeForVariableType(FMIVariableType type) {
+
     switch (type) {
         case FMIFloat32Type:
         case FMIDiscreteFloat32Type:
@@ -41,7 +45,6 @@ size_t FMISizeForVariableType(FMIVariableType type) {
             return 0;
     }
 }
-
 
 FMISimulationResult* FMICreateSimulationResult(FMIModelDescription* modelDescription) {
 
@@ -90,7 +93,6 @@ void FMIFreeSimulationResult(FMISimulationResult* result) {
     // TODO
 }
 
-
 FMIStatus FMISample(FMIInstance* instance, double time, FMISimulationResult* result) {
 
     if (result->dataSize < (result->nSamples + 1) * result->sampleSize) {
@@ -103,6 +105,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMISimulationResult* res
         }
 
     }
+
+    FMIStatus status = FMIOK;
 
     size_t offset = result->nSamples * result->sampleSize;
 
@@ -120,13 +124,13 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMISimulationResult* res
 
             switch (variable->type) {
             case FMIRealType:
-                FMI2GetReal(instance, vr, 1, (fmi2Real*)value);
+                CALL(FMI2GetReal(instance, vr, 1, (fmi2Real*)value));
                 break;
             case FMIIntegerType:
-                FMI2GetInteger(instance, vr, 1, (fmi2Integer*)value);
+                CALL(FMI2GetInteger(instance, vr, 1, (fmi2Integer*)value));
                 break;
             case FMIBooleanType:
-                FMI2GetBoolean(instance, vr, 1, (fmi2Boolean*)value);
+                CALL(FMI2GetBoolean(instance, vr, 1, (fmi2Boolean*)value));
                 break;
             default:
                 return FMIFatal;
@@ -137,14 +141,41 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMISimulationResult* res
             switch (variable->type) {
             case FMIFloat32Type:
             case FMIDiscreteFloat32Type:
-                FMI3GetFloat32(instance, vr, 1, (fmi3Float32*)value, 1);
+                CALL(FMI3GetFloat32(instance, vr, 1, (fmi3Float32*)value, 1));
                 break;
             case FMIFloat64Type:
             case FMIDiscreteFloat64Type:
-                FMI3GetFloat64(instance, vr, 1, (fmi3Float64*)value, 1);
+                CALL(FMI3GetFloat64(instance, vr, 1, (fmi3Float64*)value, 1));
+                break;
+            case FMIInt8Type:
+                CALL(FMI3GetInt8(instance, vr, 1, (fmi3Int8*)value, 1));
+                break;
+            case FMIUInt8Type:
+                CALL(FMI3GetUInt8(instance, vr, 1, (fmi3UInt8*)value, 1));
+                break;
+            case FMIInt16Type:
+                CALL(FMI3GetInt16(instance, vr, 1, (fmi3Int16*)value, 1));
+                break;
+            case FMIUInt16Type:
+                CALL(FMI3GetUInt16(instance, vr, 1, (fmi3UInt16*)value, 1));
                 break;
             case FMIInt32Type:
-                FMI3GetInt32(instance, vr, 1, (fmi3Int32*)value, 1);
+                CALL(FMI3GetInt32(instance, vr, 1, (fmi3Int32*)value, 1));
+                break;
+            case FMIUInt32Type:
+                CALL(FMI3GetUInt32(instance, vr, 1, (fmi3UInt32*)value, 1));
+                break;
+            case FMIInt64Type:
+                CALL(FMI3GetInt64(instance, vr, 1, (fmi3Int64*)value, 1));
+                break;
+            case FMIUInt64Type:
+                CALL(FMI3GetUInt64(instance, vr, 1, (fmi3UInt64*)value, 1));
+                break;
+            case FMIBooleanType:
+                CALL(FMI3GetBoolean(instance, vr, 1, (fmi3Boolean*)value, 1));
+                break;
+            case FMIClockType:
+                CALL(FMI3GetClock(instance, vr, 1, (fmi3Clock*)value, 1));
                 break;
             default:
                 return FMIFatal;
@@ -157,7 +188,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMISimulationResult* res
 
     result->nSamples++;
 
-    return FMIOK;
+TERMINATE:
+    return status;
 }
 
 void FMIDumpResult(FMISimulationResult* result, FILE* file) {

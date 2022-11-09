@@ -16,7 +16,7 @@ FMIStatus simulateFMI2CS(
     double startTime,
     double stepSize,
     double stopTime,
-    FMUStaticInput* input) {
+    const FMUStaticInput* input) {
 
     FMIStatus status = FMIOK;
 
@@ -30,8 +30,9 @@ FMIStatus simulateFMI2CS(
 
     // set start values
     CALL(applyStartValuesFMI2(S, nStartValues, startVariables, startValues));
+    CALL(FMIApplyInput(S, input, startTime, true, true, false));
 
-    // initialize the FMU
+    // initialize
     CALL(FMI2SetupExperiment(S, fmi2False, 0.0, startTime, fmi2True, stopTime));
     CALL(FMI2EnterInitializationMode(S));
     CALL(FMI2ExitInitializationMode(S));
@@ -39,8 +40,8 @@ FMIStatus simulateFMI2CS(
     for (unsigned long step = 0;; step++) {
         
         // calculate the current time
-        const fmi2Real time = step * stepSize;
-        
+        const fmi2Real time = startTime + step * stepSize;
+
         CALL(FMISample(S, time, result));
 
         CALL(FMIApplyInput(S, input, time, true, true, false));

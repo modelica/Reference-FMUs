@@ -18,7 +18,8 @@ FMIStatus simulateFMI2ME(
     const char* startValues[],
     double startTime,
     double stepSize,
-    double stopTime) {
+    double stopTime,
+    const FMUStaticInput * input) {
 
     const size_t nx = modelDescription->nContinuousStates;
     const size_t nz = modelDescription->nEventIndicators;
@@ -48,21 +49,19 @@ FMIStatus simulateFMI2ME(
         fmi2False                             // loggingOn
     ));
 
-    // set the start time
     fmi2Real time = startTime;
 
     // set start values
     CALL(applyStartValuesFMI2(S, nStartValues, startVariables, startValues));
-
-    CALL(FMI2SetupExperiment(S, fmi2False, 0.0, time, fmi2True, stopTime));
+    CALL(FMIApplyInput(S, input, time,
+        true,  // discrete
+        true,  // continous
+        false  // after event
+    ));
 
     // initialize
-    // determine continuous and discrete states
+    CALL(FMI2SetupExperiment(S, fmi2False, 0.0, time, fmi2True, stopTime));
     CALL(FMI2EnterInitializationMode(S));
-
-    //CALL(applyContinuousInputs(S, false));
-    //CALL(applyDiscreteInputs(S));
-
     CALL(FMI2ExitInitializationMode(S));
 
     fmi2EventInfo eventInfo = { 0 };
@@ -99,7 +98,7 @@ FMIStatus simulateFMI2ME(
     while (!eventInfo.terminateSimulation) {
 
         // detect input and time events
-        inputEvent = fmi2False; // TODO: time >= nextInputEventTime(time);
+        inputEvent = time >= FMINextInputEvent(input, time);
         timeEvent = eventInfo.nextEventTimeDefined && time >= eventInfo.nextEventTime;
 
         const bool eventOccurred = inputEvent || timeEvent || stateEvent || stepEvent;
@@ -109,14 +108,16 @@ FMIStatus simulateFMI2ME(
 
             CALL(FMI2EnterEventMode(S));
 
-            // TODO:
-            //if (inputEvent) {
-            //    CALL(applyContinuousInputs(S, true));
-            //    CALL(applyDiscreteInputs(S));
-            //}
+            if (inputEvent) {
+                CALL(FMIApplyInput(S, input, time,
+                    true,  // discrete
+                    true,  // continous
+                    true   // after event
+                ));
+            }
 
             fmi2Boolean nominalsChanged = fmi2False;
-            fmi2Boolean statesChanged = fmi2False;
+            fmi2Boolean statesChanged   = fmi2False;
 
             // event iteration
             do {
@@ -170,7 +171,11 @@ FMIStatus simulateFMI2ME(
         CALL(FMI2SetTime(S, time));
 
         // apply continuous inputs
-        //CALL(applyContinuousInputs(S, false));
+        CALL(FMIApplyInput(S, input, time,
+            false,  // discrete
+            true,   // continous
+            false   // after event
+        ));
 
         if (nx > 0) {
             // set states at t = time and perform one step
