@@ -20,9 +20,14 @@
 #include "fmusim_fmi3_cs.h"
 #include "fmusim_fmi3_me.h"
 
+#include "fmusim_input.h"
+
 
 #define FMI_PATH_MAX 4096
+
 #define PROGNAME "fmusim"
+
+#define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
 static void logMessage(FMIInstance* instance, FMIStatus status, const char* category, const char* message) {
@@ -84,9 +89,6 @@ static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char*
 
     va_end(args);
 }
-
-
-#define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 void printUsage() {
     printf(
@@ -258,13 +260,19 @@ int main(int argc, char* argv[]) {
 
     snprintf(resourcePath, FMI_PATH_MAX, "%s\\resources\\", unzipdir);
 
+    FMUStaticInput* input = FMIReadInput(modelDescription, "E:\\Development\\Reference-FMUs\\fmusim\\BouncingBall_in.csv");
+
+    //FMIModelVariable* inputVariables[1] = { &modelDescription->modelVariables[6] };
+
+    //input->continuousVariables = inputVariables;
+
     if (modelDescription->fmiVersion == FMIVersion2) {
 
         char resourceURI[FMI_PATH_MAX] = "";
         CALL(FMIPathToURI(resourcePath, resourceURI, FMI_PATH_MAX));
 
         if (interfaceType == FMICoSimulation) {
-            status = simulateFMI2CS(S, modelDescription, resourceURI, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime);
+            status = simulateFMI2CS(S, modelDescription, resourceURI, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, input);
         } else {
             status = simulateFMI2ME(S, modelDescription, resourceURI, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime);
         }

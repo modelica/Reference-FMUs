@@ -62,6 +62,8 @@ FMIModelDescription* FMIReadModelDescription(const char* filename);
 
 void FMIFreeModelDescription(FMIModelDescription* modelDescription);
 
+FMIModelVariable* FMIModelVariableForName(const FMIModelDescription* modelDescription, const char* name);
+
 void FMIDumpModelDescription(FMIModelDescription* modelDescription, FILE* file);
 
 #endif  // FMI_MODEL_DESCRIPTION_H

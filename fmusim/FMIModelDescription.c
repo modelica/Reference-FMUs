@@ -308,6 +308,20 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
     // TODO
 }
 
+FMIModelVariable* FMIModelVariableForName(const FMIModelDescription* modelDescription, const char* name) {
+
+    for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+
+        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        
+        if (!strcmp(variable->name, name)) {
+            return variable;
+        }
+    }
+
+    return NULL;
+}
+
 void FMIDumpModelDescription(FMIModelDescription* modelDescription, FILE* file) {
 
     fprintf(file, "FMI Version        3.0\n");

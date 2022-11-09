@@ -15,7 +15,8 @@ FMIStatus simulateFMI2CS(
     const char* startValues[],
     double startTime,
     double stepSize,
-    double stopTime) {
+    double stopTime,
+    FMUStaticInput* input) {
 
     FMIStatus status = FMIOK;
 
@@ -42,8 +43,7 @@ FMIStatus simulateFMI2CS(
         
         CALL(FMISample(S, time, result));
 
-        //CALL(applyContinuousInputs(S, false));
-        //CALL(applyDiscreteInputs(S));
+        CALL(FMIApplyInput(S, input, time, true, true, false));
 
         if (time >= stopTime) {
             break;

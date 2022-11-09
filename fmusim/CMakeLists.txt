@@ -13,6 +13,8 @@ add_executable(fmusim
   ../src/FMI2.c
   ../include/FMI3.h
   ../src/FMI3.c
+  csv.h
+  csv.c
   FMIModelDescription.h
   FMIModelDescription.c
   FMISimulationResult.h
@@ -32,6 +34,8 @@ add_executable(fmusim
   fmusim_fmi3_cs.c
   fmusim_fmi3_me.h
   fmusim_fmi3_me.c
+  fmusim_input.h
+  fmusim_input.c
 )
 
 target_include_directories(fmusim PRIVATE
