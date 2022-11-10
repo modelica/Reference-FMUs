@@ -38,6 +38,14 @@ typedef struct {
 
 typedef struct {
 
+    const char* startTime;
+    const char* stopTime;
+    const char* stepSize;
+
+} FMIDefaultExperiment;
+
+typedef struct {
+
     FMIVersion fmiVersion;
     const char* modelName;
     const char* instantiationToken;
@@ -47,6 +55,8 @@ typedef struct {
 
     FMIModelExchangeInterface* modelExchange;
     FMICoSimulationInterface* coSimulation;
+
+    FMIDefaultExperiment* defaultExperiment;
 
     size_t nModelVariables;
     FMIModelVariable* modelVariables;

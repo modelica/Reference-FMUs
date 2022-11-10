@@ -32,6 +32,16 @@ static void readModelDescriptionFMI3(xmlNodePtr root, FMIModelDescription* model
         modelDescription->modelExchange->modelIdentifier = xmlGetProp(xpathObj->nodesetval->nodeTab[0], "modelIdentifier");
     }
 
+    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/DefaultExperiment", xpathCtx);
+
+    if (xpathObj->nodesetval->nodeNr == 1) {
+        modelDescription->defaultExperiment = (FMIDefaultExperiment*)calloc(1, sizeof(FMIDefaultExperiment));
+        const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
+        modelDescription->defaultExperiment->startTime = xmlGetProp(node, "startTime");
+        modelDescription->defaultExperiment->stopTime = xmlGetProp(node, "stopTime");
+        modelDescription->defaultExperiment->stepSize = xmlGetProp(node, "stepSize");
+    }
+
     xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelVariables/" 
         "*[self::Float32"
         " or self::Float64"
@@ -161,6 +171,16 @@ static void readModelDescriptionFMI2(xmlNodePtr root, FMIModelDescription* model
     if (xpathObj->nodesetval->nodeNr == 1) {
         modelDescription->modelExchange = (FMIModelExchangeInterface*)calloc(1, sizeof(FMIModelExchangeInterface));
         modelDescription->modelExchange->modelIdentifier = xmlGetProp(xpathObj->nodesetval->nodeTab[0], "modelIdentifier");
+    }
+
+    xpathObj = xmlXPathEvalExpression("/fmiModelDescription/DefaultExperiment", xpathCtx);
+
+    if (xpathObj->nodesetval->nodeNr == 1) {
+        modelDescription->defaultExperiment = (FMIDefaultExperiment*)calloc(1, sizeof(FMIDefaultExperiment));
+        const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
+        modelDescription->defaultExperiment->startTime = xmlGetProp(node, "startTime");
+        modelDescription->defaultExperiment->stopTime = xmlGetProp(node, "stopTime");
+        modelDescription->defaultExperiment->stepSize = xmlGetProp(node, "stepSize");
     }
 
     xpathObj = xmlXPathEvalExpression("/fmiModelDescription/ModelVariables/ScalarVariable/*[self::Real or self::Integer or self::Enumeration or self::Boolean or self::String]", xpathCtx);

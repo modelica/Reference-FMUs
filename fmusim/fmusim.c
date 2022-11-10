@@ -56,38 +56,42 @@ static void logMessage(FMIInstance* instance, FMIStatus status, const char* cate
     puts(message);
 }
 
+static FILE* s_fmiLogFile = NULL;
+
 static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message, ...) {
+
+    FILE* const stream = s_fmiLogFile ? s_fmiLogFile : stdout;
 
     va_list args;
     va_start(args, message);
-
-    vprintf(message, args);
+    
+    vfprintf(stream, message, args);
+    
+    va_end(args);
 
     switch (status) {
     case FMIOK:
-        printf(" -> OK\n");
+        fprintf(stream, " -> OK\n");
         break;
     case FMIWarning:
-        printf(" -> Warning\n");
+        fprintf(stream, " -> Warning\n");
         break;
     case FMIDiscard:
-        printf(" -> Discard\n");
+        fprintf(stream, " -> Discard\n");
         break;
     case FMIError:
-        printf(" -> Error\n");
+        fprintf(stream, " -> Error\n");
         break;
     case FMIFatal:
-        printf(" -> Fatal\n");
+        fprintf(stream, " -> Fatal\n");
         break;
     case FMIPending:
-        printf(" -> Pending\n");
+        fprintf(stream, " -> Pending\n");
         break;
     default:
-        printf(" -> Unknown status (%d)\n", status);
+        fprintf(stream, " -> Unknown status (%d)\n", status);
         break;
     }
-
-    va_end(args);
 }
 
 void printUsage() {
@@ -117,9 +121,12 @@ int main(int argc, char* argv[]) {
 
     char* inputFile = NULL;
     char* outputFile = NULL;
-    double startTime = 0;
-    double stopTime = 1;
-    double outputInterval = 1e-2;
+    char* fmiLogFile = NULL;
+
+    char* startTimeLiteral = NULL;
+    char* stopTimeLiteral = NULL;
+    
+    double outputInterval = 0;
 
     size_t nStartValues = 0;
     char** startNames = NULL;
@@ -157,15 +164,12 @@ int main(int argc, char* argv[]) {
             inputFile = argv[++i];
         } else if (!strcmp(v, "--output-file")) {
             outputFile = argv[++i];
+        } else if (!strcmp(v, "--fmi-log-file")) {
+            fmiLogFile = argv[++i];
         } else if (!strcmp(v, "--start-time")) {
-            char* error;
-            startTime = strtod(argv[++i], &error);
+            startTimeLiteral = argv[++i];
         } else if (!strcmp(v, "--stop-time")) {
-            char* error;
-            stopTime = strtod(argv[++i], &error);
-            if (errno == ERANGE) {
-                printf("The value provided was out of range\n");
-            }
+            stopTimeLiteral = argv[++i];
         } else if (!strcmp(v, "--output-interval")) {
             char* error;
             outputInterval = strtod(argv[++i], &error);
@@ -179,6 +183,14 @@ int main(int argc, char* argv[]) {
     }
 
     const char* fmuPath = argv[argc - 1];
+
+    if (fmiLogFile) {
+        s_fmiLogFile = fopen(fmiLogFile, "w");
+        if (!s_fmiLogFile) {
+            printf("Failed to open FMI log file %s for writing.\n", fmiLogFile);
+            goto TERMINATE;
+        }
+    }
 
     unzipdir = FMICreateTemporaryDirectory();
 
@@ -199,6 +211,7 @@ int main(int argc, char* argv[]) {
     FMIModelDescription* modelDescription = FMIReadModelDescription(modelDescriptionPath);
 
     if (!modelDescription) {
+        printf("Failed to read model description.\n");
         goto TERMINATE;
     }
 
@@ -269,9 +282,33 @@ int main(int argc, char* argv[]) {
         input = FMIReadInput(modelDescription, inputFile);
     }
 
-    //FMIModelVariable* inputVariables[1] = { &modelDescription->modelVariables[6] };
+    if (!startTimeLiteral) {
+        if (modelDescription->defaultExperiment && modelDescription->defaultExperiment->startTime) {
+            startTimeLiteral = modelDescription->defaultExperiment->startTime;
+        } else {
+            startTimeLiteral = "0";
+        }
+    }
 
-    //input->continuousVariables = inputVariables;
+    const double startTime = strtod(startTimeLiteral, NULL);
+
+    if (!stopTimeLiteral) {
+        if (modelDescription->defaultExperiment && modelDescription->defaultExperiment->stopTime) {
+            stopTimeLiteral = modelDescription->defaultExperiment->stopTime;
+        } else {
+            stopTimeLiteral = "1";
+        }
+    }
+
+    const double stopTime = strtod(stopTimeLiteral, NULL);
+
+    if (outputInterval == 0) {
+        if (modelDescription->defaultExperiment && modelDescription->defaultExperiment->stepSize) {
+            outputInterval = strtod(modelDescription->defaultExperiment->stepSize, NULL);
+        } else {
+            outputInterval = (stopTime - startTime) / 500;
+        }
+    }
 
     if (modelDescription->fmiVersion == FMIVersion2) {
 
@@ -323,6 +360,10 @@ TERMINATE:
 
     if (unzipdir) {
         free((void*)unzipdir);
+    }
+
+    if (s_fmiLogFile) {
+        fclose(s_fmiLogFile);
     }
 
     return status;

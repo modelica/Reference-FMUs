@@ -24,6 +24,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
     fmi3Boolean terminateSimulation = fmi3False;
     fmi3Boolean earlyReturn = fmi3False;
     fmi3Float64 lastSuccessfulTime = startTime;
+    fmi3Float64 time = startTime;
 
     CALL(FMI3InstantiateCoSimulation(S,
         modelDescription->instantiationToken,  // instantiationToken
@@ -44,17 +45,19 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
     CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, startTime, fmi3True, stopTime));
     CALL(FMI3ExitInitializationMode(S));
 
-    while (lastSuccessfulTime <= stopTime) {
+    while (time <= stopTime) {
 
-        CALL(FMISample(S, lastSuccessfulTime, result));
+        CALL(FMISample(S, time, result));
 
-        CALL(FMIApplyInput(S, input, lastSuccessfulTime, true, true, false));
+        CALL(FMIApplyInput(S, input, time, true, true, false));
 
         if (terminateSimulation) {
             break;
         }
 
-        CALL(FMI3DoStep(S, lastSuccessfulTime, stepSize, fmi3True, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime));
+        CALL(FMI3DoStep(S, time, stepSize, fmi3True, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime));
+
+        time += stepSize;
     }
 
 TERMINATE:
