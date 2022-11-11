@@ -7,7 +7,7 @@ from fmpy.util import read_csv
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
-def test_start_time(executable, dist, work, environment, fmi_version, interface_type):
+def test_start_time(executable, dist, work, fmi_version, interface_type):
 
     output_file = work / f'test_start_time_fmi{fmi_version}_{interface_type}.csv'
 
@@ -18,8 +18,7 @@ def test_start_time(executable, dist, work, environment, fmi_version, interface_
         '--interface-type', interface_type,
         '--start-time', '0.5',
         r'--output-file', output_file,
-        fmu_filename],
-        env=environment
+        fmu_filename]
     )
 
     result = read_csv(output_file)
@@ -28,7 +27,7 @@ def test_start_time(executable, dist, work, environment, fmi_version, interface_
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
-def test_stop_time(executable, work, dist, environment, fmi_version, interface_type):
+def test_stop_time(executable, work, dist, fmi_version, interface_type):
 
     output_file = work / f'test_stop_time_fmi{fmi_version}_{interface_type}.csv'
 
@@ -39,8 +38,7 @@ def test_stop_time(executable, work, dist, environment, fmi_version, interface_t
         '--interface-type', interface_type,
         '--stop-time', '1.5',
         r'--output-file', output_file,
-        fmu_filename],
-        env=environment
+        fmu_filename]
     )
 
     result = read_csv(output_file)
@@ -49,7 +47,7 @@ def test_stop_time(executable, work, dist, environment, fmi_version, interface_t
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
-def test_input_file(executable, work, dist, resources, environment, fmi_version, interface_type):
+def test_input_file(executable, work, dist, resources, fmi_version, interface_type):
 
     input_file = resources / f'Feedthrough_in.csv'
     output_file = work / f'test_input_file_fmi{fmi_version}_{interface_type}.csv'
@@ -62,8 +60,7 @@ def test_input_file(executable, work, dist, resources, environment, fmi_version,
         '--stop-time', '1.5',
         r'--input-file', input_file,
         r'--output-file', output_file,
-        fmu_filename],
-        env=environment
+        fmu_filename]
     )
 
     result = read_csv(output_file)
@@ -73,7 +70,7 @@ def test_input_file(executable, work, dist, resources, environment, fmi_version,
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
-def test_fmi_log_file(executable, work, dist, resources, environment, fmi_version, interface_type):
+def test_fmi_log_file(executable, work, dist, resources, fmi_version, interface_type):
 
     fmi_log_file = work / f'test_fmi_log_file_fmi{fmi_version}_{interface_type}.txt'
 
@@ -85,15 +82,14 @@ def test_fmi_log_file(executable, work, dist, resources, environment, fmi_versio
         '--stop-time', '1.5',
         '--log-fmi-calls',
         '--fmi-log-file', fmi_log_file,
-        fmu_filename],
-        env=environment
+        fmu_filename]
     )
 
     assert fmi_log_file.is_file()
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
-def test_output_interval(executable, work, dist, environment, fmi_version, interface_type):
+def test_output_interval(executable, work, dist, fmi_version, interface_type):
 
     output_file = work / f'test_output_interval_fmi{fmi_version}_{interface_type}.csv'
 
@@ -104,8 +100,7 @@ def test_output_interval(executable, work, dist, environment, fmi_version, inter
         '--interface-type', interface_type,
         '--output-interval', '0.25',
         r'--output-file', output_file,
-        fmu_filename],
-        env=environment
+        fmu_filename]
     )
 
     result = read_csv(output_file)
