@@ -17,5 +17,4 @@ FMIStatus simulateFMI3CS(
     double startTime,
     double stepSize,
     double stopTime,
-    const FMUStaticInput* input,
-    bool earlyReturnAllowed);
+    const FMUStaticInput* input);

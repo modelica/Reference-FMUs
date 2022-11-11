@@ -132,8 +132,6 @@ int main(int argc, char* argv[]) {
     char** startNames = NULL;
     char** startValues = NULL;
 
-    bool earlyReturnAllowed = false;
-
     FMIInstance* S = NULL;
     FMISimulationResult* result = NULL;
     const char* unzipdir = NULL;
@@ -144,9 +142,9 @@ int main(int argc, char* argv[]) {
         if (!strcmp(v, "--log-fmi-calls")) {
             logFMICalls = true;
         } else if (!strcmp(v, "--interface-type")) {
-            if (!strcmp(argv[i + 1], "CS")) {
+            if (!strcmp(argv[i + 1], "cs")) {
                 interfaceType = FMICoSimulation;
-            } else if (!strcmp(argv[i + 1], "ME")) {
+            } else if (!strcmp(argv[i + 1], "me")) {
                 interfaceType = FMIModelExchange;
             } else {
                 printf(PROGNAME ": unrecognized interface type '%s'\n", argv[i + 1]);
@@ -173,8 +171,6 @@ int main(int argc, char* argv[]) {
         } else if (!strcmp(v, "--output-interval")) {
             char* error;
             outputInterval = strtod(argv[++i], &error);
-        } else if (!strcmp(v, "--early-return-allowed")) {
-            earlyReturnAllowed = true;
         } else {
             printf(PROGNAME ": unrecognized option '%s'\n", v);
             printf("Try '" PROGNAME " --help' for more information.\n");
@@ -324,7 +320,7 @@ int main(int argc, char* argv[]) {
     } else {
 
         if (interfaceType == FMICoSimulation) {
-            status = simulateFMI3CS(S, modelDescription, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, input, earlyReturnAllowed);
+            status = simulateFMI3CS(S, modelDescription, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, input);
         } else {
             status = simulateFMI3ME(S, modelDescription, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, input);
         }

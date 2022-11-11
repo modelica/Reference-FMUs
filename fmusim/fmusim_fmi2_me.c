@@ -166,7 +166,7 @@ FMIStatus simulateFMI2ME(
         }
 
         // advance time
-        time = ++step * fixedStep;
+        time = startTime + (++step) * fixedStep;
 
         CALL(FMI2SetTime(S, time));
 

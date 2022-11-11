@@ -182,7 +182,7 @@ FMIStatus simulateFMI3ME(
         }
 
         // advance time
-        time = ++step * stepSize;
+        time = startTime + (++step) * stepSize;
 
         CALL(FMI3SetTime(S, time));
 

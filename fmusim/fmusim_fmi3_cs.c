@@ -15,8 +15,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
     double startTime,
     double stepSize,
     double stopTime,
-    const FMUStaticInput* input,
-    bool earlyReturnAllowed) {
+    const FMUStaticInput* input) {
 
     FMIStatus status = FMIOK;
 
@@ -32,7 +31,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
         fmi3False,                             // visible
         fmi3False,                             // loggingOn
         fmi3False,                             // eventModeUsed
-        earlyReturnAllowed,                    // earlyReturnAllowed
+        fmi3False,                             // earlyReturnAllowed
         NULL,                                  // requiredIntermediateVariables
         0,                                     // nRequiredIntermediateVariables
         NULL                                   // intermediateUpdate
@@ -45,19 +44,25 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
     CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, startTime, fmi3True, stopTime));
     CALL(FMI3ExitInitializationMode(S));
 
-    while (time <= stopTime) {
+    size_t step = 0;
+
+    for (;; step++) {
+
+        const fmi3Float64 time = startTime + step * stepSize;
 
         CALL(FMISample(S, time, result));
 
+        if ((step + 1) * stepSize > stopTime) {
+            break;
+        }
+
         CALL(FMIApplyInput(S, input, time, true, true, false));
+
+        CALL(FMI3DoStep(S, time, stepSize, fmi3True, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime));
 
         if (terminateSimulation) {
             break;
         }
-
-        CALL(FMI3DoStep(S, time, stepSize, fmi3True, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime));
-
-        time += stepSize;
     }
 
 TERMINATE:
