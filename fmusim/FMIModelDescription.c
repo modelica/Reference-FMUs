@@ -7,6 +7,9 @@
 
 #include <Windows.h>
 
+#include "fmi2schema.h"
+#include "fmi3schema.h"
+
 
 static void readModelDescriptionFMI3(xmlNodePtr root, FMIModelDescription* modelDescription) {
 
@@ -294,16 +297,14 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
 
     switch (modelDescription->fmiVersion) {
     case FMIVersion2:
-        strcat(path, "\\..\\schema\\fmi2\\fmi2ModelDescription.xsd");
+        pctxt = xmlSchemaNewMemParserCtxt(fmi2Merged_xsd, fmi2Merged_xsd_len);
         break;
     case FMIVersion3:
-        strcat(path, "\\..\\schema\\fmi3\\fmi3ModelDescription.xsd");
+        pctxt = xmlSchemaNewMemParserCtxt(fmi3Merged_xsd, fmi3Merged_xsd_len);
         break;
     default:
         return NULL;
     }
-
-    pctxt = xmlSchemaNewParserCtxt(path);
 
     xmlSchemaPtr schema = xmlSchemaParse(pctxt);
 
