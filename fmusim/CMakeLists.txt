@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.17)
 
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 
 project (FMUSimulator)
 
@@ -34,18 +34,25 @@ add_executable(fmusim
   fmusim_fmi3_me.c
   fmusim_input.h
   fmusim_input.c
+  miniunzip.c
+  ../ThirdParty/zlib-1.2.13/contrib/minizip/ioapi.c
+  ../ThirdParty/zlib-1.2.13/contrib/minizip/iowin32.c
+  ../ThirdParty/zlib-1.2.13/contrib/minizip/unzip.c
 )
 
 target_include_directories(fmusim PRIVATE
   .
   ../include
-  E:/Development/Reference-FMUs/ThirdParty/libxml2/win64/install/include/libxml2
+  ../ThirdParty/libxml2/win64/install/include/libxml2
+  ../ThirdParty/zlib-1.2.13/win64/install/zlib/include
+  ../ThirdParty/zlib-1.2.13/contrib/minizip
 )
 
 add_compile_definitions(LIBXML_STATIC)
 
 target_link_libraries(fmusim
   E:/Development/Reference-FMUs/ThirdParty/libxml2/win64/install/lib/libxml2s.lib
+  E:/Development/Reference-FMUs/ThirdParty/zlib-1.2.13/win64/install/zlib/lib/zlibstatic.lib
   wsock32
   ws2_32
 )

@@ -4,6 +4,8 @@
 #include <process.h>
 #include <strsafe.h>
 
+#include "miniunzip.h"
+
 #include "FMIZip.h"
 
 
@@ -32,36 +34,9 @@ int FMIPathAppend(char* path, const char* more) {
 
 int FMIExtractArchive(const char* filename, const char* unzipdir) {
 
+    const char* argv[6] = { "miniunz", "-x", "-o", filename, "-d", unzipdir };
 
-#ifdef _WIN32
-
-    char command[2048] = "";
-
-    snprintf(command, 2048, "xcopy \"%s\" \"%s\"", filename, unzipdir);
-
-    int status = system(command);
-
-    snprintf(command, 2048, "ren \"%s\\*.fmu\" *.zip", unzipdir);
-
-    status = system(command);
-
-    snprintf(command, 2048, "powershell -ExecutionPolicy Bypass -command \"Expand-Archive -Force '%s\\*.zip' '%s'\"", unzipdir, unzipdir);
-
-    status = system(command);
-
-    snprintf(command, 2048, "del /f \"%s\\*.zip\"", unzipdir);
-
-    status = system(command);
-
-    return status;
-
-#else
-
-    // TODO
-
-#endif
-
-    return 0;
+    return miniunz_main(6, argv);
 }
 
 int FMIRemoveDirectory(const char* path) {
