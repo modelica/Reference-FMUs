@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.17)
 
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)
 
 project (FMUSimulator)
 
@@ -43,43 +43,18 @@ add_executable(fmusim
 target_include_directories(fmusim PRIVATE
   .
   ../include
-  ../ThirdParty/libxml2/win64/install/include/libxml2
-  ../ThirdParty/zlib-1.2.13/win64/install/zlib/include
+  ../ThirdParty/libxml2-2.10.3/windows-x64/install/include/libxml2
+  ../ThirdParty/zlib-1.2.13/windows-x64/install/include
   ../ThirdParty/zlib-1.2.13/contrib/minizip
 )
 
 add_compile_definitions(LIBXML_STATIC)
 
 target_link_libraries(fmusim
-  E:/Development/Reference-FMUs/ThirdParty/libxml2/win64/install/lib/libxml2s.lib
-  E:/Development/Reference-FMUs/ThirdParty/zlib-1.2.13/win64/install/zlib/lib/zlibstatic.lib
+  ${CMAKE_SOURCE_DIR}/../ThirdParty/libxml2-2.10.3/windows-x64/install/lib/libxml2s.lib
+  ${CMAKE_SOURCE_DIR}/../ThirdParty/zlib-1.2.13/windows-x64/install/lib/zlibstatic.lib
   wsock32
   ws2_32
 )
 
 install(TARGETS fmusim RUNTIME DESTINATION .)
-
-install(FILES
-    ../schema/fmi2/fmi2Annotation.xsd
-    ../schema/fmi2/fmi2Annotation.xsd
-    ../schema/fmi2/fmi2AttributeGroups.xsd
-    ../schema/fmi2/fmi2ModelDescription.xsd
-    ../schema/fmi2/fmi2ScalarVariable.xsd
-    ../schema/fmi2/fmi2Type.xsd
-    ../schema/fmi2/fmi2Unit.xsd
-    ../schema/fmi2/fmi2VariableDependency.xsd
-    DESTINATION ./schema/fmi2)
-
-install(FILES
-    ../schema/fmi3/fmi3Annotation.xsd
-    ../schema/fmi3/fmi3AttributeGroups.xsd
-    ../schema/fmi3/fmi3BuildDescription.xsd
-    ../schema/fmi3/fmi3InterfaceType.xsd
-    ../schema/fmi3/fmi3ModelDescription.xsd
-    ../schema/fmi3/fmi3Terminal.xsd
-    ../schema/fmi3/fmi3TerminalsAndIcons.xsd
-    ../schema/fmi3/fmi3Type.xsd
-    ../schema/fmi3/fmi3Unit.xsd
-    ../schema/fmi3/fmi3Variable.xsd
-    ../schema/fmi3/fmi3VariableDependency.xsd
-    DESTINATION ./schema/fmi3)
