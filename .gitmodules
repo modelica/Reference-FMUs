@@ -1,0 +1,3 @@
+[submodule "ThirdParty/libxml2"]
+	path = ThirdParty/libxml2
+	url = https://gitlab.gnome.org/GNOME/libxml2/

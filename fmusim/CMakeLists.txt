@@ -4,8 +4,6 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 project (FMUSimulator)
 
-set(CONDA_DIR "" CACHE STRING "Conda directory")
-
 add_executable(fmusim
   ../include/FMI.h
   ../src/FMI.c
@@ -41,33 +39,18 @@ add_executable(fmusim
 target_include_directories(fmusim PRIVATE
   .
   ../include
-  ${CONDA_DIR}/include
-  ${CONDA_DIR}/Library/include
-  ${CONDA_DIR}/Library/include/libxml2
+  E:/Development/Reference-FMUs/ThirdParty/libxml2/win64/install/include/libxml2
 )
+
+add_compile_definitions(LIBXML_STATIC)
 
 target_link_libraries(fmusim
-  ${CONDA_DIR}/Library/lib/libxml2.lib
-  ${CONDA_DIR}/Library/lib/zip.lib
+  E:/Development/Reference-FMUs/ThirdParty/libxml2/win64/install/lib/libxml2s.lib
+  wsock32
+  ws2_32
 )
 
-file(GLOB API_MS_DLLS ${CONDA_DIR}/Library/bin/api-ms-win-*.dll)
-
 install(TARGETS fmusim RUNTIME DESTINATION .)
-
-install(FILES
-    ${CONDA_DIR}/Library/bin/libxml2.dll
-    ${CONDA_DIR}/Library/bin/iconv.dll
-    ${CONDA_DIR}/Library/bin/charset.dll
-    ${CONDA_DIR}/Library/bin/zlib.dll
-    ${CONDA_DIR}/Library/bin/zip.dll
-    ${CONDA_DIR}/Library/bin/zip.dll
-    # ${CONDA_DIR}/Library/bin/advapi32.dll
-    ${CONDA_DIR}/Library/bin/libbz2.dll
-    # ${CONDA_DIR}/Library/bin/bcrypt.dll
-    ${CONDA_DIR}/Library/bin/vcruntime140.dll
-    ${API_MS_DLLS}
-    DESTINATION .)
 
 install(FILES
     ../schema/fmi2/fmi2Annotation.xsd

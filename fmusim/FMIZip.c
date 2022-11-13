@@ -1,4 +1,3 @@
-#include <zip.h>
 #include <errno.h>
 #include <Windows.h>
 #include <Shlwapi.h>
@@ -33,71 +32,34 @@ int FMIPathAppend(char* path, const char* more) {
 
 int FMIExtractArchive(const char* filename, const char* unzipdir) {
 
-    const char* archive;
-    struct zip* za;
-    struct zip_file* zf;
-    struct zip_stat sb;
-    char buf[100];
-    int err;
-    int i, len;
-    FILE* fd;
-    long long sum;
-    char path[2048];
 
-    if ((za = zip_open(filename, 0, &err)) == NULL) {
-        zip_error_to_str(buf, sizeof(buf), err, errno);
-        printf("Can't open zip archive `%s': %s\n", filename, buf);
-        return 1;
-    }
+#ifdef _WIN32
 
-    for (i = 0; i < zip_get_num_entries(za, 0); i++) {
+    char command[2048] = "";
 
-        if (zip_stat_index(za, i, 0, &sb) == 0) {
+    snprintf(command, 2048, "xcopy \"%s\" \"%s\"", filename, unzipdir);
 
-            len = strlen(sb.name);
+    int status = system(command);
 
-            strcpy(path, unzipdir);            
-            PathAppendA(path, sb.name);
+    snprintf(command, 2048, "ren \"%s\\*.fmu\" *.zip", unzipdir);
 
-            if (sb.name[len - 1] == '/') {
+    status = system(command);
 
-                mkdir(path);
+    snprintf(command, 2048, "powershell -ExecutionPolicy Bypass -command \"Expand-Archive -Force '%s\\*.zip' '%s'\"", unzipdir, unzipdir);
 
-            } else {
+    status = system(command);
 
-                zf = zip_fopen_index(za, i, 0);
+    snprintf(command, 2048, "del /f \"%s\\*.zip\"", unzipdir);
 
-                if (!zf) {
-                    exit(100);
-                }
+    status = system(command);
 
-                fd = fopen(path, "wb");
+    return status;
 
-                if (fd < 0) {
-                    exit(101);
-                }
+#else
 
-                sum = 0;
-                while (sum != sb.size) {
-                    len = zip_fread(zf, buf, 100);
-                    if (len < 0) {
-                        exit(102);
-                    }
-                    fwrite(buf, len, 1, fd);
-                    sum += len;
-                }
-                fclose(fd);
-                zip_fclose(zf);
-            }
-        } else {
-            printf("File[%s] Line[%d]\n", __FILE__, __LINE__);
-        }
-    }
+    // TODO
 
-    if (zip_close(za) == -1) {
-        printf("Can't close zip archive `%s'\n", filename);
-        return 1;
-    }
+#endif
 
     return 0;
 }
