@@ -40,8 +40,8 @@ jobs:
     - run: conda install fmpy-base
     - run: python ThirdParty/build_libxml2.py
     - run: python ThirdParty/build_zlib.py
-    - run: cmake -G "Visual Studio 17 2022" -B windows-x64 fmusim
-    - run: cmake --build windows-x64 --target INSTALL --config Release
+    - run: cmake -G "Visual Studio 17 2022" -B fmusim/windows-x64 fmusim
+    - run: cmake --build fmusim/windows-x64 --target INSTALL --config Release
     - uses: actions/upload-artifact@v3
       with:
         name: fmusim-windows
