@@ -57,4 +57,4 @@ target_link_libraries(fmusim
   ws2_32
 )
 
-install(TARGETS fmusim RUNTIME DESTINATION .)
+install(TARGETS fmusim RUNTIME DESTINATION ${CMAKE_BINARY_DIR}/install)
