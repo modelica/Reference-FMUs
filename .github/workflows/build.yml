@@ -72,6 +72,30 @@ jobs:
           path: fmusim/build/install
           if-no-files-found: error
 
+  build-fmusim-linux:
+    runs-on: ubuntu-20.04
+    needs: lint-files
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - uses: s-weigand/setup-conda@v1.1.1
+        with:
+          conda-channels: conda-forge
+      - run: conda --version
+      - run: which python
+      - run: conda install fmpy-base
+      - run: python ThirdParty/build_libxml2.py
+      - run: python ThirdParty/build_zlib.py
+      - run: cmake -B fmusim/build fmusim
+      - run: cmake --build fmusim/build --target install --config Release
+      - uses: actions/upload-artifact@v3
+        with:
+          name: fmusim-linux
+          path: fmusim/build/install
+          if-no-files-found: error
+
 #  build-linux:
 #
 #    runs-on: ubuntu-18.04
