@@ -1,13 +1,6 @@
 #ifndef FMI1FUNCTIONS_H
 #define FMI1FUNCTIONS_H
 
-/**************************************************************
- *  Copyright (c) Modelica Association Project "FMI".         *
- *  All rights reserved.                                      *
- *  This file is part of the Reference FMUs. See LICENSE.txt  *
- *  in the project root for license information.              *
- **************************************************************/
-
 /* -------------------------------------------------------------------------
  * Combined FMI 1.0 Functions for Model Exchange & Co-Simulation
  * -------------------------------------------------------------------------*/
