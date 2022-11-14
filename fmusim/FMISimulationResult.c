@@ -259,7 +259,7 @@ void FMIDumpResult(FMISimulationResult* result, FILE* file) {
                 fprintf(file, ",%d", *((bool*)value));
                 break;
             default:
-                return FMIFatal;  // unkown variable type
+                return;  // unkown variable type
             }
 
             offset += FMISizeForVariableType(variable->type);
@@ -270,5 +270,4 @@ void FMIDumpResult(FMISimulationResult* result, FILE* file) {
 
     }
 
-    return FMIOK;
 }
