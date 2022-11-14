@@ -5,11 +5,13 @@
 #include <Shlwapi.h>
 #include <process.h>
 #include <strsafe.h>
+#else
+#include <unistd.h>
 #endif
 
+#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <unistd.h>
 
 #include "miniunzip.h"
 
@@ -85,7 +87,7 @@ int FMIExtractArchive(const char* filename, const char* unzipdir) {
 }
 
 int FMIRemoveDirectory(const char* path) {
-#ifdef _WIN32
+
     char command[4096];
 
 #ifdef _WIN32
@@ -95,8 +97,4 @@ int FMIRemoveDirectory(const char* path) {
 #endif
 
     return system(command);
-#else
-    // TODO
-    return 1;
-#endif
 }

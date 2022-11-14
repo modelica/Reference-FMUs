@@ -23,7 +23,9 @@ if os.name == 'nt':
     args = [
         '-G', 'Visual Studio 17 2022',
         '-A', 'x64',
-        '-D', 'CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded'
+        # '-D', 'CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded'
+        '-D', 'CMAKE_C_FLAGS_DEBUG=/MT /Zi /Ob0 /Od /RTC1',
+        '-D', 'CMAKE_C_FLAGS_RELEASE=/MT /O2 /Ob2 /DNDEBUG'
     ]
 
 check_call(
