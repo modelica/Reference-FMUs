@@ -11,7 +11,9 @@ def executable():
     path = Path(__file__).parent.parent
 
     if os.name == 'nt':
-        path = path / 'win64' / 'install' / 'fmusim.exe'
+        path = path / 'build' / 'install' / 'fmusim.exe'
+    else:
+        path = path / 'build' / 'install' / 'fmusim'
 
     yield path
 
