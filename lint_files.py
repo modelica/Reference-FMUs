@@ -59,9 +59,10 @@ print("Linting files in %s" % top)
 
 for root, dirs, files in os.walk(top, topdown=True):
 
+    excluded = ['build', 'fmi1_cs', 'fmi1_me', 'fmi2', 'fmi3', 'fmus', 'fmusim', 'ThirdParty', 'venv']
+
     # skip build, git, and cache directories
-    dirs[:] = [d for d in dirs if d not in ['build', 'fmi1_cs', 'fmi1_me', 'fmi2', 'fmi3', 'fmus', 'venv']
-               and not os.path.basename(d).startswith(('.', '_'))]
+    dirs[:] = [d for d in dirs if d not in excluded and not os.path.basename(d).startswith(('.', '_'))]
 
     for file in files:
 

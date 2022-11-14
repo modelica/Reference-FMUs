@@ -20,6 +20,7 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
+#include <stddef.h>
 
 #ifndef FMI_MAX_MESSAGE_LENGTH
 #define FMI_MAX_MESSAGE_LENGTH 4096
