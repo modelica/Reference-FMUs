@@ -55,7 +55,7 @@ struct CsvHandle_
     size_t quotes;
     void* auxbuf;
     
-#if defined ( __unix__ )
+#if defined ( __unix__ ) || defined ( __APPLE__ )
     int fh;
 #elif defined ( _WIN32 )
     HANDLE fh;
@@ -82,7 +82,7 @@ CsvHandle CsvOpen(const char* filename)
 /* thin platform dependent layer so we can use file mapping
  * with winapi and oses following posix specs.
  */
-#ifdef __unix__
+#if defined ( __unix__ ) || defined ( __APPLE__ )
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>

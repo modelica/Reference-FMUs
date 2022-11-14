@@ -23,7 +23,7 @@ FMIStatus applyStartValuesFMI2(
         case FMIRealType: {
             const fmi2Real value = strtod(literal, NULL);
             // TODO: handle errors
-            CALL(FMI2SetReal(S, &vr, 1, &value, 1));
+            CALL(FMI2SetReal(S, &vr, 1, &value));
             break;
         }
         }

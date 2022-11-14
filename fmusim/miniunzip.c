@@ -488,9 +488,7 @@ const char* password;
 }
 
 
-int miniunz_main(argc, argv)
-int argc;
-char* argv[];
+int miniunz_main(int argc, const char *argv[])
 {
     const char* zipfilename = NULL;
     const char* filename_to_extract = NULL;

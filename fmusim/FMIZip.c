@@ -7,6 +7,10 @@
 #include <strsafe.h>
 #endif
 
+#include <string.h>
+#include <stdio.h>
+#include <unistd.h>
+
 #include "miniunzip.h"
 
 #include "FMIZip.h"
@@ -14,29 +18,35 @@
 
 const char* FMICreateTemporaryDirectory() {
     
+#ifdef _WIN32
     const char* tempfile = _tempnam(NULL, NULL);
-
+    
     if (!tempfile) {
         return NULL;
     }
 
-#ifdef _WIN32
     BOOL res = CreateDirectoryA(tempfile, 0);
-
+    
     if (!PathFileExistsA(tempfile)) {
         free((void*)tempfile);
         return NULL;
     }
-#else
-    // TODO  
-#endif
 
     return tempfile;
+#else
+    char template[1024] = "/tmp/fmusim.XXXXXX";
+    const char* tempdir = mkdtemp(template);
+    const char* tempdir2 = strdup(tempdir);
+    return tempdir2;
+#endif
 }
 
 int FMIPathAppend(char* path, const char* more) {
 #ifdef _WIN32
     return PathAppendA(path, "modelDescription.xml");
+#else
+    sprintf(path, "%s/%s", path, more);
+    return 1;
 #endif
 }
 
@@ -52,7 +62,14 @@ int FMIExtractArchive(const char* filename, const char* unzipdir) {
     // TODO  
 #endif
 
-    const char* argv[6] = { "miniunz", "-x", "-o", filename, "-d", unzipdir };
+    const char* argv[6];
+    
+    argv[0] = "miniunz";
+    argv[1] = "-x";
+    argv[2] = "-o";
+    argv[3] = filename;
+    argv[4] = "-d";
+    argv[5] = unzipdir;
 
     const int status = miniunz_main(6, argv);
 
@@ -68,7 +85,7 @@ int FMIExtractArchive(const char* filename, const char* unzipdir) {
 }
 
 int FMIRemoveDirectory(const char* path) {
-
+#ifdef _WIN32
     char command[4096];
 
 #ifdef _WIN32
@@ -78,4 +95,8 @@ int FMIRemoveDirectory(const char* path) {
 #endif
 
     return system(command);
+#else
+    // TODO
+    return 1;
+#endif
 }

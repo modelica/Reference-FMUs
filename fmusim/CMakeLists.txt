@@ -4,7 +4,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)
 
 project (FMUSimulator)
 
-add_executable(fmusim
+set(sources
   ../include/FMI.h
   ../src/FMI.c
   ../include/FMI2.h
@@ -36,25 +36,39 @@ add_executable(fmusim
   fmusim_input.c
   miniunzip.c
   ../ThirdParty/zlib-1.2.13/contrib/minizip/ioapi.c
-  ../ThirdParty/zlib-1.2.13/contrib/minizip/iowin32.c
   ../ThirdParty/zlib-1.2.13/contrib/minizip/unzip.c
 )
+
+if (WIN32)
+    set (sources ${sources} ../ThirdParty/zlib-1.2.13/contrib/minizip/iowin32.c)
+endif ()
+
+add_executable(fmusim ${sources})
 
 target_include_directories(fmusim PRIVATE
   .
   ../include
-  ../ThirdParty/libxml2-2.10.3/windows-x64/install/include/libxml2
-  ../ThirdParty/zlib-1.2.13/windows-x64/install/include
+  ../ThirdParty/libxml2-2.10.3/build/install/include/libxml2
+  ../ThirdParty/zlib-1.2.13/build/install/include
   ../ThirdParty/zlib-1.2.13/contrib/minizip
 )
 
 add_compile_definitions(LIBXML_STATIC)
 
-target_link_libraries(fmusim
-  ${CMAKE_SOURCE_DIR}/../ThirdParty/libxml2-2.10.3/windows-x64/install/lib/libxml2s.lib
-  ${CMAKE_SOURCE_DIR}/../ThirdParty/zlib-1.2.13/windows-x64/install/lib/zlibstatic.lib
-  wsock32
-  ws2_32
-)
+if (WIN32)
+    set(libraries
+      ${CMAKE_SOURCE_DIR}/../ThirdParty/libxml2-2.10.3/build/install/lib/libxml2s.lib
+      ${CMAKE_SOURCE_DIR}/../ThirdParty/zlib-1.2.13/build/install/lib/zlibstatic.lib
+      wsock32
+      ws2_32
+    )
+else ()
+    set(libraries
+      ${CMAKE_SOURCE_DIR}/../ThirdParty/libxml2-2.10.3/build/install/lib/libxml2.a
+      ${CMAKE_SOURCE_DIR}/../ThirdParty/zlib-1.2.13/build/install/lib/libz.a
+    )
+endif ()
+
+target_link_libraries(fmusim ${libraries})
 
 install(TARGETS fmusim RUNTIME DESTINATION ${CMAKE_BINARY_DIR}/install)

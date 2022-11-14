@@ -1,11 +1,15 @@
 #include "FMIModelDescription.h"
 
+#include <string.h>
+
 #include <libxml/parser.h>
 #include <libxml/xmlschemas.h>
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
 #include "fmi2schema.h"
 #include "fmi3schema.h"
@@ -293,8 +297,13 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
     xmlSchemaParserCtxtPtr pctxt;
 
     char path[2048] = "";
-    GetModuleFileNameA(NULL, path, 2048);
 
+#ifdef _WIN32
+    GetModuleFileNameA(NULL, path, 2048);
+#else
+    // TODO
+#endif
+    
     switch (modelDescription->fmiVersion) {
     case FMIVersion2:
         pctxt = xmlSchemaNewMemParserCtxt(fmi2Merged_xsd, fmi2Merged_xsd_len);

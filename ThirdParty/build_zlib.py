@@ -13,25 +13,32 @@ root = Path(__file__).parent
 
 extract(archive, root)
 
-build_dir = root / 'zlib-1.2.13' / 'windows-x64'
+build_dir = root / 'zlib-1.2.13' / 'build'
 
 install_prefix = build_dir / 'install'
 
-check_call([
-    'cmake',
-    '-B', build_dir,
-    '-G', 'Visual Studio 17 2022',
-    '-A', 'x64',
-    '-D', 'CMAKE_C_FLAGS_RELEASE=/MT /O2 /Ob2 /DNDEBUG',
+args = []
+
+if os.name == 'nt':
+    args = [
+        '-G', 'Visual Studio 17 2022',
+        '-A', 'x64',
+        '-D', 'CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded'
+    ]
+
+check_call(
+    ['cmake'] +
+    args +
+    ['-B', build_dir,
     '-D', f'CMAKE_INSTALL_PREFIX={ install_prefix }',
-    root / 'zlib-1.2.13'
-])
+    root / 'zlib-1.2.13']
+)
 
 check_call([
     'cmake',
     '--build', build_dir,
     '--config', 'Release',
-    '--target', 'INSTALL'
+    '--target', 'install'
 ])
 
 os.remove(archive)

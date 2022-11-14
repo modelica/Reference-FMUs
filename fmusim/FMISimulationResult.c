@@ -175,7 +175,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMISimulationResult* res
                 CALL(FMI3GetBoolean(instance, vr, 1, (fmi3Boolean*)value, 1));
                 break;
             case FMIClockType:
-                CALL(FMI3GetClock(instance, vr, 1, (fmi3Clock*)value, 1));
+                CALL(FMI3GetClock(instance, vr, 1, (fmi3Clock*)value));
                 break;
             default:
                 return FMIFatal;

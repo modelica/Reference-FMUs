@@ -1,14 +1,19 @@
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
 #include <fcntl.h>
 #include <limits.h>
+
+#ifdef _WIN32
 #include <Shlwapi.h>
 #include <strsafe.h>
+#include <direct.h>
+#endif
+
 #include <errno.h>
 
-#include <direct.h>
 
 #include "FMI3.h"
 #include "FMIZip.h"
@@ -189,6 +194,10 @@ int main(int argc, char* argv[]) {
     }
 
     unzipdir = FMICreateTemporaryDirectory();
+    
+    if (!unzipdir) {
+        return EXIT_FAILURE;
+    }
 
     char modelDescriptionPath[FMI_PATH_MAX] = "";
     
