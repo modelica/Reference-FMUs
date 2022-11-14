@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.17)
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)
 
-project (FMUSimulator)
+project (FMUSim)
 
 set(sources
   ../include/FMI.h
@@ -79,3 +79,4 @@ endif ()
 target_link_libraries(fmusim ${libraries})
 
 install(TARGETS fmusim RUNTIME DESTINATION ${CMAKE_BINARY_DIR}/install)
+install(FILES ${CMAKE_SOURCE_DIR}/LICENSE.txt DESTINATION ${CMAKE_BINARY_DIR}/install)
