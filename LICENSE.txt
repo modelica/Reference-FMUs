@@ -1,4 +1,4 @@
-Copyright (c) 2021-2022, Modelica Association Project "FMI"
+Copyright (c) 2022, Modelica Association Project "FMI".
 All rights reserved.
 
 The Reference FMUs are released under the 2-Clause BSD license:
@@ -30,5 +30,5 @@ The Reference FMUs are a fork of the Test FMUs (https://github.com/CATIA-Systems
 by Dassault Systemes, which are a fork of the FMU SDK (https://github.com/qtronic/fmusdk)
 by QTronic, both released under the 2-Clause BSD License.
 
-The FMI header files are copyright (c) 2008-2011 MODELISAR consortium, 2012-2021
+The FMI header files are copyright (c) 2008-2011 MODELISAR consortium, 2012-2022
 the Modelica Association Project "FMI" and released under the 2-Clause BSD License.
