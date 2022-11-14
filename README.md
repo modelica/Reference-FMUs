@@ -56,7 +56,7 @@ The FMUs will be in the `dist` folder inside the selected build folder.
 
 ## License and attribution
 
-Copyright &copy; 2021-2022, Modelica Association Project "FMI"
+Copyright &copy; 2022, Modelica Association Project "FMI".
 All rights reserved.
 The code is released under the [2-Clause BSD License](LICENSE.txt).
 
