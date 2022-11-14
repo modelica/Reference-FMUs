@@ -14,14 +14,10 @@ env:
 jobs:
 
   lint-files:
-
     runs-on: ubuntu-18.04
-
     steps:
     - uses: actions/checkout@v3
-
-#    - name: Lint files
-#      run: python3 lint_files.py
+    - run: python3 lint_files.py
 
   build-fmusim-windows:
     runs-on: windows-2022
