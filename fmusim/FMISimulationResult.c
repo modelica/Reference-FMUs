@@ -1,8 +1,17 @@
+/**************************************************************
+ *  Copyright (c) Modelica Association Project "FMI".         *
+ *  All rights reserved.                                      *
+ *  This file is part of the Reference FMUs. See LICENSE.txt  *
+ *  in the project root for license information.              *
+ **************************************************************/
+
 #include <inttypes.h>
+#include <stdlib.h>
+
 #include "FMI2.h"
 #include "FMI3.h"
+
 #include "FMISimulationResult.h"
-#include <stdlib.h>
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)

@@ -1,3 +1,10 @@
+/**************************************************************
+ *  Copyright (c) Modelica Association Project "FMI".         *
+ *  All rights reserved.                                      *
+ *  This file is part of the Reference FMUs. See LICENSE.txt  *
+ *  in the project root for license information.              *
+ **************************************************************/
+
 #ifdef _WIN32
 #include <direct.h>
 #include <errno.h>
