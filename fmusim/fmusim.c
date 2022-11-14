@@ -101,18 +101,30 @@ static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char*
 
 void printUsage() {
     printf(
-        "Usage: " PROGNAME " [OPTION]...[FMU]\n"
-        "Simulate an FMU\n"
+        "Usage: " PROGNAME " [OPTION]... [FMU]\n"
+        "Simulate a Functional Mock-up Unit (FMU).\n"
         "\n"
-        "--help             display this help and exit\n"
-        "--log-fmi-calls    Log FMI calls to the console\n"
+        "  --help                        display this help and exit\n"
+        "  --start-time [VALUE]          set the start time\n"
+        "  --stop-time [VALUE]           set the stop time\n"
+        "  --stop-time [VALUE]           set the stop time\n"
+        "  --output-interval [VALUE]     set the output interval\n"
+        "  --start-value [name] [value]  set a start value\n"
+        "  --input-file [FILE]           read input from a CSV file\n"
+        "  --output-file [FILE]          write output to a CSV file\n"
+        "  --log-fmi-calls               log FMI calls to the console\n"
+        "  --fmi-log-file [FILE]         set the FMI log file\n"
+        "\n"
+        "Example:\n"
+        "\n"
+        "  " PROGNAME " BouncingBall.fmu  simulate with the default settings\n"
     );
 }
 
 int main(int argc, char* argv[]) {
 
     if (argc < 2) {
-        printf("Missing argument FMU.\n\n");
+        printf("Missing argument [FMU].\n\n");
         printUsage();
         return EXIT_FAILURE;
     } else if (argc == 2 && !strcmp(argv[1], "--help")) {
