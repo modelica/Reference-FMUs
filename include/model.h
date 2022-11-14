@@ -1,5 +1,4 @@
-#ifndef model_h
-#define model_h
+#pragma once
 
 #if FMI_VERSION != 1 && FMI_VERSION != 2 && FMI_VERSION != 3
 #error FMI_VERSION must be one of 1, 2 or 3
@@ -232,5 +231,3 @@ void setFMUState(ModelInstance* comp, void* FMUState);
 // "stringification" macros
 #define xstr(s) str(s)
 #define str(s) #s
-
-#endif  /* model_h */

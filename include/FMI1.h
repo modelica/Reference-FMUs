@@ -1,5 +1,4 @@
-#ifndef FMI1_H
-#define FMI1_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -124,5 +123,3 @@ FMI_STATIC FMIStatus    FMI1GetStringStatus          (FMIInstance *instance, con
 #ifdef __cplusplus
 }  /* end of extern "C" { */
 #endif
-
-#endif // FMI1_H

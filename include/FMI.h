@@ -1,5 +1,4 @@
-#ifndef FMI_H
-#define FMI_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -163,5 +162,3 @@ FMI_STATIC FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *mod
 #ifdef __cplusplus
 }  /* end of extern "C" { */
 #endif
-
-#endif // FMI_H

@@ -1,5 +1,4 @@
-#ifndef FMI_MODEL_DESCRIPTION_H
-#define FMI_MODEL_DESCRIPTION_H
+#pragma once
 
 #include "FMI.h"
 #include <stdio.h>
@@ -75,5 +74,3 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription);
 FMIModelVariable* FMIModelVariableForName(const FMIModelDescription* modelDescription, const char* name);
 
 void FMIDumpModelDescription(FMIModelDescription* modelDescription, FILE* file);
-
-#endif  // FMI_MODEL_DESCRIPTION_H
