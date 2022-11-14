@@ -1,12 +1,5 @@
 #pragma once
 
-/**************************************************************
- *  Copyright (c) Modelica Association Project "FMI".         *
- *  All rights reserved.                                      *
- *  This file is part of the Reference FMUs. See LICENSE.txt  *
- *  in the project root for license information.              *
- **************************************************************/
-
 unsigned char fmi2Merged_xsd[] = {
   0x3c, 0x3f, 0x78, 0x6d, 0x6c, 0x20, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f,
   0x6e, 0x3d, 0x22, 0x31, 0x2e, 0x30, 0x22, 0x20, 0x65, 0x6e, 0x63, 0x6f,

@@ -1,10 +1,3 @@
-/**************************************************************
- *  Copyright (c) Modelica Association Project "FMI".         *
- *  All rights reserved.                                      *
- *  This file is part of the Reference FMUs. See LICENSE.txt  *
- *  in the project root for license information.              *
- **************************************************************/
-
 #include <math.h>
 #include "csv.h"
 #include "FMI2.h"

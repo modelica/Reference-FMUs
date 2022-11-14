@@ -1,13 +1,6 @@
 #ifndef FMI_SIMULATION_RESULT_H
 #define FMI_SIMULATION_RESULT_H
 
-/**************************************************************
- *  Copyright (c) Modelica Association Project "FMI".         *
- *  All rights reserved.                                      *
- *  This file is part of the Reference FMUs. See LICENSE.txt  *
- *  in the project root for license information.              *
- **************************************************************/
-
 #include "FMIModelDescription.h"
 #include <stdio.h>
 
