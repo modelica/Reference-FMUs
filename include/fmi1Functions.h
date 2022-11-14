@@ -1,5 +1,4 @@
-#ifndef FMI1FUNCTIONS_H
-#define FMI1FUNCTIONS_H
+#pragma once
 
 /* -------------------------------------------------------------------------
  * Combined FMI 1.0 Functions for Model Exchange & Co-Simulation
@@ -116,5 +115,3 @@ typedef fmi1Status    fmi1GetRealStatusTYPE            (fmi1Component c, const f
 typedef fmi1Status    fmi1GetIntegerStatusTYPE         (fmi1Component c, const fmi1StatusKind s, fmi1Integer* value);
 typedef fmi1Status    fmi1GetBooleanStatusTYPE         (fmi1Component c, const fmi1StatusKind s, fmi1Boolean* value);
 typedef fmi1Status    fmi1GetStringStatusTYPE          (fmi1Component c, const fmi1StatusKind s, fmi1String*  value);
-
-#endif // FMI1FUNCTIONS_H

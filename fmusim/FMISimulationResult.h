@@ -1,5 +1,4 @@
-#ifndef FMI_SIMULATION_RESULT_H
-#define FMI_SIMULATION_RESULT_H
+#pragma once
 
 #include "FMIModelDescription.h"
 #include <stdio.h>
@@ -23,5 +22,3 @@ void FMIFreeSimulationResult(FMISimulationResult* result);
 FMIStatus FMISample(FMIInstance* instance, double time, FMISimulationResult* result);
 
 void FMIDumpResult(FMISimulationResult* result, FILE* file);
-
-#endif  // FMI_SIMULATION_RESULT_H

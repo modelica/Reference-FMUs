@@ -1,5 +1,4 @@
-#ifndef FMI3_H
-#define FMI3_H
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -561,5 +560,3 @@ FMI_STATIC FMIStatus FMI3ActivateModelPartition(FMIInstance *instance,
 #ifdef __cplusplus
 }  /* end of extern "C" { */
 #endif
-
-#endif // FMI3_H
