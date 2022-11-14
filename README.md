@@ -20,12 +20,11 @@ Simulate a Functional Mock-up Unit (FMU).
   --help                        display this help and exit
   --start-time [VALUE]          set the start time
   --stop-time [VALUE]           set the stop time
-  --stop-time [VALUE]           set the stop time
   --output-interval [VALUE]     set the output interval
   --start-value [name] [value]  set a start value
   --input-file [FILE]           read input from a CSV file
   --output-file [FILE]          write output to a CSV file
-  --log-fmi-calls               log FMI calls to the console
+  --log-fmi-calls               log FMI calls
   --fmi-log-file [FILE]         set the FMI log file
 
 Example:
