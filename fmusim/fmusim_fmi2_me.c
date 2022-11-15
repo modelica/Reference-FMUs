@@ -97,7 +97,10 @@ FMIStatus simulateFMI2ME(
     while (!eventInfo.terminateSimulation) {
 
         // detect input and time events
-        inputEvent = time >= FMINextInputEvent(input, time);
+        const double nextEventTime = FMINextInputEvent(input, time);
+        
+        inputEvent = time >= nextEventTime;
+
         timeEvent = eventInfo.nextEventTimeDefined && time >= eventInfo.nextEventTime;
 
         const bool eventOccurred = inputEvent || timeEvent || stateEvent || stepEvent;
@@ -153,6 +156,9 @@ FMIStatus simulateFMI2ME(
                     CALL(FMI2GetNominalsOfContinuousStates(S, x_nominal, nx));
                 }
             }
+
+            // record outputs after the event
+            CALL(FMISample(S, time, result));
         }
 
         if (time >= stopTime) {

@@ -86,9 +86,9 @@ double FMINextInputEvent(FMUStaticInput* input, double time) {
 		const double t0 = input->time[i];
 		const double t1 = input->time[i + 1];
 
-		if (time < t0) {
-			continue;
-		}
+		//if (time < t0) {
+		//	continue;
+		//}
 
 		if (t0 == t1) {
 			return t0;  // discrete change of a continuous variable
@@ -118,11 +118,11 @@ double FMINextInputEvent(FMUStaticInput* input, double time) {
 
 FMIStatus FMIApplyInput(FMIInstance* instance, FMUStaticInput* input, double time, bool discrete, bool continuous, bool afterEvent) {
 
-	if (!input) {
-		return FMIOK;
-	}
-
 	FMIStatus status = FMIOK;
+
+	if (!input) {
+		goto TERMINATE;
+	}
 
 	size_t row = 0;
 
@@ -130,52 +130,86 @@ FMIStatus FMIApplyInput(FMIInstance* instance, FMUStaticInput* input, double tim
 
 		const double t = input->time[i];
 
-		if (t > time) {
+		if (t >= time) {
 			break;
 		}
 
 		row = i;
 	}
 
+	if (afterEvent) {
+
+		while (row < input->nRows - 2) {
+
+			if (input->time[row + 1] > time) {
+				break;
+			}
+
+			row++;
+		}
+	}
+
 	for (size_t i = 0; i < input->nVariables; i++) {
 
-		const FMIModelVariable*  variable    = input->variables[i];
-		const FMIVariableType    type        = variable->type;
-		const fmi2ValueReference vr          = variable->valueReference;
-		const double             doubleValue = input->values[(input->nVariables * row) + i];
+		const FMIModelVariable*  variable = input->variables[i];
+		const FMIVariableType    type     = variable->type;
+		const fmi2ValueReference vr       = variable->valueReference;
+		const double             value    = input->values[(input->nVariables * row) + i];
+
+		double interpolatedValue;
+
+		if (row >= input->nRows - 1) {
+			interpolatedValue = input->values[(input->nVariables * row) + i];
+		} else {
+			const double t0 = input->time[row];
+			const double t1 = input->time[row + 1];
+
+			const double x0 = input->values[(input->nVariables * row) + i];
+			const double x1 = input->values[(input->nVariables * (row + 1)) + i];
+
+			interpolatedValue = x0 + (time - t0) * (x1 - x0) / (t1 - t0);
+		}
 
 		if (instance->fmiVersion == FMIVersion2) {
 
-			if ((type == FMIRealType && continuous) || (type == FMIDiscreteRealType && discrete)) {
+			if (type == FMIRealType && continuous) {
 
-				CALL(FMI2SetReal(instance, &vr, 1, (fmi2Real*)&doubleValue));
-			
+				CALL(FMI2SetReal(instance, &vr, 1, (fmi2Real*)&interpolatedValue));
+
+			} else if(type == FMIDiscreteRealType && discrete) {
+
+				CALL(FMI2SetReal(instance, &vr, 1, (fmi2Real*)&value));
+
 			} else if (type == FMIIntegerType && discrete) {
 			
-				const fmi2Integer integerValue = (fmi2Integer)doubleValue;
+				const fmi2Integer integerValue = (fmi2Integer)value;
 				CALL(FMI2SetInteger(instance, &vr, 1, (fmi2Integer*)&integerValue));
 			
 			} else if (type == FMIBooleanType && discrete) {
 			
-				const fmi2Boolean booleanValue = doubleValue != fmi2False ? fmi2True : fmi2False;
+				const fmi2Boolean booleanValue = value != fmi2False ? fmi2True : fmi2False;
 				CALL(FMI2SetBoolean(instance, &vr, 1, (fmi2Boolean*)&booleanValue));
 			
 			}
 
 		} else if (instance->fmiVersion == FMIVersion3) {
 		
-			if ((type == FMIFloat64Type && continuous) || (type == FMIDiscreteFloat64Type && discrete)) {
+			if (type == FMIFloat64Type && continuous) {
 
-				CALL(FMI3SetFloat64(instance, &vr, 1, (fmi3Float64*)&doubleValue, 1));
+				CALL(FMI3SetFloat64(instance, &vr, 1, (fmi3Float64*)&interpolatedValue, 1));
+
+			} else if (type == FMIDiscreteFloat64Type && discrete) {
+
+				CALL(FMI3SetFloat64(instance, &vr, 1, (fmi3Float64*)&value, 1));
 
 			} else if (type == FMIInt32Type && discrete) {
 
-				const fmi3Int32 int32Value = (fmi2Integer)doubleValue;
+				const fmi3Int32 int32Value = (fmi2Integer)value;
 				CALL(FMI3SetInt32(instance, &vr, 1, (fmi3Int32*)&int32Value, 1));
 
 			} else if (type == FMIBooleanType && discrete) {
 
-				const fmi3Boolean booleanValue = doubleValue != fmi3False ? fmi3True : fmi3False;
+				const fmi3Boolean booleanValue = value != fmi3False ? fmi3True : fmi3False;
 				CALL(FMI3SetBoolean(instance, &vr, 1, (fmi3Boolean*)&booleanValue, 1));
 
 			}

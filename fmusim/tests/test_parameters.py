@@ -57,7 +57,7 @@ def test_input_file(executable, work, dist, resources, fmi_version, interface_ty
     check_call([
         executable,
         '--interface-type', interface_type,
-        '--stop-time', '1.5',
+        '--stop-time', '5',
         r'--input-file', input_file,
         r'--output-file', output_file,
         fmu_filename]
@@ -65,8 +65,25 @@ def test_input_file(executable, work, dist, resources, fmi_version, interface_ty
 
     result = read_csv(output_file)
 
-    assert result['Int32_output'][0] == -2
-    assert result['Int32_output'][-1] == 3
+    t = result['time']
+
+    # interpolated values
+    x = result['Float64_continuous_output'][np.logical_and(t > 1.25, t < 1.75)]
+
+    # start value
+    assert result['Float64_continuous_output'][0] == 3
+
+    # interpolation
+    assert np.all(x > 2) and np.all(x < 3)
+
+    # extrapolation
+    assert result['Float64_continuous_output'][-1] == 3
+
+    # start value
+    assert result['Int32_output'][0] == 1
+
+    # extrapolation
+    assert result['Int32_output'][-1] == 2
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
