@@ -278,12 +278,6 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
     }
 
     xmlChar* fmiVersion = xmlGetProp(root, "fmiVersion");
-
-    //if (!strcmp(fmiVersion, "1.0")) {
-    //    modelDescription->fmiVersion = FMIVersion1;
-    //} else if (!strcmp(fmiVersion, "2.0")) {
-    //    modelDescription->fmiVersion = FMIVersion2;
-    //} else 
         
     if (!strcmp(fmiVersion, "2.0")) {
         modelDescription->fmiVersion = FMIVersion2;
@@ -295,14 +289,6 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
     }
 
     xmlSchemaParserCtxtPtr pctxt;
-
-    char path[2048] = "";
-
-#ifdef _WIN32
-    GetModuleFileNameA(NULL, path, 2048);
-#else
-    // TODO
-#endif
     
     switch (modelDescription->fmiVersion) {
     case FMIVersion2:
