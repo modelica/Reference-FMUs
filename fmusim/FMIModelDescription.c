@@ -351,7 +351,30 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
 }
 
 void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
-    // TODO
+
+    if (!modelDescription) {
+        return;
+    }
+
+    free(modelDescription->modelName);
+    free(modelDescription->instantiationToken);
+    free(modelDescription->description);
+    free(modelDescription->generationTool);
+    free(modelDescription->generationDate);
+
+    if (modelDescription->modelExchange) {
+        free(modelDescription->modelExchange->modelIdentifier);
+        free(modelDescription->modelExchange);
+    }
+
+    if (modelDescription->coSimulation) {
+        free(modelDescription->coSimulation->modelIdentifier);
+        free(modelDescription->coSimulation);
+    }
+
+    free(modelDescription->modelVariables);
+
+    free(modelDescription);
 }
 
 FMIModelVariable* FMIModelVariableForName(const FMIModelDescription* modelDescription, const char* name) {
