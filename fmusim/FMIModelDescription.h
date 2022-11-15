@@ -1,9 +1,12 @@
 #pragma once
 
-#include "FMI.h"
 #include <stdio.h>
 
+#include "FMI.h"
+
+
 typedef enum {
+
     FMIParameter,
     FMICalculatedParameter,
     FMIStructuralParameter,
@@ -11,6 +14,7 @@ typedef enum {
     FMIOutput,
     FMILocal,
     FMIIndependent
+
 } FMICausality;
 
 typedef struct {
