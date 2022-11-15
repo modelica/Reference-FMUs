@@ -349,18 +349,6 @@ int main(int argc, char* argv[]) {
 
 TERMINATE:
 
-    if (modelDescription) {
-        FMIFreeModelDescription(modelDescription);
-    }
-
-    if (S) {
-        FMIFreeInstance(S);
-    }
-
-    if (unzipdir) {
-        FMIRemoveDirectory(unzipdir);
-    }
-
     if (result) {
 
         if (outputFile) {
@@ -372,6 +360,18 @@ TERMINATE:
         }
 
         FMIFreeSimulationResult(result);
+    }
+
+    if (modelDescription) {
+        FMIFreeModelDescription(modelDescription);
+    }
+
+    if (S) {
+        FMIFreeInstance(S);
+    }
+
+    if (unzipdir) {
+        FMIRemoveDirectory(unzipdir);
     }
 
     if (unzipdir) {
