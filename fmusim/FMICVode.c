@@ -1,8 +1,7 @@
-#include <cvode/cvode.h>               /* prototypes for CVODE fcts., consts.  */
-#include <nvector/nvector_serial.h>    /* access to serial N_Vector            */
-#include <sunmatrix/sunmatrix_dense.h> /* access to dense SUNMatrix            */
-#include <sunlinsol/sunlinsol_dense.h> /* access to dense SUNLinearSolver      */
-
+#include <cvode/cvode.h>
+#include <nvector/nvector_serial.h>
+#include <sunmatrix/sunmatrix_dense.h>
+#include <sunlinsol/sunlinsol_dense.h>
 
 #include "FMICVode.h"
 #include "FMI2.h"
@@ -42,9 +41,12 @@ static int f(realtype t, N_Vector y, N_Vector ydot, void* user_data) {
 
     solver->set_time(solver->S, t);
 
-    solver->set_x(solver->S, NV_DATA_S(y), solver->nx);
-
-    solver->get_dx(solver->S, NV_DATA_S(ydot), solver->nx);
+    if (solver->nx == 0) {
+        NV_DATA_S(ydot)[0] = 0.0;
+    } else {
+        solver->set_x(solver->S, NV_DATA_S(y), NV_LENGTH_S(y));
+        solver->get_dx(solver->S, NV_DATA_S(ydot), NV_LENGTH_S(ydot));
+    }
 
     return 0;
 }
@@ -58,8 +60,10 @@ static int g(realtype t, N_Vector y, realtype* gout, void* user_data) {
 
     FMIApplyInput(solver->S, solver->input, t, false, true, false);
 
-    solver->set_x(solver->S, NV_DATA_S(y), solver->nx);
-
+    if (solver->nx > 0) {
+        solver->set_x(solver->S, NV_DATA_S(y), NV_LENGTH_S(y));
+    }
+    
     solver->get_z(solver->S, gout, solver->nz);
 
     return 0;
@@ -97,49 +101,43 @@ Solver* CVODECreate(FMIInstance* S, const FMIModelDescription* modelDescription,
         return NULL;
     }
 
-    /* Create the SUNDIALS context */
     int retval = SUNContext_Create(NULL, &solver->sunctx);
 
-    /* Initial conditions */
-    solver->y = N_VNew_Serial(solver->nx, solver->sunctx);
+    // insert a dummy state if nx == 0
+    if (solver->nx > 0) {
+        solver->y = N_VNew_Serial(solver->nx, solver->sunctx);
+    } else {
+        solver->y = N_VNew_Serial(1, solver->sunctx);
+    }
 
-    /* Initialize y */
-    solver->get_x(solver->S, NV_DATA_S(solver->y), solver->nx);
+    if (solver->nx > 0) {
+        solver->get_x(solver->S, NV_DATA_S(solver->y), solver->nx);
+    } else {
+        NV_DATA_S(solver->y)[0] = 1.0;
+    }
 
-    /* Set the vector absolute tolerance */
-    solver->abstol = N_VNew_Serial(solver->nx, solver->sunctx);
-    for (size_t i = 0; i < solver->nx; i++) {
+    solver->abstol = N_VNew_Serial(NV_LENGTH_S(solver->y), solver->sunctx);
+
+    for (size_t i = 0; i < NV_LENGTH_S(solver->y); i++) {
         NV_DATA_S(solver->abstol)[i] = RTOL;
     }
 
-    /* Call CVodeCreate to create the solver memory and specify the
-     * Backward Differentiation Formula */
     solver->cvode_mem = CVodeCreate(CV_BDF, solver->sunctx);
 
     CVodeSetUserData(solver->cvode_mem, solver);
 
-    /* Call CVodeInit to initialize the integrator memory and specify the
-     * user's right hand side function in y'=f(t,y), the initial time T0, and
-     * the initial dependent variable vector y. */
     retval = CVodeInit(solver->cvode_mem, f, startTime, solver->y);
 
-    /* Call CVodeSVtolerances to specify the scalar relative tolerance
-     * and vector absolute tolerances */
     retval = CVodeSVtolerances(solver->cvode_mem, RTOL, solver->abstol);
 
-    /* Call CVodeRootInit to specify the root function g with 2 components */
     retval = CVodeRootInit(solver->cvode_mem, (int)solver->nz, g);
 
-    /* Create dense SUNMatrix for use in linear solves */
-    solver->A = SUNDenseMatrix(solver->nx, solver->nx, solver->sunctx);
+    solver->A = SUNDenseMatrix(NV_LENGTH_S(solver->y), NV_LENGTH_S(solver->y), solver->sunctx);
 
-    /* Create dense SUNLinearSolver object for use by CVode */
     solver->LS = SUNLinSol_Dense(solver->y, solver->A, solver->sunctx);
 
-    /* Attach the matrix and linear solver */
     retval = CVodeSetLinearSolver(solver->cvode_mem, solver->LS, solver->A);
 
-    /* Set the user-supplied Jacobian routine Jac */
     //retval = CVodeSetJacFn(cvode_mem, Jac);
 
     return solver;
@@ -163,9 +161,15 @@ FMIStatus CVODEStep(Solver* solver, double nextTime, double* timeReached, bool* 
 
     FMIStatus status = FMIOK;
 
-    solver->get_x(solver->S, NV_DATA_S(solver->y), solver->nx);
+    if (solver->nx > 0) {
+        solver->get_x(solver->S, NV_DATA_S(solver->y), NV_LENGTH_S(solver->y));
+    }
 
     int flag = CVode(solver->cvode_mem, nextTime, solver->y, timeReached, CV_NORMAL);
+
+    if (solver->nx > 0) {
+        solver->set_x(solver->S, NV_DATA_S(solver->y), NV_LENGTH_S(solver->y));
+    }
 
     *stateEvent = flag == CV_ROOT_RETURN;
 
@@ -183,7 +187,9 @@ FMIStatus CVODEReset(Solver* solver, double time) {
         return FMIError;
     }
 
-    solver->get_x(solver->S, NV_DATA_S(solver->y), solver->nx);
+    if (solver->nx > 0) {
+        solver->get_x(solver->S, NV_DATA_S(solver->y), NV_LENGTH_S(solver->y));
+    }
 
     CVodeReInit(solver->cvode_mem, time, solver->y);
 
