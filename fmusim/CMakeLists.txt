@@ -16,6 +16,8 @@ set(sources
   FMISolver.h
   ForwardEuler.h
   ForwardEuler.c
+  CVODE.h
+  CVODE.c
   FMIModelDescription.h
   FMIModelDescription.c
   FMISimulationResult.h
@@ -54,6 +56,7 @@ target_include_directories(fmusim PRIVATE
   ../ThirdParty/libxml2-2.10.3/build/install/include/libxml2
   ../ThirdParty/zlib-1.2.13/build/install/include
   ../ThirdParty/zlib-1.2.13/contrib/minizip
+  ../ThirdParty/cvode-6.4.1/build/install/include
 )
 
 add_compile_definitions(LIBXML_STATIC)
@@ -62,6 +65,7 @@ if (WIN32)
     set(libraries
       ${CMAKE_SOURCE_DIR}/../ThirdParty/libxml2-2.10.3/build/install/lib/libxml2s.lib
       ${CMAKE_SOURCE_DIR}/../ThirdParty/zlib-1.2.13/build/install/lib/zlibstatic.lib
+      ${CMAKE_SOURCE_DIR}/../ThirdParty/cvode-6.4.1/build/install/lib/sundials_cvode.lib
       wsock32
       ws2_32
     )

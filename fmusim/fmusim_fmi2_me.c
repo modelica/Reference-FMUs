@@ -3,7 +3,7 @@
 #include "fmusim_fmi2.h"
 #include "fmusim_fmi2_me.h"
 
-#include "ForwardEuler.h"
+#include "CVODE.h"
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
@@ -22,10 +22,15 @@ FMIStatus simulateFMI2ME(
     double stopTime,
     const FMUStaticInput * input) {
 
-    SolverCreate solverCreate = ForwardEulerCreate;
-    SolverFree solverFree = ForwardEulerFree;
-    SolverStep solverStep = ForwardEulerStep;
-    SolverReset solverReset = ForwardEulerReset;
+    //SolverCreate solverCreate = ForwardEulerCreate;
+    //SolverFree solverFree = ForwardEulerFree;
+    //SolverStep solverStep = ForwardEulerStep;
+    //SolverReset solverReset = ForwardEulerReset;
+
+    SolverCreate solverCreate = CVODECreate;
+    SolverFree solverFree = CVODEFree;
+    SolverStep solverStep = CVODEStep;
+    SolverReset solverReset = CVODEReset;
 
     //const size_t nx = modelDescription->nContinuousStates;
     //const size_t nz = modelDescription->nEventIndicators;
