@@ -73,6 +73,7 @@ elseif(UNIX AND NOT APPLE)
     set(libraries
       ${CMAKE_SOURCE_DIR}/../ThirdParty/libxml2-2.10.3/build/install/lib/libxml2.a
       ${CMAKE_SOURCE_DIR}/../ThirdParty/zlib-1.2.13/build/install/lib/libz.a
+      ${CMAKE_SOURCE_DIR}/../ThirdParty/cvode-6.4.1/build/install/lib/libsundials_cvode.a
       ${CMAKE_DL_LIBS}
       m
     )
@@ -80,6 +81,7 @@ else ()
     set(libraries
       ${CMAKE_SOURCE_DIR}/../ThirdParty/libxml2-2.10.3/build/install/lib/libxml2.a
       ${CMAKE_SOURCE_DIR}/../ThirdParty/zlib-1.2.13/build/install/lib/libz.a
+      ${CMAKE_SOURCE_DIR}/../ThirdParty/cvode-6.4.1/build/install/lib/libsundials_cvode.a
     )
 endif ()
 
