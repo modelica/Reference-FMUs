@@ -1,6 +1,9 @@
 #include "ForwardEuler.h"
 
 
+#define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
+
+
 typedef struct SolverImpl Solver;
 
 struct SolverImpl {
@@ -48,15 +51,17 @@ void ForwardEulerFree(Solver* solver) {
     free(solver);
 }
 
-void ForwardEulerStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent) {
+FMIStatus ForwardEulerStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent) {
 
     if (!solver) {
-        return;
+        return FMIError;
     }
 
-    FMI2GetContinuousStates(solver->S, solver->x, solver->nx);
+    FMIStatus status = FMIOK;
 
-    FMI2GetDerivatives(solver->S, solver->dx, solver->nx);
+    CALL(FMI2GetContinuousStates(solver->S, solver->x, solver->nx));
+
+    CALL(FMI2GetDerivatives(solver->S, solver->dx, solver->nx));
 
     const double dt = nextTime - solver->time;
 
@@ -64,9 +69,9 @@ void ForwardEulerStep(Solver* solver, double nextTime, double* timeReached, bool
         solver->x[i] += dt * solver->dx[i];
     }
 
-    FMI2SetContinuousStates(solver->S, solver->x, solver->nx);
+    CALL(FMI2SetContinuousStates(solver->S, solver->x, solver->nx));
 
-    FMI2GetEventIndicators(solver->S, solver->z, solver->nz);
+    CALL(FMI2GetEventIndicators(solver->S, solver->z, solver->nz));
 
     *stateEvent = false;
 
@@ -83,9 +88,16 @@ void ForwardEulerStep(Solver* solver, double nextTime, double* timeReached, bool
 
     solver->time = nextTime;
     *timeReached = nextTime;
+
+TERMINATE:
+    return status;
 }
 
-void ForwardEulerReset(Solver* solver, double time) {
+FMIStatus ForwardEulerReset(Solver* solver, double time) {
+    
+    if (!solver) {
+        return FMIError;
+    }
 
-    FMI2GetEventIndicators(solver->S, solver->prez, solver->nz);
+    return FMI2GetEventIndicators(solver->S, solver->prez, solver->nz);
 }

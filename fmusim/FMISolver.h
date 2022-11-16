@@ -11,6 +11,6 @@ typedef Solver* (*SolverCreate)(FMIInstance* S, const FMIModelDescription* model
 
 typedef void (*SolverFree)(Solver* solver);
 
-typedef void (*SolverStep)(void* solver, double nextTime, double* timeReached, bool* stateEvent);
+typedef FMIStatus (*SolverStep)(void* solver, double nextTime, double* timeReached, bool* stateEvent);
 
-typedef void (*SolverReset)(void* solver, double time);
+typedef FMIStatus (*SolverReset)(void* solver, double time);

@@ -7,6 +7,6 @@ Solver* ForwardEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescr
 
 void ForwardEulerFree(Solver* solver);
 
-void ForwardEulerStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent);
+FMIStatus ForwardEulerStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent);
 
-void ForwardEulerReset(Solver* solver, double time);
+FMIStatus ForwardEulerReset(Solver* solver, double time);
