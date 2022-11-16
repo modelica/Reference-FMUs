@@ -20,3 +20,5 @@ typedef struct {
     SolverReset solverReset;
 
 } FMISimulationSettings;
+
+FMIStatus applyStartValues(FMIInstance* S, FMISimulationSettings* settings);

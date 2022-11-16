@@ -42,8 +42,8 @@ FMIStatus simulateFMI3ME(
     fmi3Float64 time = settings->startTime;
 
     // set start values
-    //CALL(applyStartValuesFMI3(S, nStartValues, startVariables, startValues));
-    CALL(FMIApplyInput(S, input, time, 
+    CALL(applyStartValues(S, settings));
+    CALL(FMIApplyInput(S, input, time,
         true,  // discrete
         true,  // continous
         false  // after event

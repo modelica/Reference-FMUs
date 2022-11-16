@@ -4,6 +4,7 @@ from subprocess import check_call
 import numpy as np
 import pytest
 from fmpy.util import read_csv
+from fmpy import plot_result
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
@@ -44,6 +45,33 @@ def test_stop_time(executable, work, dist, fmi_version, interface_type):
     result = read_csv(output_file)
 
     assert result['time'][-1] == 1.5
+
+
+@pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
+def test_start_value(executable, dist, work, fmi_version, interface_type):
+
+    output_file = work / f'test_start_value_fmi{fmi_version}_{interface_type}.csv'
+
+    fmu_filename = dist / f'{fmi_version}.0' / 'Feedthrough.fmu'
+
+    # --start-value Float64_continuous_input -5e-1 --start-value Int32_input 2 --start-value Boolean_input 1 --start-value String_parameter "FMI is awesome!"
+
+    check_call([
+        executable,
+        '--interface-type', interface_type,
+        '--start-value', 'Float64_continuous_input', '-5e-1',
+        '--start-value', 'Int32_input', '2',
+        '--start-value', 'Boolean_input', '1',
+        '--start-value', 'String_parameter', 'FMI is awesome!',
+        r'--output-file', output_file,
+        fmu_filename]
+    )
+
+    result = read_csv(output_file)
+
+    assert result['Float64_continuous_output'][0] == -0.5
+    assert result['Int32_output'][0] == 2
+    assert result['Boolean_output'][0] == 1
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))

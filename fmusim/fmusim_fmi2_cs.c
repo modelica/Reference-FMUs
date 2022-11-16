@@ -1,3 +1,4 @@
+#include "fmusim.h"
 #include "fmusim_fmi2.h"
 #include "fmusim_fmi2_cs.h"
 
@@ -24,7 +25,7 @@ FMIStatus simulateFMI2CS(
     ));
 
     // set start values
-    //CALL(applyStartValuesFMI2(S, nStartValues, startVariables, startValues));
+    CALL(applyStartValues(S, settings));
     CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
 
     // initialize

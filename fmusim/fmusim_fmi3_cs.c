@@ -32,7 +32,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
         NULL                                   // intermediateUpdate
     ));
 
-    //CALL(applyStartValuesFMI3(S, nStartValues, startVariables, startValues));
+    CALL(applyStartValues(S, settings));
     CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
 
     // initialize

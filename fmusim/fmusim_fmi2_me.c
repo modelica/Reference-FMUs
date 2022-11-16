@@ -39,7 +39,7 @@ FMIStatus simulateFMI2ME(
     fmi2Real time = settings->startTime;
 
     // set start values
-    CALL(applyStartValuesFMI2(S, settings->nStartValues, settings->startVariables, settings->startValues));
+    CALL(applyStartValues(S, settings));
     CALL(FMIApplyInput(S, input, time,
         true,  // discrete
         true,  // continous
