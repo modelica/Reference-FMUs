@@ -25,23 +25,26 @@ struct SolverImpl {
     SUNMatrix A;
     SUNLinearSolver LS;
     void* cvode_mem;
+    FMIStatus(*set_time)(FMIInstance* instance, double time);
+    FMIStatus(*get_x)(FMIInstance* instance, double x[], size_t nx);
+    FMIStatus(*set_x)(FMIInstance* instance, const double x[], size_t nx);
+    FMIStatus(*get_dx)(FMIInstance* instance, double dx[], size_t nx);
+    FMIStatus(*get_z)(FMIInstance* instance, double z[], size_t nz);
 } SolverImpl_;
 
 #define RTOL  RCONST(1.0e-4)   /* scalar relative tolerance            */
 
-
-/* Functions Called by the Solver */
 
 // Right-hand-side function
 static int f(realtype t, N_Vector y, N_Vector ydot, void* user_data) {
 
     Solver* solver = (Solver*)user_data;
 
-    FMI2SetTime(solver->S, t);
+    solver->set_time(solver->S, t);
 
-    FMI2SetContinuousStates(solver->S, NV_DATA_S(y), solver->nx);
+    solver->set_x(solver->S, NV_DATA_S(y), solver->nx);
 
-    FMI2GetDerivatives(solver->S, NV_DATA_S(ydot), solver->nx);
+    solver->get_dx(solver->S, NV_DATA_S(ydot), solver->nx);
 
     return 0;
 }
@@ -51,19 +54,18 @@ static int g(realtype t, N_Vector y, realtype* gout, void* user_data) {
 
     Solver* solver = (Solver*)user_data;
 
-    FMI2SetTime(solver->S, t);
+    solver->set_time(solver->S, t);
 
     FMIApplyInput(solver->S, solver->input, t, false, true, false);
 
-    FMI2SetContinuousStates(solver->S, NV_DATA_S(y), solver->nx);
+    solver->set_x(solver->S, NV_DATA_S(y), solver->nx);
 
-    FMI2GetEventIndicators(solver->S, gout, solver->nz);
+    solver->get_z(solver->S, gout, solver->nz);
 
     return 0;
 }
 
 //static int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
-
 
 Solver* CVODECreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double startTime) {
 
@@ -75,11 +77,25 @@ Solver* CVODECreate(FMIInstance* S, const FMIModelDescription* modelDescription,
 
     solver->S = S;
     solver->input = input;
-    //solver->time = startTime;
-
+    
     solver->nx = modelDescription->nContinuousStates;
-
     solver->nz = modelDescription->nEventIndicators;
+
+    if (S->fmiVersion == FMIVersion2) {
+        solver->set_time = FMI2SetTime;
+        solver->get_x = FMI2GetContinuousStates;
+        solver->set_x = FMI2SetContinuousStates;
+        solver->get_dx = FMI2GetDerivatives;
+        solver->get_z = FMI2GetEventIndicators;
+    } else if (S->fmiVersion == FMIVersion3) {
+        solver->set_time = FMI3SetTime;
+        solver->get_x = FMI3GetContinuousStates;
+        solver->set_x = FMI3SetContinuousStates;
+        solver->get_dx = FMI3GetContinuousStateDerivatives;
+        solver->get_z = FMI3GetEventIndicators;
+    } else {
+        return NULL;
+    }
 
     /* Create the SUNDIALS context */
     int retval = SUNContext_Create(NULL, &solver->sunctx);
@@ -88,7 +104,7 @@ Solver* CVODECreate(FMIInstance* S, const FMIModelDescription* modelDescription,
     solver->y = N_VNew_Serial(solver->nx, solver->sunctx);
 
     /* Initialize y */
-    FMI2GetContinuousStates(solver->S, NV_DATA_S(solver->y), solver->nx);
+    solver->get_x(solver->S, NV_DATA_S(solver->y), solver->nx);
 
     /* Set the vector absolute tolerance */
     solver->abstol = N_VNew_Serial(solver->nx, solver->sunctx);
@@ -147,7 +163,7 @@ FMIStatus CVODEStep(Solver* solver, double nextTime, double* timeReached, bool* 
 
     FMIStatus status = FMIOK;
 
-    FMI2GetContinuousStates(solver->S, NV_DATA_S(solver->y), solver->nx);
+    solver->get_x(solver->S, NV_DATA_S(solver->y), solver->nx);
 
     int flag = CVode(solver->cvode_mem, nextTime, solver->y, timeReached, CV_NORMAL);
 
@@ -167,7 +183,7 @@ FMIStatus CVODEReset(Solver* solver, double time) {
         return FMIError;
     }
 
-    FMI2GetContinuousStates(solver->S, NV_DATA_S(solver->y), solver->nx);
+    solver->get_x(solver->S, NV_DATA_S(solver->y), solver->nx);
 
     CVodeReInit(solver->cvode_mem, time, solver->y);
 

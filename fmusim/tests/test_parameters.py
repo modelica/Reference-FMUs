@@ -151,3 +151,21 @@ def test_output_interval(executable, work, dist, fmi_version, interface_type):
     result = read_csv(output_file)
 
     assert np.all(np.diff(result['time']) == 0.25)
+
+
+@pytest.mark.parametrize('fmi_version, solver', product([2, 3], ['euler', 'cvode']))
+def test_solver(executable, work, dist, fmi_version, solver):
+
+    output_file = work / f'test_solver_fmi{fmi_version}_{solver}.csv'
+
+    fmu_filename = dist / f'{fmi_version}.0' / 'BouncingBall.fmu'
+
+    check_call([
+        executable,
+        '--interface-type', 'me',
+        '--solver', solver,
+        r'--output-file', output_file,
+        fmu_filename]
+    )
+
+    result = read_csv(output_file)
