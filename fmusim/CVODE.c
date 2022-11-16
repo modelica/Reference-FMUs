@@ -3,7 +3,10 @@
 #include <sunmatrix/sunmatrix_dense.h> /* access to dense SUNMatrix            */
 #include <sunlinsol/sunlinsol_dense.h> /* access to dense SUNLinearSolver      */
 
-#include "ForwardEuler.h"
+
+#include "CVODE.h"
+#include "FMI2.h"
+#include "FMI3.h"
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
