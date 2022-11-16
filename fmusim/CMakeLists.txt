@@ -13,6 +13,9 @@ set(sources
   ../src/FMI3.c
   csv.h
   csv.c
+  FMISolver.h
+  ForwardEuler.h
+  ForwardEuler.c
   FMIModelDescription.h
   FMIModelDescription.c
   FMISimulationResult.h

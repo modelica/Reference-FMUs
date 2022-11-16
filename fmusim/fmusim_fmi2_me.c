@@ -3,86 +3,10 @@
 #include "fmusim_fmi2.h"
 #include "fmusim_fmi2_me.h"
 
+#include "ForwardEuler.h"
+
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
-
-typedef struct {
-    FMIInstance* S;
-    double time;
-    size_t nx;
-    double* x;
-    double* dx;
-    size_t nz;
-    double* z;
-    double* prez;
-} Solver;
-
-static void* createSolver(FMIInstance* S, const FMIModelDescription * modelDescription, const FMUStaticInput* input, double startTime) {
-
-    Solver* solver = (Solver*)calloc(1, sizeof(Solver));
-
-    if (!solver) {
-        return NULL;
-    }
-
-    solver->S = S;
-    solver->time = startTime;
-
-    solver->nx = modelDescription->nContinuousStates;
-    solver->x  = (double*)calloc(solver->nx, sizeof(double));
-    solver->dx = (double*)calloc(solver->nx, sizeof(double));
-
-    solver->nz   = modelDescription->nEventIndicators;
-    solver->z    = (double*)calloc(solver->nx, sizeof(double));
-    solver->prez = (double*)calloc(solver->nx, sizeof(double));
-
-    // initialize the event indicators
-    FMI2GetEventIndicators(solver->S, solver->prez, solver->nz);
-
-    return solver;
-}
-
-static void solverStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent) {
-
-    FMI2GetContinuousStates(solver->S, solver->x, solver->nx);
-    
-    FMI2GetDerivatives(solver->S, solver->dx, solver->nx);
-
-    const double dt = nextTime - solver->time;
-
-    // do one step
-    for (size_t i = 0; i < solver->nx; i++) {
-        solver->x[i] += dt * solver->dx[i];
-    }
-
-    FMI2SetContinuousStates(solver->S, solver->x, solver->nx);
-
-    FMI2GetEventIndicators(solver->S, solver->z, solver->nz);
-
-    *stateEvent = false;
-
-    for (size_t i = 0; i < solver->nz; i++) {
-
-        if (solver->prez[i] <= 0 && solver->z[i] > 0) {
-            *stateEvent = true;  // -\+
-        } else if (solver->prez[i] > 0 && solver->z[i] <= 0) {
-            *stateEvent = true;  // +/-
-        }
-
-        solver->prez[i] = solver->z[i];
-    }
-
-    solver->time = nextTime;
-    *timeReached = nextTime;
-}
-
-static void solverReset(Solver* solver, double time) {
-    FMI2GetEventIndicators(solver->S, solver->prez, solver->nz);
-}
-
-static void freeSolver(Solver* solver) {
-    // TODO
-}
  
 
 FMIStatus simulateFMI2ME(
@@ -97,6 +21,11 @@ FMIStatus simulateFMI2ME(
     double stepSize,
     double stopTime,
     const FMUStaticInput * input) {
+
+    SolverCreate solverCreate = ForwardEulerCreate;
+    SolverFree solverFree = ForwardEulerFree;
+    SolverStep solverStep = ForwardEulerStep;
+    SolverReset solverReset = ForwardEulerReset;
 
     //const size_t nx = modelDescription->nContinuousStates;
     //const size_t nz = modelDescription->nEventIndicators;
@@ -151,7 +80,7 @@ FMIStatus simulateFMI2ME(
 
     CALL(FMI2EnterContinuousTimeMode(S));
 
-    solver = createSolver(S, modelDescription, input, time);
+    solver = solverCreate(S, modelDescription, input, time);
 
     CALL(FMISample(S, time, result));
 
@@ -372,7 +301,7 @@ FMIStatus simulateFMI2ME(
 TERMINATE:
 
     if (solver) {
-        freeSolver(solver);
+        solverFree(solver);
     }
 
     return status;
