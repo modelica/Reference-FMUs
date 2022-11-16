@@ -16,7 +16,7 @@ typedef struct SolverImpl Solver;
 
 struct SolverImpl {
     FMIInstance* S;
-    FMUStaticInput* input;
+    const FMUStaticInput* input;
     size_t nx;
     size_t nz;
     SUNContext sunctx;
@@ -112,7 +112,7 @@ Solver* CVODECreate(FMIInstance* S, const FMIModelDescription* modelDescription,
     retval = CVodeSVtolerances(solver->cvode_mem, RTOL, solver->abstol);
 
     /* Call CVodeRootInit to specify the root function g with 2 components */
-    retval = CVodeRootInit(solver->cvode_mem, solver->nz, g);
+    retval = CVodeRootInit(solver->cvode_mem, (int)solver->nz, g);
 
     /* Create dense SUNMatrix for use in linear solves */
     solver->A = SUNDenseMatrix(solver->nx, solver->nx, solver->sunctx);
