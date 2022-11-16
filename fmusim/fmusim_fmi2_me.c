@@ -76,6 +76,8 @@ FMIStatus simulateFMI2ME(
         const double nextInputEventTime = FMINextInputEvent(input, time);
 
         inputEvent = time >= nextInputEventTime;
+
+        timeEvent = eventInfo.nextEventTimeDefined && eventInfo.nextEventTime <= nextTime;
         
         settings->solverStep(solver, nextTime, &time, &stateEvent);
 
