@@ -116,6 +116,7 @@ void printUsage() {
         "  --output-file [FILE]          write output to a CSV file\n"
         "  --log-fmi-calls               log FMI calls\n"
         "  --fmi-log-file [FILE]         set the FMI log file\n"
+        "  --solver [euler|cvode]        the solver to use\n"
         "\n"
         "Example:\n"
         "\n"
