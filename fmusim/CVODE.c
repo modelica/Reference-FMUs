@@ -14,21 +14,14 @@ typedef struct SolverImpl Solver;
 struct SolverImpl {
     FMIInstance* S;
     FMUStaticInput* input;
-    //double time;
     size_t nx;
-    //double* x;
-    //double* dx;
     size_t nz;
-    //double* z;
-    //double* prez;
-
     SUNContext sunctx;
     N_Vector y;
     N_Vector abstol;
     SUNMatrix A;
     SUNLinearSolver LS;
     void* cvode_mem;
-    //int* rootsfound;
 } SolverImpl_;
 
 #define RTOL  RCONST(1.0e-4)   /* scalar relative tolerance            */

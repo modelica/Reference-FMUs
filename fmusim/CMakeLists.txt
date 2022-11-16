@@ -24,6 +24,7 @@ set(sources
   FMISimulationResult.c
   FMIZip.h
   FMIZip.c
+  fmusim.h
   fmusim.c
   fmusim_fmi2.h
   fmusim_fmi2.c

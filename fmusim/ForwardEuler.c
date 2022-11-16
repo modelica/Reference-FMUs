@@ -1,3 +1,6 @@
+#include "FMI2.h"
+#include "FMI3.h"
+
 #include "ForwardEuler.h"
 
 
@@ -15,6 +18,10 @@ struct SolverImpl {
     size_t nz;
     double* z;
     double* prez;
+    FMIStatus(*get_x)(FMIInstance* instance, double x[], size_t nx);
+    FMIStatus(*set_x)(FMIInstance* instance, const double x[], size_t nx);
+    FMIStatus(*get_dx)(FMIInstance* instance, double dx[], size_t nx);
+    FMIStatus(*get_z)(FMIInstance* instance, double z[], size_t nz);
 } SolverImpl_;
 
 Solver* ForwardEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double startTime) {
@@ -36,7 +43,21 @@ Solver* ForwardEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescr
     solver->z = (double*)calloc(solver->nx, sizeof(double));
     solver->prez = (double*)calloc(solver->nx, sizeof(double));
 
-    FMI2GetEventIndicators(solver->S, solver->prez, solver->nz);
+    if (S->fmiVersion == FMIVersion2) {
+        solver->get_x = FMI2GetContinuousStates;
+        solver->set_x = FMI2SetContinuousStates;
+        solver->get_dx = FMI2GetDerivatives;
+        solver->get_z = FMI2GetEventIndicators;
+    } else if (S->fmiVersion == FMIVersion3) {
+        solver->get_x = FMI3GetContinuousStates;
+        solver->set_x = FMI3SetContinuousStates;
+        solver->get_dx = FMI3GetContinuousStateDerivatives;
+        solver->get_z = FMI3GetEventIndicators;
+    } else {
+        return NULL;
+    }
+
+    solver->get_z(solver->S, solver->prez, solver->nz);
 
     return solver;
 }
@@ -59,9 +80,8 @@ FMIStatus ForwardEulerStep(Solver* solver, double nextTime, double* timeReached,
 
     FMIStatus status = FMIOK;
 
-    CALL(FMI2GetContinuousStates(solver->S, solver->x, solver->nx));
-
-    CALL(FMI2GetDerivatives(solver->S, solver->dx, solver->nx));
+    CALL(solver->get_x(solver->S, solver->x, solver->nx));
+    CALL(solver->get_dx(solver->S, solver->dx, solver->nx));
 
     const double dt = nextTime - solver->time;
 
@@ -69,9 +89,8 @@ FMIStatus ForwardEulerStep(Solver* solver, double nextTime, double* timeReached,
         solver->x[i] += dt * solver->dx[i];
     }
 
-    CALL(FMI2SetContinuousStates(solver->S, solver->x, solver->nx));
-
-    CALL(FMI2GetEventIndicators(solver->S, solver->z, solver->nz));
+    CALL(solver->set_x(solver->S, solver->x, solver->nx));
+    CALL(solver->get_z(solver->S, solver->z, solver->nz));
 
     *stateEvent = false;
 
@@ -99,5 +118,5 @@ FMIStatus ForwardEulerReset(Solver* solver, double time) {
         return FMIError;
     }
 
-    return FMI2GetEventIndicators(solver->S, solver->prez, solver->nz);
+    return solver->get_z(solver->S, solver->prez, solver->nz);
 }

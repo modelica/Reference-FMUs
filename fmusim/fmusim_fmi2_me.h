@@ -4,17 +4,13 @@
 #include "FMIModelDescription.h"
 #include "FMISimulationResult.h"
 #include "fmusim_input.h"
+#include "fmusim.h"
 
 
 FMIStatus simulateFMI2ME(
-    FMIInstance* S, 
-    const FMIModelDescription* modelDescription, 
-    const char* resourcePath,
+    FMIInstance* S,
+    const FMIModelDescription* modelDescription,
+    const char* resourceURI,
     FMISimulationResult* result,
-    size_t nStartValues,
-    const FMIModelVariable* startVariables[],
-    const char* startValues[],
-    double startTime,
-    double stepSize,
-    double stopTime,
-    const FMUStaticInput* input);
+    const FMUStaticInput* input,
+    const FMISimulationSettings* settings);

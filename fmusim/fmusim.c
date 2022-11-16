@@ -20,6 +20,7 @@
 #include "FMIModelDescription.h"
 #include "FMISimulationResult.h"
 
+#include "fmusim.h"
 #include "fmusim_fmi2_cs.h"
 #include "fmusim_fmi2_me.h"
 #include "fmusim_fmi3_cs.h"
@@ -27,6 +28,8 @@
 
 #include "fmusim_input.h"
 
+#include "ForwardEuler.h"
+#include "CVODE.h"
 
 #define FMI_PATH_MAX 4096
 
@@ -148,6 +151,8 @@ int main(int argc, char* argv[]) {
     char** startNames = NULL;
     char** startValues = NULL;
 
+    char* solver = "euler";
+
     FMIInstance* S = NULL;
     FMISimulationResult* result = NULL;
     const char* unzipdir = NULL;
@@ -187,6 +192,8 @@ int main(int argc, char* argv[]) {
         } else if (!strcmp(v, "--output-interval")) {
             char* error;
             outputInterval = strtod(argv[++i], &error);
+        } else if (!strcmp(v, "--solver")) {
+            solver = argv[++i];
         } else {
             printf(PROGNAME ": unrecognized option '%s'\n", v);
             printf("Try '" PROGNAME " --help' for more information.\n");
@@ -326,23 +333,47 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    FMISimulationSettings settings;
+
+    settings.nStartValues = nStartValues;
+    settings.startVariables = startValues;
+    settings.startValues = startValues;
+    settings.startTime = startTime;
+    settings.outputInterval = outputInterval;
+    settings.stopTime = stopTime;
+
+    if (!strcmp("euler", solver)) {
+        settings.solverCreate = ForwardEulerCreate;
+        settings.solverFree   = ForwardEulerFree;
+        settings.solverStep   = ForwardEulerStep;
+        settings.solverReset  = ForwardEulerReset;
+    } else if (!strcmp("cvode", solver)) {
+        settings.solverCreate = CVODECreate;
+        settings.solverFree   = CVODEFree;
+        settings.solverStep   = CVODEStep;
+        settings.solverReset  = CVODEReset;
+    } else {
+        printf("Unknown solver: %s.", solver);
+        return FMIError;
+    }
+
     if (modelDescription->fmiVersion == FMIVersion2) {
 
         char resourceURI[FMI_PATH_MAX] = "";
         CALL(FMIPathToURI(resourcePath, resourceURI, FMI_PATH_MAX));
 
         if (interfaceType == FMICoSimulation) {
-            status = simulateFMI2CS(S, modelDescription, resourceURI, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, input);
+            status = simulateFMI2CS(S, modelDescription, resourceURI, result, input, &settings);
         } else {
-            status = simulateFMI2ME(S, modelDescription, resourceURI, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, input);
+            status = simulateFMI2ME(S, modelDescription, resourceURI, result, input, &settings);
         }
 
     } else {
 
         if (interfaceType == FMICoSimulation) {
-            status = simulateFMI3CS(S, modelDescription, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, input);
+            status = simulateFMI3CS(S, modelDescription, resourcePath, result, input, &settings);
         } else {
-            status = simulateFMI3ME(S, modelDescription, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, input);
+            status = simulateFMI3ME(S, modelDescription, resourcePath, result, input, &settings);
         }
 
     }
