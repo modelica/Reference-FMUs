@@ -1,7 +1,7 @@
 #include "FMI2.h"
 #include "FMI3.h"
 
-#include "ForwardEuler.h"
+#include "FMIEuler.h"
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)

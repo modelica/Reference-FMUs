@@ -28,8 +28,8 @@
 
 #include "fmusim_input.h"
 
-#include "ForwardEuler.h"
-#include "CVODE.h"
+#include "FMIEuler.h"
+#include "FMICVode.h"
 
 #define FMI_PATH_MAX 4096
 
@@ -124,7 +124,7 @@ void printUsage() {
     );
 }
 
-FMIStatus applyStartValues(FMIInstance* S, FMISimulationSettings* settings) {
+FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings) {
 
     FMIStatus status = FMIOK;
 
@@ -259,8 +259,8 @@ int main(int argc, char* argv[]) {
     char* outputFile = NULL;
     char* fmiLogFile = NULL;
 
-    char* startTimeLiteral = NULL;
-    char* stopTimeLiteral = NULL;
+    const char* startTimeLiteral = NULL;
+    const char* stopTimeLiteral = NULL;
     
     double outputInterval = 0;
 

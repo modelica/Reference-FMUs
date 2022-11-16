@@ -21,4 +21,4 @@ typedef struct {
 
 } FMISimulationSettings;
 
-FMIStatus applyStartValues(FMIInstance* S, FMISimulationSettings* settings);
+FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings);

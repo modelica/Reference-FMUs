@@ -14,10 +14,10 @@ set(sources
   csv.h
   csv.c
   FMISolver.h
-  ForwardEuler.h
-  ForwardEuler.c
-  CVODE.h
-  CVODE.c
+  FMIEuler.h
+  FMIEuler.c
+  FMICVode.h
+  FMICVode.c
   FMIModelDescription.h
   FMIModelDescription.c
   FMISimulationResult.h

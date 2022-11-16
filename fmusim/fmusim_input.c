@@ -75,7 +75,7 @@ void FMIFreeInput(FMUStaticInput* input) {
 	// TODO
 }
 
-double FMINextInputEvent(FMUStaticInput* input, double time) {
+double FMINextInputEvent(const FMUStaticInput* input, double time) {
 
 	if (!input) {
 		return INFINITY;

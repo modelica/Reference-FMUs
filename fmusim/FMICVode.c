@@ -4,7 +4,7 @@
 #include <sunlinsol/sunlinsol_dense.h> /* access to dense SUNLinearSolver      */
 
 
-#include "CVODE.h"
+#include "FMICVode.h"
 #include "FMI2.h"
 #include "FMI3.h"
 

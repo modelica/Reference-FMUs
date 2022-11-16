@@ -17,9 +17,9 @@ FMIStatus simulateFMI2ME(
     const FMUStaticInput * input,
     const FMISimulationSettings* settings) {
 
+    bool stateEvent = false;
     fmi2Boolean inputEvent = fmi2False;
     fmi2Boolean timeEvent  = fmi2False;
-    fmi2Boolean stateEvent = fmi2False;
     fmi2Boolean stepEvent  = fmi2False;
     fmi2Boolean nominalsChanged = fmi2False;
     fmi2Boolean statesChanged = fmi2False;

@@ -6,7 +6,7 @@
 typedef struct {
 	
 	size_t nVariables;
-	FMIModelVariable** variables;
+	const FMIModelVariable** variables;
 	size_t nRows;
 	double* time;
 	double* values;
@@ -17,6 +17,6 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 void FMIFreeInput(FMUStaticInput* input);
 
-double FMINextInputEvent(FMUStaticInput* input, double time);
+double FMINextInputEvent(const FMUStaticInput* input, double time);
 
 FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, double time, bool discrete, bool continuous, bool afterEvent);
