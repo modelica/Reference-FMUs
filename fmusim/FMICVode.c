@@ -155,9 +155,12 @@ Solver* CVODECreate(FMIInstance* S, const FMIModelDescription* modelDescription,
 TERMINATE:
 
     if (status > FMIOK) {
-        // TODO: free memory
+
         printf("Failed to create CVode.\n");
-        return NULL;
+
+        CVODEFree(solver);
+
+            return NULL;
     }
 
     return solver;
@@ -165,12 +168,17 @@ TERMINATE:
 
 void CVODEFree(Solver* solver) {
 
-    //free(solver->x);
-    //free(solver->dx);
-    //free(solver->z);
-    //free(solver->prez);
+    if (solver) {
 
-    //free(solver);
+        if (solver->y)         N_VDestroy(solver->y);
+        if (solver->abstol)    N_VDestroy(solver->abstol);
+        if (solver->cvode_mem) CVodeFree(&solver->cvode_mem);
+        if (solver->LS)        SUNLinSolFree(solver->LS);
+        if (solver->A)         SUNMatDestroy(solver->A);
+        if (solver->sunctx)    SUNContext_Free(&solver->sunctx);
+
+        free(solver);
+    }
 }
 
 FMIStatus CVODEStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent) {
