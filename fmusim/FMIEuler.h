@@ -3,10 +3,10 @@
 #include "FMISolver.h"
 
 
-Solver* ForwardEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double startTime);
+Solver* FMIEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double startTime);
 
-void ForwardEulerFree(Solver* solver);
+void FMIEulerFree(Solver* solver);
 
-FMIStatus ForwardEulerStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent);
+FMIStatus FMIEulerStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent);
 
-FMIStatus ForwardEulerReset(Solver* solver, double time);
+FMIStatus FMIEulerReset(Solver* solver, double time);

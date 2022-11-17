@@ -4,7 +4,6 @@ from subprocess import check_call
 import numpy as np
 import pytest
 from fmpy.util import read_csv
-from fmpy import plot_result
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))

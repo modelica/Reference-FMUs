@@ -24,7 +24,7 @@ struct SolverImpl {
     FMIStatus(*get_z)(FMIInstance* instance, double z[], size_t nz);
 } SolverImpl_;
 
-Solver* ForwardEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double startTime) {
+Solver* FMIEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double startTime) {
 
     Solver* solver = (Solver*)calloc(1, sizeof(SolverImpl_));
 
@@ -62,7 +62,7 @@ Solver* ForwardEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescr
     return solver;
 }
 
-void ForwardEulerFree(Solver* solver) {
+void FMIEulerFree(Solver* solver) {
 
     if (!solver) {
         return;
@@ -76,7 +76,7 @@ void ForwardEulerFree(Solver* solver) {
     free(solver);
 }
 
-FMIStatus ForwardEulerStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent) {
+FMIStatus FMIEulerStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent) {
 
     if (!solver) {
         return FMIError;
@@ -116,7 +116,7 @@ TERMINATE:
     return status;
 }
 
-FMIStatus ForwardEulerReset(Solver* solver, double time) {
+FMIStatus FMIEulerReset(Solver* solver, double time) {
     
     if (!solver) {
         return FMIError;

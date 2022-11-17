@@ -462,15 +462,15 @@ int main(int argc, char* argv[]) {
     settings.stopTime = stopTime;
 
     if (!strcmp("euler", solver)) {
-        settings.solverCreate = ForwardEulerCreate;
-        settings.solverFree   = ForwardEulerFree;
-        settings.solverStep   = ForwardEulerStep;
-        settings.solverReset  = ForwardEulerReset;
+        settings.solverCreate = FMIEulerCreate;
+        settings.solverFree   = FMIEulerFree;
+        settings.solverStep   = FMIEulerStep;
+        settings.solverReset  = FMIEulerReset;
     } else if (!strcmp("cvode", solver)) {
-        settings.solverCreate = CVODECreate;
-        settings.solverFree   = CVODEFree;
-        settings.solverStep   = CVODEStep;
-        settings.solverReset  = CVODEReset;
+        settings.solverCreate = FMICVodeCreate;
+        settings.solverFree   = FMICVodeFree;
+        settings.solverStep   = FMICVodeStep;
+        settings.solverReset  = FMICVodeReset;
     } else {
         printf("Unknown solver: %s.", solver);
         return FMIError;
