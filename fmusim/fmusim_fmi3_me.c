@@ -72,6 +72,11 @@ FMIStatus simulateFMI3ME(
     CALL(FMI3EnterContinuousTimeMode(S));
 
     solver = settings->solverCreate(S, modelDescription, input, time);
+    
+    if (!solver) {
+        status = FMIError;
+        goto TERMINATE;
+    }
 
     CALL(FMISample(S, time, result));
 
@@ -87,7 +92,7 @@ FMIStatus simulateFMI3ME(
 
         timeEvent = nextEventTimeDefined && time >= nextEventTime;
 
-        settings->solverStep(solver, nextTime, &time, &stateEvent);
+        CALL(settings->solverStep(solver, nextTime, &time, &stateEvent));
 
         CALL(FMI3SetTime(S, time));
 

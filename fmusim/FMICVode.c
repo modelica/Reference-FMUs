@@ -8,7 +8,13 @@
 #include "FMI3.h"
 
 
-#define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
+#define RTOL  RCONST(1.0e-4)   /* scalar relative tolerance            */
+
+#define CALL_CVODE(f) do { flag = f; if (flag < 0) { status = FMIError; goto TERMINATE; } } while (0)
+
+#define CALL_FMI(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
+
+#define ASSERT_NOT_NULL(f) do { if (!f) { status = FMIError; goto TERMINATE; } } while (0)
 
 
 typedef struct SolverImpl Solver;
@@ -31,24 +37,25 @@ struct SolverImpl {
     FMIStatus(*get_z)(FMIInstance* instance, double z[], size_t nz);
 } SolverImpl_;
 
-#define RTOL  RCONST(1.0e-4)   /* scalar relative tolerance            */
-
 
 // Right-hand-side function
 static int f(realtype t, N_Vector y, N_Vector ydot, void* user_data) {
 
     Solver* solver = (Solver*)user_data;
 
-    solver->set_time(solver->S, t);
+    FMIStatus status = FMIOK;
+
+    CALL_FMI(solver->set_time(solver->S, t));
 
     if (solver->nx == 0) {
         NV_DATA_S(ydot)[0] = 0.0;
     } else {
-        solver->set_x(solver->S, NV_DATA_S(y), NV_LENGTH_S(y));
-        solver->get_dx(solver->S, NV_DATA_S(ydot), NV_LENGTH_S(ydot));
+        CALL_FMI(solver->set_x(solver->S, NV_DATA_S(y), NV_LENGTH_S(y)));
+        CALL_FMI(solver->get_dx(solver->S, NV_DATA_S(ydot), NV_LENGTH_S(ydot)));
     }
 
-    return 0;
+TERMINATE:
+    return status > FMIOK ? CV_ERR_FAILURE : CV_SUCCESS;
 }
 
 // Root function
@@ -56,28 +63,32 @@ static int g(realtype t, N_Vector y, realtype* gout, void* user_data) {
 
     Solver* solver = (Solver*)user_data;
 
-    solver->set_time(solver->S, t);
+    FMIStatus status = FMIOK;
 
-    FMIApplyInput(solver->S, solver->input, t, false, true, false);
+    CALL_FMI(solver->set_time(solver->S, t));
+
+    CALL_FMI(FMIApplyInput(solver->S, solver->input, t, false, true, false));
 
     if (solver->nx > 0) {
-        solver->set_x(solver->S, NV_DATA_S(y), NV_LENGTH_S(y));
+        CALL_FMI(solver->set_x(solver->S, NV_DATA_S(y), NV_LENGTH_S(y)));
     }
     
-    solver->get_z(solver->S, gout, solver->nz);
+    CALL_FMI(solver->get_z(solver->S, gout, solver->nz));
 
-    return 0;
+TERMINATE:
+    return status > FMIOK ? CV_ERR_FAILURE : CV_SUCCESS;
 }
 
 //static int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3);
 
 Solver* CVODECreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double startTime) {
 
+    int flag = CV_SUCCESS;
+    FMIStatus status = FMIOK;
+
     Solver* solver = (Solver*)calloc(1, sizeof(SolverImpl_));
 
-    if (!solver) {
-        return NULL;
-    }
+    ASSERT_NOT_NULL(solver);
 
     solver->S = S;
     solver->input = input;
@@ -101,44 +112,53 @@ Solver* CVODECreate(FMIInstance* S, const FMIModelDescription* modelDescription,
         return NULL;
     }
 
-    int retval = SUNContext_Create(NULL, &solver->sunctx);
+    CALL_CVODE(SUNContext_Create(NULL, &solver->sunctx));
 
     // insert a dummy state if nx == 0
-    if (solver->nx > 0) {
-        solver->y = N_VNew_Serial(solver->nx, solver->sunctx);
-    } else {
-        solver->y = N_VNew_Serial(1, solver->sunctx);
-    }
+    solver->y = N_VNew_Serial(solver->nx > 0 ? solver->nx : 1, solver->sunctx);
+    ASSERT_NOT_NULL(solver->y);
 
     if (solver->nx > 0) {
-        solver->get_x(solver->S, NV_DATA_S(solver->y), solver->nx);
+        CALL_FMI(solver->get_x(solver->S, NV_DATA_S(solver->y), solver->nx));
     } else {
         NV_DATA_S(solver->y)[0] = 1.0;
     }
 
     solver->abstol = N_VNew_Serial(NV_LENGTH_S(solver->y), solver->sunctx);
+    ASSERT_NOT_NULL(solver->abstol);
 
     for (size_t i = 0; i < NV_LENGTH_S(solver->y); i++) {
         NV_DATA_S(solver->abstol)[i] = RTOL;
     }
 
     solver->cvode_mem = CVodeCreate(CV_BDF, solver->sunctx);
+    ASSERT_NOT_NULL(solver->cvode_mem);
 
-    CVodeSetUserData(solver->cvode_mem, solver);
+    CALL_CVODE(CVodeSetUserData(solver->cvode_mem, solver));
 
-    retval = CVodeInit(solver->cvode_mem, f, startTime, solver->y);
+    CALL_CVODE(CVodeInit(solver->cvode_mem, f, startTime, solver->y));
 
-    retval = CVodeSVtolerances(solver->cvode_mem, RTOL, solver->abstol);
+    CALL_CVODE(CVodeSVtolerances(solver->cvode_mem, RTOL, solver->abstol));
 
-    retval = CVodeRootInit(solver->cvode_mem, (int)solver->nz, g);
+    CALL_CVODE(CVodeRootInit(solver->cvode_mem, (int)solver->nz, g));
 
     solver->A = SUNDenseMatrix(NV_LENGTH_S(solver->y), NV_LENGTH_S(solver->y), solver->sunctx);
+    ASSERT_NOT_NULL(solver->A);
 
     solver->LS = SUNLinSol_Dense(solver->y, solver->A, solver->sunctx);
+    ASSERT_NOT_NULL(solver->LS);
 
-    retval = CVodeSetLinearSolver(solver->cvode_mem, solver->LS, solver->A);
+    CALL_CVODE(CVodeSetLinearSolver(solver->cvode_mem, solver->LS, solver->A));
 
-    //retval = CVodeSetJacFn(cvode_mem, Jac);
+    // TODO: CVodeSetJacFn(cvode_mem, Jac);
+
+TERMINATE:
+
+    if (status > FMIOK) {
+        // TODO: free memory
+        printf("Failed to create CVode.\n");
+        return NULL;
+    }
 
     return solver;
 }
@@ -159,19 +179,20 @@ FMIStatus CVODEStep(Solver* solver, double nextTime, double* timeReached, bool* 
         return FMIError;
     }
 
+    int flag = CV_SUCCESS;
     FMIStatus status = FMIOK;
 
     if (solver->nx > 0) {
-        solver->get_x(solver->S, NV_DATA_S(solver->y), NV_LENGTH_S(solver->y));
+        CALL_FMI(solver->get_x(solver->S, NV_DATA_S(solver->y), NV_LENGTH_S(solver->y)));
     }
 
-    int flag = CVode(solver->cvode_mem, nextTime, solver->y, timeReached, CV_NORMAL);
-
-    if (solver->nx > 0) {
-        solver->set_x(solver->S, NV_DATA_S(solver->y), NV_LENGTH_S(solver->y));
-    }
+    flag = CVode(solver->cvode_mem, nextTime, solver->y, timeReached, CV_NORMAL);
 
     *stateEvent = flag == CV_ROOT_RETURN;
+
+    if (solver->nx > 0) {
+        CALL_FMI(solver->set_x(solver->S, NV_DATA_S(solver->y), NV_LENGTH_S(solver->y)));
+    }
 
     if (flag < 0) {
         status = FMIError;

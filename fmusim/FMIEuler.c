@@ -64,6 +64,10 @@ Solver* ForwardEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescr
 
 void ForwardEulerFree(Solver* solver) {
 
+    if (!solver) {
+        return;
+    }
+
     free(solver->x);
     free(solver->dx);
     free(solver->z);

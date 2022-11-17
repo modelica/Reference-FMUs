@@ -67,6 +67,11 @@ FMIStatus simulateFMI2ME(
 
     solver = settings->solverCreate(S, modelDescription, input, time);
 
+    if (!solver) {
+        status = FMIError;
+        goto TERMINATE;
+    }
+
     CALL(FMISample(S, time, result));
 
     while (time < settings->stopTime) {
@@ -79,7 +84,7 @@ FMIStatus simulateFMI2ME(
 
         timeEvent = eventInfo.nextEventTimeDefined && eventInfo.nextEventTime <= nextTime;
         
-        settings->solverStep(solver, nextTime, &time, &stateEvent);
+        CALL(settings->solverStep(solver, nextTime, &time, &stateEvent));
 
         CALL(FMI2SetTime(S, time));
 
