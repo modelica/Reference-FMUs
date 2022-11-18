@@ -20,6 +20,7 @@
 #include "FMIModelDescription.h"
 #include "FMISimulationResult.h"
 
+#include "fmusim.h"
 #include "fmusim_fmi2_cs.h"
 #include "fmusim_fmi2_me.h"
 #include "fmusim_fmi3_cs.h"
@@ -27,6 +28,8 @@
 
 #include "fmusim_input.h"
 
+#include "FMIEuler.h"
+#include "FMICVode.h"
 
 #define FMI_PATH_MAX 4096
 
@@ -113,11 +116,128 @@ void printUsage() {
         "  --output-file [FILE]          write output to a CSV file\n"
         "  --log-fmi-calls               log FMI calls\n"
         "  --fmi-log-file [FILE]         set the FMI log file\n"
+        "  --solver [euler|cvode]        the solver to use\n"
         "\n"
         "Example:\n"
         "\n"
         "  " PROGNAME " BouncingBall.fmu  simulate with the default settings\n"
     );
+}
+
+FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings) {
+
+    FMIStatus status = FMIOK;
+
+    for (size_t i = 0; i < settings->nStartValues; i++) {
+
+        const FMIModelVariable* variable = settings->startVariables[i];
+        const FMIValueReference vr = variable->valueReference;
+        const FMIVariableType type = variable->type;
+        const char* literal = settings->startValues[i];
+
+        if (S->fmiVersion == FMIVersion2) {
+         
+            if (type == FMIRealType || type == FMIDiscreteRealType) {
+            
+                const fmi2Real value = strtod(literal, NULL);
+                // TODO: handle errors
+                CALL(FMI2SetReal(S, &vr, 1, &value));
+
+            } else if (type == FMIIntegerType) {
+
+                const fmi2Integer value = atoi(literal);
+
+                CALL(FMI2SetInteger(S, &vr, 1, &value));
+
+            } else if (type == FMIBooleanType) {
+
+                const fmi2Boolean value = atoi(literal) != 0;
+
+                CALL(FMI2SetBoolean(S, &vr, 1, &value));
+
+            }  if (type == FMIStringType) {
+
+                CALL(FMI2SetString(S, &vr, 1, &literal));
+
+            }
+        } else if (S->fmiVersion == FMIVersion3) {
+
+            if (type == FMIFloat32Type || type == FMIDiscreteFloat32Type) {
+
+                const fmi3Float32 value = strtof(literal, NULL);
+                // TODO: handle errors
+                CALL(FMI3SetFloat32(S, &vr, 1, &value, 1));
+
+            } else if (type == FMIFloat64Type || type == FMIDiscreteFloat64Type) {
+
+                const fmi3Float64 value = strtod(literal, NULL);
+                // TODO: handle errors
+                CALL(FMI3SetFloat64(S, &vr, 1, &value, 1));
+
+            } else if (type == FMIInt8Type) {
+
+                const fmi3Int8 value = atoi(literal);
+
+                CALL(FMI3SetInt8(S, &vr, 1, &value, 1));
+
+            } else if (type == FMIUInt8Type) {
+
+                const fmi3UInt8 value = atoi(literal);
+
+                CALL(FMI3SetUInt8(S, &vr, 1, &value, 1));
+
+            } else if (type == FMIInt16Type) {
+
+                const fmi3Int16 value = atoi(literal);
+
+                CALL(FMI3SetInt16(S, &vr, 1, &value, 1));
+
+            } else if (type == FMIUInt16Type) {
+
+                const fmi3UInt16 value = atoi(literal);
+
+                CALL(FMI3SetUInt16(S, &vr, 1, &value, 1));
+
+            } else if (type == FMIInt32Type) {
+
+                const fmi3Int32 value = atoi(literal);
+
+                CALL(FMI3SetInt32(S, &vr, 1, &value, 1));
+
+            } else if (type == FMIUInt32Type) {
+
+                const fmi3UInt32 value = atoi(literal);
+
+                CALL(FMI3SetUInt32(S, &vr, 1, &value, 1));
+
+            } else if (type == FMIInt64Type) {
+
+                const fmi3Int64 value = atoi(literal);
+
+                CALL(FMI3SetInt64(S, &vr, 1, &value, 1));
+
+            } else if (type == FMIUInt64Type) {
+
+                const fmi3UInt64 value = atoi(literal);
+
+                CALL(FMI3SetUInt64(S, &vr, 1, &value, 1));
+
+            } else if (type == FMIBooleanType) {
+
+                const fmi3Boolean value = atoi(literal) != 0;
+
+                CALL(FMI3SetBoolean(S, &vr, 1, &value, 1));
+
+            }  if (type == FMIStringType) {
+
+                CALL(FMI3SetString(S, &vr, 1, &literal, 1));
+
+            }
+        }
+    }
+
+TERMINATE:
+    return status;
 }
 
 int main(int argc, char* argv[]) {
@@ -139,8 +259,8 @@ int main(int argc, char* argv[]) {
     char* outputFile = NULL;
     char* fmiLogFile = NULL;
 
-    char* startTimeLiteral = NULL;
-    char* stopTimeLiteral = NULL;
+    const char* startTimeLiteral = NULL;
+    const char* stopTimeLiteral = NULL;
     
     double outputInterval = 0;
 
@@ -148,13 +268,17 @@ int main(int argc, char* argv[]) {
     char** startNames = NULL;
     char** startValues = NULL;
 
+    char* solver = "euler";
+
     FMIInstance* S = NULL;
     FMISimulationResult* result = NULL;
     const char* unzipdir = NULL;
     FMIStatus status = FMIFatal;
 
     for (int i = 1; i < argc - 1; i++) {
+
         const char* v = argv[i];
+
         if (!strcmp(v, "--log-fmi-calls")) {
             logFMICalls = true;
         } else if (!strcmp(v, "--interface-type")) {
@@ -169,9 +293,9 @@ int main(int argc, char* argv[]) {
             }
             i++;
         } else if (!strcmp(v, "--start-value")) {
-            startNames  = realloc(startNames, nStartValues + 1);
-            startValues = realloc(startValues, nStartValues + 1);
-            startNames[nStartValues] = argv[++i];
+            startNames  = realloc(startNames, sizeof(char*) * (nStartValues + 1));
+            startValues = realloc(startValues, sizeof(char*) * (nStartValues + 1));
+            startNames[nStartValues]  = argv[++i];
             startValues[nStartValues] = argv[++i];
             nStartValues++;
         } else if (!strcmp(v, "--input-file")) {
@@ -187,6 +311,8 @@ int main(int argc, char* argv[]) {
         } else if (!strcmp(v, "--output-interval")) {
             char* error;
             outputInterval = strtod(argv[++i], &error);
+        } else if (!strcmp(v, "--solver")) {
+            solver = argv[++i];
         } else {
             printf(PROGNAME ": unrecognized option '%s'\n", v);
             printf("Try '" PROGNAME " --help' for more information.\n");
@@ -326,23 +452,47 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    FMISimulationSettings settings;
+
+    settings.nStartValues = nStartValues;
+    settings.startVariables = startVariables;
+    settings.startValues = startValues;
+    settings.startTime = startTime;
+    settings.outputInterval = outputInterval;
+    settings.stopTime = stopTime;
+
+    if (!strcmp("euler", solver)) {
+        settings.solverCreate = FMIEulerCreate;
+        settings.solverFree   = FMIEulerFree;
+        settings.solverStep   = FMIEulerStep;
+        settings.solverReset  = FMIEulerReset;
+    } else if (!strcmp("cvode", solver)) {
+        settings.solverCreate = FMICVodeCreate;
+        settings.solverFree   = FMICVodeFree;
+        settings.solverStep   = FMICVodeStep;
+        settings.solverReset  = FMICVodeReset;
+    } else {
+        printf("Unknown solver: %s.", solver);
+        return FMIError;
+    }
+
     if (modelDescription->fmiVersion == FMIVersion2) {
 
         char resourceURI[FMI_PATH_MAX] = "";
         CALL(FMIPathToURI(resourcePath, resourceURI, FMI_PATH_MAX));
 
         if (interfaceType == FMICoSimulation) {
-            status = simulateFMI2CS(S, modelDescription, resourceURI, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, input);
+            status = simulateFMI2CS(S, modelDescription, resourceURI, result, input, &settings);
         } else {
-            status = simulateFMI2ME(S, modelDescription, resourceURI, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, input);
+            status = simulateFMI2ME(S, modelDescription, resourceURI, result, input, &settings);
         }
 
     } else {
 
         if (interfaceType == FMICoSimulation) {
-            status = simulateFMI3CS(S, modelDescription, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, input);
+            status = simulateFMI3CS(S, modelDescription, resourcePath, result, input, &settings);
         } else {
-            status = simulateFMI3ME(S, modelDescription, resourcePath, result, nStartValues, startVariables, startValues, startTime, outputInterval, stopTime, input);
+            status = simulateFMI3ME(S, modelDescription, resourcePath, result, input, &settings);
         }
 
     }

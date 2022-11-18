@@ -13,12 +13,18 @@ set(sources
   ../src/FMI3.c
   csv.h
   csv.c
+  FMISolver.h
+  FMIEuler.h
+  FMIEuler.c
+  FMICVode.h
+  FMICVode.c
   FMIModelDescription.h
   FMIModelDescription.c
   FMISimulationResult.h
   FMISimulationResult.c
   FMIZip.h
   FMIZip.c
+  fmusim.h
   fmusim.c
   fmusim_fmi2.h
   fmusim_fmi2.c
@@ -51,6 +57,7 @@ target_include_directories(fmusim PRIVATE
   ../ThirdParty/libxml2-2.10.3/build/install/include/libxml2
   ../ThirdParty/zlib-1.2.13/build/install/include
   ../ThirdParty/zlib-1.2.13/contrib/minizip
+  ../ThirdParty/cvode-6.4.1/build/install/include
 )
 
 add_compile_definitions(LIBXML_STATIC)
@@ -59,6 +66,7 @@ if (WIN32)
     set(libraries
       ${CMAKE_SOURCE_DIR}/../ThirdParty/libxml2-2.10.3/build/install/lib/libxml2s.lib
       ${CMAKE_SOURCE_DIR}/../ThirdParty/zlib-1.2.13/build/install/lib/zlibstatic.lib
+      ${CMAKE_SOURCE_DIR}/../ThirdParty/cvode-6.4.1/build/install/lib/sundials_cvode.lib
       wsock32
       ws2_32
     )
@@ -66,6 +74,7 @@ elseif(UNIX AND NOT APPLE)
     set(libraries
       ${CMAKE_SOURCE_DIR}/../ThirdParty/libxml2-2.10.3/build/install/lib/libxml2.a
       ${CMAKE_SOURCE_DIR}/../ThirdParty/zlib-1.2.13/build/install/lib/libz.a
+      ${CMAKE_SOURCE_DIR}/../ThirdParty/cvode-6.4.1/build/install/lib/libsundials_cvode.a
       ${CMAKE_DL_LIBS}
       m
     )
@@ -73,6 +82,7 @@ else ()
     set(libraries
       ${CMAKE_SOURCE_DIR}/../ThirdParty/libxml2-2.10.3/build/install/lib/libxml2.a
       ${CMAKE_SOURCE_DIR}/../ThirdParty/zlib-1.2.13/build/install/lib/libz.a
+      ${CMAKE_SOURCE_DIR}/../ThirdParty/cvode-6.4.1/build/install/lib/libsundials_cvode.a
     )
 endif ()
 

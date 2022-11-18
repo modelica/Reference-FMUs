@@ -9,21 +9,16 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
     const FMIModelDescription * modelDescription,
     const char* resourcePath,
     FMISimulationResult* result,
-    size_t nStartValues,
-    const FMIModelVariable* startVariables[],
-    const char* startValues[],
-    double startTime,
-    double stepSize,
-    double stopTime,
-    const FMUStaticInput* input) {
+    const FMUStaticInput * input,
+    const FMISimulationSettings * settings) {
 
     FMIStatus status = FMIOK;
 
     fmi3Boolean eventEncountered = fmi3False;
     fmi3Boolean terminateSimulation = fmi3False;
     fmi3Boolean earlyReturn = fmi3False;
-    fmi3Float64 lastSuccessfulTime = startTime;
-    fmi3Float64 time = startTime;
+    fmi3Float64 lastSuccessfulTime = settings->startTime;
+    fmi3Float64 time = settings->startTime;
 
     CALL(FMI3InstantiateCoSimulation(S,
         modelDescription->instantiationToken,  // instantiationToken
@@ -37,28 +32,28 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
         NULL                                   // intermediateUpdate
     ));
 
-    CALL(applyStartValuesFMI3(S, nStartValues, startVariables, startValues));
-    CALL(FMIApplyInput(S, input, startTime, true, true, false));
+    CALL(applyStartValues(S, settings));
+    CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
 
     // initialize
-    CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, startTime, fmi3True, stopTime));
+    CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, settings->startTime, fmi3True, settings->stopTime));
     CALL(FMI3ExitInitializationMode(S));
 
     size_t step = 0;
 
     for (;; step++) {
 
-        const fmi3Float64 time = startTime + step * stepSize;
+        const fmi3Float64 time = settings->startTime + step * settings->outputInterval;
 
         CALL(FMISample(S, time, result));
 
-        if ((step + 1) * stepSize > stopTime) {
+        if ((step + 1) * settings->outputInterval > settings->stopTime) {
             break;
         }
 
         CALL(FMIApplyInput(S, input, time, true, true, false));
 
-        CALL(FMI3DoStep(S, time, stepSize, fmi3True, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime));
+        CALL(FMI3DoStep(S, time, settings->outputInterval, fmi3True, &eventEncountered, &terminateSimulation, &earlyReturn, &lastSuccessfulTime));
 
         if (terminateSimulation) {
             break;

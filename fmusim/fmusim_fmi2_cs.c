@@ -1,3 +1,4 @@
+#include "fmusim.h"
 #include "fmusim_fmi2.h"
 #include "fmusim_fmi2_cs.h"
 
@@ -10,13 +11,8 @@ FMIStatus simulateFMI2CS(
     const FMIModelDescription* modelDescription,
     const char* resourceURI,
     FMISimulationResult* result,
-    size_t nStartValues,
-    const FMIModelVariable* startVariables[],
-    const char* startValues[],
-    double startTime,
-    double stepSize,
-    double stopTime,
-    const FMUStaticInput* input) {
+    const FMUStaticInput * input,
+    const FMISimulationSettings * settings) {
 
     FMIStatus status = FMIOK;
 
@@ -29,29 +25,29 @@ FMIStatus simulateFMI2CS(
     ));
 
     // set start values
-    CALL(applyStartValuesFMI2(S, nStartValues, startVariables, startValues));
-    CALL(FMIApplyInput(S, input, startTime, true, true, false));
+    CALL(applyStartValues(S, settings));
+    CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
 
     // initialize
-    CALL(FMI2SetupExperiment(S, fmi2False, 0.0, startTime, fmi2True, stopTime));
+    CALL(FMI2SetupExperiment(S, fmi2False, 0.0, settings->startTime, fmi2True, settings->stopTime));
     CALL(FMI2EnterInitializationMode(S));
     CALL(FMI2ExitInitializationMode(S));
 
     for (unsigned long step = 0;; step++) {
         
         // calculate the current time
-        const fmi2Real time = startTime + step * stepSize;
+        const fmi2Real time = settings->startTime + step * settings->outputInterval;
 
         CALL(FMISample(S, time, result));
 
         CALL(FMIApplyInput(S, input, time, true, true, false));
 
-        if (time >= stopTime) {
+        if (time >= settings->stopTime) {
             break;
         }
 
         // call instance s1 and check status
-        const FMIStatus doStepStatus = FMI2DoStep(S, time, stepSize, fmi2True);
+        const FMIStatus doStepStatus = FMI2DoStep(S, time, settings->outputInterval, fmi2True);
 
         if (doStepStatus == fmi2Discard) {
 

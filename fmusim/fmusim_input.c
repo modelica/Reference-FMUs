@@ -75,7 +75,7 @@ void FMIFreeInput(FMUStaticInput* input) {
 	// TODO
 }
 
-double FMINextInputEvent(FMUStaticInput* input, double time) {
+double FMINextInputEvent(const FMUStaticInput* input, double time) {
 
 	if (!input) {
 		return INFINITY;
@@ -116,7 +116,7 @@ double FMINextInputEvent(FMUStaticInput* input, double time) {
 	return INFINITY;
 }
 
-FMIStatus FMIApplyInput(FMIInstance* instance, FMUStaticInput* input, double time, bool discrete, bool continuous, bool afterEvent) {
+FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, double time, bool discrete, bool continuous, bool afterEvent) {
 
 	FMIStatus status = FMIOK;
 

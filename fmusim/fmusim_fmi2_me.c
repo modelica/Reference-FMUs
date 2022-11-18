@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
+
+#include "fmusim.h"
 #include "fmusim_fmi2.h"
 #include "fmusim_fmi2_me.h"
 
@@ -12,31 +14,17 @@ FMIStatus simulateFMI2ME(
     const FMIModelDescription* modelDescription, 
     const char* resourceURI,
     FMISimulationResult* result,
-    size_t nStartValues,
-    const FMIModelVariable* startVariables[],
-    const char* startValues[],
-    double startTime,
-    double stepSize,
-    double stopTime,
-    const FMUStaticInput * input) {
+    const FMUStaticInput * input,
+    const FMISimulationSettings* settings) {
 
-    const size_t nx = modelDescription->nContinuousStates;
-    const size_t nz = modelDescription->nEventIndicators;
-    
-    const fmi2Real fixedStep = stepSize;
-
-    fmi2Integer* rootsFound = (fmi2Integer*) calloc(nz, sizeof(fmi2Integer));
-    fmi2Real*    z          = (fmi2Real*)    calloc(nz, sizeof(fmi2Real));
-    fmi2Real*    previous_z = (fmi2Real*)    calloc(nz, sizeof(fmi2Real));
-
-    fmi2Real* x         = (fmi2Real*)calloc(nx, sizeof(fmi2Real));
-    fmi2Real* x_nominal = (fmi2Real*)calloc(nx, sizeof(fmi2Real));
-    fmi2Real* der_x     = (fmi2Real*)calloc(nx, sizeof(fmi2Real));
-
+    bool stateEvent = false;
     fmi2Boolean inputEvent = fmi2False;
     fmi2Boolean timeEvent  = fmi2False;
-    fmi2Boolean stateEvent = fmi2False;
     fmi2Boolean stepEvent  = fmi2False;
+    fmi2Boolean nominalsChanged = fmi2False;
+    fmi2Boolean statesChanged = fmi2False;
+
+    Solver* solver = NULL;
 
     FMIStatus status = FMIOK;
 
@@ -48,10 +36,10 @@ FMIStatus simulateFMI2ME(
         fmi2False                             // loggingOn
     ));
 
-    fmi2Real time = startTime;
+    fmi2Real time = settings->startTime;
 
     // set start values
-    CALL(applyStartValuesFMI2(S, nStartValues, startVariables, startValues));
+    CALL(applyStartValues(S, settings));
     CALL(FMIApplyInput(S, input, time,
         true,  // discrete
         true,  // continous
@@ -59,7 +47,7 @@ FMIStatus simulateFMI2ME(
     ));
 
     // initialize
-    CALL(FMI2SetupExperiment(S, fmi2False, 0.0, time, fmi2True, stopTime));
+    CALL(FMI2SetupExperiment(S, fmi2False, 0.0, time, fmi2True, settings->stopTime));
     CALL(FMI2EnterInitializationMode(S));
     CALL(FMI2ExitInitializationMode(S));
 
@@ -77,36 +65,47 @@ FMIStatus simulateFMI2ME(
 
     CALL(FMI2EnterContinuousTimeMode(S));
 
-    if (nz > 0) {
-        // initialize previous event indicators
-        CALL(FMI2GetEventIndicators(S, previous_z, nz));
-    }
+    solver = settings->solverCreate(S, modelDescription, input, time);
 
-    if (nx > 0) {
-        // retrieve initial state x and
-        // nominal values of x (if absolute tolerance is needed)
-        CALL(FMI2GetContinuousStates(S, x, nx));
-        CALL(FMI2GetNominalsOfContinuousStates(S, x_nominal, nx));
+    if (!solver) {
+        status = FMIError;
+        goto TERMINATE;
     }
-    // retrieve solution at t=Tstart, for example, for outputs
 
     CALL(FMISample(S, time, result));
 
-    unsigned long step = 0;
+    while (time < settings->stopTime) {
+    
+        const fmi2Real nextTime = time + settings->outputInterval;
 
-    while (!eventInfo.terminateSimulation) {
+        const double nextInputEventTime = FMINextInputEvent(input, time);
 
-        // detect input and time events
-        const double nextEventTime = FMINextInputEvent(input, time);
+        inputEvent = time >= nextInputEventTime;
+
+        timeEvent = eventInfo.nextEventTimeDefined && eventInfo.nextEventTime <= nextTime;
         
-        inputEvent = time >= nextEventTime;
+        CALL(settings->solverStep(solver, nextTime, &time, &stateEvent));
 
-        timeEvent = eventInfo.nextEventTimeDefined && time >= eventInfo.nextEventTime;
+        CALL(FMI2SetTime(S, time));
 
-        const bool eventOccurred = inputEvent || timeEvent || stateEvent || stepEvent;
+        // apply continuous inputs
+        CALL(FMIApplyInput(S, input, time,
+            false,  // discrete
+            true,   // continous
+            false   // after event
+        ));
 
-        // handle events
-        if (eventOccurred) {
+        // check for step event, e.g.dynamic state selection
+        CALL(FMI2CompletedIntegratorStep(S, fmi2True, &stepEvent, &eventInfo.terminateSimulation));
+
+        if (eventInfo.terminateSimulation) {
+            goto TERMINATE;
+        }
+
+        if (inputEvent || timeEvent || stateEvent || stepEvent) {
+
+            // record the values before the event
+            CALL(FMISample(S, time, result));
 
             CALL(FMI2EnterEventMode(S));
 
@@ -118,17 +117,12 @@ FMIStatus simulateFMI2ME(
                 ));
             }
 
-            fmi2Boolean nominalsChanged = fmi2False;
-            fmi2Boolean statesChanged   = fmi2False;
+            nominalsChanged = fmi2False;
+            statesChanged = fmi2False;
 
             // event iteration
             do {
-                // set inputs at super dense time point
-
-                // update discrete states
                 CALL(FMI2NewDiscreteStates(S, &eventInfo));
-
-                // get output at super dense time point
 
                 nominalsChanged |= eventInfo.nominalsOfContinuousStatesChanged;
                 statesChanged   |= eventInfo.valuesOfContinuousStatesChanged;
@@ -142,94 +136,21 @@ FMIStatus simulateFMI2ME(
             // enter Continuous-Time Mode
             CALL(FMI2EnterContinuousTimeMode(S));
 
-            // retrieve solution at simulation (re)start
-            CALL(FMISample(S, time, result));
-
-            if (nx > 0) {
-                if (statesChanged) {
-                    // the model signals a value change of states, retrieve them
-                    CALL(FMI2GetContinuousStates(S, x, nx));
-                }
-
-                if (nominalsChanged) {
-                    // the meaning of states has changed; retrieve new nominal values
-                    CALL(FMI2GetNominalsOfContinuousStates(S, x_nominal, nx));
-                }
-            }
+            settings->solverReset(solver, time);
 
             // record outputs after the event
             CALL(FMISample(S, time, result));
         }
 
-        if (time >= stopTime) {
-            goto TERMINATE;
-        }
-
-        if (nx > 0) {
-            // compute continuous state derivatives
-            CALL(FMI2GetDerivatives(S, der_x, nx));
-        }
-
-        // advance time
-        time = startTime + (++step) * fixedStep;
-
-        CALL(FMI2SetTime(S, time));
-
-        // apply continuous inputs
-        CALL(FMIApplyInput(S, input, time,
-            false,  // discrete
-            true,   // continous
-            false   // after event
-        ));
-
-        if (nx > 0) {
-            // set states at t = time and perform one step
-            for (size_t i = 0; i < nx; i++) {
-                x[i] += fixedStep * der_x[i]; // forward Euler method
-            }
-
-            CALL(FMI2SetContinuousStates(S, x, nx));
-        }
-
-        if (nz > 0) {
-            stateEvent = fmi2False;
-
-            if (eventOccurred) {
-                // reset the previous event indicators
-                CALL(FMI2GetEventIndicators(S, previous_z, nz));
-            } else {
-                // get event indicators at t = time
-                CALL(FMI2GetEventIndicators(S, z, nz));
-
-                for (size_t i = 0; i < nz; i++) {
-
-                    // check for zero crossings
-                    if (previous_z[i] <= 0 && z[i] > 0) {
-                        rootsFound[i] = 1;   // -\+
-                    } else  if (previous_z[i] > 0 && z[i] <= 0) {
-                        rootsFound[i] = -1;  // +/-
-                    } else {
-                        rootsFound[i] = 0;   // no zero crossing
-                    }
-
-                    stateEvent |= rootsFound[i];
-
-                    previous_z[i] = z[i]; // remember the current value
-                }
-            }
-        }
-
-        // inform the model about an accepted step
-        CALL(FMI2CompletedIntegratorStep(S, fmi2True, &stepEvent, &eventInfo.terminateSimulation));
-
-        if (eventInfo.terminateSimulation) {
-            goto TERMINATE;
-        }
-
-        // get continuous output
+        // record outputs
         CALL(FMISample(S, time, result));
     }
 
 TERMINATE:
+
+    if (solver) {
+        settings->solverFree(solver);
+    }
+
     return status;
 }
