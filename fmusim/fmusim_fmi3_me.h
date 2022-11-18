@@ -2,7 +2,7 @@
 
 #include "FMI3.h"
 #include "FMIModelDescription.h"
-#include "FMISimulationResult.h"
+#include "FMIRecorder.h"
 #include "fmusim_input.h"
 #include "fmusim.h"
 
@@ -11,6 +11,6 @@ FMIStatus simulateFMI3ME(
     FMIInstance* S, 
     const FMIModelDescription* modelDescription, 
     const char* resourcePath,
-    FMISimulationResult* result,
+    FMIRecorder* result,
     const FMUStaticInput* input,
     const FMISimulationSettings* settings);

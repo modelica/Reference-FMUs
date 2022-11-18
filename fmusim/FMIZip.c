@@ -58,11 +58,11 @@ int FMIExtractArchive(const char* filename, const char* unzipdir) {
 
 #ifdef _WIN32
     if (!_getcwd(cd, 2048)) {
+#else
+    if (!getcwd(cd, 2048)) {
+#endif
         return 1;
     }
-#else
-    // TODO  
-#endif
 
     const char* argv[6];
     
@@ -77,12 +77,11 @@ int FMIExtractArchive(const char* filename, const char* unzipdir) {
 
 #ifdef _WIN32
     if (_chdir(cd)) {
+#else
+    if (chdir(cd)) {
+#endif
         return 1;
     }
-#else
-    // TODO  
-#endif
-
     return status;
 }
 

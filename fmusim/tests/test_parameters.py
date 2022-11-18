@@ -1,9 +1,31 @@
+import os
 from itertools import product
+from pathlib import Path
 from subprocess import check_call
 
 import numpy as np
 import pytest
 from fmpy.util import read_csv
+
+
+@pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
+def test_output_file(executable, dist, work, fmi_version, interface_type):
+
+    output_file = work / Path('result.csv')  # default result file
+
+    fmu_filename = dist / f'{fmi_version}.0' / 'BouncingBall.fmu'
+
+    if output_file.exists():
+        os.remove(output_file)
+
+    check_call([
+        executable,
+        '--interface-type', interface_type,
+        fmu_filename],
+        cwd=work
+    )
+
+    read_csv(output_file)
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
@@ -43,7 +65,7 @@ def test_stop_time(executable, work, dist, fmi_version, interface_type):
 
     result = read_csv(output_file)
 
-    assert result['time'][-1] == 1.5
+    assert result['time'][-1] == pytest.approx(1.5)
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
