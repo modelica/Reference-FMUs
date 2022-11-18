@@ -7,18 +7,13 @@
 typedef struct {
 
     size_t nVariables;
-    FMIModelVariable** variables;
-    size_t nSamples;
-    size_t sampleSize;
-    size_t dataSize;
-    char* data;
+    const FMIModelVariable** variables;
+    FILE* file;
 
 } FMISimulationResult;
 
-FMISimulationResult* FMICreateSimulationResult(FMIModelDescription* modelDescription);
+FMISimulationResult* FMICreateSimulationResult(size_t nVariables, const FMIModelVariable* variables[], const char* file);
 
 void FMIFreeSimulationResult(FMISimulationResult* result);
 
 FMIStatus FMISample(FMIInstance* instance, double time, FMISimulationResult* result);
-
-void FMIDumpResult(FMISimulationResult* result, FILE* file);

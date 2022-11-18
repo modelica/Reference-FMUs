@@ -105,7 +105,7 @@ static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char*
 void printUsage() {
     printf(
         "Usage: " PROGNAME " [OPTION]... [FMU]\n"
-        "Simulate a Functional Mock-up Unit (FMU).\n"
+        "Simulate a Functional Mock-up Unit and write the output to result.csv.\n"
         "\n"
         "  --help                        display this help and exit\n"
         "  --start-time [VALUE]          set the start time\n"
@@ -126,8 +126,9 @@ void printUsage() {
 
 static int hexchr2bin(const char hex, char* out) {
 
-    if (out == NULL)
+    if (out == NULL) {
         return 0;
+    }
 
     if (hex >= '0' && hex <= '9') {
         *out = hex - '0';
@@ -158,13 +159,20 @@ static size_t hexs2bin(const char* hex, unsigned char** out) {
     len /= 2;
 
     *out = malloc(len);
+
+    if (!*out) {
+        return 0;
+    }
+
     memset(*out, 'A', len);
+
     for (i = 0; i < len; i++) {
         if (!hexchr2bin(hex[i * 2], &b1) || !hexchr2bin(hex[i * 2 + 1], &b2)) {
             return 0;
         }
         (*out)[i] = (b1 << 4) | b2;
     }
+
     return len;
 }
 
@@ -300,7 +308,7 @@ TERMINATE:
     return status;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, const char* argv[]) {
 
     if (argc < 2) {
         printf("Missing argument [FMU].\n\n");
@@ -472,7 +480,29 @@ int main(int argc, char* argv[]) {
 
     S = FMICreateInstance("instance1", platformBinaryPath, logMessage, logFMICalls ? logFunctionCall : NULL);
 
-    result = FMICreateSimulationResult(modelDescription);
+    size_t nOutputVariables = 0;
+    FMIModelVariable** outputVariables = (FMIModelVariable*)calloc(modelDescription->nModelVariables, sizeof(FMIModelVariable*));
+
+    for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+
+        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+
+        if (variable->causality == FMIOutput) {
+            outputVariables[nOutputVariables++] = variable;
+        }
+
+    }
+
+    if (!outputFile) {
+        outputFile = "result.csv";
+    }
+
+    result = FMICreateSimulationResult(nOutputVariables, outputVariables, outputFile);
+
+    if (!result) {
+        printf("Failed to open result file %s for writing.\n", outputFile);
+        goto TERMINATE;
+    }
 
     char resourcePath[FMI_PATH_MAX] = "";
 
@@ -560,15 +590,6 @@ int main(int argc, char* argv[]) {
 TERMINATE:
 
     if (result) {
-
-        if (outputFile) {
-            FILE* file = fopen(outputFile, "w");
-            FMIDumpResult(result, file);
-            fclose(file);
-        } else {
-            FMIDumpResult(result, stdout);
-        }
-
         FMIFreeSimulationResult(result);
     }
 

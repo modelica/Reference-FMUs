@@ -10,266 +10,194 @@
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-size_t FMISizeForVariableType(FMIVariableType type) {
-
-    switch (type) {
-        case FMIFloat32Type:
-        case FMIDiscreteFloat32Type:
-            return sizeof(fmi3Float32);
-        case FMIFloat64Type:
-        case FMIDiscreteFloat64Type:
-            return sizeof(fmi3Float64);
-        case FMIInt8Type:
-            return sizeof(fmi3Int8);
-        case FMIUInt8Type:
-            return sizeof(fmi3UInt8);
-        case FMIInt16Type:
-            return sizeof(fmi3Int16);
-        case FMIUInt16Type:
-            return sizeof(fmi3UInt16);
-        case FMIInt32Type:
-            return sizeof(fmi3Int32);
-        case FMIUInt32Type:
-            return sizeof(fmi3UInt32);
-        case FMIInt64Type:
-            return sizeof(fmi3Int64);
-        case FMIUInt64Type:
-            return sizeof(fmi3UInt64);
-        case FMIBooleanType:
-            return sizeof(fmi3Boolean);
-        case FMIStringType:
-            return 0;
-        case FMIBinaryType:
-            return 0;
-        case FMIClockType:
-            return sizeof(fmi3Clock);
-        default:
-            return 0;
-    }
-}
-
-FMISimulationResult* FMICreateSimulationResult(FMIModelDescription* modelDescription) {
-
-    if (!modelDescription) return NULL;
+FMISimulationResult* FMICreateSimulationResult(size_t nVariables, const FMIModelVariable* variables[], const char* file) {
 
     FMISimulationResult* result = calloc(1, sizeof(FMISimulationResult));
 
-    if (!result) return NULL;
-
-    result->variables = calloc(modelDescription->nModelVariables, sizeof(FMIModelVariable*));
-
-    result->sampleSize = sizeof(double);
-
-    for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
-        
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
-
-        if (variable->causality != FMIOutput) continue;
-
-        switch (variable->type) {
-        case FMIFloat32Type:
-        case FMIDiscreteFloat32Type:
-        case FMIFloat64Type:
-        case FMIDiscreteFloat64Type:
-        case FMIInt8Type:
-        case FMIUInt8Type:
-        case FMIInt16Type:
-        case FMIUInt16Type:
-        case FMIInt32Type:
-        case FMIUInt32Type:
-        case FMIInt64Type:
-        case FMIUInt64Type:
-        case FMIBooleanType:
-        case FMIClockType:
-            result->variables[result->nVariables++] = variable;
-            result->sampleSize += FMISizeForVariableType(variable->type);
-            break;
-        }
-    
+    if (!result) {
+        return NULL;
     }
+
+    result->nVariables = nVariables;
+    result->variables = variables;
+    result->file = fopen(file, "w");
+
+    if (!result->file) {
+        free(result);
+        return NULL;
+    }
+
+    fprintf(result->file, "\"time\"");
+
+    for (size_t i = 0; i < nVariables; i++) {
+        fprintf(result->file, ",\"%s\"", variables[i]->name);
+    }
+
+    fputc('\n', result->file);
 
     return result;
 }
 
 void FMIFreeSimulationResult(FMISimulationResult* result) {
-    // TODO
+
+    if (result) {
+        
+        if (result->file) {
+            fclose(result->file);
+        }
+
+        free(result);
+    }
 }
 
 FMIStatus FMISample(FMIInstance* instance, double time, FMISimulationResult* result) {
 
-    if (result->dataSize < (result->nSamples + 1) * result->sampleSize) {
-
-        result->dataSize += 64 * result->sampleSize;
-        result->data = realloc(result->data, result->dataSize);
-
-        if (!result->data) {
-            return FMIFatal;
-        }
-
-    }
-
     FMIStatus status = FMIOK;
 
-    size_t offset = result->nSamples * result->sampleSize;
+    if (!result) {
+        goto TERMINATE;
+    }
 
-    *((double*)&result->data[offset]) = time;
-    offset += sizeof(double);
+    FILE* file = result->file;
+
+    if (!file) {
+        goto TERMINATE;
+    }
+
+    fprintf(file, "%.16g", time);
 
     for (size_t i = 0; i < result->nVariables; i++) {
 
         const FMIModelVariable* variable = result->variables[i];
         const FMIValueReference* vr = &variable->valueReference;
-
-        char* value = &result->data[offset];
+        const FMIVariableType type = variable->type;
 
         if (instance->fmiVersion == FMIVersion2) {
 
-            switch (variable->type) {
-            case FMIRealType:
-                CALL(FMI2GetReal(instance, vr, 1, (fmi2Real*)value));
-                break;
-            case FMIIntegerType:
-                CALL(FMI2GetInteger(instance, vr, 1, (fmi2Integer*)value));
-                break;
-            case FMIBooleanType:
-                CALL(FMI2GetBoolean(instance, vr, 1, (fmi2Boolean*)value));
-                break;
-            default:
-                return FMIFatal;
+            if (type == FMIRealType || type == FMIDiscreteRealType) {
+                fmi2Real value;
+                CALL(FMI2GetReal(instance, vr, 1, &value));
+                fprintf(file, ",%.16g", value);
+            } else if (type == FMIIntegerType) {
+                fmi2Integer value;
+                CALL(FMI2GetInteger(instance, vr, 1, &value));
+                fprintf(file, ",%d", value);
+            } else if (type == FMIBooleanType) {
+                fmi2Boolean value;
+                CALL(FMI2GetBoolean(instance, vr, 1, &value));
+                fprintf(file, ",%d", value);
+            } else if (type == FMIStringType) {
+                fmi2String value;
+                CALL(FMI2GetString(instance, vr, 1, &value));
+                fprintf(file, ",\"%s\"", value);
             }
 
         } else if (instance->fmiVersion == FMIVersion3) {
 
-            switch (variable->type) {
-            case FMIFloat32Type:
-            case FMIDiscreteFloat32Type:
-                CALL(FMI3GetFloat32(instance, vr, 1, (fmi3Float32*)value, 1));
-                break;
-            case FMIFloat64Type:
-            case FMIDiscreteFloat64Type:
-                CALL(FMI3GetFloat64(instance, vr, 1, (fmi3Float64*)value, 1));
-                break;
-            case FMIInt8Type:
-                CALL(FMI3GetInt8(instance, vr, 1, (fmi3Int8*)value, 1));
-                break;
-            case FMIUInt8Type:
-                CALL(FMI3GetUInt8(instance, vr, 1, (fmi3UInt8*)value, 1));
-                break;
-            case FMIInt16Type:
-                CALL(FMI3GetInt16(instance, vr, 1, (fmi3Int16*)value, 1));
-                break;
-            case FMIUInt16Type:
-                CALL(FMI3GetUInt16(instance, vr, 1, (fmi3UInt16*)value, 1));
-                break;
-            case FMIInt32Type:
-                CALL(FMI3GetInt32(instance, vr, 1, (fmi3Int32*)value, 1));
-                break;
-            case FMIUInt32Type:
-                CALL(FMI3GetUInt32(instance, vr, 1, (fmi3UInt32*)value, 1));
-                break;
-            case FMIInt64Type:
-                CALL(FMI3GetInt64(instance, vr, 1, (fmi3Int64*)value, 1));
-                break;
-            case FMIUInt64Type:
-                CALL(FMI3GetUInt64(instance, vr, 1, (fmi3UInt64*)value, 1));
-                break;
-            case FMIBooleanType:
-                CALL(FMI3GetBoolean(instance, vr, 1, (fmi3Boolean*)value, 1));
-                break;
-            case FMIClockType:
-                CALL(FMI3GetClock(instance, vr, 1, (fmi3Clock*)value));
-                break;
-            default:
-                return FMIFatal;
+            if (type == FMIFloat32Type || type == FMIDiscreteFloat32Type) {
+
+                fmi3Float32 value;
+                CALL(FMI3GetFloat32(instance, vr, 1, &value, 1));
+                fprintf(file, ",%.7g", value);
+
+            } else if (type == FMIFloat64Type || type == FMIDiscreteFloat64Type) {
+
+                fmi3Float64 value;
+                CALL(FMI3GetFloat64(instance, vr, 1, &value, 1));
+                fprintf(file, ",%.16g", value);
+
+            } else if (type == FMIInt8Type) {
+
+                fmi3Int8 value;
+                CALL(FMI3GetInt8(instance, vr, 1, &value, 1));
+                fprintf(file, ",%" PRId8, value);
+
+            } else if (type == FMIUInt8Type) {
+
+                fmi3UInt8 value;
+                CALL(FMI3GetUInt8(instance, vr, 1, &value, 1));
+                fprintf(file, ",%" PRIu8, value);
+
+            } else if (type == FMIInt16Type) {
+
+                fmi3Int16 value;
+                CALL(FMI3GetInt16(instance, vr, 1, &value, 1));
+                fprintf(file, ",%" PRId16, value);
+
+            } else if (type == FMIUInt16Type) {
+
+                fmi3UInt16 value;
+                CALL(FMI3GetUInt16(instance, vr, 1, &value, 1));
+                fprintf(file, ",%" PRIu16, value);
+
+            } else if (type == FMIInt32Type) {
+
+                fmi3Int32 value;
+                CALL(FMI3GetInt32(instance, vr, 1, &value, 1));
+                fprintf(file, ",%" PRId32, value);
+
+            } else if (type == FMIUInt32Type) {
+
+                fmi3UInt32 value;
+                CALL(FMI3GetUInt32(instance, vr, 1, &value, 1));
+                fprintf(file, ",%" PRIu8, value);
+
+            } else if (type == FMIInt64Type) {
+
+                fmi3Int64 value;
+                CALL(FMI3GetInt64(instance, vr, 1, &value, 1));
+                fprintf(file, ",%" PRId64, value);
+
+            } else if (type == FMIUInt64Type) {
+
+                fmi3UInt64 value;
+                CALL(FMI3GetUInt64(instance, vr, 1, &value, 1));
+                fprintf(file, ",%" PRIu64, value);
+
+            } else if (type == FMIBooleanType) {
+
+                fmi3Boolean value;
+                CALL(FMI3GetBoolean(instance, vr, 1, &value, 1));
+                fprintf(file, ",%d", value);
+
+            } else if (type == FMIStringType) {
+
+                fmi3String value;
+                CALL(FMI3GetString(instance, vr, 1, &value, 1));
+                fprintf(file, ",\"%s\"", value);
+
+            } else if (type == FMIBinaryType) {
+
+                size_t size;
+                char* value;
+
+                CALL(FMI3GetBinary(instance, vr, 1, &size, &value, 1));
+
+                fputc(',', file);
+
+                for (size_t j = 0; j < size; j++) {
+                    const char hex[3] = {
+                        "0123456789abcdef"[value[j] >> 4],
+                        "0123456789abcdef"[value[j] & 0x0F],
+                        '\0'
+                    };
+                    fputs(hex, file);
+                }
+
+            } else if (type == FMIClockType) {
+
+                fmi3Clock value;
+                CALL(FMI3GetClock(instance, vr, 1, &value));
+                fprintf(file, ",%d", value);
+
             }
 
         }
 
-        offset += FMISizeForVariableType(variable->type);
     }
 
-    result->nSamples++;
+    fputc('\n', file);
 
 TERMINATE:
     return status;
-}
-
-void FMIDumpResult(FMISimulationResult* result, FILE* file) {
-
-    fprintf(file, "\"time\"");
-
-    for (size_t i = 0; i < result->nVariables; i++) {
-        fprintf(file, ",\"%s\"", result->variables[i]->name);
-    }
-
-    fprintf(file, "\n");
-
-    size_t offset = 0;
-
-    for (size_t i = 0; i < result->nSamples; i++) {
-
-        fprintf(file, "%f", *((double*)&result->data[offset]));
-        offset += sizeof(double);
-
-        for (size_t j = 0; j < result->nVariables; j++) {
-
-            FMIModelVariable* variable = result->variables[j];
-
-            const char* value = &result->data[offset];
-
-            switch (variable->type) {
-            case FMIFloat32Type:
-            case FMIDiscreteFloat32Type:
-                fprintf(file, ",%.7g", *((float*)value));
-                break;
-            case FMIFloat64Type:
-            case FMIDiscreteFloat64Type:
-                fprintf(file, ",%.16g", *((double*)value));
-                break;
-            case FMIInt8Type:
-                fprintf(file, ",%" PRId8, *((int8_t*)value));
-                break;
-            case FMIUInt8Type:
-                fprintf(file, ",%" PRIu8, *((uint8_t*)value));
-                break;
-            case FMIInt16Type:
-                fprintf(file, ",%" PRId16, *((int16_t*)value));
-                break;
-            case FMIUInt16Type:
-                fprintf(file, ",%" PRIu16, *((uint16_t*)value));
-                break;
-            case FMIInt32Type:
-                fprintf(file, ",%" PRId32, *((int32_t*)value));
-                break;
-            case FMIUInt32Type:
-                fprintf(file, ",%" PRIu32, *((uint32_t*)value));
-                break;
-            case FMIInt64Type:
-                fprintf(file, ",%" PRId64, *((int64_t*)value));
-                break;
-            case FMIUInt64Type:
-                fprintf(file, ",%" PRIu64, *((uint64_t*)value));
-                break;
-            case FMIBooleanType:
-                fprintf(file, ",%d", *((bool*)value));
-                break;
-            case FMIStringType:
-                break;
-            case FMIBinaryType:
-                break;
-            case FMIClockType:
-                fprintf(file, ",%d", *((bool*)value));
-                break;
-            default:
-                return;  // unkown variable type
-            }
-
-            offset += FMISizeForVariableType(variable->type);
-
-        }
-        
-        fprintf(file, "\n");
-
-    }
-
 }
