@@ -11,7 +11,7 @@ from fmpy.util import read_csv
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
 def test_output_file(executable, dist, work, fmi_version, interface_type):
 
-    output_file = Path('result.csv')  # default result file
+    output_file = work / Path('result.csv')  # default result file
 
     fmu_filename = dist / f'{fmi_version}.0' / 'BouncingBall.fmu'
 
@@ -21,10 +21,11 @@ def test_output_file(executable, dist, work, fmi_version, interface_type):
     check_call([
         executable,
         '--interface-type', interface_type,
-        fmu_filename]
+        fmu_filename],
+        cwd=work
     )
 
-    read_csv('result.csv')
+    read_csv(output_file)
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
