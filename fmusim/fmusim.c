@@ -18,7 +18,7 @@
 #include "FMI3.h"
 #include "FMIZip.h"
 #include "FMIModelDescription.h"
-#include "FMISimulationResult.h"
+#include "FMIRecorder.h"
 
 #include "fmusim.h"
 #include "fmusim_fmi2_cs.h"
@@ -339,7 +339,7 @@ int main(int argc, const char* argv[]) {
     char* solver = "euler";
 
     FMIInstance* S = NULL;
-    FMISimulationResult* result = NULL;
+    FMIRecorder* result = NULL;
     const char* unzipdir = NULL;
     FMIStatus status = FMIFatal;
 
@@ -497,7 +497,7 @@ int main(int argc, const char* argv[]) {
         outputFile = "result.csv";
     }
 
-    result = FMICreateSimulationResult(nOutputVariables, outputVariables, outputFile);
+    result = FMICreateRecorder(nOutputVariables, outputVariables, outputFile);
 
     if (!result) {
         printf("Failed to open result file %s for writing.\n", outputFile);
@@ -590,7 +590,7 @@ int main(int argc, const char* argv[]) {
 TERMINATE:
 
     if (result) {
-        FMIFreeSimulationResult(result);
+        FMIFreeRecorder(result);
     }
 
     if (modelDescription) {

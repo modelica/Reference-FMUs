@@ -4,15 +4,15 @@
 #include "FMI2.h"
 #include "FMI3.h"
 
-#include "FMISimulationResult.h"
+#include "FMIRecorder.h"
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMISimulationResult* FMICreateSimulationResult(size_t nVariables, const FMIModelVariable* variables[], const char* file) {
+FMIRecorder* FMICreateRecorder(size_t nVariables, const FMIModelVariable* variables[], const char* file) {
 
-    FMISimulationResult* result = calloc(1, sizeof(FMISimulationResult));
+    FMIRecorder* result = calloc(1, sizeof(FMIRecorder));
 
     if (!result) {
         return NULL;
@@ -38,7 +38,7 @@ FMISimulationResult* FMICreateSimulationResult(size_t nVariables, const FMIModel
     return result;
 }
 
-void FMIFreeSimulationResult(FMISimulationResult* result) {
+void FMIFreeRecorder(FMIRecorder* result) {
 
     if (result) {
         
@@ -50,7 +50,7 @@ void FMIFreeSimulationResult(FMISimulationResult* result) {
     }
 }
 
-FMIStatus FMISample(FMIInstance* instance, double time, FMISimulationResult* result) {
+FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
     FMIStatus status = FMIOK;
 

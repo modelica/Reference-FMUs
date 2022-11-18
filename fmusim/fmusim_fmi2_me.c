@@ -13,7 +13,7 @@ FMIStatus simulateFMI2ME(
     FMIInstance* S, 
     const FMIModelDescription* modelDescription, 
     const char* resourceURI,
-    FMISimulationResult* result,
+    FMIRecorder* result,
     const FMUStaticInput * input,
     const FMISimulationSettings* settings) {
 

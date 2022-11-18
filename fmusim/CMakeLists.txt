@@ -20,8 +20,8 @@ set(sources
   FMICVode.c
   FMIModelDescription.h
   FMIModelDescription.c
-  FMISimulationResult.h
-  FMISimulationResult.c
+  FMIRecorder.h
+  FMIRecorder.c
   FMIZip.h
   FMIZip.c
   fmusim.h
