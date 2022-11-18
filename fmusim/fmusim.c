@@ -290,7 +290,7 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
 
                 const fmi3Clock value = atoi(literal) != 0;
 
-                CALL(FMI3SetClock(S, &vr, 1, &value, 1));
+                CALL(FMI3SetClock(S, &vr, 1, &value));
 
             }
         }
