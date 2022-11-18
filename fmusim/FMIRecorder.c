@@ -46,6 +46,8 @@ void FMIFreeRecorder(FMIRecorder* result) {
             fclose(result->file);
         }
 
+        free(result->buffer);
+
         free(result);
     }
 }
@@ -94,6 +96,32 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
         } else if (instance->fmiVersion == FMIVersion3) {
 
+            size_t nValues = 1;
+
+            if (variable->nDimensions > 0) {
+
+                for (size_t j = 0; j < variable->nDimensions; j++) {
+
+                    const FMIDimension* dimension = &variable->dimensions[j];
+
+                    fmi3UInt64 extent;
+
+                    if (dimension->variable) {
+                        CALL(FMI3GetUInt64(instance, &dimension->variable->valueReference, 1, &extent, 1));
+                    } else {
+                        extent = dimension->start;
+                    }
+
+                    nValues *= extent;
+                }
+
+            }
+
+            if (result->bufferSize < nValues * 8) {
+                result->bufferSize = nValues * 8;
+                result->buffer = realloc(result->buffer, result->bufferSize);
+            }
+
             if (type == FMIFloat32Type || type == FMIDiscreteFloat32Type) {
 
                 fmi3Float32 value;
@@ -102,9 +130,13 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIFloat64Type || type == FMIDiscreteFloat64Type) {
 
-                fmi3Float64 value;
-                CALL(FMI3GetFloat64(instance, vr, 1, &value, 1));
-                fprintf(file, ",%.16g", value);
+                fmi3Float64* value = (fmi3Float64*)result->buffer;
+                
+                CALL(FMI3GetFloat64(instance, vr, 1, value, nValues));
+                
+                for (size_t j = 0; j < nValues; j++) {
+                    fprintf(file, ",%.16g", value);
+                }
 
             } else if (type == FMIInt8Type) {
 

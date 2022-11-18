@@ -9,6 +9,8 @@ typedef struct {
     size_t nVariables;
     const FMIModelVariable** variables;
     FILE* file;
+    size_t bufferSize;
+    char* buffer;
 
 } FMIRecorder;
 
