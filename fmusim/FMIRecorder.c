@@ -273,14 +273,12 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIClockType) {
 
-                fmi3Clock* values = (fmi3Boolean*)result->values;
+                fmi3Clock value;
 
-                CALL(FMI3GetClock(instance, vr, 1, values, nValues));
+                CALL(FMI3GetClock(instance, vr, 1, &value));
 
-                for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%d", values[j]);
-                }
-
+                fprintf(file, ",%d", value);
+                
             }
 
         }
