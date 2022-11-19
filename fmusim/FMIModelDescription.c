@@ -280,8 +280,6 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             }
 
             variable->nDimensions++;
-
-            printf("");
         }
 
     }

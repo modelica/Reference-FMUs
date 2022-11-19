@@ -38,7 +38,7 @@ void FMIFreeRecorder(FMIRecorder* result) {
             fclose(result->file);
         }
 
-        free(result->buffer);
+        free(result->values);
         free(result->sizes);
 
         free(result);
@@ -117,14 +117,14 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             const size_t nValues = FMIGetNumberOfVariableValues(instance, variable);
 
-            if (result->bufferSize < nValues * 8) {
+            if (result->nValues < nValues * 8) {
 
-                result->bufferSize = nValues * 8;
+                result->nValues = nValues * 8;
                 
-                result->buffer = realloc(result->buffer, result->bufferSize);
+                result->values = realloc(result->values, result->nValues);
                 result->sizes = realloc(result->sizes, nValues * sizeof(size_t));
                 
-                if (!result->buffer || !result->sizes) {
+                if (!result->values || !result->sizes) {
                     printf("Failed to allocate buffer.\n");
                     goto TERMINATE;
                 }
@@ -132,7 +132,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             if (type == FMIFloat32Type || type == FMIDiscreteFloat32Type) {
 
-                fmi3Float32* values = (fmi3Float32*)result->buffer;
+                fmi3Float32* values = (fmi3Float32*)result->values;
 
                 CALL(FMI3GetFloat32(instance, vr, 1, values, nValues));
 
@@ -142,7 +142,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIFloat64Type || type == FMIDiscreteFloat64Type) {
 
-                fmi3Float64* values = (fmi3Float64*)result->buffer;
+                fmi3Float64* values = (fmi3Float64*)result->values;
                 
                 CALL(FMI3GetFloat64(instance, vr, 1, values, nValues));
                 
@@ -152,108 +152,108 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIInt8Type) {
 
-                fmi3Int8* value = (fmi3Int8*)result->buffer;
+                fmi3Int8* values = (fmi3Int8*)result->values;
 
-                CALL(FMI3GetInt8(instance, vr, 1, value, nValues));
+                CALL(FMI3GetInt8(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%" PRId8, value[j]);
+                    fprintf(file, ",%" PRId8, values[j]);
                 }
 
             } else if (type == FMIUInt8Type) {
 
-                fmi3UInt8* value = (fmi3UInt8*)result->buffer;
+                fmi3UInt8* values = (fmi3UInt8*)result->values;
 
-                CALL(FMI3GetUInt8(instance, vr, 1, value, nValues));
+                CALL(FMI3GetUInt8(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%" PRIu8, value[j]);
+                    fprintf(file, ",%" PRIu8, values[j]);
                 }
 
             } else if (type == FMIInt16Type) {
 
-                fmi3Int16* value = (fmi3Int16*)result->buffer;
+                fmi3Int16* values = (fmi3Int16*)result->values;
 
-                CALL(FMI3GetInt16(instance, vr, 1, value, nValues));
+                CALL(FMI3GetInt16(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%" PRId16, value[j]);
+                    fprintf(file, ",%" PRId16, values[j]);
                 }
 
             } else if (type == FMIUInt16Type) {
 
-                fmi3UInt16* value = (fmi3UInt16*)result->buffer;
+                fmi3UInt16* values = (fmi3UInt16*)result->values;
 
-                CALL(FMI3GetUInt16(instance, vr, 1, value, nValues));
+                CALL(FMI3GetUInt16(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%" PRIu16, value[j]);
+                    fprintf(file, ",%" PRIu16, values[j]);
                 }
 
             } else if (type == FMIInt32Type) {
 
-                fmi3Int32* value = (fmi3Int32*)result->buffer;
+                fmi3Int32* values = (fmi3Int32*)result->values;
 
-                CALL(FMI3GetInt32(instance, vr, 1, value, nValues));
+                CALL(FMI3GetInt32(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%" PRId32, value[j]);
+                    fprintf(file, ",%" PRId32, values[j]);
                 }
 
             } else if (type == FMIUInt32Type) {
 
-                fmi3UInt32* value = (fmi3UInt32*)result->buffer;
+                fmi3UInt32* values = (fmi3UInt32*)result->values;
 
-                CALL(FMI3GetUInt32(instance, vr, 1, value, nValues));
+                CALL(FMI3GetUInt32(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%" PRIu32, value[j]);
+                    fprintf(file, ",%" PRIu32, values[j]);
                 }
 
             } else if (type == FMIInt64Type) {
 
-                fmi3Int64* value = (fmi3Int64*)result->buffer;
+                fmi3Int64* values = (fmi3Int64*)result->values;
 
-                CALL(FMI3GetInt64(instance, vr, 1, value, nValues));
+                CALL(FMI3GetInt64(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%" PRId64, value[j]);
+                    fprintf(file, ",%" PRId64, values[j]);
                 }
 
             } else if (type == FMIUInt64Type) {
 
-                fmi3UInt64* value = (fmi3UInt64*)result->buffer;
+                fmi3UInt64* values = (fmi3UInt64*)result->values;
 
-                CALL(FMI3GetUInt64(instance, vr, 1, value, nValues));
+                CALL(FMI3GetUInt64(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%" PRIu64, value[j]);
+                    fprintf(file, ",%" PRIu64, values[j]);
                 }
 
             } else if (type == FMIBooleanType) {
 
-                fmi3Boolean* value = (fmi3Boolean*)result->buffer;
+                fmi3Boolean* values = (fmi3Boolean*)result->values;
 
-                CALL(FMI3GetBoolean(instance, vr, 1, value, nValues));
+                CALL(FMI3GetBoolean(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%d", value[j]);
+                    fprintf(file, ",%d", values[j]);
                 }
 
             } else if (type == FMIStringType) {
 
-                fmi3String* value = (fmi3String*)result->buffer;
+                fmi3String* values = (fmi3String*)result->values;
 
-                CALL(FMI3GetString(instance, vr, 1, value, nValues));
+                CALL(FMI3GetString(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",\"%s\"", value[j]);
+                    fprintf(file, ",\"%s\"", values[j]);
                 }
 
             } else if (type == FMIBinaryType) {
 
                 size_t* sizes = (size_t*)result->sizes;
-                fmi3Binary* values = (fmi3String*)result->buffer;
+                fmi3Binary* values = (fmi3String*)result->values;
 
                 CALL(FMI3GetBinary(instance, vr, 1, sizes, values, nValues));
 
@@ -273,12 +273,12 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIClockType) {
 
-                fmi3Clock* value = (fmi3Boolean*)result->buffer;
+                fmi3Clock* values = (fmi3Boolean*)result->values;
 
-                CALL(FMI3GetClock(instance, vr, 1, value, nValues));
+                CALL(FMI3GetClock(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%d", value[j]);
+                    fprintf(file, ",%d", values[j]);
                 }
 
             }
