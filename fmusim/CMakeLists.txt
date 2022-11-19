@@ -13,6 +13,8 @@ set(sources
   ../src/FMI3.c
   csv.h
   csv.c
+  FMIUtil.h
+  FMIUtil.c
   FMISolver.h
   FMIEuler.h
   FMIEuler.c

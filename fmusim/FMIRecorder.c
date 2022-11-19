@@ -3,6 +3,7 @@
 
 #include "FMI2.h"
 #include "FMI3.h"
+#include "FMIUtil.h"
 
 #include "FMIRecorder.h"
 
@@ -72,7 +73,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
             if (variable->nDimensions == 0) {
                 fprintf(result->file, ",\"%s\"", name);
             } else {
-                const size_t nValues = FMIGetNumberOfVariableValues(instance, variable);
+                size_t nValues;
+                CALL(FMIGetNumberOfVariableValues(instance, variable, &nValues));
                 for (size_t j = 0; j < nValues; j++) {
                     fprintf(result->file, ",\"%s[%zu]\"", name, j);
                 }
@@ -115,7 +117,9 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
         } else if (instance->fmiVersion == FMIVersion3) {
 
-            const size_t nValues = FMIGetNumberOfVariableValues(instance, variable);
+            size_t nValues;
+            
+            CALL(FMIGetNumberOfVariableValues(instance, variable, &nValues));
 
             if (result->nValues < nValues * 8) {
 
@@ -289,37 +293,4 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
 TERMINATE:
     return status;
-}
-
-size_t FMIGetNumberOfVariableValues(FMIInstance* instance, const FMIModelVariable* variable) {
-    
-    FMIStatus status = FMIOK;
- 
-    size_t nValues = 1;
-
-    if (variable->nDimensions > 0) {
-
-        for (size_t j = 0; j < variable->nDimensions; j++) {
-
-            const FMIDimension* dimension = &variable->dimensions[j];
-
-            fmi3UInt64 extent;
-
-            if (dimension->variable) {
-                CALL(FMI3GetUInt64(instance, &dimension->variable->valueReference, 1, &extent, 1));
-            } else {
-                extent = dimension->start;
-            }
-
-            nValues *= extent;
-        }
-
-    }
-
-TERMINATE:
-    if (status > FMIOK) {
-        return 0;
-    }
-
-    return nValues;
 }

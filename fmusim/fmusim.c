@@ -19,6 +19,7 @@
 #include "FMIZip.h"
 #include "FMIModelDescription.h"
 #include "FMIRecorder.h"
+#include "FMIUtil.h"
 
 #include "fmusim.h"
 #include "fmusim_fmi2_cs.h"
@@ -180,6 +181,10 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
 
     FMIStatus status = FMIOK;
 
+    size_t nValues = 0;
+    size_t valuesSize = 0;
+    char* values = NULL;
+
     for (size_t i = 0; i < settings->nStartValues; i++) {
 
         const FMIModelVariable* variable = settings->startVariables[i];
@@ -187,120 +192,51 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
         const FMIVariableType type = variable->type;
         const char* literal = settings->startValues[i];
 
+        CALL(FMIGetNumberOfVariableValues(S, variable, &nValues));
+
+        if (valuesSize < nValues * 8) {
+            valuesSize = nValues * 8;
+            values = realloc(values, valuesSize);
+        }
+
+        if (type == FMIStringType) {
+            
+            if (nValues != 1) {
+                status = FMIError;
+                goto TERMINATE;
+            }
+            if (S->fmiVersion == FMIVersion2) {
+                CALL(FMI2SetString(S, &vr, 1, &literal));
+            } else if (S->fmiVersion == FMIVersion3) {
+                CALL(FMI3SetString(S, &vr, 1, &literal, 1));
+            }
+
+            continue;
+
+        } else if (type == FMIBinaryType) {
+            
+            if (nValues != 1) {
+                status = FMIError;
+                goto TERMINATE;
+            }
+
+            unsigned char* value = NULL;
+            const size_t size = hexs2bin(literal, &value);
+            CALL(FMI3SetBinary(S, &vr, 1, &size, (fmi3Binary*)&value, 1));
+            free(value);
+            continue;
+        }
+
+        CALL(FMIParseStartValues(type, literal, nValues, values));
+
         if (S->fmiVersion == FMIVersion2) {
          
-            if (type == FMIRealType || type == FMIDiscreteRealType) {
-            
-                const fmi2Real value = strtod(literal, NULL);
-                // TODO: handle errors
-                CALL(FMI2SetReal(S, &vr, 1, &value));
+            CALL(FMI2SetValues(S, type, &vr, 1, values));
 
-            } else if (type == FMIIntegerType) {
-
-                const fmi2Integer value = atoi(literal);
-
-                CALL(FMI2SetInteger(S, &vr, 1, &value));
-
-            } else if (type == FMIBooleanType) {
-
-                const fmi2Boolean value = atoi(literal) != 0;
-
-                CALL(FMI2SetBoolean(S, &vr, 1, &value));
-
-            }  if (type == FMIStringType) {
-
-                CALL(FMI2SetString(S, &vr, 1, &literal));
-
-            }
         } else if (S->fmiVersion == FMIVersion3) {
 
-            if (type == FMIFloat32Type || type == FMIDiscreteFloat32Type) {
+            CALL(FMI3SetValues(S, type, &vr, 1, values, nValues));
 
-                const fmi3Float32 value = strtof(literal, NULL);
-                // TODO: handle errors
-                CALL(FMI3SetFloat32(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIFloat64Type || type == FMIDiscreteFloat64Type) {
-
-                const fmi3Float64 value = strtod(literal, NULL);
-                // TODO: handle errors
-                CALL(FMI3SetFloat64(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIInt8Type) {
-
-                const fmi3Int8 value = atoi(literal);
-
-                CALL(FMI3SetInt8(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIUInt8Type) {
-
-                const fmi3UInt8 value = atoi(literal);
-
-                CALL(FMI3SetUInt8(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIInt16Type) {
-
-                const fmi3Int16 value = atoi(literal);
-
-                CALL(FMI3SetInt16(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIUInt16Type) {
-
-                const fmi3UInt16 value = atoi(literal);
-
-                CALL(FMI3SetUInt16(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIInt32Type) {
-
-                const fmi3Int32 value = atoi(literal);
-
-                CALL(FMI3SetInt32(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIUInt32Type) {
-
-                const fmi3UInt32 value = atoi(literal);
-
-                CALL(FMI3SetUInt32(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIInt64Type) {
-
-                const fmi3Int64 value = atoi(literal);
-
-                CALL(FMI3SetInt64(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIUInt64Type) {
-
-                const fmi3UInt64 value = atoi(literal);
-
-                CALL(FMI3SetUInt64(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIBooleanType) {
-
-                const fmi3Boolean value = atoi(literal) != 0;
-
-                CALL(FMI3SetBoolean(S, &vr, 1, &value, 1));
-
-            }  if (type == FMIStringType) {
-
-                CALL(FMI3SetString(S, &vr, 1, &literal, 1));
-
-            } else if (type == FMIBinaryType) {
-
-                unsigned char* value = NULL;
-
-                const size_t size = hexs2bin(literal, &value);
-                
-                CALL(FMI3SetBinary(S, &vr, 1, &size, (fmi3Binary*)&value, 1));
-
-                free(value);
-
-            } else if (type == FMIClockType) {
-
-                const fmi3Clock value = atoi(literal) != 0;
-
-                CALL(FMI3SetClock(S, &vr, 1, &value));
-
-            }
         }
     }
 
