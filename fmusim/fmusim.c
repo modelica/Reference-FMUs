@@ -132,13 +132,47 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
     size_t nValues = 0;
     size_t valuesSize = 0;
     char* values = NULL;
+    bool configurationMode = false;
 
     for (size_t i = 0; i < settings->nStartValues; i++) {
 
         const FMIModelVariable* variable = settings->startVariables[i];
+        const FMICausality causality = variable->causality;
         const FMIValueReference vr = variable->valueReference;
         const FMIVariableType type = variable->type;
         const char* literal = settings->startValues[i];
+
+        nValues = 1;
+        values = calloc(1, sizeof(fmi3UInt64));
+
+        if (causality == FMIStructuralParameter && type == FMIUInt64Type) {
+
+            if (!configurationMode) {
+                CALL(FMI3EnterConfigurationMode(S));
+                configurationMode = true;
+            }
+
+            CALL(FMIParseStartValues(type, literal, nValues, values));
+
+            CALL(FMI3SetUInt64(S, &vr, 1, (fmi3UInt64*)values, nValues));
+        }
+    }
+
+    if (configurationMode) {
+        CALL(FMI3ExitConfigurationMode(S));
+    }
+
+    for (size_t i = 0; i < settings->nStartValues; i++) {
+
+        const FMIModelVariable* variable = settings->startVariables[i];
+        const FMICausality causality = variable->causality;
+        const FMIValueReference vr = variable->valueReference;
+        const FMIVariableType type = variable->type;
+        const char* literal = settings->startValues[i];
+
+        if (causality == FMIStructuralParameter) {
+            continue;
+        }
 
         CALL(FMIGetNumberOfVariableValues(S, variable, &nValues));
 
