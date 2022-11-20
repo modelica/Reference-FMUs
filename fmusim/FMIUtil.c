@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "FMI2.h"
 #include "FMI3.h"
 
