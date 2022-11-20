@@ -132,6 +132,7 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
     size_t nValues = 0;
     size_t valuesSize = 0;
     char* values = NULL;
+
     bool configurationMode = false;
 
     for (size_t i = 0; i < settings->nStartValues; i++) {
@@ -142,10 +143,14 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
         const FMIVariableType type = variable->type;
         const char* literal = settings->startValues[i];
 
-        nValues = 1;
-        values = calloc(1, sizeof(fmi3UInt64));
-
         if (causality == FMIStructuralParameter && type == FMIUInt64Type) {
+
+            nValues = 1;
+
+            if (valuesSize < nValues * 8) {
+                valuesSize = nValues * 8;
+                values = realloc(values, valuesSize);
+            }
 
             if (!configurationMode) {
                 CALL(FMI3EnterConfigurationMode(S));
@@ -228,6 +233,8 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
 
         }
     }
+
+    free(values);
 
 TERMINATE:
     return status;
