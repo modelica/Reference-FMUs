@@ -222,3 +222,55 @@ FMIStatus FMI3SetValues(
 
      return FMIOK;
  }
+
+ static int hexchr2bin(const char hex, char* out) {
+
+     if (out == NULL) {
+         return 0;
+     }
+
+     if (hex >= '0' && hex <= '9') {
+         *out = hex - '0';
+     } else if (hex >= 'A' && hex <= 'F') {
+         *out = hex - 'A' + 10;
+     } else if (hex >= 'a' && hex <= 'f') {
+         *out = hex - 'a' + 10;
+     } else {
+         return 0;
+     }
+
+     return 1;
+ }
+
+ FMIStatus FMIHexToBinary(const char* hex, size_t* size, unsigned char** value) {
+
+     if (hex == NULL || *hex == '\0' || value == NULL) {
+         return FMIError;
+     }
+         
+     *size = strlen(hex);
+
+     if (*size % 2 != 0) {
+         return FMIError;
+     }
+
+     *size /= 2;
+
+     *value = malloc(*size);
+
+     if (!*value) {
+         return FMIError;
+     }
+
+     memset(*value, 'A', *size);
+
+     for (size_t i = 0; i < *size; i++) {
+         char b1, b2;
+         if (!hexchr2bin(hex[i * 2], &b1) || !hexchr2bin(hex[i * 2 + 1], &b2)) {
+             return 0;
+         }
+         (*value)[i] = (b1 << 4) | b2;
+     }
+
+     return FMIOK;
+ }

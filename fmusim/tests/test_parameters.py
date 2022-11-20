@@ -69,13 +69,11 @@ def test_stop_time(executable, work, dist, fmi_version, interface_type):
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
-def test_start_value(executable, dist, work, fmi_version, interface_type):
+def test_start_value_types(executable, dist, work, fmi_version, interface_type):
 
-    output_file = work / f'test_start_value_fmi{fmi_version}_{interface_type}.csv'
+    output_file = work / f'test_start_value_types_fmi{fmi_version}_{interface_type}.csv'
 
     fmu_filename = dist / f'{fmi_version}.0' / 'Feedthrough.fmu'
-
-    # --start-value Float64_continuous_input -5e-1 --start-value Int32_input 2 --start-value Boolean_input 1 --start-value String_parameter "FMI is awesome!"
 
     check_call([
         executable,
@@ -93,6 +91,27 @@ def test_start_value(executable, dist, work, fmi_version, interface_type):
     assert result['Float64_continuous_output'][0] == -0.5
     assert result['Int32_output'][0] == 2
     assert result['Boolean_output'][0] == 1
+
+
+# @pytest.mark.parametrize('interface_type', ['cs', 'me'])
+# def test_start_value_arrays(executable, dist, work, interface_type):
+#
+#     output_file = work / f'test_start_value_arrays_fmi3_{interface_type}.csv'
+#
+#     fmu_filename = r'E:\Development\Reference-FMUs\build\dist\LinearTransform.fmu'  #dist / f'3.0' / 'LinearTransform.fmu'
+#
+#     check_call([
+#         executable,
+#         '--interface-type', interface_type,
+#         '--start-value', 'u', '2 3',
+#         r'--output-file', output_file,
+#         fmu_filename]
+#     )
+#
+#     result = read_csv(output_file)
+#
+#     assert result['y[0]'][0] == 2
+#     assert result['y[1]'][0] == 3
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
