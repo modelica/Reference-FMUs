@@ -254,6 +254,34 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             modelDescription->modelVariables[i].causality = FMILocal;
         }
 
+        xmlXPathObjectPtr xpathObj2 = xmlXPathNodeEval(node, ".//Dimension", xpathCtx);
+
+        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+
+        for (size_t j = 0; j < xpathObj2->nodesetval->nodeNr; j++) {
+
+            const xmlNodePtr dimensionNode = xpathObj2->nodesetval->nodeTab[j];
+
+            const char* start = (char*)xmlGetProp(dimensionNode, (xmlChar*)"start");
+            const char* valueReference = (char*)xmlGetProp(dimensionNode, (xmlChar*)"valueReference");
+
+            variable->dimensions = realloc(variable->dimensions, (variable->nDimensions) + 1 * sizeof(FMIDimension));
+
+            FMIDimension* dimension = &variable->dimensions[variable->nDimensions];
+
+            if (start) {
+                dimension->start = atoi(start);
+            } else if (valueReference) {
+                const FMIValueReference vr = atoi(valueReference);
+                dimension->variable = FMIModelVariableForValueReference(modelDescription, vr);
+            } else {
+                printf("Dimension must have start or valueReference.\n");
+                return NULL;
+            }
+
+            variable->nDimensions++;
+        }
+
     }
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelStructure/Output", xpathCtx);
@@ -408,6 +436,20 @@ FMIModelVariable* FMIModelVariableForName(const FMIModelDescription* modelDescri
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
         
         if (!strcmp(variable->name, name)) {
+            return variable;
+        }
+    }
+
+    return NULL;
+}
+
+FMIModelVariable* FMIModelVariableForValueReference(const FMIModelDescription* modelDescription, FMIValueReference valueReference) {
+    
+    for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+
+        const FMIModelVariable* variable = &modelDescription->modelVariables[i];
+
+        if (variable->valueReference == valueReference) {
             return variable;
         }
     }

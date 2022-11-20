@@ -19,6 +19,7 @@
 #include "FMIZip.h"
 #include "FMIModelDescription.h"
 #include "FMIRecorder.h"
+#include "FMIUtil.h"
 
 #include "fmusim.h"
 #include "fmusim_fmi2_cs.h"
@@ -124,185 +125,116 @@ void printUsage() {
     );
 }
 
-static int hexchr2bin(const char hex, char* out) {
-
-    if (out == NULL) {
-        return 0;
-    }
-
-    if (hex >= '0' && hex <= '9') {
-        *out = hex - '0';
-    } else if (hex >= 'A' && hex <= 'F') {
-        *out = hex - 'A' + 10;
-    } else if (hex >= 'a' && hex <= 'f') {
-        *out = hex - 'a' + 10;
-    } else {
-        return 0;
-    }
-
-    return 1;
-}
-
-static size_t hexs2bin(const char* hex, unsigned char** out) {
-
-    size_t len;
-    char   b1;
-    char   b2;
-    size_t i;
-
-    if (hex == NULL || *hex == '\0' || out == NULL)
-        return 0;
-
-    len = strlen(hex);
-    if (len % 2 != 0)
-        return 0;
-    len /= 2;
-
-    *out = malloc(len);
-
-    if (!*out) {
-        return 0;
-    }
-
-    memset(*out, 'A', len);
-
-    for (i = 0; i < len; i++) {
-        if (!hexchr2bin(hex[i * 2], &b1) || !hexchr2bin(hex[i * 2 + 1], &b2)) {
-            return 0;
-        }
-        (*out)[i] = (b1 << 4) | b2;
-    }
-
-    return len;
-}
-
 FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings) {
 
     FMIStatus status = FMIOK;
 
+    size_t nValues = 0;
+    size_t valuesSize = 0;
+    char* values = NULL;
+
+    bool configurationMode = false;
+
     for (size_t i = 0; i < settings->nStartValues; i++) {
 
         const FMIModelVariable* variable = settings->startVariables[i];
+        const FMICausality causality = variable->causality;
         const FMIValueReference vr = variable->valueReference;
         const FMIVariableType type = variable->type;
         const char* literal = settings->startValues[i];
 
-        if (S->fmiVersion == FMIVersion2) {
-         
-            if (type == FMIRealType || type == FMIDiscreteRealType) {
-            
-                const fmi2Real value = strtod(literal, NULL);
-                // TODO: handle errors
-                CALL(FMI2SetReal(S, &vr, 1, &value));
+        if (causality == FMIStructuralParameter && type == FMIUInt64Type) {
 
-            } else if (type == FMIIntegerType) {
+            nValues = 1;
 
-                const fmi2Integer value = atoi(literal);
-
-                CALL(FMI2SetInteger(S, &vr, 1, &value));
-
-            } else if (type == FMIBooleanType) {
-
-                const fmi2Boolean value = atoi(literal) != 0;
-
-                CALL(FMI2SetBoolean(S, &vr, 1, &value));
-
-            }  if (type == FMIStringType) {
-
-                CALL(FMI2SetString(S, &vr, 1, &literal));
-
+            if (valuesSize < nValues * 8) {
+                valuesSize = nValues * 8;
+                values = realloc(values, valuesSize);
             }
-        } else if (S->fmiVersion == FMIVersion3) {
 
-            if (type == FMIFloat32Type || type == FMIDiscreteFloat32Type) {
-
-                const fmi3Float32 value = strtof(literal, NULL);
-                // TODO: handle errors
-                CALL(FMI3SetFloat32(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIFloat64Type || type == FMIDiscreteFloat64Type) {
-
-                const fmi3Float64 value = strtod(literal, NULL);
-                // TODO: handle errors
-                CALL(FMI3SetFloat64(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIInt8Type) {
-
-                const fmi3Int8 value = atoi(literal);
-
-                CALL(FMI3SetInt8(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIUInt8Type) {
-
-                const fmi3UInt8 value = atoi(literal);
-
-                CALL(FMI3SetUInt8(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIInt16Type) {
-
-                const fmi3Int16 value = atoi(literal);
-
-                CALL(FMI3SetInt16(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIUInt16Type) {
-
-                const fmi3UInt16 value = atoi(literal);
-
-                CALL(FMI3SetUInt16(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIInt32Type) {
-
-                const fmi3Int32 value = atoi(literal);
-
-                CALL(FMI3SetInt32(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIUInt32Type) {
-
-                const fmi3UInt32 value = atoi(literal);
-
-                CALL(FMI3SetUInt32(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIInt64Type) {
-
-                const fmi3Int64 value = atoi(literal);
-
-                CALL(FMI3SetInt64(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIUInt64Type) {
-
-                const fmi3UInt64 value = atoi(literal);
-
-                CALL(FMI3SetUInt64(S, &vr, 1, &value, 1));
-
-            } else if (type == FMIBooleanType) {
-
-                const fmi3Boolean value = atoi(literal) != 0;
-
-                CALL(FMI3SetBoolean(S, &vr, 1, &value, 1));
-
-            }  if (type == FMIStringType) {
-
-                CALL(FMI3SetString(S, &vr, 1, &literal, 1));
-
-            } else if (type == FMIBinaryType) {
-
-                unsigned char* value = NULL;
-
-                const size_t size = hexs2bin(literal, &value);
-                
-                CALL(FMI3SetBinary(S, &vr, 1, &size, (fmi3Binary*)&value, 1));
-
-                free(value);
-
-            } else if (type == FMIClockType) {
-
-                const fmi3Clock value = atoi(literal) != 0;
-
-                CALL(FMI3SetClock(S, &vr, 1, &value));
-
+            if (!configurationMode) {
+                CALL(FMI3EnterConfigurationMode(S));
+                configurationMode = true;
             }
+
+            CALL(FMIParseStartValues(type, literal, nValues, values));
+
+            CALL(FMI3SetUInt64(S, &vr, 1, (fmi3UInt64*)values, nValues));
         }
     }
+
+    if (configurationMode) {
+        CALL(FMI3ExitConfigurationMode(S));
+    }
+
+    for (size_t i = 0; i < settings->nStartValues; i++) {
+
+        const FMIModelVariable* variable = settings->startVariables[i];
+        const FMICausality causality = variable->causality;
+        const FMIValueReference vr = variable->valueReference;
+        const FMIVariableType type = variable->type;
+        const char* literal = settings->startValues[i];
+
+        if (causality == FMIStructuralParameter) {
+            continue;
+        }
+
+        CALL(FMIGetNumberOfVariableValues(S, variable, &nValues));
+
+        if (valuesSize < nValues * 8) {
+            valuesSize = nValues * 8;
+            values = realloc(values, valuesSize);
+        }
+
+        if (type == FMIStringType) {
+            
+            if (nValues != 1) {
+                printf("Setting start values of String arrays is not supported.\n");
+                status = FMIError;
+                goto TERMINATE;
+            }
+            if (S->fmiVersion == FMIVersion2) {
+                CALL(FMI2SetString(S, &vr, 1, &literal));
+            } else if (S->fmiVersion == FMIVersion3) {
+                CALL(FMI3SetString(S, &vr, 1, &literal, 1));
+            }
+
+            continue;
+
+        } else if (type == FMIBinaryType) {
+            
+            if (nValues != 1) {
+                printf("Setting start values of Binary arrays is not supported.\n");
+                status = FMIError;
+                goto TERMINATE;
+            }
+
+            fmi3Binary value = NULL;
+            size_t size = 0;
+
+            CALL(FMIHexToBinary(literal, &size, &value));
+            
+            CALL(FMI3SetBinary(S, &vr, 1, &size, &value, 1));
+            
+            free(value);
+            
+            continue;
+        }
+
+        CALL(FMIParseStartValues(type, literal, nValues, values));
+
+        if (S->fmiVersion == FMIVersion2) {
+         
+            CALL(FMI2SetValues(S, type, &vr, 1, values));
+
+        } else if (S->fmiVersion == FMIVersion3) {
+
+            CALL(FMI3SetValues(S, type, &vr, 1, values, nValues));
+
+        }
+    }
+
+    free(values);
 
 TERMINATE:
     return status;
@@ -481,7 +413,7 @@ int main(int argc, const char* argv[]) {
     S = FMICreateInstance("instance1", platformBinaryPath, logMessage, logFMICalls ? logFunctionCall : NULL);
 
     size_t nOutputVariables = 0;
-    FMIModelVariable** outputVariables = (FMIModelVariable*)calloc(modelDescription->nModelVariables, sizeof(FMIModelVariable*));
+    FMIModelVariable** outputVariables = (FMIModelVariable**)calloc(modelDescription->nModelVariables, sizeof(FMIModelVariable*));
 
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 

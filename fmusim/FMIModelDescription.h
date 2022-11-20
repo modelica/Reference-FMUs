@@ -17,6 +17,8 @@ typedef enum {
 
 } FMICausality;
 
+typedef struct FMIDimension FMIDimension;
+
 typedef struct {
     
     const char* name;
@@ -24,8 +26,17 @@ typedef struct {
     const char* description;
     unsigned int valueReference;
     FMICausality causality;
+    size_t nDimensions;
+    FMIDimension* dimensions;
 
 } FMIModelVariable;
+
+struct FMIDimension{
+
+    size_t start;
+    FMIModelVariable* variable;
+
+};
 
 typedef struct {
 
@@ -76,5 +87,7 @@ FMIModelDescription* FMIReadModelDescription(const char* filename);
 void FMIFreeModelDescription(FMIModelDescription* modelDescription);
 
 FMIModelVariable* FMIModelVariableForName(const FMIModelDescription* modelDescription, const char* name);
+
+FMIModelVariable* FMIModelVariableForValueReference(const FMIModelDescription* modelDescription, FMIValueReference valueReference);
 
 void FMIDumpModelDescription(FMIModelDescription* modelDescription, FILE* file);
