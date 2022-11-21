@@ -274,6 +274,7 @@ int main(int argc, const char* argv[]) {
     FMIRecorder* result = NULL;
     const char* unzipdir = NULL;
     FMIStatus status = FMIFatal;
+    bool earlyReturnAllowed = false;
 
     for (int i = 1; i < argc - 1; i++) {
 
@@ -313,6 +314,8 @@ int main(int argc, const char* argv[]) {
             outputInterval = strtod(argv[++i], &error);
         } else if (!strcmp(v, "--solver")) {
             solver = argv[++i];
+        } else if (!strcmp(v, "--early-return-allowed")) {
+            earlyReturnAllowed = true;
         } else {
             printf(PROGNAME ": unrecognized option '%s'\n", v);
             printf("Try '" PROGNAME " --help' for more information.\n");
@@ -482,6 +485,7 @@ int main(int argc, const char* argv[]) {
     settings.startTime = startTime;
     settings.outputInterval = outputInterval;
     settings.stopTime = stopTime;
+    settings.earlyReturnAllowed = earlyReturnAllowed;
 
     if (!strcmp("euler", solver)) {
         settings.solverCreate = FMIEulerCreate;

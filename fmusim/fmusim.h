@@ -13,6 +13,9 @@ typedef struct {
     double stopTime;
     double outputInterval;
 
+    // Co-Simulation
+    bool earlyReturnAllowed;
+
     // Model Exchange
     SolverCreate solverCreate;
     SolverFree solverFree;
