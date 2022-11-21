@@ -193,5 +193,5 @@ def test_fmi3():
         problems = validate_fmu(filename=build_dir / 'dist' / f'{model}.fmu')
         assert len(problems) == 0
 
-    copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=models, fmi_version='3.0', fmi_types=['cs', 'me'])
+    copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=models + ['LinearTransform'], fmi_version='3.0', fmi_types=['cs', 'me'])
     copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=['Clocks'], fmi_version='3.0', fmi_types=['se'])
