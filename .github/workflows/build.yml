@@ -211,25 +211,24 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: Linux-FMUs
-        path: fmus
+        path: fmus-linux
 
     - uses: actions/download-artifact@v3
       with:
         name: macOS-FMUs
-        path: fmus
+        path: fmus-darwin
 
     - uses: actions/download-artifact@v3
       with:
         name: Windows-FMUs
-        path: fmus
+        path: fmus-windows
 
     - name: Merge FMUs
-      run: |
-        python3 merge_platform_binaries.py
+      run: python3 merge_platform_binaries.py
 
     - name: Upload FMUs
       uses: actions/upload-artifact@v3
       with:
         name: merged-FMUs
-        path: merged
+        path: fmus-merged
         if-no-files-found: error

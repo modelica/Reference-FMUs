@@ -1,15 +1,11 @@
-import itertools
-
-from pathlib import Path
-import subprocess
 import os
 import shutil
-from fmpy import simulate_fmu, platform
+import subprocess
+from pathlib import Path
+
+from fmpy import simulate_fmu
 from fmpy.util import compile_platform_binary
 from fmpy.validation import validate_fmu
-
-
-test_fmus_version = '0.0.19'
 
 
 def validate(build_dir, fmi_types, models, compile=False):
@@ -85,21 +81,11 @@ def build_fmus(build_dir, fmi_version, fmi_type='ME'):
     subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
 
 
-def copy_to_cross_check(dist_dir, model_names, fmi_version, fmi_types):
-
-    parent_dir = Path(__file__).parent
-
-    for fmi_type, model in itertools.product(fmi_types, model_names):
-        target_dir = parent_dir / 'fmus' / fmi_version / fmi_type / platform / 'Reference-FMUs' / test_fmus_version / model
-        os.makedirs(target_dir, exist_ok=True)
-        shutil.copy(dist_dir / f'{model}.fmu', target_dir)
-        shutil.copy(parent_dir / model / f'{model}_ref.csv', target_dir)
-        shutil.copy(parent_dir / model / f'{model}_ref.opt', target_dir)
-
-
 def test_fmi1_me():
 
-    build_dir = Path(__file__).parent / 'fmi1_me'
+    parent_dir = Path(__file__).parent
+    build_dir = parent_dir / 'fmi1_me'
+    fmus_dir = parent_dir / 'fmus' / '1.0' / 'me'
 
     build_fmus(build_dir, fmi_version=1, fmi_type='ME')
 
@@ -107,18 +93,21 @@ def test_fmi1_me():
 
     validate(build_dir, fmi_types=['ModelExchange'], models=models)
 
+    os.makedirs(fmus_dir, exist_ok=True)
+
     for model in models:
         example = f'{model}_me'
-    print(f"Running {example}...")
-    filename = os.path.join(build_dir, 'temp', example)
-    subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
-
-    copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=models, fmi_version='1.0', fmi_types=['me'])
+        print(f"Running {example}...")
+        filename = os.path.join(build_dir, 'temp', example)
+        subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
+        shutil.copyfile(src=build_dir / 'dist' / f'{model}.fmu', dst=fmus_dir / f'{model}.fmu')
 
 
 def test_fmi1_cs():
 
-    build_dir = Path(__file__).parent / 'fmi1_cs'
+    parent_dir = Path(__file__).parent
+    build_dir = parent_dir / 'fmi1_cs'
+    fmus_dir = parent_dir / 'fmus' / '1.0' / 'cs'
 
     build_fmus(build_dir, fmi_version=1, fmi_type='CS')
 
@@ -126,18 +115,21 @@ def test_fmi1_cs():
 
     validate(build_dir, fmi_types=['CoSimulation'], models=models)
 
+    os.makedirs(fmus_dir, exist_ok=True)
+
     for model in models:
         example = f'{model}_cs'
         print(f"Running {example}...")
         filename = os.path.join(build_dir, 'temp', example)
         subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
-
-    copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=models, fmi_version='1.0', fmi_types=['cs'])
+        shutil.copyfile(src=build_dir / 'dist' / f'{model}.fmu', dst=fmus_dir / f'{model}.fmu')
 
 
 def test_fmi2():
 
-    build_dir = Path(__file__).parent / 'fmi2'
+    parent_dir = Path(__file__).parent
+    build_dir = parent_dir / 'fmi2'
+    fmus_dir = parent_dir / 'fmus' / '2.0'
 
     build_fmus(build_dir, fmi_version=2)
 
@@ -146,19 +138,22 @@ def test_fmi2():
     validate(build_dir, fmi_types=['CoSimulation', 'ModelExchange'], models=models)
     validate(build_dir, fmi_types=['CoSimulation', 'ModelExchange'], models=models, compile=True)
 
+    os.makedirs(fmus_dir, exist_ok=True)
+
     for model in models:
         for interface_type in ['cs', 'me']:
             example = f'{model}_{interface_type}'
             print(f"Running {example}...")
             filename = os.path.join(build_dir, 'temp', example)
             subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
-
-    copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=models, fmi_version='2.0', fmi_types=['cs', 'me'])
+            shutil.copyfile(src=build_dir / 'dist' / f'{model}.fmu', dst=fmus_dir / f'{model}.fmu')
 
 
 def test_fmi3():
 
-    build_dir = Path(__file__).parent / 'fmi3'
+    parent_dir = Path(__file__).parent
+    build_dir = parent_dir / 'fmi3'
+    fmus_dir = parent_dir / 'fmus' / '3.0'
 
     build_fmus(build_dir, fmi_version=3)
 
@@ -193,5 +188,7 @@ def test_fmi3():
         problems = validate_fmu(filename=build_dir / 'dist' / f'{model}.fmu')
         assert len(problems) == 0
 
-    copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=models + ['LinearTransform'], fmi_version='3.0', fmi_types=['cs', 'me'])
-    copy_to_cross_check(dist_dir=build_dir / 'dist', model_names=['Clocks'], fmi_version='3.0', fmi_types=['se'])
+    os.makedirs(fmus_dir, exist_ok=True)
+
+    for model in models + ['Clocks', 'LinearTransform']:
+        shutil.copyfile(src=build_dir / 'dist' / f'{model}.fmu', dst=fmus_dir / f'{model}.fmu')
