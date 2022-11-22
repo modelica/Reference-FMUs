@@ -413,8 +413,6 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    // FMIDumpModelDescription(modelDescription, stdout);
-
     FMIPlatformBinaryPath(unzipdir, modelIdentifier, modelDescription->fmiVersion, platformBinaryPath, FMI_PATH_MAX);
 
     S = FMICreateInstance("instance1", platformBinaryPath, logMessage, logFMICalls ? logFunctionCall : NULL);
