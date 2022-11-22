@@ -15,6 +15,7 @@ typedef struct {
 
     // Co-Simulation
     bool earlyReturnAllowed;
+    bool eventModeUsed;
 
     // Model Exchange
     SolverCreate solverCreate;

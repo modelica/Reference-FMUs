@@ -22,16 +22,22 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
     fmi3Boolean earlyReturn = fmi3False;
     fmi3Float64 lastSuccessfulTime = settings->startTime;
     fmi3Float64 time = settings->startTime;
-    fmi3Float64 nextTime = 0.0;
+    fmi3Float64 nextCommunicationPoint = 0.0;
+    fmi3Float64 nextRegularPoint = 0.0;
     fmi3Float64 stepSize = 0.0;
     fmi3Float64 nextInputEventTime = INFINITY;
+    fmi3Boolean discreteStatesNeedUpdate = fmi3True;
+    fmi3Boolean nominalsOfContinuousStatesChanged = fmi3False;
+    fmi3Boolean valuesOfContinuousStatesChanged = fmi3False;
+    fmi3Boolean nextEventTimeDefined = fmi3False;
+    fmi3Float64 nextEventTime = INFINITY;
 
     CALL(FMI3InstantiateCoSimulation(S,
         modelDescription->instantiationToken,  // instantiationToken
         resourcePath,                          // resourcePath
         fmi3False,                             // visible
         fmi3False,                             // loggingOn
-        fmi3False,                             // eventModeUsed
+        settings->eventModeUsed,               // eventModeUsed
         settings->earlyReturnAllowed,          // earlyReturnAllowed
         NULL,                                  // requiredIntermediateVariables
         0,                                     // nRequiredIntermediateVariables
@@ -45,6 +51,31 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
     CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, settings->startTime, fmi3True, settings->stopTime));
     CALL(FMI3ExitInitializationMode(S));
 
+    if (settings->eventModeUsed) {
+     
+        do {
+
+            CALL(FMI3UpdateDiscreteStates(S,
+                &discreteStatesNeedUpdate,
+                &terminateSimulation,
+                &nominalsOfContinuousStatesChanged,
+                &valuesOfContinuousStatesChanged,
+                &nextEventTimeDefined,
+                &nextEventTime));
+
+            if (terminateSimulation) {
+                goto TERMINATE;
+            }
+
+        } while (discreteStatesNeedUpdate);
+
+        if (!nextEventTimeDefined) {
+            nextEventTime = INFINITY;
+        }
+
+        CALL(FMI3EnterStepMode(S));
+    }
+
     size_t nSteps = 0;
 
     for (;;) {
@@ -55,24 +86,35 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
             break;
         }
 
-        CALL(FMIApplyInput(S, input, time, true, true, false));
+        nextRegularPoint = settings->startTime + (nSteps + 1) * settings->outputInterval;
+
+        nextCommunicationPoint = nextRegularPoint;
 
         nextInputEventTime = FMINextInputEvent(input, time);
 
-        nextTime = settings->startTime + (nSteps + 1) * settings->outputInterval;
+        inputEvent = nextCommunicationPoint > nextInputEventTime;
 
-        inputEvent = nextTime > nextInputEventTime;
+        if (inputEvent) {
+            nextCommunicationPoint = nextInputEventTime;
+        }
 
-        stepSize = inputEvent ? nextInputEventTime : nextTime - time;
-        
+        stepSize = nextCommunicationPoint - time;
+
+        if (settings->eventModeUsed) {
+            CALL(FMIApplyInput(S, input, time, false, true, false));
+        } else {
+            CALL(FMIApplyInput(S, input, time, true, true, true));
+        }
+
         CALL(FMI3DoStep(S, 
-            time, 
-            stepSize,
-            fmi3True, 
-            &eventEncountered, 
-            &terminateSimulation, 
-            &earlyReturn, 
-            &lastSuccessfulTime));
+            time,                  // currentCommunicationPoint
+            stepSize,              // communicationStepSize
+            fmi3True,              // noSetFMUStatePriorToCurrentPoint
+            &eventEncountered,     // eventEncountered
+            &terminateSimulation,  // terminate
+            &earlyReturn,          // earlyReturn
+            &lastSuccessfulTime    // lastSuccessfulTime
+        ));
 
         if (earlyReturn && !settings->earlyReturnAllowed) {
             status = FMIError;
@@ -83,11 +125,51 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
             break;
         }
 
-        if (earlyReturn && lastSuccessfulTime < nextTime) {
+        if (earlyReturn && lastSuccessfulTime < nextCommunicationPoint) {
             time = lastSuccessfulTime;
-        } else {
-            time = nextTime;
+        } else { 
+            time = nextCommunicationPoint;
+        }
+
+        if (time == nextRegularPoint) {
             nSteps++;
+        }
+
+        if (settings->eventModeUsed && (inputEvent || eventEncountered)) {
+
+            CALL(FMISample(S, time, result));
+
+            CALL(FMI3EnterEventMode(S));
+
+            if (inputEvent) {
+                CALL(FMIApplyInput(S, input, time,
+                    true,  // discrete
+                    true,  // continous
+                    true   // after event
+                ));
+            }
+
+            do {
+
+                CALL(FMI3UpdateDiscreteStates(S,
+                    &discreteStatesNeedUpdate,
+                    &terminateSimulation,
+                    &nominalsOfContinuousStatesChanged,
+                    &valuesOfContinuousStatesChanged,
+                    &nextEventTimeDefined,
+                    &nextEventTime));
+
+                if (terminateSimulation) {
+                    break;
+                }
+
+            } while (discreteStatesNeedUpdate);
+
+            if (!nextEventTimeDefined) {
+                nextEventTime = INFINITY;
+            }
+
+            CALL(FMI3EnterStepMode(S));
         }
     }
 

@@ -86,9 +86,9 @@ double FMINextInputEvent(const FMUStaticInput* input, double time) {
 		const double t0 = input->time[i];
 		const double t1 = input->time[i + 1];
 
-		//if (time < t0) {
-		//	continue;
-		//}
+		if (time >= t1) {
+			continue;
+		}
 
 		if (t0 == t1) {
 			return t0;  // discrete change of a continuous variable
