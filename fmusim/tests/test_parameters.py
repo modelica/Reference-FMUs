@@ -209,3 +209,24 @@ def test_solver(executable, work, dist, fmi_version, solver):
     )
 
     result = read_csv(output_file)
+
+
+@pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
+def test_output_variable(executable, dist, work, fmi_version, interface_type):
+
+    output_file = work / f'test_output_variable_fmi{fmi_version}_{interface_type}.csv'
+
+    fmu_filename = dist / f'{fmi_version}.0' / 'BouncingBall.fmu'
+
+    check_call([
+        executable,
+        '--interface-type', interface_type,
+        r'--output-file', output_file,
+        r'--output-variable', 'e',
+        r'--output-variable', 'der(h)',
+        fmu_filename]
+    )
+
+    result = read_csv(output_file)
+
+    assert set(result.dtype.names) == {'time', 'e', 'der(h)'}
