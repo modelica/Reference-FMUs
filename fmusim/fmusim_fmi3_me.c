@@ -122,7 +122,7 @@ FMIStatus simulateFMI3ME(
         timeEvent = nextCommunicationPoint >= nextEventTime;
 
         if (inputEvent || timeEvent) {
-            nextCommunicationPoint = min(nextInputEventTime, nextEventTime);
+            nextCommunicationPoint = fmin(nextInputEventTime, nextEventTime);
         }
 
         CALL(settings->solverStep(solver, nextCommunicationPoint, &time, &stateEvent));
