@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
+
+#include "fmusim.h"
 #include "fmusim_fmi3.h"
 #include "fmusim_fmi3_me.h"
 
@@ -17,6 +19,8 @@ FMIStatus simulateFMI3ME(
 
     FMIStatus status = FMIOK;
 
+    fmi3Float64 time;
+
     fmi3Boolean inputEvent = fmi3False;
     fmi3Boolean timeEvent  = fmi3False;
     fmi3Boolean stateEvent = fmi3False;
@@ -30,6 +34,14 @@ FMIStatus simulateFMI3ME(
     fmi3Float64 nextEventTime                     = INFINITY;
     fmi3Float64 nextInputEvent                    = INFINITY;
 
+    size_t nSteps;
+    fmi3Float64 nextRegularPoint;
+    fmi3Float64 nextCommunicationPoint;
+    fmi3Float64 nextInputEventTime;
+
+    fmi3Boolean nominalsChanged = fmi3False;
+    fmi3Boolean statesChanged = fmi3False;
+
     Solver* solver = NULL;
 
     CALL(FMI3InstantiateModelExchange(S,
@@ -39,7 +51,7 @@ FMIStatus simulateFMI3ME(
         fmi3False                              // loggingOn
     ));
 
-    fmi3Float64 time = settings->startTime;
+    time = settings->startTime;
 
     // set start values
     CALL(applyStartValues(S, settings));
@@ -54,7 +66,10 @@ FMIStatus simulateFMI3ME(
     CALL(FMI3ExitInitializationMode(S));
 
     // intial event iteration
-    while (discreteStatesNeedUpdate) {
+    nominalsChanged = fmi3False;
+    statesChanged = fmi3False;
+
+    do {
 
         CALL(FMI3UpdateDiscreteStates(S,
             &discreteStatesNeedUpdate,
@@ -67,6 +82,14 @@ FMIStatus simulateFMI3ME(
         if (terminateSimulation) {
             goto TERMINATE;
         }
+
+        nominalsChanged |= nominalsOfContinuousStatesChanged;
+        statesChanged |= valuesOfContinuousStatesChanged;
+
+    } while (discreteStatesNeedUpdate);
+
+    if (!nextEventTimeDefined) {
+        nextEventTime = INFINITY;
     }
 
     CALL(FMI3EnterContinuousTimeMode(S));
@@ -78,21 +101,31 @@ FMIStatus simulateFMI3ME(
         goto TERMINATE;
     }
 
-    CALL(FMISample(S, time, result));
+    nSteps = 0;
 
-    uint64_t step = 0;
+    for (;;) {
 
-    while (time < settings->stopTime) {
+        CALL(FMISample(S, time, result));
 
-        const fmi3Float64 nextTime = time + settings->outputInterval;
+        if (time >= settings->stopTime) {
+            break;
+        }
 
-        const double nextInputEventTime = FMINextInputEvent(input, time);
+        nextRegularPoint = settings->startTime + (nSteps + 1) * settings->outputInterval;
 
-        inputEvent = time >= nextInputEventTime;
+        nextCommunicationPoint = nextRegularPoint;
 
-        timeEvent = nextEventTimeDefined && time >= nextEventTime;
+        nextInputEventTime = FMINextInputEvent(input, time);
 
-        CALL(settings->solverStep(solver, nextTime, &time, &stateEvent));
+        inputEvent = nextCommunicationPoint >= nextInputEventTime;
+
+        timeEvent = nextCommunicationPoint >= nextEventTime;
+
+        if (inputEvent || timeEvent) {
+            nextCommunicationPoint = fmin(nextInputEventTime, nextEventTime);
+        }
+
+        CALL(settings->solverStep(solver, nextCommunicationPoint, &time, &stateEvent));
 
         CALL(FMI3SetTime(S, time));
 
@@ -102,7 +135,15 @@ FMIStatus simulateFMI3ME(
             false  // after event
         ));
 
+        if (time == nextRegularPoint) {
+            nSteps++;
+        }
+
         CALL(FMI3CompletedIntegratorStep(S, fmi3True, &stepEvent, &terminateSimulation));
+
+        if (terminateSimulation) {
+            goto TERMINATE;
+        }
 
         if (inputEvent || timeEvent || stateEvent || stepEvent) {
 
@@ -118,35 +159,53 @@ FMIStatus simulateFMI3ME(
                 ));
             }
 
-            nominalsOfContinuousStatesChanged = fmi3False;
-            valuesOfContinuousStatesChanged = fmi3False;
+            nominalsChanged = fmi3False;
+            statesChanged = fmi3False;
 
             do {
-                fmi3Boolean nominalsChanged = fmi3False;
-                fmi3Boolean statesChanged = fmi3False;
 
-                CALL(FMI3UpdateDiscreteStates(S, &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime));
-
-                nominalsOfContinuousStatesChanged |= nominalsChanged;
-                valuesOfContinuousStatesChanged |= statesChanged;
-
+                CALL(FMI3UpdateDiscreteStates(S, 
+                    &discreteStatesNeedUpdate, 
+                    &terminateSimulation, 
+                    &nominalsOfContinuousStatesChanged, 
+                    &valuesOfContinuousStatesChanged, 
+                    &nextEventTimeDefined, 
+                    &nextEventTime));
+                
                 if (terminateSimulation) {
                     goto TERMINATE;
                 }
+
+                nominalsChanged |= nominalsOfContinuousStatesChanged;
+                statesChanged |= valuesOfContinuousStatesChanged;
+
             } while (discreteStatesNeedUpdate);
+
+            if (!nextEventTimeDefined) {
+                nextEventTime = INFINITY;
+            }
 
             CALL(FMI3EnterContinuousTimeMode(S));
 
             settings->solverReset(solver, time);
-
-            // record outputs after the event
-            CALL(FMISample(S, time, result));
         }
 
-        // record outputs
-        CALL(FMISample(S, time, result));
     }
 
 TERMINATE:
+
+    if (status != FMIFatal) {
+
+        const FMIStatus terminateStatus = FMI3Terminate(S);
+
+        if (terminateStatus != FMIFatal) {
+            FMI3FreeInstance(S);
+        }
+    }
+
+    if (solver) {
+        settings->solverFree(solver);
+    }
+
     return status;
 }

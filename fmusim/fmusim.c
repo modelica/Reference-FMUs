@@ -118,6 +118,8 @@ void printUsage() {
         "  --log-fmi-calls               log FMI calls\n"
         "  --fmi-log-file [FILE]         set the FMI log file\n"
         "  --solver [euler|cvode]        the solver to use\n"
+        "  --early-return-allowed        allow early return\n"
+        "  --event-mode-used             use event mode\n"
         "\n"
         "Example:\n"
         "\n"
@@ -274,6 +276,8 @@ int main(int argc, const char* argv[]) {
     FMIRecorder* result = NULL;
     const char* unzipdir = NULL;
     FMIStatus status = FMIFatal;
+    bool earlyReturnAllowed = false;
+    bool eventModeUsed = false;
 
     for (int i = 1; i < argc - 1; i++) {
 
@@ -313,6 +317,11 @@ int main(int argc, const char* argv[]) {
             outputInterval = strtod(argv[++i], &error);
         } else if (!strcmp(v, "--solver")) {
             solver = argv[++i];
+        } else if (!strcmp(v, "--early-return-allowed")) {
+            earlyReturnAllowed = true;
+        } else if (!strcmp(v, "--event-mode-used")) {
+            earlyReturnAllowed = true;
+            eventModeUsed = true;
         } else {
             printf(PROGNAME ": unrecognized option '%s'\n", v);
             printf("Try '" PROGNAME " --help' for more information.\n");
@@ -406,8 +415,6 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    // FMIDumpModelDescription(modelDescription, stdout);
-
     FMIPlatformBinaryPath(unzipdir, modelIdentifier, modelDescription->fmiVersion, platformBinaryPath, FMI_PATH_MAX);
 
     S = FMICreateInstance("instance1", platformBinaryPath, logMessage, logFMICalls ? logFunctionCall : NULL);
@@ -482,6 +489,8 @@ int main(int argc, const char* argv[]) {
     settings.startTime = startTime;
     settings.outputInterval = outputInterval;
     settings.stopTime = stopTime;
+    settings.earlyReturnAllowed = earlyReturnAllowed;
+    settings.eventModeUsed = eventModeUsed;
 
     if (!strcmp("euler", solver)) {
         settings.solverCreate = FMIEulerCreate;

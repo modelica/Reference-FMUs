@@ -17,16 +17,24 @@ FMIStatus simulateFMI2ME(
     const FMUStaticInput * input,
     const FMISimulationSettings* settings) {
 
+    FMIStatus status = FMIOK;
+
+    fmi2Real time;
+
     bool stateEvent = false;
     fmi2Boolean inputEvent = fmi2False;
     fmi2Boolean timeEvent  = fmi2False;
     fmi2Boolean stepEvent  = fmi2False;
+
     fmi2Boolean nominalsChanged = fmi2False;
     fmi2Boolean statesChanged = fmi2False;
 
     Solver* solver = NULL;
 
-    FMIStatus status = FMIOK;
+    size_t nSteps;
+    fmi2Real nextRegularPoint;
+    fmi2Real nextCommunicationPoint;
+    fmi2Real nextInputEventTime;
 
     CALL(FMI2Instantiate(S,
         resourceURI,                          // fmuResourceLocation
@@ -36,7 +44,7 @@ FMIStatus simulateFMI2ME(
         fmi2False                             // loggingOn
     ));
 
-    fmi2Real time = settings->startTime;
+    time = settings->startTime;
 
     // set start values
     CALL(applyStartValues(S, settings));
@@ -54,6 +62,9 @@ FMIStatus simulateFMI2ME(
     fmi2EventInfo eventInfo = { 0 };
 
     // intial event iteration
+    nominalsChanged = fmi2False;
+    statesChanged = fmi2False;
+
     do {
 
         CALL(FMI2NewDiscreteStates(S, &eventInfo));
@@ -61,7 +72,15 @@ FMIStatus simulateFMI2ME(
         if (eventInfo.terminateSimulation) {
             goto TERMINATE;
         }
+
+        nominalsChanged |= eventInfo.nominalsOfContinuousStatesChanged;
+        statesChanged |= eventInfo.valuesOfContinuousStatesChanged;
+
     } while (eventInfo.newDiscreteStatesNeeded);
+
+    if (!eventInfo.nextEventTimeDefined) {
+        eventInfo.nextEventTime = INFINITY;
+    }
 
     CALL(FMI2EnterContinuousTimeMode(S));
 
@@ -72,30 +91,44 @@ FMIStatus simulateFMI2ME(
         goto TERMINATE;
     }
 
-    CALL(FMISample(S, time, result));
+    nSteps = 0;
 
-    while (time < settings->stopTime) {
+    for (;;) {
+
+        CALL(FMISample(S, time, result));
+
+        if (time >= settings->stopTime) {
+            break;
+        }
     
-        const fmi2Real nextTime = time + settings->outputInterval;
+        nextRegularPoint = settings->startTime + (nSteps + 1) * settings->outputInterval;
 
-        const double nextInputEventTime = FMINextInputEvent(input, time);
+        nextCommunicationPoint = nextRegularPoint;
 
-        inputEvent = time >= nextInputEventTime;
+        nextInputEventTime = FMINextInputEvent(input, time);
 
-        timeEvent = eventInfo.nextEventTimeDefined && eventInfo.nextEventTime <= nextTime;
-        
-        CALL(settings->solverStep(solver, nextTime, &time, &stateEvent));
+        inputEvent = nextCommunicationPoint >= nextInputEventTime;
+
+        timeEvent = nextCommunicationPoint >= eventInfo.nextEventTime;
+
+        if (inputEvent || timeEvent) {
+            nextCommunicationPoint = fmin(nextInputEventTime, eventInfo.nextEventTime);
+        }
+
+        CALL(settings->solverStep(solver, nextCommunicationPoint, &time, &stateEvent));
 
         CALL(FMI2SetTime(S, time));
 
-        // apply continuous inputs
         CALL(FMIApplyInput(S, input, time,
             false,  // discrete
             true,   // continous
             false   // after event
         ));
 
-        // check for step event, e.g.dynamic state selection
+        if (time == nextRegularPoint) {
+            nSteps++;
+        }
+
         CALL(FMI2CompletedIntegratorStep(S, fmi2True, &stepEvent, &eventInfo.terminateSimulation));
 
         if (eventInfo.terminateSimulation) {
@@ -124,29 +157,37 @@ FMIStatus simulateFMI2ME(
             do {
                 CALL(FMI2NewDiscreteStates(S, &eventInfo));
 
-                nominalsChanged |= eventInfo.nominalsOfContinuousStatesChanged;
-                statesChanged   |= eventInfo.valuesOfContinuousStatesChanged;
-
                 if (eventInfo.terminateSimulation) {
                     goto TERMINATE;
                 }
 
+                nominalsChanged |= eventInfo.nominalsOfContinuousStatesChanged;
+                statesChanged |= eventInfo.valuesOfContinuousStatesChanged;
+
             } while (eventInfo.newDiscreteStatesNeeded);
+
+            if (!eventInfo.nextEventTimeDefined) {
+                eventInfo.nextEventTime = INFINITY;
+            }
 
             // enter Continuous-Time Mode
             CALL(FMI2EnterContinuousTimeMode(S));
 
             settings->solverReset(solver, time);
-
-            // record outputs after the event
-            CALL(FMISample(S, time, result));
         }
 
-        // record outputs
-        CALL(FMISample(S, time, result));
     }
 
 TERMINATE:
+
+    if (status != FMIFatal) {
+
+        const FMIStatus terminateStatus = FMI2Terminate(S);
+
+        if (terminateStatus != FMIFatal) {
+            FMI2FreeInstance(S);
+        }
+    }
 
     if (solver) {
         settings->solverFree(solver);
