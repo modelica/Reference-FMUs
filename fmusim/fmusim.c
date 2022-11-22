@@ -118,6 +118,8 @@ void printUsage() {
         "  --log-fmi-calls               log FMI calls\n"
         "  --fmi-log-file [FILE]         set the FMI log file\n"
         "  --solver [euler|cvode]        the solver to use\n"
+        "  --early-return-allowed        allow early return\n"
+        "  --event-mode-used             use event mode\n"
         "\n"
         "Example:\n"
         "\n"
