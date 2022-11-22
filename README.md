@@ -79,6 +79,10 @@ To build the FMUs you need [CMake](https://cmake.org/) and a supported [build to
 
 The FMUs will be in the `dist` folder inside the selected build folder.
 
+## Pre-built reference FMUs
+
+The generated FMUs are available in the  [Releases.]([LICENSE.txt](https://github.com/modelica/Reference-FMUs/releases).
+
 ## License and attribution
 
 Copyright &copy; 2022, Modelica Association Project "FMI".
