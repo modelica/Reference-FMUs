@@ -121,6 +121,7 @@ void printUsage() {
         "  --solver [euler|cvode]        the solver to use\n"
         "  --early-return-allowed        allow early return\n"
         "  --event-mode-used             use event mode\n"
+        "  --record-intermediate-values  record outputs in intermediate update\n"
         "\n"
         "Example:\n"
         "\n"
@@ -296,6 +297,7 @@ int main(int argc, const char* argv[]) {
     FMIStatus status = FMIFatal;
     bool earlyReturnAllowed = false;
     bool eventModeUsed = false;
+    bool recordIntermediateValues = false;
 
     for (int i = 1; i < argc - 1; i++) {
 
@@ -344,6 +346,8 @@ int main(int argc, const char* argv[]) {
         } else if (!strcmp(v, "--event-mode-used")) {
             earlyReturnAllowed = true;
             eventModeUsed = true;
+        } else if (!strcmp(v, "--record-intermediate-values")) {
+            recordIntermediateValues = true;
         } else {
             printf(PROGNAME ": unrecognized option '%s'\n", v);
             printf("Try '" PROGNAME " --help' for more information.\n");
@@ -523,6 +527,7 @@ int main(int argc, const char* argv[]) {
     settings.stopTime = stopTime;
     settings.earlyReturnAllowed = earlyReturnAllowed;
     settings.eventModeUsed = eventModeUsed;
+    settings.recordIntermediateValues = recordIntermediateValues;
 
     if (!strcmp("euler", solver)) {
         settings.solverCreate = FMIEulerCreate;

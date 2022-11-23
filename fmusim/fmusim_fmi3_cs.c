@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <math.h>
 
 #include "fmusim_fmi3.h"
@@ -7,10 +8,31 @@
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
+static void recordIntermediateValues(
+    fmi3InstanceEnvironment instanceEnvironment,
+    fmi3Float64  intermediateUpdateTime,
+    fmi3Boolean  intermediateVariableSetRequested,
+    fmi3Boolean  intermediateVariableGetAllowed,
+    fmi3Boolean  intermediateStepFinished,
+    fmi3Boolean  canReturnEarly,
+    fmi3Boolean* earlyReturnRequested,
+    fmi3Float64* earlyReturnTime) {
+
+    FMIInstance* instance = (FMIInstance*)instanceEnvironment;
+
+    FMIRecorder* recorder = (FMIRecorder*)instance->userData;
+
+    if (intermediateVariableGetAllowed) {
+        FMISample(instance, intermediateUpdateTime, recorder);
+    }
+
+    *earlyReturnRequested = fmi3False;
+}
+
 FMIStatus simulateFMI3CS(FMIInstance* S,
     const FMIModelDescription * modelDescription,
     const char* resourcePath,
-    FMIRecorder* result,
+    FMIRecorder* recorder,
     const FMUStaticInput * input,
     const FMISimulationSettings * settings) {
 
@@ -32,6 +54,29 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
     fmi3Boolean nextEventTimeDefined = fmi3False;
     fmi3Float64 nextEventTime = INFINITY;
 
+    fmi3ValueReference* requiredIntermediateVariables = NULL;
+    size_t nRequiredIntermediateVariables = 0;
+    fmi3IntermediateUpdateCallback intermediateUpdate = NULL;
+
+    if (settings->recordIntermediateValues) {
+
+        nRequiredIntermediateVariables = recorder->nVariables;
+        
+        requiredIntermediateVariables = (fmi3ValueReference*)calloc(nRequiredIntermediateVariables, sizeof(fmi3ValueReference));
+
+        if (!requiredIntermediateVariables) {
+            return FMIError;
+        }
+        
+        for (size_t i = 0; i < nRequiredIntermediateVariables; i++) {
+            requiredIntermediateVariables[i] = recorder->variables[i]->valueReference;
+        }
+
+        intermediateUpdate = recordIntermediateValues;
+
+        S->userData = recorder;
+    }
+
     CALL(FMI3InstantiateCoSimulation(S,
         modelDescription->instantiationToken,  // instantiationToken
         resourcePath,                          // resourcePath
@@ -39,10 +84,12 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
         fmi3False,                             // loggingOn
         settings->eventModeUsed,               // eventModeUsed
         settings->earlyReturnAllowed,          // earlyReturnAllowed
-        NULL,                                  // requiredIntermediateVariables
-        0,                                     // nRequiredIntermediateVariables
-        NULL                                   // intermediateUpdate
+        requiredIntermediateVariables,         // requiredIntermediateVariables
+        nRequiredIntermediateVariables,        // nRequiredIntermediateVariables
+        intermediateUpdate                     // intermediateUpdate
     ));
+
+    free(requiredIntermediateVariables);
 
     CALL(applyStartValues(S, settings));
     CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
@@ -80,7 +127,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
 
     for (;;) {
 
-        CALL(FMISample(S, time, result));
+        CALL(FMISample(S, time, recorder));
 
         if (time >= settings->stopTime) {
             break;
@@ -137,7 +184,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
 
         if (settings->eventModeUsed && (inputEvent || eventEncountered)) {
 
-            CALL(FMISample(S, time, result));
+            CALL(FMISample(S, time, recorder));
 
             CALL(FMI3EnterEventMode(S));
 

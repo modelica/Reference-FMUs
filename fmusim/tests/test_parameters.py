@@ -230,3 +230,22 @@ def test_output_variable(executable, dist, work, fmi_version, interface_type):
     result = read_csv(output_file)
 
     assert set(result.dtype.names) == {'time', 'e', 'der(h)'}
+
+
+def test_output_variable(executable, dist, work):
+
+    output_file = work / f'test_intermediate_update.csv'
+
+    fmu_filename = dist / '3.0' / 'BouncingBall.fmu'
+
+    check_call([
+        executable,
+        '--interface-type', 'cs',
+        r'--output-file', output_file,
+        r'--record-intermediate-values',
+        fmu_filename]
+    )
+
+    result = read_csv(output_file)
+
+    assert np.all(np.diff(result['time']) < 0.1)
