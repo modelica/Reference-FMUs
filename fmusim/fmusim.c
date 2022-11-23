@@ -113,6 +113,7 @@ void printUsage() {
         "  --stop-time [VALUE]           set the stop time\n"
         "  --output-interval [VALUE]     set the output interval\n"
         "  --start-value [name] [value]  set a start value\n"
+        "  --output-variable [name]      record a specific variable\n"
         "  --input-file [FILE]           read input from a CSV file\n"
         "  --output-file [FILE]          write output to a CSV file\n"
         "  --log-fmi-calls               log FMI calls\n"
@@ -242,6 +243,20 @@ TERMINATE:
     return status;
 }
 
+static FMIStatus FMIRealloc(void** ptr, size_t new_size) {
+
+    void* old_ptr = *ptr;
+
+    *ptr = realloc(*ptr, new_size);
+
+    if (!*ptr) {
+        *ptr = old_ptr;
+        return FMIError;
+    }
+
+    return FMIOK;
+}
+
 int main(int argc, const char* argv[]) {
 
     if (argc < 2) {
@@ -270,6 +285,9 @@ int main(int argc, const char* argv[]) {
     char** startNames = NULL;
     char** startValues = NULL;
 
+    size_t nOutputVariableNames = 0;
+    char** outputVariableNames = NULL;
+
     char* solver = "euler";
 
     FMIInstance* S = NULL;
@@ -297,11 +315,15 @@ int main(int argc, const char* argv[]) {
             }
             i++;
         } else if (!strcmp(v, "--start-value")) {
-            startNames  = realloc(startNames, sizeof(char*) * (nStartValues + 1));
-            startValues = realloc(startValues, sizeof(char*) * (nStartValues + 1));
-            startNames[nStartValues]  = argv[++i];
+            CALL(FMIRealloc(&startNames, sizeof(char*) * (nStartValues + 1)));
+            CALL(FMIRealloc(&startValues, sizeof(char*) * (nStartValues + 1)));
+            startNames[nStartValues] = argv[++i];
             startValues[nStartValues] = argv[++i];
             nStartValues++;
+        } else if (!strcmp(v, "--output-variable")) {
+            CALL(FMIRealloc(&outputVariableNames, sizeof(char*) * (nOutputVariableNames + 1)));
+            outputVariableNames[nOutputVariableNames] = argv[++i];
+            nOutputVariableNames++;
         } else if (!strcmp(v, "--input-file")) {
             inputFile = argv[++i];
         } else if (!strcmp(v, "--output-file")) {
@@ -424,12 +446,22 @@ int main(int argc, const char* argv[]) {
 
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        const FMIModelVariable* variable = &modelDescription->modelVariables[i];
 
-        if (variable->causality == FMIOutput) {
+        if (nOutputVariableNames) {
+
+            for (size_t j = 0; j < nOutputVariableNames; j++) {
+
+                if (!strcmp(variable->name, outputVariableNames[j])) {
+                    outputVariables[nOutputVariables++] = variable;
+                    break;
+                }
+
+            }
+
+        } else if (variable->causality == FMIOutput) {
             outputVariables[nOutputVariables++] = variable;
         }
-
     }
 
     if (!outputFile) {
@@ -553,6 +585,10 @@ TERMINATE:
     if (s_fmiLogFile) {
         fclose(s_fmiLogFile);
     }
+
+    free(startNames);
+    free(startValues);
+    free(outputVariableNames);
 
     return status;
 }
