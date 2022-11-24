@@ -34,7 +34,7 @@ jobs:
         conda-channels: conda-forge
     - run: conda --version
     - run: which python
-    - run: conda install fmpy-base pytest
+    - run: conda install fmpy-base pytest scipy
     - run: python ThirdParty/build_cvode.py
     - run: python ThirdParty/build_libxml2.py
     - run: python ThirdParty/build_zlib.py
@@ -60,7 +60,7 @@ jobs:
         conda-channels: conda-forge
     - run: conda --version
     - run: which python
-    - run: conda install fmpy-base pytest
+    - run: conda install fmpy-base pytest scipy
     - run: python ThirdParty/build_cvode.py
     - run: python ThirdParty/build_libxml2.py
     - run: python ThirdParty/build_zlib.py
@@ -86,7 +86,7 @@ jobs:
         conda-channels: conda-forge
     - run: conda --version
     - run: which python
-    - run: conda install fmpy-base pytest
+    - run: conda install fmpy-base pytest scipy
     - run: python ThirdParty/build_cvode.py
     - run: python ThirdParty/build_libxml2.py
     - run: python ThirdParty/build_zlib.py
