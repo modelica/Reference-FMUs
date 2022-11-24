@@ -19,11 +19,12 @@ jobs:
     - uses: actions/checkout@v3
     - run: python3 lint_files.py
 
-  build-linux:
-
-    runs-on: ubuntu-18.04
+  build:
+    strategy:
+      matrix:
+        image: [windows-2022, ubuntu-18.04, macos-11]
+    runs-on: ${{ matrix.image }}
     needs: lint-files
-
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v2
@@ -41,58 +42,7 @@ jobs:
     - run: pytest -s -v --junitxml=junit/test-results.xml --ignore fmusim
     - uses: actions/upload-artifact@v3
       with:
-        name: Linux-FMUs
-        path: fmus
-        if-no-files-found: error
-
-  build-windows:
-
-    runs-on: windows-2022
-    needs: lint-files
-
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - uses: s-weigand/setup-conda@v1.1.1
-      with:
-        conda-channels: conda-forge
-    - run: conda --version
-    - run: which python
-    - run: conda install fmpy-base pytest scipy
-    - run: python ThirdParty/build_cvode.py
-    - run: python ThirdParty/build_libxml2.py
-    - run: python ThirdParty/build_zlib.py
-    - run: pytest -s -v --junitxml=junit/test-results.xml --ignore fmusim
-    - uses: actions/upload-artifact@v3
-      with:
-        name: Windows-FMUs
-        path: fmus
-        if-no-files-found: error
-
-  build-macos:
-
-    runs-on: macos-11
-    needs: lint-files
-
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - uses: s-weigand/setup-conda@v1.1.1
-      with:
-        conda-channels: conda-forge
-    - run: conda --version
-    - run: which python
-    - run: conda install fmpy-base pytest scipy
-    - run: python ThirdParty/build_cvode.py
-    - run: python ThirdParty/build_libxml2.py
-    - run: python ThirdParty/build_zlib.py
-    - uses: actions/upload-artifact@v3
-      with:
-        name: macOS-FMUs
+        name: ${{ matrix.image }}
         path: fmus
         if-no-files-found: error
 
