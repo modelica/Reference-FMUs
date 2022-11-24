@@ -26,31 +26,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-
-    - name: Check python version
-      run: |
-        python --version
-
-    - name: Set up Python
-      uses: actions/setup-python@v3
+    - uses: actions/setup-python@v2
       with:
-        python-version: '3.10'
-
-    - name: Add conda to system path
-      run: |
-        echo $CONDA/bin >> $GITHUB_PATH
-
-    - name: Install dependencies
-      run: |
-        conda install --channel conda-forge $CONDA_PACKAGES
-        python -m pip install --no-deps $FMPY
-
-    - name: Run tests
-      run: |
-        pytest -s -v --junitxml=junit/test-results.xml --ignore fmusim
-
-    - name: Upload FMUs
-      uses: actions/upload-artifact@v3
+        python-version: 3.8
+    - uses: s-weigand/setup-conda@v1.1.1
+      with:
+        conda-channels: conda-forge
+    - run: conda --version
+    - run: which python
+    - run: conda install fmpy-base pytest
+    - run: python ThirdParty/build_cvode.py
+    - run: python ThirdParty/build_libxml2.py
+    - run: python ThirdParty/build_zlib.py
+    - run: pytest -s -v --junitxml=junit/test-results.xml --ignore fmusim
+    - uses: actions/upload-artifact@v3
       with:
         name: Linux-FMUs
         path: fmus
@@ -63,21 +52,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-
-    - name: Check python version
-      run: |
-        python --version
-
-    - name: Install dependencies
-      run: |
-        python -m pip install $env:FMPY pytest scipy
-
-    - name: Run tests
-      run: |
-        pytest -s -v --junitxml=junit/test-results.xml --ignore fmusim
-
-    - name: Upload FMUs
-      uses: actions/upload-artifact@v3
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - uses: s-weigand/setup-conda@v1.1.1
+      with:
+        conda-channels: conda-forge
+    - run: conda --version
+    - run: which python
+    - run: conda install fmpy-base pytest
+    - run: python ThirdParty/build_cvode.py
+    - run: python ThirdParty/build_libxml2.py
+    - run: python ThirdParty/build_zlib.py
+    - run: pytest -s -v --junitxml=junit/test-results.xml --ignore fmusim
+    - uses: actions/upload-artifact@v3
       with:
         name: Windows-FMUs
         path: fmus
@@ -90,31 +78,19 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-
-    - name: Check python version
-      run: |
-        python --version
-
-    - name: Set up Python
-      uses: actions/setup-python@v3
+    - uses: actions/setup-python@v2
       with:
-        python-version: '3.10'
-
-    - name: Add conda to system path
-      run: |
-        echo $CONDA/bin >> $GITHUB_PATH
-
-    - name: Install dependencies
-      run: |
-        conda install --channel conda-forge $CONDA_PACKAGES
-        python -m pip install --no-deps $FMPY
-
-    - name: Run tests
-      run: |
-        pytest -s -v --junitxml=junit/test-results.xml --ignore fmusim
-
-    - name: Upload FMUs
-      uses: actions/upload-artifact@v3
+        python-version: 3.8
+    - uses: s-weigand/setup-conda@v1.1.1
+      with:
+        conda-channels: conda-forge
+    - run: conda --version
+    - run: which python
+    - run: conda install fmpy-base pytest
+    - run: python ThirdParty/build_cvode.py
+    - run: python ThirdParty/build_libxml2.py
+    - run: python ThirdParty/build_zlib.py
+    - uses: actions/upload-artifact@v3
       with:
         name: macOS-FMUs
         path: fmus
