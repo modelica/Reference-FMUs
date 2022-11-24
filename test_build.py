@@ -3,6 +3,7 @@ import shutil
 import subprocess
 from pathlib import Path
 
+import fmpy
 from fmpy import simulate_fmu
 from fmpy.util import compile_platform_binary
 from fmpy.validation import validate_fmu
@@ -18,7 +19,7 @@ def validate(build_dir, fmi_types, models, compile=False):
 
         print(model)
 
-        fmu_filename = os.path.join(build_dir, 'dist', model + '.fmu')
+        fmu_filename = os.path.join(build_dir, 'install', model + '.fmu')
 
         problems = validate_fmu(fmu_filename)
 
@@ -75,10 +76,18 @@ def build_fmus(build_dir, fmi_version, fmi_type='ME'):
     if args.cmake_architecture is not None:
         cmake_options += ['-A', args.cmake_architecture]
 
-    cmake_options += ['-D', f'FMI_VERSION={fmi_version}', '-D', f'FMI_TYPE={fmi_type}', '..']
+    install_dir = build_dir / 'install'
+
+    cmake_options += [
+        '-D', f'FMI_VERSION={fmi_version}',
+        '-D', f'FMI_TYPE={fmi_type}',
+        '-D', f'CMAKE_INSTALL_PREFIX={install_dir}',
+        '-D', f'WITH_FMUSIM=ON',
+        '..'
+    ]
 
     subprocess.call(['cmake'] + cmake_options, cwd=build_dir)
-    subprocess.call(['cmake', '--build', '.', '--config', 'Release'], cwd=build_dir)
+    subprocess.call(['cmake', '--build', '.', '--target', 'install', '--config', 'Release'], cwd=build_dir)
 
 
 def test_fmi1_me():
@@ -100,7 +109,7 @@ def test_fmi1_me():
         print(f"Running {example}...")
         filename = os.path.join(build_dir, 'temp', example)
         subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
-        shutil.copyfile(src=build_dir / 'dist' / f'{model}.fmu', dst=fmus_dir / f'{model}.fmu')
+        shutil.copyfile(src=build_dir / 'install' / f'{model}.fmu', dst=fmus_dir / f'{model}.fmu')
 
 
 def test_fmi1_cs():
@@ -120,9 +129,8 @@ def test_fmi1_cs():
     for model in models:
         example = f'{model}_cs'
         print(f"Running {example}...")
-        filename = os.path.join(build_dir, 'temp', example)
-        subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
-        shutil.copyfile(src=build_dir / 'dist' / f'{model}.fmu', dst=fmus_dir / f'{model}.fmu')
+        subprocess.check_call(build_dir / 'temp' / example, cwd=build_dir / 'temp')
+        shutil.copyfile(src=build_dir / 'install' / f'{model}.fmu', dst=fmus_dir / f'{model}.fmu')
 
 
 def test_fmi2():
@@ -146,7 +154,7 @@ def test_fmi2():
             print(f"Running {example}...")
             filename = os.path.join(build_dir, 'temp', example)
             subprocess.check_call(filename, cwd=os.path.join(build_dir, 'temp'))
-            shutil.copyfile(src=build_dir / 'dist' / f'{model}.fmu', dst=fmus_dir / f'{model}.fmu')
+            shutil.copyfile(src=build_dir / 'install' / f'{model}.fmu', dst=fmus_dir / f'{model}.fmu')
 
 
 def test_fmi3():
@@ -185,10 +193,20 @@ def test_fmi3():
     validate(build_dir, fmi_types=['CoSimulation', 'ModelExchange'], models=models, compile=True)
 
     for model in ['Clocks', 'LinearTransform']:
-        problems = validate_fmu(filename=build_dir / 'dist' / f'{model}.fmu')
+        problems = validate_fmu(filename=build_dir / 'install' / f'{model}.fmu')
         assert len(problems) == 0
 
     os.makedirs(fmus_dir, exist_ok=True)
 
     for model in models + ['Clocks', 'LinearTransform']:
-        shutil.copyfile(src=build_dir / 'dist' / f'{model}.fmu', dst=fmus_dir / f'{model}.fmu')
+        shutil.copyfile(src=build_dir / 'install' / f'{model}.fmu', dst=fmus_dir / f'{model}.fmu')
+
+    if fmpy.system == 'darwin':
+        os.makedirs(parent_dir / 'fmus' / 'fmusim-darwin', exist_ok=True)
+        shutil.copyfile(src=build_dir / 'install' / 'fmusim', dst=parent_dir / 'fmus' / 'fmusim-darwin' / 'fmusim')
+    elif fmpy.system == 'linux':
+        os.makedirs(parent_dir / 'fmus' / 'fmusim-linux', exist_ok=True)
+        shutil.copyfile(src=build_dir / 'install' / 'fmusim', dst=parent_dir / 'fmus' / 'fmusim-linux' / 'fmusim')
+    elif fmpy.system == 'windows':
+        os.makedirs(parent_dir / 'fmus' / 'fmusim-windows', exist_ok=True)
+        shutil.copyfile(src=build_dir / 'install' / 'fmusim.exe', dst=parent_dir / 'fmus' / 'fmusim-windows' / 'fmusim.exe')

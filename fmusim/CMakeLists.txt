@@ -2,7 +2,22 @@ cmake_minimum_required (VERSION 3.17)
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)
 
+set(LIBXML2_DIR  ${CMAKE_SOURCE_DIR}/ThirdParty/libxml2-2.10.3/build/install/)
+set(ZLIB_DIR     ${CMAKE_SOURCE_DIR}/ThirdParty/zlib-1.2.13/build/install/)
+set(ZLIB_SRC_DIR ${CMAKE_SOURCE_DIR}/ThirdParty/zlib-1.2.13/)
+set(CVODE_DIR    ${CMAKE_SOURCE_DIR}/ThirdParty/cvode-6.4.1/build/install/)
+
+if (WIN32)
+    set(FMUSIM_DIST_DIR ${CMAKE_BINARY_DIR}/dist/fmusim-windows/)
+elseif (APPLE)
+    set(FMUSIM_DIST_DIR ${CMAKE_BINARY_DIR}/dist/fmusim-darwin/)
+else ()
+    set(FMUSIM_DIST_DIR ${CMAKE_BINARY_DIR}/dist/fmusim-linux/)
+endif ()
+
 project (FMUSim)
+
+file(MAKE_DIRECTORY ${FMUSIM_DIST_DIR})
 
 set(sources
   ../include/FMI.h
@@ -43,12 +58,12 @@ set(sources
   fmusim_input.h
   fmusim_input.c
   miniunzip.c
-  ../ThirdParty/zlib-1.2.13/contrib/minizip/ioapi.c
-  ../ThirdParty/zlib-1.2.13/contrib/minizip/unzip.c
+  ${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c
+  ${ZLIB_SRC_DIR}/contrib/minizip/unzip.c
 )
 
 if (WIN32)
-    set (sources ${sources} ../ThirdParty/zlib-1.2.13/contrib/minizip/iowin32.c)
+    set (sources ${sources} ${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c)
 endif ()
 
 add_executable(fmusim ${sources})
@@ -56,39 +71,38 @@ add_executable(fmusim ${sources})
 target_include_directories(fmusim PRIVATE
   .
   ../include
-  ../ThirdParty/libxml2-2.10.3/build/install/include/libxml2
-  ../ThirdParty/zlib-1.2.13/build/install/include
-  ../ThirdParty/zlib-1.2.13/contrib/minizip
-  ../ThirdParty/cvode-6.4.1/build/install/include
+  ${LIBXML2_DIR}/include/libxml2
+  ${ZLIB_DIR}/include
+  ${ZLIB_SRC_DIR}/contrib/minizip
+  ${CVODE_DIR}/include
 )
 
 add_compile_definitions(LIBXML_STATIC)
 
 if (WIN32)
     set(libraries
-      ${CMAKE_SOURCE_DIR}/../ThirdParty/libxml2-2.10.3/build/install/lib/libxml2s.lib
-      ${CMAKE_SOURCE_DIR}/../ThirdParty/zlib-1.2.13/build/install/lib/zlibstatic.lib
-      ${CMAKE_SOURCE_DIR}/../ThirdParty/cvode-6.4.1/build/install/lib/sundials_cvode.lib
+      ${LIBXML2_DIR}/lib/libxml2s.lib
+      ${ZLIB_DIR}/lib/zlibstatic.lib
+      ${CVODE_DIR}/lib/sundials_cvode.lib
       wsock32
       ws2_32
     )
 elseif(UNIX AND NOT APPLE)
     set(libraries
-      ${CMAKE_SOURCE_DIR}/../ThirdParty/libxml2-2.10.3/build/install/lib/libxml2.a
-      ${CMAKE_SOURCE_DIR}/../ThirdParty/zlib-1.2.13/build/install/lib/libz.a
-      ${CMAKE_SOURCE_DIR}/../ThirdParty/cvode-6.4.1/build/install/lib/libsundials_cvode.a
+      ${LIBXML2_DIR}/lib/libxml2.a
+      ${ZLIB_DIR}lib/libz.a
+      ${CVODE_DIR}/lib/libsundials_cvode.a
       ${CMAKE_DL_LIBS}
       m
     )
 else ()
     set(libraries
-      ${CMAKE_SOURCE_DIR}/../ThirdParty/libxml2-2.10.3/build/install/lib/libxml2.a
-      ${CMAKE_SOURCE_DIR}/../ThirdParty/zlib-1.2.13/build/install/lib/libz.a
-      ${CMAKE_SOURCE_DIR}/../ThirdParty/cvode-6.4.1/build/install/lib/libsundials_cvode.a
+      ${LIBXML2_DIR}/lib/libxml2.a
+      ${ZLIB_DIR}lib/libz.a
+      ${CVODE_DIR}/lib/libsundials_cvode.a
     )
 endif ()
 
 target_link_libraries(fmusim ${libraries})
 
-install(TARGETS fmusim RUNTIME DESTINATION ${CMAKE_BINARY_DIR}/install)
-install(FILES ${CMAKE_SOURCE_DIR}/LICENSE.txt DESTINATION ${CMAKE_BINARY_DIR}/install)
+install(TARGETS fmusim DESTINATION ${CMAKE_INSTALL_PREFIX})

@@ -14,7 +14,6 @@
 
 #include <errno.h>
 
-
 #include "FMI3.h"
 #include "FMIZip.h"
 #include "FMIModelDescription.h"

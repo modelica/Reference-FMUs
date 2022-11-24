@@ -22,6 +22,8 @@ if (${FMI_VERSION} GREATER 1)
   set(FMI_TYPE "")
 endif ()
 
+set(WITH_FMUSIM OFF CACHE BOOL "Add fmusim project")
+
 if (MSVC)
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
@@ -127,7 +129,7 @@ add_library(${TARGET_NAME} SHARED
   ${MODEL_NAME}/FMI${FMI_VERSION}${FMI_TYPE}.xml
 )
 
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fmus)
 
 target_compile_definitions(${TARGET_NAME} PRIVATE
   DISABLE_PREFIX
@@ -277,14 +279,18 @@ endif()
 
 # create ZIP archive
 add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E tar "cfv" ${CMAKE_CURRENT_BINARY_DIR}/dist/${MODEL_NAME}.fmu --format=zip
+  COMMAND ${CMAKE_COMMAND} -E tar "cfv" ${CMAKE_CURRENT_BINARY_DIR}/fmus/${MODEL_NAME}.fmu --format=zip
   ${ARCHIVE_FILES}
   WORKING_DIRECTORY ${FMU_BUILD_DIR} COMMENT "Creating ZIP archive"
 )
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dist/${MODEL_NAME}.fmu DESTINATION .)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fmus/${MODEL_NAME}.fmu DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 endforeach(MODEL_NAME)
 
 # Examples
 include(examples/Examples.cmake)
+
+if (WITH_FMUSIM)
+  add_subdirectory(fmusim)
+endif ()

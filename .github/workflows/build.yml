@@ -19,85 +19,6 @@ jobs:
     - uses: actions/checkout@v3
     - run: python3 lint_files.py
 
-  build-fmusim-windows:
-    runs-on: windows-2022
-    needs: lint-files
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - uses: s-weigand/setup-conda@v1.1.1
-      with:
-        conda-channels: conda-forge
-    - run: conda --version
-    - run: which python
-    - run: conda install fmpy-base pytest
-    - run: python ThirdParty/build_cvode.py
-    - run: python ThirdParty/build_libxml2.py
-    - run: python ThirdParty/build_zlib.py
-    - run: cmake -G "Visual Studio 17 2022" -B fmusim/build fmusim
-    - run: cmake --build fmusim/build --target install --config Release
-    - uses: actions/upload-artifact@v3
-      with:
-        name: fmusim-windows
-        path: fmusim/build/install
-        if-no-files-found: error
-    - run: pytest -s -v --junitxml=junit/test-results.xml fmusim/tests
-
-  build-fmusim-macos:
-    runs-on: macos-11
-    needs: lint-files
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - uses: s-weigand/setup-conda@v1.1.1
-      with:
-        conda-channels: conda-forge
-    - run: conda --version
-    - run: which python
-    - run: conda install fmpy-base pytest
-    - run: python ThirdParty/build_cvode.py
-    - run: python ThirdParty/build_libxml2.py
-    - run: python ThirdParty/build_zlib.py
-    - run: cmake -B fmusim/build fmusim
-    - run: cmake --build fmusim/build --target install --config Release
-    - uses: actions/upload-artifact@v3
-      with:
-        name: fmusim-macos
-        path: fmusim/build/install
-        if-no-files-found: error
-    - run: pytest -s -v --junitxml=junit/test-results.xml fmusim/tests
-
-  build-fmusim-linux:
-    runs-on: ubuntu-20.04
-    needs: lint-files
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - uses: s-weigand/setup-conda@v1.1.1
-      with:
-        conda-channels: conda-forge
-    - run: conda --version
-    - run: which python
-    - run: conda install fmpy-base pytest
-    - run: python ThirdParty/build_cvode.py
-    - run: python ThirdParty/build_libxml2.py
-    - run: python ThirdParty/build_zlib.py
-    - run: cmake -B fmusim/build fmusim
-    - run: cmake --build fmusim/build --target install --config Release
-    - uses: actions/upload-artifact@v3
-      with:
-        name: fmusim-linux
-        path: fmusim/build/install
-        if-no-files-found: error
-    - run: pytest -s -v --junitxml=junit/test-results.xml fmusim/tests
-
   build-linux:
 
     runs-on: ubuntu-18.04
@@ -199,36 +120,36 @@ jobs:
         path: fmus
         if-no-files-found: error
 
-  merge-fmus:
-
-    runs-on: ubuntu-18.04
-    needs: [build-linux, build-windows, build-macos]
-
-    steps:
-
-    - uses: actions/checkout@v3
-
-    - uses: actions/download-artifact@v3
-      with:
-        name: Linux-FMUs
-        path: fmus-linux
-
-    - uses: actions/download-artifact@v3
-      with:
-        name: macOS-FMUs
-        path: fmus-darwin
-
-    - uses: actions/download-artifact@v3
-      with:
-        name: Windows-FMUs
-        path: fmus-windows
-
-    - name: Merge FMUs
-      run: python3 merge_platform_binaries.py
-
-    - name: Upload FMUs
-      uses: actions/upload-artifact@v3
-      with:
-        name: merged-FMUs
-        path: fmus-merged
-        if-no-files-found: error
+#  merge-fmus:
+#
+#    runs-on: ubuntu-18.04
+#    needs: [build-linux, build-windows, build-macos]
+#
+#    steps:
+#
+#    - uses: actions/checkout@v3
+#
+#    - uses: actions/download-artifact@v3
+#      with:
+#        name: Linux-FMUs
+#        path: fmus-linux
+#
+#    - uses: actions/download-artifact@v3
+#      with:
+#        name: macOS-FMUs
+#        path: fmus-darwin
+#
+#    - uses: actions/download-artifact@v3
+#      with:
+#        name: Windows-FMUs
+#        path: fmus-windows
+#
+#    - name: Merge FMUs
+#      run: python3 merge_platform_binaries.py
+#
+#    - name: Upload FMUs
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: merged-FMUs
+#        path: fmus-merged
+#        if-no-files-found: error
