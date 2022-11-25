@@ -8,25 +8,25 @@ import os
 
 root = Path(__file__).parent
 
-os.makedirs(root / 'fmus-merged', exist_ok=True)
+os.makedirs(root / 'dist-merged', exist_ok=True)
 
 
 def merge_fmus(version):
 
-    for dirpath, dirnames, filenames in os.walk(root / 'fmus-linux' / version):
+    for dirpath, dirnames, filenames in os.walk(root / 'dist-windows' / version):
 
         for filename in filenames:
 
             tempdir = mkdtemp()
 
-            for platform in ['linux', 'windows']:
+            for platform in ['windows', 'linux', 'darwin']:
 
-                platform_fmu = root / f'fmus-{platform}' / version / filename
+                platform_fmu = root / f'dist-{platform}' / version / filename
 
                 with zipfile.ZipFile(platform_fmu, 'r') as archive:
                     archive.extractall(path=tempdir)
 
-            merged_fmu = os.path.join(root, 'fmus-merged', version, filename)
+            merged_fmu = os.path.join(root, 'dist-merged', version, filename)
 
             make_archive(merged_fmu, 'zip', tempdir)
 
@@ -38,7 +38,7 @@ def merge_fmus(version):
 for version in ['1.0/cs', '1.0/me', '2.0', '3.0']:
     merge_fmus(version)
 
-results_dir = root / 'fmus-merged' / 'results'
+results_dir = root / 'dist-merged' / 'results'
 
 os.makedirs(results_dir, exist_ok=True)
 
@@ -46,11 +46,10 @@ os.makedirs(results_dir, exist_ok=True)
 for model in ['BouncingBall', 'Clocks', 'Dahlquist', 'Feedthrough', 'LinearTransform', 'Resource', 'Stair', 'VanDerPol']:
     shutil.copyfile(src=root / model / f'{model}_ref.csv', dst=results_dir / f'{model}_ref.csv')
 
+# copy fmusim
+for system in ['windows', 'linux', 'darwin']:
+    shutil.copytree(src=root / f'dist-{system}' / f'fmusim-{system}', dst=root / 'dist-merged' / f'fmusim-{system}')
+
 # copy license and readme
 for file in ['LICENSE.txt', 'README.md']:
-    shutil.copyfile(src=root / file, dst=root / 'fmus-merged' / file)
-
-# make_archive(base_name=root / 'fmus-merged', format='zip', root_dir=root / 'merged')
-
-# clean up
-rmtree(os.path.join(root, 'merged'), ignore_errors=True)
+    shutil.copyfile(src=root / file, dst=root / 'dist-merged' / file)

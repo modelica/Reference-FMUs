@@ -46,36 +46,26 @@ jobs:
         path: fmus
         if-no-files-found: error
 
-#  merge-fmus:
-#
-#    runs-on: ubuntu-18.04
-#    needs: [build-linux, build-windows, build-macos]
-#
-#    steps:
-#
-#    - uses: actions/checkout@v3
-#
-#    - uses: actions/download-artifact@v3
-#      with:
-#        name: Linux-FMUs
-#        path: fmus-linux
-#
-#    - uses: actions/download-artifact@v3
-#      with:
-#        name: macOS-FMUs
-#        path: fmus-darwin
-#
-#    - uses: actions/download-artifact@v3
-#      with:
-#        name: Windows-FMUs
-#        path: fmus-windows
-#
-#    - name: Merge FMUs
-#      run: python3 merge_platform_binaries.py
-#
-#    - name: Upload FMUs
-#      uses: actions/upload-artifact@v3
-#      with:
-#        name: merged-FMUs
-#        path: fmus-merged
-#        if-no-files-found: error
+  merge-fmus:
+    runs-on: ubuntu-18.04
+    needs: [build]
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/download-artifact@v3
+      with:
+        name: windows-2022
+        path: dist-windows
+    - uses: actions/download-artifact@v3
+      with:
+        name: ubuntu-18.04
+        path: dist-linux
+    - uses: actions/download-artifact@v3
+      with:
+        name: macos-11
+        path: dist-darwin
+    - run: python3 merge_platform_binaries.py
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Reference-FMUs
+        path: dist-merged
+        if-no-files-found: error
