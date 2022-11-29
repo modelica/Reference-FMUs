@@ -103,6 +103,7 @@ typedef void(*clockUpdateType) (void *instanceEnvironment);
 
 typedef struct {
 
+    double startTime;
     double time;
     const char *instanceName;
     InterfaceType type;

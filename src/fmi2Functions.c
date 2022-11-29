@@ -243,6 +243,7 @@ fmi2Status fmi2SetupExperiment(fmi2Component c, fmi2Boolean toleranceDefined, fm
 
     ASSERT_STATE(SetupExperiment)
 
+    S->startTime = startTime;
     S->time = startTime;
 
     return fmi2OK;
