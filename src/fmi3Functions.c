@@ -382,12 +382,13 @@ fmi3Status fmi3EnterInitializationMode(fmi3Instance instance,
 
     UNUSED(toleranceDefined);
     UNUSED(tolerance);
-    UNUSED(startTime);
     UNUSED(stopTimeDefined);
     UNUSED(stopTime);
 
     ASSERT_STATE(EnterInitializationMode);
 
+    S->startTime = startTime;
+    S->time = startTime;
     S->state = InitializationMode;
 
     return fmi3OK;

@@ -110,6 +110,7 @@ void freeModelInstance(ModelInstance *comp) {
 
 void reset(ModelInstance* comp) {
     comp->state = Instantiated;
+    comp->startTime = 0.0;
     comp->time = 0.0;
     comp->nSteps = 0;
     comp->status = OK;
@@ -492,6 +493,7 @@ void setFMUState(ModelInstance* comp, void* FMUState) {
 
     ModelInstance* s = (ModelInstance*)FMUState;
 
+    comp->startTime = s->startTime;
     comp->time = s->time;
     comp->status = s->status;
     comp->state = s->state;
@@ -529,7 +531,7 @@ void doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
 
     comp->nSteps++;
 
-    comp->time = (double)(comp->nSteps * FIXED_SOLVER_STEP);
+    comp->time = comp->startTime + comp->nSteps * FIXED_SOLVER_STEP;
 
     // state event
     *stateEvent = false;
