@@ -31,8 +31,6 @@ if (MSVC)
   endif ()
 endif ()
 
-add_compile_definitions(FMI_VERSION=${FMI_VERSION})
-
 if (${FMI_VERSION} GREATER 2)
 
   if (WIN32)
@@ -129,6 +127,7 @@ add_library(${TARGET_NAME} SHARED
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fmus)
 
 target_compile_definitions(${TARGET_NAME} PRIVATE
+  FMI_VERSION=${FMI_VERSION}
   DISABLE_PREFIX
 )
 
