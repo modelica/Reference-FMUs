@@ -67,6 +67,7 @@ jobs:
       with:
         name: macos-11
         path: dist-darwin
+    - run: su chmod +x dist-linux/fmusim-linux/fmusim
     - run: python3 merge_platform_binaries.py
     - uses: actions/upload-artifact@v3
       with:
