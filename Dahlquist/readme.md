@@ -19,7 +19,3 @@ The analytical solution of this system is
 ```
 x(t) = exp(-k * t)
 ```
-
-The plot shows the [reference result](Dahlquist_ref.csv) computed with [simulate\_fmi3\_me.c](https://github.com/modelica/Reference-FMUs/blob/master/examples/simulate_fmi3_me.c).
-
-![Plot](Dahlquist_ref.svg)

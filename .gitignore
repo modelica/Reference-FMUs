@@ -13,3 +13,4 @@ merged/
 *.zip
 *_out.csv
 /venv/
+dist-merged/

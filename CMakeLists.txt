@@ -9,9 +9,6 @@ ENDFUNCTION()
 
 project (Reference-FMUs)
 
-find_package (Python3)
-find_package (Git)
-
 set(FMI_VERSION 2 CACHE STRING "FMI Version")
 set_property(CACHE FMI_VERSION PROPERTY STRINGS 1 2 3)
 
@@ -183,12 +180,6 @@ add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E 
   "${FMU_BUILD_DIR}/modelDescription.xml"
 )
 
-if (${Python3_Interpreter_FOUND} AND ${Git_FOUND})
-  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/set_tool_version.py"
-    "${FMU_BUILD_DIR}/modelDescription.xml" "${GIT_EXECUTABLE}"
-  )
-endif()
-
 # model specific header and source
 foreach (SOURCE_FILE config.h model.c)
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
@@ -196,37 +187,6 @@ foreach (SOURCE_FILE config.h model.c)
     "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"
   )
 endforeach(SOURCE_FILE)
-
-# documentation
-if (${FMI_VERSION} EQUAL 1)
-  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-    "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/readme.html"
-    "${FMU_BUILD_DIR}/documentation/_main.html"
-  )
-else()
-  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-    "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/readme.html"
-    "${FMU_BUILD_DIR}/documentation/index.html"
-  )
-endif()
-
-# plot
-add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-  "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/${MODEL_NAME}_ref.svg"
-  "${FMU_BUILD_DIR}/documentation/${MODEL_NAME}_ref.svg"
-)
-
-# reference csv
-add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-  "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/${MODEL_NAME}_ref.csv"
-  "${FMU_BUILD_DIR}/documentation/${MODEL_NAME}_ref.csv"
-)
-
-# license
-add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-  "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt"
-  "${FMU_BUILD_DIR}/documentation/LICENSE.txt"
-)
 
 # common headers
 foreach (SOURCE_FILE model.h cosimulation.h)
@@ -257,7 +217,7 @@ else()
   )
 endif()
 
-set(ARCHIVE_FILES "modelDescription.xml" "binaries" "documentation" "sources")
+set(ARCHIVE_FILES "modelDescription.xml" "binaries" "sources")
 
 if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/resources")
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory
