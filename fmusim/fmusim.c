@@ -480,8 +480,12 @@ int main(int argc, const char* argv[]) {
 
     char resourcePath[FMI_PATH_MAX] = "";
 
+#ifdef _WIN32
     snprintf(resourcePath, FMI_PATH_MAX, "%s\\resources\\", unzipdir);
-
+#else
+    snprintf(resourcePath, FMI_PATH_MAX, "%s/resources/", unzipdir);
+#endif
+    
     FMUStaticInput* input = NULL;
     
     if (inputFile) {
