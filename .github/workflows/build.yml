@@ -50,7 +50,10 @@ jobs:
     runs-on: ubuntu-18.04
     needs: [build]
     steps:
-    - run: python3 -m pip install fmpy kaleido
+    - uses: s-weigand/setup-conda@v1.1.1
+      with:
+        conda-channels: conda-forge
+    - run: conda install fmpy-base pytest scipy python-kaleido
     - uses: actions/checkout@v3
     - uses: actions/download-artifact@v3
       with:
