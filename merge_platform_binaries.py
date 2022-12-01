@@ -68,6 +68,7 @@ def merge_fmus(version):
                     archive.extractall(path=tempdir)
 
             output_filename = root / 'dist-merged' / version / f'{model_name}_ref.csv'
+            os.makedirs(tempdir / 'documentation', exist_ok=True)
             plot_filename = tempdir / 'documentation' / 'result.svg'
 
             if model_name in parameters:
