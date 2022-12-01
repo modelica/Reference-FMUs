@@ -371,21 +371,21 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
 
 TERMINATE:
 
-    if (vctxt) {
-        xmlSchemaFreeValidCtxt(vctxt);
-    }
-    
-    if (schema) {
-        xmlSchemaFree(schema);
-    }
+    //if (vctxt) {
+    //    xmlSchemaFreeValidCtxt(vctxt);
+    //}
+    //
+    //if (schema) {
+    //    xmlSchemaFree(schema);
+    //}
 
-    if (pctxt) {
-        xmlSchemaFreeParserCtxt(pctxt);
-    }
+    //if (pctxt) {
+    //    xmlSchemaFreeParserCtxt(pctxt);
+    //}
 
-    if (doc) {
-        xmlFreeDoc(doc);
-    }
+    //if (doc) {
+    //    xmlFreeDoc(doc);
+    //}
 
     return modelDescription;
 }
