@@ -50,6 +50,7 @@ jobs:
     runs-on: ubuntu-18.04
     needs: [build]
     steps:
+    - run: python3 -m pip install fmpy kaleido
     - uses: actions/checkout@v3
     - uses: actions/download-artifact@v3
       with:
