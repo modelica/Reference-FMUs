@@ -14,6 +14,7 @@
 #include "fmi2schema.h"
 #include "fmi3schema.h"
 
+
 static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
     FMIModelDescription* modelDescription = (FMIModelDescription*)calloc(1, sizeof(FMIModelDescription));
@@ -141,6 +142,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
     modelDescription->generationDate = (char*)xmlGetProp(root, (xmlChar*)"generationDate");
 
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(root->doc);
+    xmlXPathContextPtr xpathCtx2 = xmlXPathNewContext(root->doc);
 
     xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/CoSimulation", xpathCtx);
 
@@ -189,10 +191,12 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
+        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+
         xmlNodePtr node = xpathObj->nodesetval->nodeTab[i];
 
-        modelDescription->modelVariables[i].name = (char*)xmlGetProp(node, (xmlChar*)"name");
-        modelDescription->modelVariables[i].description = (char*)xmlGetProp(node, (xmlChar*)"description");
+        variable->name = (char*)xmlGetProp(node, (xmlChar*)"name");
+        variable->description = (char*)xmlGetProp(node, (xmlChar*)"description");
 
         FMIVariableType type;
         
@@ -200,7 +204,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
         if (!strcmp(name, "Float32")) {
             type = FMIFloat32Type;
-        } else if (!strcmp(name, "Float64") || !strcmp(name, "Real")) {
+        } else if (!strcmp(name, "Float64")) {
             type = FMIFloat64Type;
         } else if (!strcmp(name, "Int8")) {
             type = FMIInt8Type;
@@ -210,7 +214,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             type = FMIInt16Type;
         } else if (!strcmp(name, "UInt16")) {
             type = FMIUInt16Type;
-        } else if (!strcmp(name, "Int32") || !strcmp(name, "Integer")) {
+        } else if (!strcmp(name, "Int32")) {
             type = FMIInt32Type;
         } else if (!strcmp(name, "UInt32")) {
             type = FMIUInt32Type;
@@ -226,37 +230,37 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             type = FMIBinaryType;
         } else if (!strcmp(name, "Clock")) {
             type = FMIClockType;
+        } else {
+            return NULL;
         }
 
-        modelDescription->modelVariables[i].type = type;
+        variable->type = type;
 
         const char* vr = (char*)xmlGetProp(node, (xmlChar*)"valueReference");
 
-        modelDescription->modelVariables[i].valueReference = (FMIValueReference)strtoul(vr, NULL, 0);
+        variable->valueReference = (FMIValueReference)strtoul(vr, NULL, 0);
 
         const char* causality = (char*)xmlGetProp(node, (xmlChar*)"causality");
 
         if (!causality) {
-            modelDescription->modelVariables[i].causality = FMILocal;
+            variable->causality = FMILocal;
         } else if (!strcmp(causality, "parameter")) {
-            modelDescription->modelVariables[i].causality = FMIParameter;
+            variable->causality = FMIParameter;
         } else if (!strcmp(causality, "calculatedParameter")) {
-            modelDescription->modelVariables[i].causality = FMICalculatedParameter;
+            variable->causality = FMICalculatedParameter;
         } else if (!strcmp(causality, "structuralParameter")) {
-            modelDescription->modelVariables[i].causality = FMIStructuralParameter;
+            variable->causality = FMIStructuralParameter;
         } else if (!strcmp(causality, "input")) {
-            modelDescription->modelVariables[i].causality = FMIInput;
+            variable->causality = FMIInput;
         } else if (!strcmp(causality, "output")) {
-            modelDescription->modelVariables[i].causality = FMIOutput;
+            variable->causality = FMIOutput;
         } else if (!strcmp(causality, "independent")) {
-            modelDescription->modelVariables[i].causality = FMIIndependent;
+            variable->causality = FMIIndependent;
         } else {
-            modelDescription->modelVariables[i].causality = FMILocal;
+            variable->causality = FMILocal;
         }
 
-        xmlXPathObjectPtr xpathObj2 = xmlXPathNodeEval(node, ".//Dimension", xpathCtx);
-
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        xmlXPathObjectPtr xpathObj2 = xmlXPathNodeEval(node, ".//Dimension", xpathCtx2);
 
         for (size_t j = 0; j < xpathObj2->nodesetval->nodeNr; j++) {
 
@@ -265,9 +269,16 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             const char* start = (char*)xmlGetProp(dimensionNode, (xmlChar*)"start");
             const char* valueReference = (char*)xmlGetProp(dimensionNode, (xmlChar*)"valueReference");
 
-            variable->dimensions = realloc(variable->dimensions, (variable->nDimensions) + 1 * sizeof(FMIDimension));
+            variable->dimensions = realloc(variable->dimensions, (variable->nDimensions + 1) * sizeof(FMIDimension));
+
+            if (!variable->dimensions) {
+                return NULL;
+            }
 
             FMIDimension* dimension = &variable->dimensions[variable->nDimensions];
+
+            dimension->start = 0;
+            dimension->variable = NULL;
 
             if (start) {
                 dimension->start = atoi(start);
@@ -371,22 +382,21 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
 
 TERMINATE:
 
-    // TODO
-    //if (vctxt) {
-    //    xmlSchemaFreeValidCtxt(vctxt);
-    //}
-    //
-    //if (schema) {
-    //    xmlSchemaFree(schema);
-    //}
+    if (vctxt) {
+        xmlSchemaFreeValidCtxt(vctxt);
+    }
+    
+    if (schema) {
+        xmlSchemaFree(schema);
+    }
 
-    //if (pctxt) {
-    //    xmlSchemaFreeParserCtxt(pctxt);
-    //}
+    if (pctxt) {
+        xmlSchemaFreeParserCtxt(pctxt);
+    }
 
-    //if (doc) {
-    //    xmlFreeDoc(doc);
-    //}
+    if (doc) {
+        xmlFreeDoc(doc);
+    }
 
     return modelDescription;
 }
