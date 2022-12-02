@@ -570,33 +570,34 @@ int main(int argc, const char* argv[]) {
 
 TERMINATE:
 
-    if (result) {
-        FMIFreeRecorder(result);
-    }
+    // TODO
+    //if (result) {
+    //    FMIFreeRecorder(result);
+    //}
 
-    if (modelDescription) {
-        FMIFreeModelDescription(modelDescription);
-    }
+    //if (modelDescription) {
+    //    FMIFreeModelDescription(modelDescription);
+    //}
 
-    if (S) {
-        FMIFreeInstance(S);
-    }
+    //if (S) {
+    //    FMIFreeInstance(S);
+    //}
 
-    if (unzipdir) {
-        FMIRemoveDirectory(unzipdir);
-    }
+    //if (unzipdir) {
+    //    FMIRemoveDirectory(unzipdir);
+    //}
 
-    if (unzipdir) {
-        free((void*)unzipdir);
-    }
+    //if (unzipdir) {
+    //    free((void*)unzipdir);
+    //}
 
-    if (s_fmiLogFile) {
-        fclose(s_fmiLogFile);
-    }
+    //if (s_fmiLogFile) {
+    //    fclose(s_fmiLogFile);
+    //}
 
-    free(startNames);
-    free(startValues);
-    free(outputVariableNames);
+    //free(startNames);
+    //free(startValues);
+    //free(outputVariableNames);
 
     return status;
 }

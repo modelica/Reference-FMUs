@@ -371,6 +371,7 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
 
 TERMINATE:
 
+    // TODO
     //if (vctxt) {
     //    xmlSchemaFreeValidCtxt(vctxt);
     //}
