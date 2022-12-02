@@ -6,15 +6,7 @@ The model implements the [Dahlquist](https://en.wikipedia.org/wiki/Germund_Dahlq
 der(x) = -k * x
 ```
 
-with
-
-| Variable      | Description    | Start |
-|:--------------|:---------------| -----:|
-| x             | The only state |     1 |
-| der(x)        | The derivative |     0 |
-| k             | Parameter      |     1 |
-
-The analytical solution of this system is
+with the analytical solution
 
 ```
 x(t) = exp(-k * t)

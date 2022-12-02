@@ -1,10 +1,5 @@
 # Feedthrough
 
-| Variable                  | Start     | Causality | Variability | Description
-|:--------------------------| ----------|-----------|-------------|:---------------
-| Float64\_fixed\_parameter | 0         | parameter | fixed       | Fixed parameter
-| String\_parameter         | "Set me!" | parameter | fixed       | String parameter
-
 In order to reproduce the reference results the following parameters need to be set
 
 ```

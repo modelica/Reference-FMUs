@@ -8,7 +8,7 @@ import os
 import fmpy
 import jinja2
 import markdown2
-from fmpy import read_csv, plot_result
+from fmpy import read_csv, plot_result, read_model_description
 
 root = Path(__file__).parent
 
@@ -91,14 +91,24 @@ def merge_fmus(version):
                 # create plot
                 plot_result(result, markers=True, events=True, filename=plot_filename)
 
+                def get_unit(variable):
+                    if variable.unit is not None:
+                        return variable.unit
+                    elif variable.declaredType is not None:
+                        return variable.declaredType.unit
+                    else:
+                        return ''
+
                 # generate index.html
+                model_description = read_model_description(root / f'dist-{fmpy.system}' / version / filename)
                 loader = jinja2.FileSystemLoader(searchpath=root)
                 environment = jinja2.Environment(loader=loader, trim_blocks=True)
                 template = environment.get_template('template.html')
+                template.globals.update({'get_unit': get_unit})
                 md_file = root / model_name / 'readme.md'
                 html_file = tempdir / 'documentation' / 'index.html'
                 content = markdown2.markdown_path(md_file, extras=['tables', 'fenced-code-blocks'])
-                html = template.render(model_name=model_name, content=content)
+                html = template.render(model_name=model_name, content=content, model_description=model_description)
                 with open(html_file, 'w') as f:
                     f.write(html)
 

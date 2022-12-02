@@ -44,6 +44,33 @@ th, td {
 
   {{ content }}
 
+  <p>with the variables</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="text-align:left;">Variable</th>
+        <th style="text-align:right;">Start</th>
+        <th style="text-align:left;">Unit</th>
+        <th>Causality</th>
+        <th>Variability</th>
+        <th style="text-align:left;">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for variable in model_description.modelVariables %}
+      <tr>
+        <td style="text-align:left;">{{ variable.name }}</td>
+        <td style="text-align:right;">{{ variable.start if variable.start is not none }}</td>
+        <td style="text-align:left;">{{ get_unit(variable) }}</td>
+        <td>{{ variable.causality if variable.causality is not none }}</td>
+        <td>{{ variable.variability if variable.variability is not none }}</td>
+        <td style="text-align:left;">{{ variable.description if variable.description is not none }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+
   <p>The plot shows the <a href="result.csv">reference result</a> computed with <a href="https://github.com/modelica/Reference-FMUs/">fmusim</a>.</p>
 
   <p><img src="result.svg" alt="plot" /></p>
