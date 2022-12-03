@@ -39,21 +39,20 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(root->doc);
 
     xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/CoSimulation", xpathCtx);
-
     if (xpathObj->nodesetval->nodeNr == 1) {
         modelDescription->coSimulation = (FMICoSimulationInterface*)calloc(1, sizeof(FMICoSimulationInterface));
         modelDescription->coSimulation->modelIdentifier = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"modelIdentifier");
     }
+    xmlXPathFreeObject(xpathObj);
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelExchange", xpathCtx);
-
     if (xpathObj->nodesetval->nodeNr == 1) {
         modelDescription->modelExchange = (FMIModelExchangeInterface*)calloc(1, sizeof(FMIModelExchangeInterface));
         modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"modelIdentifier");
     }
+    xmlXPathFreeObject(xpathObj);
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/DefaultExperiment", xpathCtx);
-
     if (xpathObj->nodesetval->nodeNr == 1) {
         modelDescription->defaultExperiment = (FMIDefaultExperiment*)calloc(1, sizeof(FMIDefaultExperiment));
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
@@ -61,6 +60,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
         modelDescription->defaultExperiment->stopTime = (char*)xmlGetProp(node, (xmlChar*)"stopTime");
         modelDescription->defaultExperiment->stepSize = (char*)xmlGetProp(node, (xmlChar*)"stepSize");
     }
+    xmlXPathFreeObject(xpathObj);
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelVariables/ScalarVariable/*[self::Real or self::Integer or self::Enumeration or self::Boolean or self::String]", xpathCtx);
 
@@ -111,17 +111,23 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
         } else {
             modelDescription->modelVariables[i].causality = FMILocal;
         }
-
     }
+
+    xmlXPathFreeObject(xpathObj);
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelStructure/Outputs/Unknown", xpathCtx);
     modelDescription->nOutputs = xpathObj->nodesetval->nodeNr;
+    xmlXPathFreeObject(xpathObj);
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelStructure/Derivatives/Unknown", xpathCtx);
     modelDescription->nContinuousStates = xpathObj->nodesetval->nodeNr;
+    xmlXPathFreeObject(xpathObj);
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelStructure/InitialUnknowns/Unknown", xpathCtx);
     modelDescription->nInitialUnknowns = xpathObj->nodesetval->nodeNr;
+    xmlXPathFreeObject(xpathObj);
+
+    xmlXPathFreeContext(xpathCtx);
 
     return modelDescription;
 }
@@ -142,24 +148,22 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
     modelDescription->generationDate = (char*)xmlGetProp(root, (xmlChar*)"generationDate");
 
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(root->doc);
-    xmlXPathContextPtr xpathCtx2 = xmlXPathNewContext(root->doc);
 
     xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/CoSimulation", xpathCtx);
-
     if (xpathObj->nodesetval->nodeNr == 1) {
         modelDescription->coSimulation = (FMICoSimulationInterface*)calloc(1, sizeof(FMICoSimulationInterface));
         modelDescription->coSimulation->modelIdentifier = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"modelIdentifier");
     }
+    xmlXPathFreeObject(xpathObj);
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelExchange", xpathCtx);
-
     if (xpathObj->nodesetval->nodeNr == 1) {
         modelDescription->modelExchange = (FMIModelExchangeInterface*)calloc(1, sizeof(FMIModelExchangeInterface));
         modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"modelIdentifier");
     }
+    xmlXPathFreeObject(xpathObj);
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/DefaultExperiment", xpathCtx);
-
     if (xpathObj->nodesetval->nodeNr == 1) {
         modelDescription->defaultExperiment = (FMIDefaultExperiment*)calloc(1, sizeof(FMIDefaultExperiment));
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
@@ -167,6 +171,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         modelDescription->defaultExperiment->stopTime = (char*)xmlGetProp(node, (xmlChar*)"stopTime");
         modelDescription->defaultExperiment->stepSize = (char*)xmlGetProp(node, (xmlChar*)"stepSize");
     }
+    xmlXPathFreeObject(xpathObj);
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelVariables/"
         "*[self::Float32"
@@ -187,7 +192,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         xpathCtx);
 
     modelDescription->nModelVariables = xpathObj->nodesetval->nodeNr;
-    modelDescription->modelVariables = calloc(xpathObj->nodesetval->nodeNr, sizeof(FMIModelVariable));
+    modelDescription->modelVariables = (FMIModelVariable*)calloc(xpathObj->nodesetval->nodeNr, sizeof(FMIModelVariable));
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
@@ -260,7 +265,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             variable->causality = FMILocal;
         }
 
-        xmlXPathObjectPtr xpathObj2 = xmlXPathNodeEval(node, ".//Dimension", xpathCtx2);
+        xmlXPathObjectPtr xpathObj2 = xmlXPathNodeEval(node, ".//Dimension", xpathCtx);
 
         for (size_t j = 0; j < xpathObj2->nodesetval->nodeNr; j++) {
 
@@ -293,19 +298,28 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             variable->nDimensions++;
         }
 
+        xmlXPathFreeObject(xpathObj2);
     }
+
+    xmlXPathFreeObject(xpathObj);
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelStructure/Output", xpathCtx);
     modelDescription->nOutputs = xpathObj->nodesetval->nodeNr;
+    xmlXPathFreeObject(xpathObj);
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelStructure/ContinuousStateDerivative", xpathCtx);
     modelDescription->nContinuousStates = xpathObj->nodesetval->nodeNr;
+    xmlXPathFreeObject(xpathObj);
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelStructure/InitialUnknown", xpathCtx);
     modelDescription->nInitialUnknowns = xpathObj->nodesetval->nodeNr;
+    xmlXPathFreeObject(xpathObj);
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelStructure/EventIndicator", xpathCtx);
     modelDescription->nEventIndicators = xpathObj->nodesetval->nodeNr;
+    xmlXPathFreeObject(xpathObj);
+
+    xmlXPathFreeContext(xpathCtx);
 
     return modelDescription;
 }
