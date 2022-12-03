@@ -1,5 +1,6 @@
 #include <string.h>
 
+#include "FMI1.h"
 #include "FMI2.h"
 #include "FMI3.h"
 
@@ -41,6 +42,27 @@ TERMINATE:
     return status;
 }
 
+FMIStatus FMI1SetValues(
+     FMIInstance* instance,
+     FMIVariableType type,
+     const FMIValueReference valueReferences[],
+     size_t nValueReferences,
+     const void* values) {
+
+     switch (type) {
+     case FMIRealType:
+         return FMI1SetReal(instance, valueReferences, nValueReferences, (fmi1Real*)values);
+     case FMIIntegerType:
+         return FMI1SetInteger(instance, valueReferences, nValueReferences, (fmi1Integer*)values);
+     case FMIBooleanType:
+         return FMI1SetBoolean(instance, valueReferences, nValueReferences, (fmi1Boolean*)values);
+     case FMIStringType:
+         return FMI1SetString(instance, valueReferences, nValueReferences, (fmi1String*)values);
+     default:
+         return FMIError;
+     }
+ }
+
 FMIStatus FMI2SetValues(
     FMIInstance* instance,
     FMIVariableType type,
@@ -57,6 +79,8 @@ FMIStatus FMI2SetValues(
         return FMI2SetBoolean(instance, valueReferences, nValueReferences, (fmi2Boolean*)values);
     case FMIStringType:
         return FMI2SetString(instance, valueReferences, nValueReferences, (fmi2String*)values);
+    default:
+        return FMIError;
     }
 }
 

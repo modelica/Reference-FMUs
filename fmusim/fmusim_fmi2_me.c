@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "fmusim.h"
-#include "fmusim_fmi2.h"
 #include "fmusim_fmi2_me.h"
 
 
@@ -36,6 +34,15 @@ FMIStatus simulateFMI2ME(
     fmi2Real nextCommunicationPoint;
     fmi2Real nextInputEventTime;
 
+    fmi2EventInfo eventInfo = { 
+        .newDiscreteStatesNeeded           = fmi2False,
+        .terminateSimulation               = fmi2False,
+        .nominalsOfContinuousStatesChanged = fmi2False,
+        .valuesOfContinuousStatesChanged   = fmi2False,
+        .nextEventTimeDefined              = fmi2False,
+        .nextEventTime                     = INFINITY
+    };
+
     CALL(FMI2Instantiate(S,
         resourceURI,                          // fmuResourceLocation
         fmi2ModelExchange,                    // fmuType
@@ -58,8 +65,6 @@ FMIStatus simulateFMI2ME(
     CALL(FMI2SetupExperiment(S, fmi2False, 0.0, time, fmi2True, settings->stopTime));
     CALL(FMI2EnterInitializationMode(S));
     CALL(FMI2ExitInitializationMode(S));
-
-    fmi2EventInfo eventInfo = { 0 };
 
     // intial event iteration
     nominalsChanged = fmi2False;

@@ -21,6 +21,8 @@
 #include "FMIUtil.h"
 
 #include "fmusim.h"
+#include "fmusim_fmi1_cs.h"
+#include "fmusim_fmi1_me.h"
 #include "fmusim_fmi2_cs.h"
 #include "fmusim_fmi2_me.h"
 #include "fmusim_fmi3_cs.h"
@@ -196,7 +198,10 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
                 status = FMIError;
                 goto TERMINATE;
             }
-            if (S->fmiVersion == FMIVersion2) {
+
+            if (S->fmiVersion == FMIVersion1) {
+                CALL(FMI1SetString(S, &vr, 1, &literal));
+            } else if(S->fmiVersion == FMIVersion2) {
                 CALL(FMI2SetString(S, &vr, 1, &literal));
             } else if (S->fmiVersion == FMIVersion3) {
                 CALL(FMI3SetString(S, &vr, 1, &literal, 1));
@@ -226,14 +231,12 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
 
         CALL(FMIParseStartValues(type, literal, nValues, values));
 
-        if (S->fmiVersion == FMIVersion2) {
-         
+        if (S->fmiVersion == FMIVersion1) {
+            CALL(FMI1SetValues(S, type, &vr, 1, values));
+        } else if (S->fmiVersion == FMIVersion2) {
             CALL(FMI2SetValues(S, type, &vr, 1, values));
-
         } else if (S->fmiVersion == FMIVersion3) {
-
             CALL(FMI3SetValues(S, type, &vr, 1, values, nValues));
-
         }
     }
 
@@ -547,7 +550,18 @@ int main(int argc, const char* argv[]) {
         return FMIError;
     }
 
-    if (modelDescription->fmiVersion == FMIVersion2) {
+    if (modelDescription->fmiVersion == FMIVersion1) {
+
+        char resourceURI[FMI_PATH_MAX] = "";
+        CALL(FMIPathToURI(resourcePath, resourceURI, FMI_PATH_MAX));
+
+        if (interfaceType == FMICoSimulation) {
+            status = simulateFMI1CS(S, modelDescription, resourceURI, result, input, &settings);
+        } else {
+            status = simulateFMI1ME(S, modelDescription, result, input, &settings);
+        }
+
+    } else if (modelDescription->fmiVersion == FMIVersion2) {
 
         char resourceURI[FMI_PATH_MAX] = "";
         CALL(FMIPathToURI(resourcePath, resourceURI, FMI_PATH_MAX));

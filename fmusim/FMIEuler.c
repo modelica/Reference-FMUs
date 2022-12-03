@@ -1,3 +1,4 @@
+#include "FMI1.h"
 #include "FMI2.h"
 #include "FMI3.h"
 
@@ -36,23 +37,28 @@ Solver* FMIEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
     solver->time = startTime;
 
     solver->nx = modelDescription->nContinuousStates;
-    solver->x = (double*)calloc(solver->nx, sizeof(double));
+    solver->x  = (double*)calloc(solver->nx, sizeof(double));
     solver->dx = (double*)calloc(solver->nx, sizeof(double));
 
-    solver->nz = modelDescription->nEventIndicators;
-    solver->z = (double*)calloc(solver->nx, sizeof(double));
+    solver->nz   = modelDescription->nEventIndicators;
+    solver->z    = (double*)calloc(solver->nx, sizeof(double));
     solver->prez = (double*)calloc(solver->nx, sizeof(double));
 
-    if (S->fmiVersion == FMIVersion2) {
-        solver->get_x = FMI2GetContinuousStates;
-        solver->set_x = FMI2SetContinuousStates;
+    if (S->fmiVersion == FMIVersion1) {
+        solver->get_x  = FMI1GetContinuousStates;
+        solver->set_x  = FMI1SetContinuousStates;
+        solver->get_dx = FMI1GetDerivatives;
+        solver->get_z  = FMI1GetEventIndicators;
+    } else if (S->fmiVersion == FMIVersion2) {
+        solver->get_x  = FMI2GetContinuousStates;
+        solver->set_x  = FMI2SetContinuousStates;
         solver->get_dx = FMI2GetDerivatives;
-        solver->get_z = FMI2GetEventIndicators;
+        solver->get_z  = FMI2GetEventIndicators;
     } else if (S->fmiVersion == FMIVersion3) {
-        solver->get_x = FMI3GetContinuousStates;
-        solver->set_x = FMI3SetContinuousStates;
+        solver->get_x  = FMI3GetContinuousStates;
+        solver->set_x  = FMI3SetContinuousStates;
         solver->get_dx = FMI3GetContinuousStateDerivatives;
-        solver->get_z = FMI3GetEventIndicators;
+        solver->get_z  = FMI3GetEventIndicators;
     } else {
         return NULL;
     }

@@ -11,9 +11,126 @@
 #include <Windows.h>
 #endif
 
+#include "fmi1schema.h"
 #include "fmi2schema.h"
 #include "fmi3schema.h"
 
+static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
+
+    FMIModelDescription* modelDescription = (FMIModelDescription*)calloc(1, sizeof(FMIModelDescription));
+
+    if (!modelDescription) {
+        return NULL;
+    }
+
+    modelDescription->fmiVersion = FMIVersion1;
+    modelDescription->modelName = (char*)xmlGetProp(root, (xmlChar*)"modelName");
+    modelDescription->instantiationToken = (char*)xmlGetProp(root, (xmlChar*)"guid");
+    modelDescription->description = (char*)xmlGetProp(root, (xmlChar*)"description");
+    modelDescription->generationTool = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
+    modelDescription->generationDate = (char*)xmlGetProp(root, (xmlChar*)"generationDateAndTime");
+
+    const char* numberOfContinuousStates = (char*)xmlGetProp(root, (xmlChar*)"numberOfContinuousStates");
+    
+    if (numberOfContinuousStates) {
+        modelDescription->nContinuousStates = atoi(numberOfContinuousStates);
+    }
+    
+    xmlFree(numberOfContinuousStates);
+
+    const char* numberOfEventIndicators = (char*)xmlGetProp(root, (xmlChar*)"numberOfEventIndicators");
+    
+    if (numberOfEventIndicators) {
+        modelDescription->nEventIndicators = atoi(numberOfEventIndicators);
+    }
+    
+    xmlFree(numberOfEventIndicators);
+
+    xmlXPathContextPtr xpathCtx = xmlXPathNewContext(root->doc);
+
+    xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/Implementation/CoSimulation_StandAlone", xpathCtx);
+    
+    if (xpathObj->nodesetval->nodeNr == 1) {
+        modelDescription->coSimulation = (FMICoSimulationInterface*)calloc(1, sizeof(FMICoSimulationInterface));
+        modelDescription->coSimulation->modelIdentifier = (char*)xmlGetProp(root, (xmlChar*)"modelIdentifier");
+    } else {
+        modelDescription->modelExchange = (FMIModelExchangeInterface*)calloc(1, sizeof(FMIModelExchangeInterface));
+        modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(root, (xmlChar*)"modelIdentifier");
+    }
+    
+    xmlXPathFreeObject(xpathObj);
+
+    xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/DefaultExperiment", xpathCtx);
+    
+    if (xpathObj->nodesetval->nodeNr == 1) {
+        modelDescription->defaultExperiment = (FMIDefaultExperiment*)calloc(1, sizeof(FMIDefaultExperiment));
+        const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
+        modelDescription->defaultExperiment->startTime = (char*)xmlGetProp(node, (xmlChar*)"startTime");
+        modelDescription->defaultExperiment->stopTime = (char*)xmlGetProp(node, (xmlChar*)"stopTime");
+    }
+    
+    xmlXPathFreeObject(xpathObj);
+
+    xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelVariables/ScalarVariable/*[self::Real or self::Integer or self::Enumeration or self::Boolean or self::String]", xpathCtx);
+
+    modelDescription->nModelVariables = xpathObj->nodesetval->nodeNr;
+    modelDescription->modelVariables = calloc(xpathObj->nodesetval->nodeNr, sizeof(FMIModelVariable));
+
+    for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
+
+        xmlNodePtr typeNode = xpathObj->nodesetval->nodeTab[i];
+        xmlNodePtr variableNode = typeNode->parent;
+
+        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+
+        variable->name = (char*)xmlGetProp(variableNode, (xmlChar*)"name");
+        variable->description = (char*)xmlGetProp(variableNode, (xmlChar*)"description");
+
+        const char* typeName = (char*)typeNode->name;
+
+        if (!strcmp(typeName, "Real")) {
+            variable->type = FMIRealType;
+        } else if (!strcmp(typeName, "Integer") || !strcmp(typeName, "Enumeration")) {
+            variable->type = FMIIntegerType;
+        } else if (!strcmp(typeName, "Boolean")) {
+            variable->type = FMIBooleanType;
+        } else if (!strcmp(typeName, "String")) {
+            variable->type = FMIStringType;
+        } else {
+            continue;
+        }
+
+        const char* vr = (char*)xmlGetProp(variableNode, (xmlChar*)"valueReference");
+
+        variable->valueReference = (FMIValueReference)strtoul(vr, NULL, 0);
+
+        xmlFree(vr);
+
+        const char* causality = (char*)xmlGetProp(variableNode, (xmlChar*)"causality");
+
+        if (!causality) {
+            variable->causality = FMILocal;
+        } else if (!strcmp(causality, "parameter")) {
+            variable->causality = FMIParameter;
+        } else if (!strcmp(causality, "input")) {
+            variable->causality = FMIInput;
+        } else if (!strcmp(causality, "output")) {
+            variable->causality = FMIOutput;
+        } else if (!strcmp(causality, "independent")) {
+            variable->causality = FMIIndependent;
+        } else {
+            variable->causality = FMILocal;
+        }
+
+        xmlFree(causality);
+    }
+
+    xmlXPathFreeObject(xpathObj);
+
+    xmlXPathFreeContext(xpathCtx);
+
+    return modelDescription;
+}
 
 static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
@@ -359,6 +476,9 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
     if (!version) {
         printf("Attribute fmiVersion is missing.\n");
         goto TERMINATE;
+    } else if (!strcmp(version, "1.0")) {
+        fmiVersion = FMIVersion1;
+        pctxt = xmlSchemaNewMemParserCtxt((char*)fmi1Merged_xsd, fmi1Merged_xsd_len);
     } else if (!strcmp(version, "2.0")) {
         fmiVersion = FMIVersion2;
         pctxt = xmlSchemaNewMemParserCtxt((char*)fmi2Merged_xsd, fmi2Merged_xsd_len);
@@ -388,7 +508,9 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
         goto TERMINATE;
     }
 
-    if (fmiVersion == FMIVersion2) {
+    if (fmiVersion == FMIVersion1) {
+        modelDescription = readModelDescriptionFMI1(root);
+    } else if (fmiVersion == FMIVersion2) {
         modelDescription = readModelDescriptionFMI2(root);
     } else {
         modelDescription = readModelDescriptionFMI3(root);
