@@ -4,6 +4,9 @@
  * Combined FMI 1.0 Functions for Model Exchange & Co-Simulation
  * -------------------------------------------------------------------------*/
 
+#include <stddef.h>
+
+
 /* Type definitions */
 typedef void*        fmi1Component;
 typedef unsigned int fmi1ValueReference;
