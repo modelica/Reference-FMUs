@@ -552,11 +552,12 @@ int main(int argc, const char* argv[]) {
 
     if (modelDescription->fmiVersion == FMIVersion1) {
 
-        char resourceURI[FMI_PATH_MAX] = "";
-        CALL(FMIPathToURI(resourcePath, resourceURI, FMI_PATH_MAX));
-
         if (interfaceType == FMICoSimulation) {
-            status = simulateFMI1CS(S, modelDescription, resourceURI, result, input, &settings);
+
+            char fmuLocation[FMI_PATH_MAX] = "";
+            CALL(FMIPathToURI(unzipdir, fmuLocation, FMI_PATH_MAX));
+
+            status = simulateFMI1CS(S, modelDescription, fmuLocation, result, input, &settings);
         } else {
             status = simulateFMI1ME(S, modelDescription, result, input, &settings);
         }

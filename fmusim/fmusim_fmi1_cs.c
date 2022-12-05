@@ -7,7 +7,7 @@
 FMIStatus simulateFMI1CS(
     FMIInstance* S,
     const FMIModelDescription* modelDescription,
-    const char* resourceURI,
+    const char* fmuLocation,
     FMIRecorder* result,
     const FMUStaticInput * input,
     const FMISimulationSettings * settings) {
@@ -17,7 +17,7 @@ FMIStatus simulateFMI1CS(
     CALL(FMI1InstantiateSlave(S,
         modelDescription->coSimulation->modelIdentifier,  // modelIdentifier
         modelDescription->instantiationToken,             // fmuGUID
-        resourceURI,                                      // fmuLocation
+        fmuLocation,                                      // fmuLocation
         "application/x-fmusim",                           // mimeType
         0.0,                                              // timeout
         fmi1False,                                        // visible
