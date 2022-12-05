@@ -49,9 +49,9 @@ int main(int argc, char* argv[]) {
     CALL(applyContinuousInputs(S, false));
     CALL(applyDiscreteInputs(S));
 
-    CALL(FMI1Initialize(S, fmi1False, 0.0));
-
     fmi1EventInfo eventInfo = { 0 };
+
+    CALL(FMI1Initialize(S, fmi1False, 0.0, &eventInfo));
 
 #if NZ > 0
     // initialize previous event indicators

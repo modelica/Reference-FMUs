@@ -40,7 +40,7 @@ parameters = {
         '--stop-time', '2'
     ],
     'Stair':  [
-        '--output-interval', '10',
+        '--output-interval', '1',
         '--stop-time', '10'
     ],
     'VanDerPol':  [
@@ -67,15 +67,17 @@ def merge_fmus(version):
                 with zipfile.ZipFile(platform_fmu, 'r') as archive:
                     archive.extractall(path=tempdir)
 
-            output_filename = root / 'dist-merged' / version / f'{model_name}_ref.csv'
-            os.makedirs(tempdir / 'documentation', exist_ok=True)
-            plot_filename = tempdir / 'documentation' / 'result.svg'
-
             if model_name in parameters:
+
+                output_filename = root / 'dist-merged' / version / f'{model_name}_ref.csv'
+                os.makedirs(tempdir / 'documentation', exist_ok=True)
+                plot_filename = tempdir / 'documentation' / 'result.svg'
+
+                interface_type = 'cs' if version == '1.0/cs' else 'me'
 
                 command = [
                     str(fmusim),
-                    '--interface-type', 'me',
+                    '--interface-type', interface_type,
                     '--solver', 'cvode',
                     '--output-file', str(output_filename),
                 ] + parameters[model_name] + [
@@ -121,7 +123,7 @@ def merge_fmus(version):
             rmtree(tempdir, ignore_errors=True)
 
 
-for version in ['2.0', '3.0']:
+for version in ['1.0/cs', '1.0/me', '2.0', '3.0']:
     os.makedirs(dist_merged / version)
     merge_fmus(version)
 

@@ -33,12 +33,12 @@ FMIStatus simulateFMI1ME(
     fmi1Real nextInputEventTime;
 
     fmi1EventInfo eventInfo = {
-        .iterationConverged = fmi1False,
+        .iterationConverged          = fmi1False,
         .stateValueReferencesChanged = fmi1False,
-        .stateValuesChanged = fmi1False,
-        .terminateSimulation = fmi1False,
-        .upcomingTimeEvent = fmi1False,
-        .nextEventTime = INFINITY
+        .stateValuesChanged          = fmi1False,
+        .terminateSimulation         = fmi1False,
+        .upcomingTimeEvent           = fmi1False,
+        .nextEventTime               = INFINITY
     };
 
     CALL(FMI1InstantiateModel(S,
@@ -57,7 +57,11 @@ FMIStatus simulateFMI1ME(
     ));
 
     // initialize
-    CALL(FMI1Initialize(S, fmi1False, 0.0));
+    CALL(FMI1Initialize(S, fmi1False, 0.0, &eventInfo));
+
+    if (!eventInfo.upcomingTimeEvent) {
+        eventInfo.nextEventTime = INFINITY;
+    }
 
     solver = settings->solverCreate(S, modelDescription, input, time);
 
