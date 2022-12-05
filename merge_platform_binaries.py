@@ -21,31 +21,24 @@ fmusim = root / f'dist-{fmpy.system}' / f'fmusim-{fmpy.system}' / 'fmusim'
 parameters = {
     'BouncingBall': [
         '--output-interval', '0.05',
-        '--stop-time', '3'
     ],
     'Dahlquist': [
         '--output-interval', '0.2',
-        '--stop-time', '10'
     ],
     'Feedthrough': [
         '--output-interval', '1',
-        '--stop-time', '2'
     ],
     'LinearTransform': [
         '--output-interval', '1',
-        '--stop-time', '2'
     ],
     'Resource': [
         '--output-interval', '1',
-        '--stop-time', '2'
     ],
     'Stair':  [
         '--output-interval', '1',
-        '--stop-time', '10'
     ],
     'VanDerPol':  [
         '--output-interval', '0.2',
-        '--stop-time', '20'
     ]
 }
 
@@ -55,6 +48,9 @@ def merge_fmus(version):
     for dirpath, dirnames, filenames in os.walk(root / 'dist-windows' / version):
 
         for filename in filenames:
+
+            if not filename.endswith('.fmu'):
+                continue
 
             model_name, _ = os.path.splitext(filename)
 
@@ -69,20 +65,18 @@ def merge_fmus(version):
 
             if model_name in parameters:
 
-                output_filename = root / 'dist-merged' / version / f'{model_name}_ref.csv'
+                output_filename = root / f'dist-{fmpy.system}' / version / f'{model_name}_ref.csv'
                 os.makedirs(tempdir / 'documentation', exist_ok=True)
                 plot_filename = tempdir / 'documentation' / 'result.svg'
 
-                interface_type = 'cs' if version == '1.0/cs' else 'me'
+                if version == '1.0/cs':
+                    params = ['--interface-type', 'cs']
+                else:
+                    params = ['--interface-type', 'me', '--solver', 'cvode']
 
-                command = [
-                    str(fmusim),
-                    '--interface-type', interface_type,
-                    '--solver', 'cvode',
-                    '--output-file', str(output_filename),
-                ] + parameters[model_name] + [
-                    str(root / f'dist-{fmpy.system}' / version / filename)
-                ]
+                params += parameters[model_name]
+
+                command = [str(fmusim)] + params + ['--output-file', str(output_filename), str(root / f'dist-{fmpy.system}' / version / filename)]
 
                 print(' '.join(command))
 
@@ -110,7 +104,12 @@ def merge_fmus(version):
                 md_file = root / model_name / 'readme.md'
                 html_file = tempdir / 'documentation' / 'index.html'
                 content = markdown2.markdown_path(md_file, extras=['tables', 'fenced-code-blocks'])
-                html = template.render(model_name=model_name, content=content, model_description=model_description)
+                html = template.render(
+                    model_name=model_name,
+                    content=content,
+                    model_description=model_description,
+                    params=' '.join(params)
+                )
                 with open(html_file, 'w') as f:
                     f.write(html)
 
