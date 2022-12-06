@@ -14,7 +14,7 @@ env:
 jobs:
 
   lint-files:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
     - run: python3 lint_files.py
@@ -22,7 +22,7 @@ jobs:
   build:
     strategy:
       matrix:
-        image: [windows-2022, ubuntu-18.04, macos-11]
+        image: [windows-2022, ubuntu-20.04, macos-11]
     runs-on: ${{ matrix.image }}
     needs: lint-files
     steps:
@@ -48,7 +48,7 @@ jobs:
         if-no-files-found: error
 
   merge-fmus:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: [build]
     steps:
     - uses: s-weigand/setup-conda@v1.1.1
@@ -62,7 +62,7 @@ jobs:
         path: dist-windows
     - uses: actions/download-artifact@v3
       with:
-        name: ubuntu-18.04
+        name: ubuntu-20.04
         path: dist-linux
     - uses: actions/download-artifact@v3
       with:
