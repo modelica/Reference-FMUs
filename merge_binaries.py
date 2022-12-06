@@ -16,7 +16,7 @@ dist_merged = root / 'dist-merged'
 
 os.makedirs(dist_merged, exist_ok=True)
 
-fmusim = r'E:\Development\Reference-FMUs\build\fmusim\Debug\fmusim.exe'  # root / f'dist-{fmpy.system}' / f'fmusim-{fmpy.system}' / 'fmusim'
+fmusim = root / f'dist-{fmpy.system}' / f'fmusim-{fmpy.system}' / 'fmusim'
 
 parameters = {
     'BouncingBall': [
