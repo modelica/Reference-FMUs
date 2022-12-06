@@ -1,4 +1,5 @@
 import shutil
+import subprocess
 import zipfile
 from pathlib import Path
 from subprocess import check_call
@@ -41,6 +42,35 @@ parameters = {
         '--output-interval', '0.2',
     ]
 }
+
+
+def set_tool_version(filename, git_executable='git'):
+    """ Set the Git tag or hash in the generationTool attribute if the repo is clean """
+
+    cwd = os.path.dirname(__file__)
+
+    changed_files = subprocess.check_output([git_executable, 'status', '--porcelain', '--untracked=no'],
+                                            cwd=cwd).decode('ascii').strip()
+
+    if changed_files:
+        return
+
+    version = subprocess.check_output([git_executable, 'tag', '--contains'], cwd=cwd).decode('ascii').strip()
+
+    if not version:
+        version = subprocess.check_output([git_executable, 'rev-parse', '--short', 'HEAD'], cwd=cwd).decode(
+            'ascii').strip()
+
+    if not version:
+        return
+
+    with open(filename, 'r') as f:
+        lines = f.read()
+
+    lines = lines.replace('"Reference FMUs (development build)"', f'"Reference FMUs ({version})"')
+
+    with open(filename, 'w') as f:
+        f.write(lines)
 
 
 def merge_fmus(version):
@@ -112,6 +142,9 @@ def merge_fmus(version):
                 )
                 with open(html_file, 'w') as f:
                     f.write(html)
+
+                # set tool version
+                set_tool_version(tempdir / 'modelDescription.xml')
 
             # create archive
             merged_fmu = os.path.join(root, 'dist-merged', version, filename)
