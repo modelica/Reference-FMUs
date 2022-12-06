@@ -39,7 +39,7 @@ jobs:
     - run: python ThirdParty/build_cvode.py
     - run: python ThirdParty/build_libxml2.py
     - run: python ThirdParty/build_zlib.py
-    - run: pytest -s -v --junitxml=junit/test-results.xml --ignore fmusim
+    - run: python build.py
     - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.image }}
@@ -68,7 +68,7 @@ jobs:
         name: macos-11
         path: dist-darwin
     - run: chmod +x dist-linux/fmusim-linux/fmusim
-    - run: python3 merge_platform_binaries.py
+    - run: python3 merge_binaries.py
     - uses: actions/upload-artifact@v3
       with:
         name: Reference-FMUs

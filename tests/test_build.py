@@ -11,13 +11,7 @@ from fmpy.validation import validate_fmu
 
 def validate(build_dir, fmi_types, models, compile=False):
 
-    from fmpy.util import read_csv, validate_result
-
-    test_fmus_dir = Path(__file__).parent
-
     for model in models:
-
-        print(model)
 
         fmu_filename = os.path.join(build_dir, 'install', model + '.fmu')
 
@@ -25,34 +19,14 @@ def validate(build_dir, fmi_types, models, compile=False):
 
         assert not problems
 
-        # if model == 'Feedthrough':
-        #     start_values = {'Float64_fixed_parameter': 1, 'String_parameter': "FMI is awesome!"}
-        #     in_csv = os.path.join(test_fmus_dir, model, model + '_in.csv')
-        #     input = read_csv(in_csv)
-        # else:
-        #     start_values = {}
-        #     input = None
-        #
-        # ref_csv = os.path.join(test_fmus_dir, model, model + '_ref.csv')
-        #
-        # for fmi_type in fmi_types:
-        #
-        #     ref = read_csv(ref_csv)
-        #
-        #     if compile:
-        #         if model == 'Resource' and os.name == 'nt':
-        #             continue
-        #         compile_platform_binary(fmu_filename)
-        #
-        #     result = simulate_fmu(fmu_filename,
-        #                           fmi_type=fmi_type,
-        #                           start_values=start_values,
-        #                           input=input,
-        #                           solver='Euler')
-        #
-        #     dev = validate_result(result, ref)
-        #
-        #     assert dev < 0.2, "Failed to validate " + model
+        for fmi_type in fmi_types:
+
+            if compile:
+                if model == 'Resource' and os.name == 'nt':
+                    continue
+                compile_platform_binary(fmu_filename)
+
+            simulate_fmu(fmu_filename, fmi_type=fmi_type)
 
 
 def build_fmus(build_dir, fmi_version, fmi_type='ME'):
