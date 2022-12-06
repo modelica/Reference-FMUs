@@ -40,6 +40,7 @@ jobs:
     - run: python ThirdParty/build_libxml2.py
     - run: python ThirdParty/build_zlib.py
     - run: python build.py
+    - run: pytest tests
     - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.image }}
