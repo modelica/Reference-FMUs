@@ -7,7 +7,8 @@ from fmpy import extract
 
 
 archive = download_file('https://www.zlib.net/zlib1213.zip',
-                        checksum='d233fca7cf68db4c16dc5287af61f3cd01ab62495224c66639ca3da537701e42')
+                        # checksum='d233fca7cf68db4c16dc5287af61f3cd01ab62495224c66639ca3da537701e42'
+                        )
 
 root = Path(__file__).parent
 
