@@ -38,7 +38,7 @@ def build_fmus(fmi_version, fmi_type=None):
     install_dir = build_dir / 'install'
 
     if fmi_type is not None:
-        cmake_options += ['-D', f'FMI_TYPE={fmi_type}']
+        cmake_options += ['-D', f'FMI_TYPE={fmi_type.upper()}']
 
     cmake_options += [
         '-D', f'FMI_VERSION={fmi_version}',
