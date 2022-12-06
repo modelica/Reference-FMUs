@@ -68,7 +68,17 @@ jobs:
         name: macos-11
         path: dist-darwin
     - run: chmod +x dist-linux/fmusim-linux/fmusim
+
+    - run: git status --porcelain --untracked=no
+    - run: git tag --contains
+    - run: git rev-parse --short HEAD
+
     - run: python3 merge_binaries.py
+
+    - run: git status --porcelain --untracked=no
+    - run: git tag --contains
+    - run: git rev-parse --short HEAD
+
     - uses: actions/upload-artifact@v3
       with:
         name: Reference-FMUs
