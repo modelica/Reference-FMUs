@@ -17,3 +17,4 @@ dist-darwin/
 dist-linux/
 dist-windows/
 dist-merged/
+tests/work/
