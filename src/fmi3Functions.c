@@ -100,7 +100,7 @@ do { \
 /* Common Functions */
 
 /* Getting and setting variable values */
-#define MASK_fmi3GetFloat32               (InitializationMode | ConfigurationMode | ReconfigurationMode | EventMode | ContinuousTimeMode | StepMode | ClockActivationMode | IntermediateUpdateMode | Terminated)
+#define MASK_fmi3GetFloat32               (Instantiated | InitializationMode | ConfigurationMode | ReconfigurationMode | EventMode | ContinuousTimeMode | StepMode | ClockActivationMode | IntermediateUpdateMode | Terminated)
 #define MASK_fmi3GetFloat64               MASK_fmi3GetFloat32
 #define MASK_fmi3GetInt8                  MASK_fmi3GetFloat32
 #define MASK_fmi3GetUInt8                 MASK_fmi3GetFloat32
