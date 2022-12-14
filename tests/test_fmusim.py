@@ -73,19 +73,19 @@ def test_start_value_types(fmi_version, interface_type):
     assert result['Boolean_output'][0] == 1
 
 
-# @pytest.mark.parametrize('interface_type', ['cs', 'me'])
-# def test_start_value_arrays(interface_type):
-#
-#     result = call_fmusim(
-#         fmi_version=3,
-#         interface_type=interface_type,
-#         test_name='test_start_value_arrays',
-#         args=['--start-value', 'u', '2 3', '--log-fmi-calls'],
-#         model='LinearTransform.fmu'
-#     )
-#
-#     assert result['y[0]'][0] == 2
-#     assert result['y[1]'][0] == 3
+@pytest.mark.parametrize('interface_type', ['cs', 'me'])
+def test_start_value_arrays(interface_type):
+
+    result = call_fmusim(
+        fmi_version=3,
+        interface_type=interface_type,
+        test_name='test_start_value_arrays',
+        args=['--start-value', 'u', '2 3', '--log-fmi-calls'],
+        model='LinearTransform.fmu'
+    )
+
+    assert result['y[0]'][0] == 2
+    assert result['y[1]'][0] == 3
 
 
 # @pytest.mark.parametrize('fmi_version, interface_type', product([1, 2, 3], ['cs', 'me']))
