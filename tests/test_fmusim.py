@@ -88,35 +88,35 @@ def test_start_value_arrays(interface_type):
     assert result['y[1]'][0] == 3
 
 
-# @pytest.mark.parametrize('fmi_version, interface_type', product([1, 2, 3], ['cs', 'me']))
-# def test_input_file(fmi_version, interface_type):
-#
-#     result = call_fmusim(
-#         fmi_version=fmi_version,
-#         interface_type=interface_type,
-#         test_name='test_input_file',
-#         args=['--input-file', resources / f'Feedthrough_in.csv'],
-#         model='Feedthrough.fmu')
-#
-#     t = result['time']
-#
-#     # interpolated values
-#     x = result['Float64_continuous_output'][np.logical_and(t > 1.25, t < 1.75)]
-#
-#     # start value
-#     assert result['Float64_continuous_output'][0] == 3
-#
-#     # interpolation
-#     assert np.all(x > 2) and np.all(x < 3)
-#
-#     # extrapolation
-#     assert result['Float64_continuous_output'][-1] == 3
-#
-#     # start value
-#     assert result['Int32_output'][0] == 1
-#
-#     # extrapolation
-#     assert result['Int32_output'][-1] == 2
+@pytest.mark.parametrize('fmi_version, interface_type', product([1, 2, 3], ['cs', 'me']))
+def test_input_file(fmi_version, interface_type):
+
+    result = call_fmusim(
+        fmi_version=fmi_version,
+        interface_type=interface_type,
+        test_name='test_input_file',
+        args=['--input-file', resources / f'Feedthrough_in.csv', '--stop-time', '5'],
+        model='Feedthrough.fmu')
+
+    t = result['time']
+
+    # interpolated values
+    x = result['Float64_continuous_output'][np.logical_and(t > 1.25, t < 1.75)]
+
+    # start value
+    assert result['Float64_continuous_output'][0] == 3
+
+    # interpolation
+    assert np.all(x > 2) and np.all(x < 3)
+
+    # extrapolation
+    assert result['Float64_continuous_output'][-1] == 3
+
+    # start value
+    assert result['Int32_output'][0] == 1
+
+    # extrapolation
+    assert result['Int32_output'][-1] == 2
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([1, 2, 3], ['cs', 'me']))

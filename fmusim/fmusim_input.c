@@ -1,5 +1,6 @@
 #include <math.h>
 #include "csv.h"
+#include "FMI1.h"
 #include "FMI2.h"
 #include "FMI3.h"
 #include "fmusim_input.h"
@@ -170,26 +171,48 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, doub
 			interpolatedValue = x0 + (time - t0) * (x1 - x0) / (t1 - t0);
 		}
 
-		if (instance->fmiVersion == FMIVersion2) {
+		if (instance->fmiVersion == FMIVersion1) {
+
+			if (type == FMIRealType && continuous) {
+
+				CALL(FMI1SetReal(instance, &vr, 1, (fmi1Real*)&interpolatedValue));
+
+			} else if (type == FMIDiscreteRealType && discrete) {
+
+				CALL(FMI1SetReal(instance, &vr, 1, (fmi1Real*)&value));
+
+			} else if (type == FMIIntegerType && discrete) {
+
+				const fmi1Integer integerValue = (fmi1Integer)value;
+				CALL(FMI1SetInteger(instance, &vr, 1, (fmi1Integer*)&integerValue));
+
+			} else if (type == FMIBooleanType && discrete) {
+
+				const fmi1Boolean booleanValue = value != fmi1False ? fmi1True : fmi1False;
+				CALL(FMI1SetBoolean(instance, &vr, 1, (fmi1Boolean*)&booleanValue));
+
+			}
+
+		} else if(instance->fmiVersion == FMIVersion2) {
 
 			if (type == FMIRealType && continuous) {
 
 				CALL(FMI2SetReal(instance, &vr, 1, (fmi2Real*)&interpolatedValue));
 
-			} else if(type == FMIDiscreteRealType && discrete) {
+			} else if (type == FMIDiscreteRealType && discrete) {
 
 				CALL(FMI2SetReal(instance, &vr, 1, (fmi2Real*)&value));
 
 			} else if (type == FMIIntegerType && discrete) {
-			
+
 				const fmi2Integer integerValue = (fmi2Integer)value;
 				CALL(FMI2SetInteger(instance, &vr, 1, (fmi2Integer*)&integerValue));
-			
+
 			} else if (type == FMIBooleanType && discrete) {
-			
+
 				const fmi2Boolean booleanValue = value != fmi2False ? fmi2True : fmi2False;
 				CALL(FMI2SetBoolean(instance, &vr, 1, (fmi2Boolean*)&booleanValue));
-			
+
 			}
 
 		} else if (instance->fmiVersion == FMIVersion3) {
