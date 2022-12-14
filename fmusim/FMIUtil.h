@@ -9,6 +9,13 @@ FMIStatus FMIGetNumberOfVariableValues(
     const FMIModelVariable* variable, 
     size_t* nValues);
 
+FMIStatus FMI1SetValues(
+    FMIInstance* instance,
+    FMIVariableType type,
+    const FMIValueReference valueReferences[],
+    size_t nValueReferences,
+    const void* values);
+
 FMIStatus FMI2SetValues(
     FMIInstance* instance,
     FMIVariableType type,

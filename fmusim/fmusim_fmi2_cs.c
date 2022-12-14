@@ -1,5 +1,3 @@
-#include "fmusim.h"
-#include "fmusim_fmi2.h"
 #include "fmusim_fmi2_cs.h"
 
 
@@ -35,7 +33,6 @@ FMIStatus simulateFMI2CS(
 
     for (unsigned long step = 0;; step++) {
         
-        // calculate the current time
         const fmi2Real time = settings->startTime + step * settings->outputInterval;
 
         CALL(FMISample(S, time, result));
@@ -46,7 +43,6 @@ FMIStatus simulateFMI2CS(
             break;
         }
 
-        // call instance s1 and check status
         const FMIStatus doStepStatus = FMI2DoStep(S, time, settings->outputInterval, fmi2True);
 
         if (doStepStatus == fmi2Discard) {

@@ -14,7 +14,7 @@ env:
 jobs:
 
   lint-files:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
     - run: python3 lint_files.py
@@ -22,7 +22,7 @@ jobs:
   build:
     strategy:
       matrix:
-        image: [windows-2022, ubuntu-18.04, macos-11]
+        image: [windows-2022, ubuntu-20.04, macos-11]
     runs-on: ${{ matrix.image }}
     needs: lint-files
     steps:
@@ -39,7 +39,8 @@ jobs:
     - run: python ThirdParty/build_cvode.py
     - run: python ThirdParty/build_libxml2.py
     - run: python ThirdParty/build_zlib.py
-    - run: pytest -s -v --junitxml=junit/test-results.xml --ignore fmusim
+    - run: python build.py
+    - run: pytest tests
     - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.image }}
@@ -47,9 +48,13 @@ jobs:
         if-no-files-found: error
 
   merge-fmus:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     needs: [build]
     steps:
+    - uses: s-weigand/setup-conda@v1.1.1
+      with:
+        conda-channels: conda-forge
+    - run: conda install fmpy-base pytest scipy python-kaleido markdown2 plotly
     - uses: actions/checkout@v3
     - uses: actions/download-artifact@v3
       with:
@@ -57,13 +62,24 @@ jobs:
         path: dist-windows
     - uses: actions/download-artifact@v3
       with:
-        name: ubuntu-18.04
+        name: ubuntu-20.04
         path: dist-linux
     - uses: actions/download-artifact@v3
       with:
         name: macos-11
         path: dist-darwin
-    - run: python3 merge_platform_binaries.py
+    - run: chmod +x dist-linux/fmusim-linux/fmusim
+
+    - run: git status --porcelain --untracked=no
+    - run: git tag --contains
+    - run: git rev-parse --short HEAD
+
+    - run: python3 merge_binaries.py
+
+    - run: git status --porcelain --untracked=no
+    - run: git tag --contains
+    - run: git rev-parse --short HEAD
+
     - uses: actions/upload-artifact@v3
       with:
         name: Reference-FMUs

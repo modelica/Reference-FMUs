@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "fmusim.h"
-#include "fmusim_fmi3.h"
 #include "fmusim_fmi3_me.h"
 
 

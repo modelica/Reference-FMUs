@@ -254,18 +254,15 @@ FMIStatus    FMI1CompletedIntegratorStep(FMIInstance *instance, fmi1Boolean* cal
     return status;
 }
 
-FMIStatus    FMI1Initialize(FMIInstance *instance, fmi1Boolean toleranceControlled, fmi1Real relativeTolerance) {
-    fmi1EventInfo *e = &instance->fmi1Functions->eventInfo;
+FMIStatus    FMI1Initialize(FMIInstance *instance, fmi1Boolean toleranceControlled, fmi1Real relativeTolerance, fmi1EventInfo* eventInfo) {
     currentInstance = instance;
-    FMIStatus status = (FMIStatus)instance->fmi1Functions->fmi1Initialize(instance->component, toleranceControlled, relativeTolerance, e);
+    FMIStatus status = (FMIStatus)instance->fmi1Functions->fmi1Initialize(instance->component, toleranceControlled, relativeTolerance, eventInfo);
     if (instance->logFunctionCall) {
         instance->logFunctionCall(instance, status,
             "fmi1Initialize(toleranceControlled=%d, relativeTolerance=%.16g, eventInfo={iterationConverged=%d, stateValueReferencesChanged=%d, stateValuesChanged=%d, terminateSimulation=%d, upcomingTimeEvent=%d, nextEventTime=%.16g})",
-            toleranceControlled, relativeTolerance, e->iterationConverged, e->stateValueReferencesChanged, e->stateValuesChanged, e->terminateSimulation, e->upcomingTimeEvent, e->nextEventTime);
+            toleranceControlled, relativeTolerance, eventInfo->iterationConverged, eventInfo->stateValueReferencesChanged, eventInfo->stateValuesChanged, eventInfo->terminateSimulation, eventInfo->upcomingTimeEvent, eventInfo->nextEventTime);
     }
     return status;
-
-
 }
 
 FMIStatus    FMI1GetDerivatives(FMIInstance *instance, fmi1Real derivatives[], size_t nx) {

@@ -4,6 +4,8 @@
 #include <sunlinsol/sunlinsol_dense.h>
 
 #include "FMICVode.h"
+
+#include "FMI1.h"
 #include "FMI2.h"
 #include "FMI3.h"
 
@@ -96,18 +98,24 @@ Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
     solver->nx = modelDescription->nContinuousStates;
     solver->nz = modelDescription->nEventIndicators;
 
-    if (S->fmiVersion == FMIVersion2) {
+    if (S->fmiVersion == FMIVersion1) {
+        solver->set_time = FMI1SetTime;
+        solver->get_x    = FMI1GetContinuousStates;
+        solver->set_x    = FMI1SetContinuousStates;
+        solver->get_dx   = FMI1GetDerivatives;
+        solver->get_z    = FMI1GetEventIndicators;
+    } else if (S->fmiVersion == FMIVersion2) {
         solver->set_time = FMI2SetTime;
-        solver->get_x = FMI2GetContinuousStates;
-        solver->set_x = FMI2SetContinuousStates;
-        solver->get_dx = FMI2GetDerivatives;
-        solver->get_z = FMI2GetEventIndicators;
+        solver->get_x    = FMI2GetContinuousStates;
+        solver->set_x    = FMI2SetContinuousStates;
+        solver->get_dx   = FMI2GetDerivatives;
+        solver->get_z    = FMI2GetEventIndicators;
     } else if (S->fmiVersion == FMIVersion3) {
         solver->set_time = FMI3SetTime;
-        solver->get_x = FMI3GetContinuousStates;
-        solver->set_x = FMI3SetContinuousStates;
-        solver->get_dx = FMI3GetContinuousStateDerivatives;
-        solver->get_z = FMI3GetEventIndicators;
+        solver->get_x    = FMI3GetContinuousStates;
+        solver->set_x    = FMI3SetContinuousStates;
+        solver->get_dx   = FMI3GetContinuousStateDerivatives;
+        solver->get_z    = FMI3GetEventIndicators;
     } else {
         return NULL;
     }

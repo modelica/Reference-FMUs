@@ -22,6 +22,8 @@ file(MAKE_DIRECTORY ${FMUSIM_DIST_DIR})
 set(sources
   ../include/FMI.h
   ../src/FMI.c
+  ../include/FMI1.h
+  ../src/FMI1.c
   ../include/FMI2.h
   ../src/FMI2.c
   ../include/FMI3.h
@@ -41,16 +43,19 @@ set(sources
   FMIRecorder.c
   FMIZip.h
   FMIZip.c
+  fmi1schema.h
+  fmi2schema.h
+  fmi3schema.h
   fmusim.h
   fmusim.c
-  fmusim_fmi2.h
-  fmusim_fmi2.c
+  fmusim_fmi1_cs.h
+  fmusim_fmi1_cs.c
+  fmusim_fmi1_me.h
+  fmusim_fmi1_me.c
   fmusim_fmi2_cs.h
   fmusim_fmi2_cs.c
   fmusim_fmi2_me.h
   fmusim_fmi2_me.c
-  fmusim_fmi3.h
-  fmusim_fmi3.c
   fmusim_fmi3_cs.h
   fmusim_fmi3_cs.c
   fmusim_fmi3_me.h

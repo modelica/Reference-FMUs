@@ -1,6 +1,7 @@
 #include <inttypes.h>
 #include <stdlib.h>
 
+#include "FMI1.h"
 #include "FMI2.h"
 #include "FMI3.h"
 #include "FMIUtil.h"
@@ -95,7 +96,27 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
         const FMIValueReference* vr = &variable->valueReference;
         const FMIVariableType type = variable->type;
 
-        if (instance->fmiVersion == FMIVersion2) {
+        if (instance->fmiVersion == FMIVersion1) {
+
+            if (type == FMIRealType || type == FMIDiscreteRealType) {
+                fmi1Real value;
+                CALL(FMI1GetReal(instance, vr, 1, &value));
+                fprintf(file, ",%.16g", value);
+            } else if (type == FMIIntegerType) {
+                fmi1Integer value;
+                CALL(FMI1GetInteger(instance, vr, 1, &value));
+                fprintf(file, ",%d", value);
+            } else if (type == FMIBooleanType) {
+                fmi1Boolean value;
+                CALL(FMI1GetBoolean(instance, vr, 1, &value));
+                fprintf(file, ",%d", value);
+            } else if (type == FMIStringType) {
+                fmi1String value;
+                CALL(FMI1GetString(instance, vr, 1, &value));
+                fprintf(file, ",\"%s\"", value);
+            }
+
+        } else if (instance->fmiVersion == FMIVersion2) {
 
             if (type == FMIRealType || type == FMIDiscreteRealType) {
                 fmi2Real value;

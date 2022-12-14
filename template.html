@@ -1,49 +1,82 @@
 <html>
-<head>
-<title>{{ model_name }}</title>
-<style>
-body {
-    font-family: Helvetica, Arial, Sans-Serif;
-    margin: 2em;
-}
+  <head>
+    <title>{{ model_name }}</title>
+    <style>
+    body {
+        font-family: Helvetica, Arial, Sans-Serif;
+        margin: 2em;
+    }
 
-div.container {
-    max-width: 750px;
-    margin: auto;
-}
+    div.container {
+        max-width: 750px;
+        margin: auto;
+    }
 
 
-h1, h2 {
-    border-bottom: 1px solid #eaecef;
-    padding-bottom: .3em;
-}
+    h1, h2 {
+        border-bottom: 1px solid #eaecef;
+        padding-bottom: .3em;
+    }
 
-pre {
-    background-color: #f6f8fa;
-    border-radius: 3px;
-    font-size: 85%;
-    line-height: 1.45;
-    overflow: auto;
-    padding: 16px;
-}
+    pre {
+        background-color: #f6f8fa;
+        border-radius: 3px;
+        font-size: 85%;
+        line-height: 1.45;
+        overflow: auto;
+        padding: 16px;
+    }
 
-table {
-    border-collapse: collapse;
-    border-spacing: 0;
-}
+    table {
+        border-collapse: collapse;
+        border-spacing: 0;
+    }
 
-th, td {
-    font-size: 0.9em;
-    border: 1px solid #dfe2e5;
-    padding: 6px 13px;
-}
-</style>
-</head>
-<body>
-<div class="container">
+    th, td {
+        font-size: 0.9em;
+        border: 1px solid #dfe2e5;
+        padding: 6px 13px;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="container">
 
-  {{ content }}
+      {{ content }}
 
-</div>
-</body>
+      <p>with the variables</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="text-align:left;">Variable</th>
+            <th style="text-align:right;">Start</th>
+            <th style="text-align:left;">Unit</th>
+            <th>Causality</th>
+            <th>Variability</th>
+            <th style="text-align:left;">Description</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for variable in model_description.modelVariables %}
+          <tr>
+            <td style="text-align:left;">{{ variable.name }}</td>
+            <td style="text-align:right;">{{ variable.start if variable.start is not none }}</td>
+            <td style="text-align:left;">{{ get_unit(variable) }}</td>
+            <td>{{ variable.causality if variable.causality is not none }}</td>
+            <td>{{ variable.variability if variable.variability is not none }}</td>
+            <td style="text-align:left;">{{ variable.description if variable.description is not none }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+
+      <p>The plot shows the trajectories of the output variables computed with <a href="https://github.com/modelica/Reference-FMUs/">fmusim</a>.</p>
+
+      <pre><code>fmusim {{ params }} --output-file {{ model_name }}_out.csv {{ model_name }}.fmu</code></pre>
+
+      <p><img src="result.svg" alt="plot" /></p>
+
+    </div>
+  </body>
 </html>
