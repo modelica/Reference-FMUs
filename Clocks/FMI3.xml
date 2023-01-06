@@ -11,7 +11,7 @@
   <Clock name="inClock1" valueReference="1001" causality="input" intervalVariability="constant" intervalDecimal="1.0" priority="0"/>
   <Clock name="inClock2" valueReference="1002" causality="input" intervalVariability="triggered" priority="1"/>
   <Clock name="inClock3" valueReference="1003" causality="input" intervalVariability="countdown" priority="2" clocks="1001"/>
-  <Clock name="outClock" valueReference="1005" causality="output" intervalVariability="triggered" priority="2" clocks="1001 1002 1003"/>
+  <Clock name="outClock" valueReference="1005" causality="output" intervalVariability="triggered" clocks="1001 1002 1003"/>
   <Int32 name="inClock1Ticks" valueReference="2001" causality="output" clocks="1001"/>
   <Int32 name="inClock2Ticks" valueReference="2002" causality="output" clocks="1002"/>
   <Int32 name="inClock3Ticks" valueReference="2003" causality="output"/>
