@@ -44,7 +44,7 @@ do { \
         S->isDirtyValues = false; \
     } \
     for (size_t i = 0; i < nvr; i++) { \
-        Status s = get ## T(S, vr[i], value, &index); \
+        Status s = get ## T(S, vr[i], value, nvr, &index); \
         status = max(status, s); \
         if (status > Warning) return (fmi2Status)status; \
     } \
@@ -59,7 +59,7 @@ do { \
     ASSERT_NOT_NULL(value); \
     size_t index = 0; \
     for (size_t i = 0; i < nvr; i++) { \
-        Status s = set ## T(S, vr[i], value, &index); \
+        Status s = set ## T(S, vr[i], value, nvr, &index); \
         status = max(status, s); \
         if (status > Warning) return (fmi2Status)status; \
     } \
@@ -73,7 +73,7 @@ do { \
     for (size_t i = 0; i < nvr; i++) { \
         bool v = false; \
         size_t index = 0; \
-        Status s = getBoolean(S, vr[i], &v, &index); \
+        Status s = getBoolean(S, vr[i], &v, nvr, &index); \
         value[i] = v; \
         status = max(status, s); \
         if (status > Warning) return (fmi2Status)status; \
@@ -87,7 +87,7 @@ do { \
     for (size_t i = 0; i < nvr; i++) { \
         bool v = value[i]; \
         size_t index = 0; \
-        Status s = setBoolean(S, vr[i], &v, &index); \
+        Status s = setBoolean(S, vr[i], &v, nvr, &index); \
         status = max(status, s); \
         if (status > Warning) return (fmi2Status)status; \
     } \
@@ -329,7 +329,7 @@ fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean loggingOn, size_t nC
     return (fmi2Status)setDebugLogging(S, loggingOn, nCategories, categories);
 }
 
-fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
+fmi2Status fmi2GetReal(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
 
     ASSERT_STATE(GetReal)
 
