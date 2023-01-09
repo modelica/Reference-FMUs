@@ -170,33 +170,33 @@ void setStartValues(ModelInstance* comp);
 
 Status calculateValues(ModelInstance *comp);
 
-Status getFloat32 (ModelInstance* comp, ValueReference vr, float       value[], size_t *index);
-Status getFloat64 (ModelInstance* comp, ValueReference vr, double      value[], size_t *index);
-Status getInt8    (ModelInstance* comp, ValueReference vr, int8_t      value[], size_t *index);
-Status getUInt8   (ModelInstance* comp, ValueReference vr, uint8_t     value[], size_t *index);
-Status getInt16   (ModelInstance* comp, ValueReference vr, int16_t     value[], size_t *index);
-Status getUInt16  (ModelInstance* comp, ValueReference vr, uint16_t    value[], size_t *index);
-Status getInt32   (ModelInstance* comp, ValueReference vr, int32_t     value[], size_t *index);
-Status getUInt32  (ModelInstance* comp, ValueReference vr, uint32_t    value[], size_t *index);
-Status getInt64   (ModelInstance* comp, ValueReference vr, int64_t     value[], size_t *index);
-Status getUInt64  (ModelInstance* comp, ValueReference vr, uint64_t    value[], size_t *index);
-Status getBoolean (ModelInstance* comp, ValueReference vr, bool        value[], size_t *index);
-Status getString  (ModelInstance* comp, ValueReference vr, const char* value[], size_t *index);
-Status getBinary  (ModelInstance* comp, ValueReference vr, size_t size[], const char* value[], size_t *index);
+Status getFloat32 (ModelInstance* comp, ValueReference vr, float       values[], size_t nValues, size_t *index);
+Status getFloat64 (ModelInstance* comp, ValueReference vr, double      values[], size_t nValues, size_t *index);
+Status getInt8    (ModelInstance* comp, ValueReference vr, int8_t      values[], size_t nValues, size_t *index);
+Status getUInt8   (ModelInstance* comp, ValueReference vr, uint8_t     values[], size_t nValues, size_t *index);
+Status getInt16   (ModelInstance* comp, ValueReference vr, int16_t     values[], size_t nValues, size_t *index);
+Status getUInt16  (ModelInstance* comp, ValueReference vr, uint16_t    values[], size_t nValues, size_t *index);
+Status getInt32   (ModelInstance* comp, ValueReference vr, int32_t     values[], size_t nValues, size_t *index);
+Status getUInt32  (ModelInstance* comp, ValueReference vr, uint32_t    values[], size_t nValues, size_t *index);
+Status getInt64   (ModelInstance* comp, ValueReference vr, int64_t     values[], size_t nValues, size_t *index);
+Status getUInt64  (ModelInstance* comp, ValueReference vr, uint64_t    values[], size_t nValues, size_t *index);
+Status getBoolean (ModelInstance* comp, ValueReference vr, bool        values[], size_t nValues, size_t *index);
+Status getString  (ModelInstance* comp, ValueReference vr, const char* values[], size_t nValues, size_t *index);
+Status getBinary  (ModelInstance* comp, ValueReference vr, size_t sizes[], const char* values[], size_t nValues, size_t *index);
 
-Status setFloat32 (ModelInstance* comp, ValueReference vr, const float       value[], size_t *index);
-Status setFloat64 (ModelInstance* comp, ValueReference vr, const double      value[], size_t *index);
-Status setInt8    (ModelInstance* comp, ValueReference vr, const int8_t      value[], size_t *index);
-Status setUInt8   (ModelInstance* comp, ValueReference vr, const uint8_t     value[], size_t *index);
-Status setInt16   (ModelInstance* comp, ValueReference vr, const int16_t     value[], size_t *index);
-Status setUInt16  (ModelInstance* comp, ValueReference vr, const uint16_t    value[], size_t *index);
-Status setInt32   (ModelInstance* comp, ValueReference vr, const int32_t     value[], size_t *index);
-Status setUInt32  (ModelInstance* comp, ValueReference vr, const uint32_t    value[], size_t *index);
-Status setInt64   (ModelInstance* comp, ValueReference vr, const int64_t     value[], size_t *index);
-Status setUInt64  (ModelInstance* comp, ValueReference vr, const uint64_t    value[], size_t *index);
-Status setBoolean (ModelInstance* comp, ValueReference vr, const bool        value[], size_t *index);
-Status setString  (ModelInstance* comp, ValueReference vr, const char* const value[], size_t *index);
-Status setBinary  (ModelInstance* comp, ValueReference vr, const size_t size[], const char* const value[], size_t *index);
+Status setFloat32 (ModelInstance* comp, ValueReference vr, const float       values[], size_t nValues, size_t *index);
+Status setFloat64 (ModelInstance* comp, ValueReference vr, const double      values[], size_t nValues, size_t *index);
+Status setInt8    (ModelInstance* comp, ValueReference vr, const int8_t      values[], size_t nValues, size_t *index);
+Status setUInt8   (ModelInstance* comp, ValueReference vr, const uint8_t     values[], size_t nValues, size_t *index);
+Status setInt16   (ModelInstance* comp, ValueReference vr, const int16_t     values[], size_t nValues, size_t *index);
+Status setUInt16  (ModelInstance* comp, ValueReference vr, const uint16_t    values[], size_t nValues, size_t *index);
+Status setInt32   (ModelInstance* comp, ValueReference vr, const int32_t     values[], size_t nValues, size_t *index);
+Status setUInt32  (ModelInstance* comp, ValueReference vr, const uint32_t    values[], size_t nValues, size_t *index);
+Status setInt64   (ModelInstance* comp, ValueReference vr, const int64_t     values[], size_t nValues, size_t *index);
+Status setUInt64  (ModelInstance* comp, ValueReference vr, const uint64_t    values[], size_t nValues, size_t *index);
+Status setBoolean (ModelInstance* comp, ValueReference vr, const bool        values[], size_t nValues, size_t *index);
+Status setString  (ModelInstance* comp, ValueReference vr, const char* const values[], size_t nValues, size_t *index);
+Status setBinary  (ModelInstance* comp, ValueReference vr, const size_t sizes[], const char* const values[], size_t nValues, size_t *index);
 
 Status activateClock(ModelInstance* comp, ValueReference vr);
 Status getClock(ModelInstance* comp, ValueReference vr, bool* value);
@@ -232,3 +232,11 @@ void setFMUState(ModelInstance* comp, void* FMUState);
 // "stringification" macros
 #define xstr(s) str(s)
 #define str(s) #s
+
+// assert size of nValues for scalar variables
+#define ASSERT_NVALUES  do { \
+    if (*index + 1 > nValues) { \
+        logError(comp, "Expected nValues > %zu but was %zu.", *index, nValues); \
+        return Error; \
+        } \
+    } while (0)

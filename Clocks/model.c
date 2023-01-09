@@ -165,10 +165,13 @@ Status activateClock(ModelInstance* comp, ValueReference vr) {
     return OK;
 }
 
-Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
+Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
+
+    ASSERT_NVALUES;
+
     switch (vr) {
     case vr_time:
-        value[(*index)++] = comp->time;
+        values[(*index)++] = comp->time;
         return OK;
     default:
         logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
@@ -176,10 +179,13 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
     }
 }
 
-Status setInt32(ModelInstance* comp, ValueReference vr, const int* value, size_t* index) {
+Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], size_t nValues, size_t* index) {
+
+    ASSERT_NVALUES;
+
     switch (vr) {
     case vr_input2:
-        M(input2) = value[(*index)++];
+        M(input2) = values[(*index)++];
         return OK;
     default:
         logError(comp, "Set Int32 is not allowed for value reference %u.", vr);
@@ -187,26 +193,28 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int* value, size_t
     }
 }
 
-Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
+Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
+
+    ASSERT_NVALUES;
 
     switch (vr) {
     case vr_inClock1Ticks:
-        value[(*index)++] = M(inClock1Ticks);
+        values[(*index)++] = M(inClock1Ticks);
         return OK;
     case vr_inClock2Ticks:
-        value[(*index)++] = M(inClock2Ticks);
+        values[(*index)++] = M(inClock2Ticks);
         return OK;
     case vr_inClock3Ticks:
-        value[(*index)++] = M(inClock3Ticks);
+        values[(*index)++] = M(inClock3Ticks);
         return OK;
     case vr_totalInClockTicks:
-        value[(*index)++] = M(totalInClockTicks);
+        values[(*index)++] = M(totalInClockTicks);
         return OK;
     case vr_result2:
-        value[(*index)++] = M(result2);
+        values[(*index)++] = M(result2);
         return OK;
     case vr_output3:
-        value[(*index)++] = M(output3);
+        values[(*index)++] = M(output3);
         return OK;
     default:
         logError(comp, "Get Int32 is not allowed for value reference %u.", vr);

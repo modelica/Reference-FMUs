@@ -44,9 +44,13 @@ do { \
         S->isDirtyValues = false; \
     } \
     for (size_t i = 0; i < nValueReferences; i++) { \
-        Status s = get ## T(S, (ValueReference)valueReferences[i], values, &index); \
+        Status s = get ## T(S, (ValueReference)valueReferences[i], values, nValues, &index); \
         status = max(status, s); \
         if (status > Warning) return (fmi3Status)status; \
+    } \
+    if (index != nValues) { \
+        logError(S, "Expected nValues = %zu but was %zu.", index, nValues); \
+        return fmi3Error; \
     } \
     return (fmi3Status)status; \
 } while (0)
@@ -59,11 +63,15 @@ do { \
     ASSERT_NOT_NULL(values); \
     size_t index = 0; \
     for (size_t i = 0; i < nValueReferences; i++) { \
-        Status s = set ## T(S, (ValueReference)valueReferences[i], values, &index); \
+        Status s = set ## T(S, (ValueReference)valueReferences[i], values, nValues, &index); \
         status = max(status, s); \
         if (status > Warning) return (fmi3Status)status; \
     } \
     if (nValueReferences > 0) S->isDirtyValues = true; \
+    if (index != nValues) { \
+        logError(S, "Expected nValues = %zu but was %zu.", index, nValues); \
+        return fmi3Error; \
+    } \
     return (fmi3Status)status; \
 } while (0)
 
@@ -599,15 +607,13 @@ fmi3Status fmi3GetBinary(fmi3Instance instance,
     fmi3Binary values[],
     size_t nValues) {
 
-    UNUSED(nValues);
-
     ASSERT_STATE(GetBinary);
 
     Status status = OK;
 
     for (size_t i = 0; i < nValueReferences; i++) {
         size_t index = 0;
-        Status s = getBinary(S, (ValueReference)valueReferences[i], valueSizes, (const char**)values, &index);
+        Status s = getBinary(S, (ValueReference)valueReferences[i], valueSizes, (const char**)values, nValues, &index);
         status = max(status, s);
         if (status > Warning) return (fmi3Status)status;
     }
@@ -772,15 +778,13 @@ fmi3Status fmi3SetBinary(fmi3Instance instance,
     const fmi3Binary values[],
     size_t nValues) {
 
-    UNUSED(nValues);
-
     ASSERT_STATE(SetBinary);
 
     Status status = OK;
 
     for (size_t i = 0; i < nValueReferences; i++) {
         size_t index = 0;
-        Status s = setBinary(S, (ValueReference)valueReferences[i], valueSizes, (const char* const*)values, &index);
+        Status s = setBinary(S, (ValueReference)valueReferences[i], valueSizes, (const char* const*)values, nValues, &index);
         status = max(status, s);
         if (status > Warning) return (fmi3Status)status;
     }

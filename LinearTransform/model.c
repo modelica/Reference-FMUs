@@ -36,28 +36,31 @@ Status calculateValues(ModelInstance *comp) {
     return OK;
 }
 
-Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
+Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
+
+    // TODO: check nValues
+    UNUSED(nValues);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_time:
-            value[(*index)++] = comp->time;
+            values[(*index)++] = comp->time;
             return OK;
         case vr_u:
             for (size_t i = 0; i < M(n); i++) {
-                value[(*index)++] = M(u)[i];
+                values[(*index)++] = M(u)[i];
             }
             return OK;
         case vr_A:
             for (size_t i = 0; i < M(m); i++)
             for (size_t j = 0; j < M(n); j++) {
-                value[(*index)++] = M(A)[i][j];
+                values[(*index)++] = M(A)[i][j];
             }
             return OK;
         case vr_y:
             for (size_t i = 0; i < M(m); i++) {
-                value[(*index)++] = M(y)[i];
+                values[(*index)++] = M(y)[i];
             }
             return OK;
         default:
@@ -66,18 +69,22 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
     }
 }
 
-Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
+Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
+
+    // TODO: check nValues
+    UNUSED(nValues);
+
     switch (vr) {
         case vr_u:
             for (size_t i = 0; i < M(n); i++) {
-                M(u)[i] = value[(*index)++];
+                M(u)[i] = values[(*index)++];
             }
             calculateValues(comp);
             return OK;
         case vr_A:
             for (size_t i = 0; i < M(m); i++)
             for (size_t j = 0; j < M(n); j++) {
-                M(A)[i][j] = value[(*index)++];
+                M(A)[i][j] = values[(*index)++];
             }
             return OK;
         default:
@@ -86,14 +93,18 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
     }
 }
 
-Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t *value, size_t *index) {
+Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t values[], size_t nValues, size_t* index) {
+    
+    ASSERT_NVALUES;
+    
     calculateValues(comp);
+    
     switch (vr) {
         case vr_m:
-            value[(*index)++] = M(m);
+            values[(*index)++] = M(m);
             return OK;
         case vr_n:
-            value[(*index)++] = M(n);
+            values[(*index)++] = M(n);
             return OK;
         default:
             logError(comp, "Get UInt64 is not allowed for value reference %u.", vr);
@@ -101,13 +112,15 @@ Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t *value, size_t
     }
 }
 
-Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t *value, size_t *index) {
+Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[], size_t nValues, size_t* index) {
+
+    ASSERT_NVALUES;
 
     if (comp->state != ConfigurationMode && comp->state != ReconfigurationMode) {
         return Error;
     }
 
-    const uint64_t v = value[(*index)++];
+    const uint64_t v = values[(*index)++];
 
     switch (vr) {
         case vr_m:

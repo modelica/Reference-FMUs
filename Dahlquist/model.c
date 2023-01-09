@@ -12,20 +12,24 @@ Status calculateValues(ModelInstance *comp) {
     return OK;
 }
 
-Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
+Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
+    
     calculateValues(comp);
+
+    ASSERT_NVALUES;
+    
     switch (vr) {
         case vr_time:
-            value[(*index)++] = comp->time;
+            values[(*index)++] = comp->time;
             return OK;
         case vr_x:
-            value[(*index)++] = M(x);
+            values[(*index)++] = M(x);
             return OK;
         case vr_der_x:
-            value[(*index)++] = M(der_x);
+            values[(*index)++] = M(der_x);
             return OK;
         case vr_k:
-            value[(*index)++] = M(k);
+            values[(*index)++] = M(k);
             return OK;
         default:
             logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
@@ -33,10 +37,13 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
     }
 }
 
-Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
+Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
+
+    ASSERT_NVALUES;
+
     switch (vr) {
         case vr_x:
-            M(x) = value[(*index)++];
+            M(x) = values[(*index)++];
             return OK;
         case vr_k:
 #if FMI_VERSION > 1
@@ -47,7 +54,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
                 return Error;
             }
 #endif
-            M(k) = value[(*index)++];
+            M(k) = values[(*index)++];
             return OK;
         default:
             logError(comp, "Set Float64 is not allowed for value reference %u.", vr);

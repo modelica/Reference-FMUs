@@ -18,10 +18,13 @@ Status calculateValues(ModelInstance *comp) {
     return OK;
 }
 
-Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
+Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
+    
+    ASSERT_NVALUES;
+    
     switch (vr) {
     case vr_time:
-        value[(*index)++] = comp->time;
+        values[(*index)++] = comp->time;
         return OK;
     default:
         logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
@@ -29,10 +32,13 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
     }
 }
 
-Status getInt32(ModelInstance* comp, ValueReference vr, int *value, size_t *index) {
+Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
+    
+    ASSERT_NVALUES;
+    
     switch (vr) {
         case vr_counter:
-            value[(*index)++] = M(counter);
+            values[(*index)++] = M(counter);
             return OK;
         default:
             logError(comp, "Get Int32 is not allowed for value reference %u.", vr);
