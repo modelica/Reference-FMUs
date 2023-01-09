@@ -13,11 +13,11 @@ Status calculateValues(ModelInstance *comp) {
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
-    
+
     calculateValues(comp);
 
     ASSERT_NVALUES(1);
-    
+
     switch (vr) {
         case vr_time:
             values[(*index)++] = comp->time;

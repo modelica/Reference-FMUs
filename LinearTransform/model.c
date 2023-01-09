@@ -94,11 +94,11 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
 }
 
 Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t values[], size_t nValues, size_t* index) {
-    
+
     ASSERT_NVALUES(1);
-    
+
     calculateValues(comp);
-    
+
     switch (vr) {
         case vr_m:
             values[(*index)++] = M(m);
