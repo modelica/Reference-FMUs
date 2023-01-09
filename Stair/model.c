@@ -20,7 +20,7 @@ Status calculateValues(ModelInstance *comp) {
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
     
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
     
     switch (vr) {
     case vr_time:
@@ -34,7 +34,7 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
 
 Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
     
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
     
     switch (vr) {
         case vr_counter:

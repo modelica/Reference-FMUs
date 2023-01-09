@@ -22,7 +22,7 @@ Status calculateValues(ModelInstance *comp) {
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
     
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_time:
@@ -53,7 +53,7 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
 
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double value[], size_t nValues, size_t* index) {
     
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
     
     switch (vr) {
 

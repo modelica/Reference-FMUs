@@ -167,7 +167,7 @@ Status activateClock(ModelInstance* comp, ValueReference vr) {
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
     case vr_time:
@@ -181,7 +181,7 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
 
 Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
     case vr_input2:
@@ -195,7 +195,7 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], 
 
 Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
     case vr_inClock1Ticks:

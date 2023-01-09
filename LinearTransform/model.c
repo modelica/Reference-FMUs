@@ -38,27 +38,28 @@ Status calculateValues(ModelInstance *comp) {
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
 
-    // TODO: check nValues
-    UNUSED(nValues);
-
     calculateValues(comp);
 
     switch (vr) {
         case vr_time:
+            ASSERT_NVALUES(1);
             values[(*index)++] = comp->time;
             return OK;
         case vr_u:
+            ASSERT_NVALUES(M(n));
             for (size_t i = 0; i < M(n); i++) {
                 values[(*index)++] = M(u)[i];
             }
             return OK;
         case vr_A:
+            ASSERT_NVALUES(M(m) * M(n));
             for (size_t i = 0; i < M(m); i++)
             for (size_t j = 0; j < M(n); j++) {
                 values[(*index)++] = M(A)[i][j];
             }
             return OK;
         case vr_y:
+            ASSERT_NVALUES(1);
             for (size_t i = 0; i < M(m); i++) {
                 values[(*index)++] = M(y)[i];
             }
@@ -71,17 +72,16 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
 
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
 
-    // TODO: check nValues
-    UNUSED(nValues);
-
     switch (vr) {
         case vr_u:
+            ASSERT_NVALUES(M(n));
             for (size_t i = 0; i < M(n); i++) {
                 M(u)[i] = values[(*index)++];
             }
             calculateValues(comp);
             return OK;
         case vr_A:
+            ASSERT_NVALUES(M(m) * M(n));
             for (size_t i = 0; i < M(m); i++)
             for (size_t j = 0; j < M(n); j++) {
                 M(A)[i][j] = values[(*index)++];
@@ -95,7 +95,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
 
 Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t values[], size_t nValues, size_t* index) {
     
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
     
     calculateValues(comp);
     
@@ -114,7 +114,7 @@ Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t values[], size
 
 Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     if (comp->state != ConfigurationMode && comp->state != ReconfigurationMode) {
         return Error;

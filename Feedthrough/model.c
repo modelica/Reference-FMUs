@@ -93,7 +93,7 @@ Status calculateValues(ModelInstance *comp) {
 
 Status getFloat32(ModelInstance* comp, ValueReference vr, float values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_Float32_continuous_input:
@@ -118,7 +118,7 @@ Status getFloat32(ModelInstance* comp, ValueReference vr, float values[], size_t
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_time:
@@ -152,7 +152,7 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
 
 Status getInt8(ModelInstance* comp, ValueReference vr, int8_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_Int8_input:
@@ -171,7 +171,7 @@ Status getInt8(ModelInstance* comp, ValueReference vr, int8_t values[], size_t n
 
 Status getUInt8(ModelInstance* comp, ValueReference vr, uint8_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_UInt8_input:
@@ -190,7 +190,7 @@ Status getUInt8(ModelInstance* comp, ValueReference vr, uint8_t values[], size_t
 
 Status getInt16(ModelInstance* comp, ValueReference vr, int16_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_Int16_input:
@@ -209,7 +209,7 @@ Status getInt16(ModelInstance* comp, ValueReference vr, int16_t values[], size_t
 
 Status getUInt16(ModelInstance* comp, ValueReference vr, uint16_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_UInt16_input:
@@ -228,7 +228,7 @@ Status getUInt16(ModelInstance* comp, ValueReference vr, uint16_t values[], size
 
 Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_Int32_input:
@@ -247,7 +247,7 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t
 
 Status getUInt32(ModelInstance* comp, ValueReference vr, uint32_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_UInt32_input:
@@ -266,7 +266,7 @@ Status getUInt32(ModelInstance* comp, ValueReference vr, uint32_t values[], size
 
 Status getInt64(ModelInstance* comp, ValueReference vr, int64_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_Int64_input:
@@ -285,7 +285,7 @@ Status getInt64(ModelInstance* comp, ValueReference vr, int64_t values[], size_t
 
 Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_UInt64_input:
@@ -304,7 +304,7 @@ Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t values[], size
 
 Status getBoolean(ModelInstance* comp, ValueReference vr, bool values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_Boolean_input:
@@ -323,7 +323,7 @@ Status getBoolean(ModelInstance* comp, ValueReference vr, bool values[], size_t 
 
 Status getBinary(ModelInstance* comp, ValueReference vr, size_t sizes[], const char* values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_Binary_input:
@@ -344,7 +344,7 @@ Status getBinary(ModelInstance* comp, ValueReference vr, size_t sizes[], const c
 
 Status getString(ModelInstance* comp, ValueReference vr, const char* values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_String_parameter:
@@ -360,7 +360,7 @@ Status getString(ModelInstance* comp, ValueReference vr, const char* values[], s
 
 Status setFloat32(ModelInstance* comp, ValueReference vr, const float values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_Float32_continuous_input:
@@ -387,7 +387,7 @@ Status setFloat32(ModelInstance* comp, ValueReference vr, const float values[], 
 
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
 
@@ -442,7 +442,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
 
 Status setInt8(ModelInstance* comp, ValueReference vr, const int8_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_Int8_input:
@@ -458,7 +458,7 @@ Status setInt8(ModelInstance* comp, ValueReference vr, const int8_t values[], si
 
 Status setUInt8(ModelInstance* comp, ValueReference vr, const uint8_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_UInt8_input:
@@ -474,7 +474,7 @@ Status setUInt8(ModelInstance* comp, ValueReference vr, const uint8_t values[], 
 
 Status setInt16(ModelInstance* comp, ValueReference vr, const int16_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_Int16_input:
@@ -492,7 +492,7 @@ Status setInt16(ModelInstance* comp, ValueReference vr, const int16_t values[], 
 
 Status setUInt16(ModelInstance* comp, ValueReference vr, const uint16_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_UInt16_input:
@@ -511,7 +511,7 @@ Status setUInt16(ModelInstance* comp, ValueReference vr, const uint16_t values[]
 
 Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_Int32_input:
@@ -529,7 +529,7 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], 
 
 Status setUInt32(ModelInstance* comp, ValueReference vr, const uint32_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_UInt32_input:
@@ -547,7 +547,7 @@ Status setUInt32(ModelInstance* comp, ValueReference vr, const uint32_t values[]
 
 Status setInt64(ModelInstance* comp, ValueReference vr, const int64_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_Int64_input:
@@ -565,7 +565,7 @@ Status setInt64(ModelInstance* comp, ValueReference vr, const int64_t values[], 
 
 Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_UInt64_input:
@@ -583,7 +583,7 @@ Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[]
 
 Status setBoolean(ModelInstance* comp, ValueReference vr, const bool values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_Boolean_input:
@@ -604,7 +604,7 @@ Status setBoolean(ModelInstance* comp, ValueReference vr, const bool values[], s
 
 Status setString(ModelInstance* comp, ValueReference vr, const char *const values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_String_parameter:
@@ -626,7 +626,7 @@ Status setString(ModelInstance* comp, ValueReference vr, const char *const value
 
 Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], const char* const values[], size_t nValues, size_t* index) {
 
-    ASSERT_NVALUES;
+    ASSERT_NVALUES(1);
 
     switch (vr) {
         case vr_Binary_input:

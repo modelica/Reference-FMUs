@@ -234,8 +234,8 @@ void setFMUState(ModelInstance* comp, void* FMUState);
 #define str(s) #s
 
 // assert size of nValues for scalar variables
-#define ASSERT_NVALUES  do { \
-    if (*index + 1 > nValues) { \
+#define ASSERT_NVALUES(N)  do { \
+    if (*index + (N) > nValues) { \
         logError(comp, "Expected nValues > %zu but was %zu.", *index, nValues); \
         return Error; \
         } \
