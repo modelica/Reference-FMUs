@@ -22,6 +22,9 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
         case vr_der_x:
             values[(*index)++] = M(der_x);
             return OK;
+        case vr_u:
+            values[(*index)++] = M(u);
+            return OK;
         default:
             logError(comp, "Unexpected value reference: %d.", vr);
             return Error;
