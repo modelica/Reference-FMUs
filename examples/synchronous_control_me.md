@@ -24,4 +24,4 @@ The output should look like:
 
 ![synchronous_control_me_ref](synchronous_control_me_ref.svg)
 
-The result CSV is in [synchronous_control_me_out.csv](synchronous_control_me_out.csv)
+The reference result CSV is in [synchronous_control_me_out_ref.csv](synchronous_control_me_out_ref.csv)
