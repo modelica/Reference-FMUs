@@ -85,7 +85,7 @@ void eventUpdate(ModelInstance *comp) {
 
         // The following has to be done in order to ensure that,
         //   if the FMU remains in event mode and the getClock function gets called, it will return false.
-        // This is correct as the state event should occurr only once per super dense time instant.
+        // This is correct as the state event should occur only once per super dense time instant.
         M(pz) = M(z);
     }
 }
