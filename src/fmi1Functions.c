@@ -1,10 +1,3 @@
-/**************************************************************
- *  Copyright (c) Modelica Association Project "FMI".         *
- *  All rights reserved.                                      *
- *  This file is part of the Reference FMUs. See LICENSE.txt  *
- *  in the project root for license information.              *
- **************************************************************/
-
 #if FMI_VERSION != 1
 #error FMI_VERSION must be 1
 #endif
@@ -48,7 +41,7 @@ do { \
         S->isDirtyValues = false; \
     } \
     for (size_t i = 0; i < nvr; i++) { \
-        Status s = get ## T(S, vr[i], value, &index); \
+        Status s = get ## T(S, vr[i], value, nvr, &index); \
         status = max(status, s); \
         if (status > Warning) return (fmiStatus)status; \
     } \
@@ -62,7 +55,7 @@ do { \
     size_t index = 0; \
     Status status = OK; \
     for (size_t i = 0; i < nvr; i++) { \
-        Status s = set ## T(S, vr[i], value, &index); \
+        Status s = set ## T(S, vr[i], value, nvr, &index); \
         status = max(status, s); \
         if (status > Warning) return (fmiStatus)status; \
     } \
@@ -76,7 +69,7 @@ do { \
     for (size_t i = 0; i < nvr; i++) { \
         bool v = false; \
         size_t index = 0; \
-        Status s = getBoolean(S, vr[i], &v, &index); \
+        Status s = getBoolean(S, vr[i], &v, nvr, &index); \
         value[i] = v; \
         status = max(status, s); \
         if (status > Warning) return (fmiStatus)status; \
@@ -90,7 +83,7 @@ do { \
     for (size_t i = 0; i < nvr; i++) { \
         bool v = value[i]; \
         size_t index = 0; \
-        Status s = setBoolean(S, vr[i], &v, &index); \
+        Status s = setBoolean(S, vr[i], &v, nvr, &index); \
         status = max(status, s); \
         if (status > Warning) return (fmiStatus)status; \
     } \

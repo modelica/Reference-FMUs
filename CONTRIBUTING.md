@@ -98,7 +98,7 @@ See also: #456, #789
 Good pull requests - patches, improvements, new features - are a fantastic help.
 They should remain focused in scope and avoid containing unrelated commits.
 
-**IMPORTANT**: All contributors have to sign the [Corporate Contributor License Agreement (CCLA)](https://svn.fmi-standard.org/fmi/branches/public/FMI_CCLA_v1.0_2016_06_21.pdf).
+**IMPORTANT**: All contributors have to sign the [Corporate Contributor License Agreement (CCLA)](https://fmi-standard.org/FMI_CCLA_v1.0_2016_06_21.pdf).
 By submitting a patch, you agree to allow the project owner to license your work under the same [license](LICENSE.txt) as that used by the project.
 
 **Please ask first** before embarking on any significant pull request (e.g. implementing features, refactoring code, porting to a different language),

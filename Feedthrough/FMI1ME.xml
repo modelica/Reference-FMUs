@@ -5,7 +5,7 @@
   modelIdentifier="Feedthrough"
   description="A model to test different variable types, causalities and variabilities"
   generationTool="Reference FMUs (development build)"
-  guid="{8c4e810f-3df3-4a00-8276-176fa3c9f004}"
+  guid="{37B954F1-CC86-4D8F-B97F-C7C36F6670D2}"
   numberOfContinuousStates="0"
   numberOfEventIndicators="0">
 

@@ -3,7 +3,7 @@
 
 // define class name and unique id
 #define MODEL_IDENTIFIER Dahlquist
-#define INSTANTIATION_TOKEN "{8c4e810f-3df3-4a00-8276-176fa3c9f000}"
+#define INSTANTIATION_TOKEN "{221063D2-EF4A-45FE-B954-B5BFEEA9A59B}"
 
 #define CO_SIMULATION
 #define MODEL_EXCHANGE

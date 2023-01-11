@@ -1,16 +1,11 @@
-#ifndef FMI1FUNCTIONS_H
-#define FMI1FUNCTIONS_H
-
-/**************************************************************
- *  Copyright (c) Modelica Association Project "FMI".         *
- *  All rights reserved.                                      *
- *  This file is part of the Reference FMUs. See LICENSE.txt  *
- *  in the project root for license information.              *
- **************************************************************/
+#pragma once
 
 /* -------------------------------------------------------------------------
  * Combined FMI 1.0 Functions for Model Exchange & Co-Simulation
  * -------------------------------------------------------------------------*/
+
+#include <stddef.h>
+
 
 /* Type definitions */
 typedef void*        fmi1Component;
@@ -123,5 +118,3 @@ typedef fmi1Status    fmi1GetRealStatusTYPE            (fmi1Component c, const f
 typedef fmi1Status    fmi1GetIntegerStatusTYPE         (fmi1Component c, const fmi1StatusKind s, fmi1Integer* value);
 typedef fmi1Status    fmi1GetBooleanStatusTYPE         (fmi1Component c, const fmi1StatusKind s, fmi1Boolean* value);
 typedef fmi1Status    fmi1GetStringStatusTYPE          (fmi1Component c, const fmi1StatusKind s, fmi1String*  value);
-
-#endif // FMI1FUNCTIONS_H

@@ -1,10 +1,3 @@
-/**************************************************************
- *  Copyright (c) Modelica Association Project "FMI".         *
- *  All rights reserved.                                      *
- *  This file is part of the Reference FMUs. See LICENSE.txt  *
- *  in the project root for license information.              *
- **************************************************************/
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -37,6 +30,9 @@ FMIInstance *FMICreateInstance(const char *instanceName, const char *libraryPath
 
     // convert path to unicode
     mbstowcs(dllDirectory, libraryPath, MAX_PATH);
+
+    // remove the file name
+    PathRemoveFileSpecW(dllDirectory);
 
     // add the binaries directory temporarily to the DLL path to allow discovery of dependencies
     DLL_DIRECTORY_COOKIE dllDirectoryCookie = AddDllDirectory(dllDirectory);
@@ -82,6 +78,10 @@ FMIInstance *FMICreateInstance(const char *instanceName, const char *libraryPath
 
 void FMIFreeInstance(FMIInstance *instance) {
 
+    if (!instance) {
+        return;
+    }
+
     // unload the shared library
     if (instance->libraryHandle) {
 # ifdef _WIN32
@@ -91,6 +91,10 @@ void FMIFreeInstance(FMIInstance *instance) {
 # endif
         instance->libraryHandle = NULL;
     }
+
+    free(instance->buf1);
+    free(instance->buf2);
+    free((void*)instance->name);
 
     free(instance->fmi1Functions);
     free(instance->fmi2Functions);
@@ -278,17 +282,17 @@ FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *modelIdentifie
 #if defined(_WIN32)
     const char *platform = "win";
     const char *system   = "windows";
-    const char *sep      = "\\";
+    const char sep       = '\\';
     const char *ext      = ".dll";
 #elif defined(__APPLE__)
     const char *platform = "darwin";
     const char *system   = "darwin";
-    const char *sep      = "/";
+    const char sep       = '/';
     const char *ext      = ".dylib";
 #else
     const char *platform = "linux";
     const char *system   = "linux";
-    const char *sep      = "/";
+    const char sep       = '/';
     const char *ext      = ".so";
 #endif
 
@@ -299,28 +303,23 @@ FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *modelIdentifie
     const char *bits = "32";
     const char *arch = "x86";
 #endif
+    const char* bin = "binaries";
+    char optSep[2] = "";
+    int rc;
 
-    strncat(platformBinaryPath, unzipdir, size);
-
-    if (unzipdir[strlen(unzipdir) - 1] != sep[0]) {
-        strncat(platformBinaryPath, sep, size);
+    if (unzipdir[strlen(unzipdir) - 1] != sep) {
+        optSep[0] = sep;
+    }
+    if (fmiVersion == 3) {
+        rc = snprintf(platformBinaryPath, size, "%s%s%s%c%s-%s%c%s%s", unzipdir, optSep, bin, sep, arch, system, sep, modelIdentifier, ext);
+    }
+    else {
+        rc = snprintf(platformBinaryPath, size, "%s%s%s%c%s%s%c%s%s", unzipdir, optSep, bin, sep, platform, bits, sep, modelIdentifier, ext);
     }
 
-    strncat(platformBinaryPath, "binaries", size);
-    strncat(platformBinaryPath, sep, size);
-
-    if (fmiVersion == FMIVersion3) {
-        strncat(platformBinaryPath, arch, size);
-        strncat(platformBinaryPath, "-", size);
-        strncat(platformBinaryPath, system, size);
-    } else {
-        strncat(platformBinaryPath, platform, size);
-        strncat(platformBinaryPath, bits, size);
+    if (rc >= size) {
+        return FMIError;
     }
-
-    strncat(platformBinaryPath, sep, size);
-    strncat(platformBinaryPath, modelIdentifier, size);
-    strncat(platformBinaryPath, ext, size);
 
     return FMIOK;
 }

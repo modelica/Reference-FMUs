@@ -1,12 +1,4 @@
-#ifndef FMI1_H
-#define FMI1_H
-
-/**************************************************************
- *  Copyright (c) Modelica Association Project "FMI".         *
- *  All rights reserved.                                      *
- *  This file is part of the Reference FMUs. See LICENSE.txt  *
- *  in the project root for license information.              *
- **************************************************************/
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,7 +68,6 @@ struct FMI1Functions_ {
 
 };
 
-
 /***************************************************
  Common Functions for FMI 1.0
 ****************************************************/
@@ -93,14 +84,14 @@ FMI_STATIC FMIStatus    FMI1SetDebugLogging (FMIInstance *instance, fmi1Boolean 
 /***************************************************
  FMI 1.0 for Model Exchange Functions
 ****************************************************/
-FMI_STATIC const char*   FMI1GetModelTypesPlatform      (FMIInstance *instance);
-FMI_STATIC const char*   FMI1GetVersion                 (FMIInstance *instance);
+FMI_STATIC const char*  FMI1GetModelTypesPlatform      (FMIInstance *instance);
+FMI_STATIC const char*  FMI1GetVersion                 (FMIInstance *instance);
 FMI_STATIC FMIStatus    FMI1InstantiateModel           (FMIInstance *instance, fmi1String modelIdentifier, fmi1String GUID, fmi1Boolean loggingOn);
-FMI_STATIC void          FMI1FreeModelInstance          (FMIInstance *instance);
+FMI_STATIC void         FMI1FreeModelInstance          (FMIInstance *instance);
 FMI_STATIC FMIStatus    FMI1SetTime                    (FMIInstance *instance, fmi1Real time);
 FMI_STATIC FMIStatus    FMI1SetContinuousStates        (FMIInstance *instance, const fmi1Real x[], size_t nx);
 FMI_STATIC FMIStatus    FMI1CompletedIntegratorStep    (FMIInstance *instance, fmi1Boolean* callEventUpdate);
-FMI_STATIC FMIStatus    FMI1Initialize                 (FMIInstance *instance, fmi1Boolean toleranceControlled, fmi1Real relativeTolerance);
+FMI_STATIC FMIStatus    FMI1Initialize                 (FMIInstance *instance, fmi1Boolean toleranceControlled, fmi1Real relativeTolerance, fmi1EventInfo* eventInfo);
 FMI_STATIC FMIStatus    FMI1GetDerivatives             (FMIInstance *instance, fmi1Real derivatives[], size_t nx);
 FMI_STATIC FMIStatus    FMI1GetEventIndicators         (FMIInstance *instance, fmi1Real eventIndicators[], size_t ni);
 FMI_STATIC FMIStatus    FMI1EventUpdate                (FMIInstance *instance, fmi1Boolean intermediateResults, fmi1EventInfo* eventInfo);
@@ -112,12 +103,12 @@ FMI_STATIC FMIStatus    FMI1Terminate                  (FMIInstance *instance);
 /***************************************************
  FMI 1.0 for Co-Simulation Functions
 ****************************************************/
-FMI_STATIC const char*   FMI1GetTypesPlatform         (FMIInstance *instance);
+FMI_STATIC const char*  FMI1GetTypesPlatform         (FMIInstance *instance);
 FMI_STATIC FMIStatus    FMI1InstantiateSlave         (FMIInstance *instance, fmi1String modelIdentifier, fmi1String fmuGUID, fmi1String fmuLocation, fmi1String  mimeType, fmi1Real timeout, fmi1Boolean visible, fmi1Boolean interactive, fmi1Boolean loggingOn);
 FMI_STATIC FMIStatus    FMI1InitializeSlave          (FMIInstance *instance, fmi1Real tStart, fmi1Boolean StopTimeDefined, fmi1Real tStop);
 FMI_STATIC FMIStatus    FMI1TerminateSlave           (FMIInstance *instance);
 FMI_STATIC FMIStatus    FMI1ResetSlave               (FMIInstance *instance);
-FMI_STATIC void          FMI1FreeSlaveInstance        (FMIInstance *instance);
+FMI_STATIC void         FMI1FreeSlaveInstance        (FMIInstance *instance);
 FMI_STATIC FMIStatus    FMI1SetRealInputDerivatives  (FMIInstance *instance, const fmi1ValueReference vr[], size_t nvr, const fmi1Integer order[], const fmi1Real value[]);
 FMI_STATIC FMIStatus    FMI1GetRealOutputDerivatives (FMIInstance *instance, const fmi1ValueReference vr[], size_t nvr, const fmi1Integer order[],       fmi1Real value[]);
 FMI_STATIC FMIStatus    FMI1CancelStep               (FMIInstance *instance);
@@ -131,5 +122,3 @@ FMI_STATIC FMIStatus    FMI1GetStringStatus          (FMIInstance *instance, con
 #ifdef __cplusplus
 }  /* end of extern "C" { */
 #endif
-
-#endif // FMI1_H

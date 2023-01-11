@@ -14,26 +14,30 @@ Status calculateValues(ModelInstance *comp) {
     return OK;
 }
 
-Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
+Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
+
+    ASSERT_NVALUES(1);
+
     calculateValues(comp);
+
     switch (vr) {
         case vr_time:
-            value[(*index)++] = comp->time;
+            values[(*index)++] = comp->time;
             return OK;
         case vr_x0:
-            value[(*index)++] = M(x0);
+            values[(*index)++] = M(x0);
             return OK;
         case vr_der_x0 :
-            value[(*index)++] = M(der_x0);
+            values[(*index)++] = M(der_x0);
             return OK;
         case vr_x1:
-            value[(*index)++] = M(x1);
+            values[(*index)++] = M(x1);
             return OK;
         case vr_der_x1:
-            value[(*index)++] = M(der_x1);
+            values[(*index)++] = M(der_x1);
             return OK;
         case vr_mu:
-            value[(*index)++] = M(mu);
+            values[(*index)++] = M(mu);
             return OK;
         default:
             logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
@@ -41,13 +45,16 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
     }
 }
 
-Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
+Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
+
+    ASSERT_NVALUES(1);
+
     switch (vr) {
         case vr_x0:
-            M(x0) = value[(*index)++];
+            M(x0) = values[(*index)++];
             return OK;
         case vr_x1:
-            M(x1) = value[(*index)++];
+            M(x1) = values[(*index)++];
             return OK;
         case vr_mu:
 #if FMI_VERSION > 1
@@ -59,7 +66,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, s
                 return Error;
             }
 #endif
-            M(mu) = value[(*index)++];
+            M(mu) = values[(*index)++];
             return OK;
         default:
             logError(comp, "Set Float64 is not allowed for value reference %u.", vr);

@@ -13,3 +13,8 @@ merged/
 *.zip
 *_out.csv
 /venv/
+dist-darwin/
+dist-linux/
+dist-windows/
+dist-merged/
+tests/work/

@@ -1,10 +1,3 @@
-/**************************************************************
- *  Copyright (c) Modelica Association Project "FMI".         *
- *  All rights reserved.                                      *
- *  This file is part of the Reference FMUs. See LICENSE.txt  *
- *  in the project root for license information.              *
- **************************************************************/
-
 #if FMI_VERSION != 2
 #error FMI_VERSION must be 2
 #endif
@@ -39,11 +32,11 @@ do { \
 
 #define GET_VARIABLES(T) \
 do { \
+    Status status = OK; \
+    if (nvr == 0) return (fmi2Status)status; \
     ASSERT_NOT_NULL(vr); \
     ASSERT_NOT_NULL(value); \
     size_t index = 0; \
-    Status status = OK; \
-    if (nvr == 0) return (fmi2Status)status; \
     if (S->isDirtyValues) { \
         Status s = calculateValues(S); \
         status = max(status, s); \
@@ -51,7 +44,7 @@ do { \
         S->isDirtyValues = false; \
     } \
     for (size_t i = 0; i < nvr; i++) { \
-        Status s = get ## T(S, vr[i], value, &index); \
+        Status s = get ## T(S, vr[i], value, nvr, &index); \
         status = max(status, s); \
         if (status > Warning) return (fmi2Status)status; \
     } \
@@ -60,12 +53,13 @@ do { \
 
 #define SET_VARIABLES(T) \
 do { \
+    Status status = OK; \
+    if (nvr == 0) return (fmi2Status)status; \
     ASSERT_NOT_NULL(vr); \
     ASSERT_NOT_NULL(value); \
     size_t index = 0; \
-    Status status = OK; \
     for (size_t i = 0; i < nvr; i++) { \
-        Status s = set ## T(S, vr[i], value, &index); \
+        Status s = set ## T(S, vr[i], value, nvr, &index); \
         status = max(status, s); \
         if (status > Warning) return (fmi2Status)status; \
     } \
@@ -79,7 +73,7 @@ do { \
     for (size_t i = 0; i < nvr; i++) { \
         bool v = false; \
         size_t index = 0; \
-        Status s = getBoolean(S, vr[i], &v, &index); \
+        Status s = getBoolean(S, vr[i], &v, nvr, &index); \
         value[i] = v; \
         status = max(status, s); \
         if (status > Warning) return (fmi2Status)status; \
@@ -93,7 +87,7 @@ do { \
     for (size_t i = 0; i < nvr; i++) { \
         bool v = value[i]; \
         size_t index = 0; \
-        Status s = setBoolean(S, vr[i], &v, &index); \
+        Status s = setBoolean(S, vr[i], &v, nvr, &index); \
         status = max(status, s); \
         if (status > Warning) return (fmi2Status)status; \
     } \
@@ -249,6 +243,7 @@ fmi2Status fmi2SetupExperiment(fmi2Component c, fmi2Boolean toleranceDefined, fm
 
     ASSERT_STATE(SetupExperiment)
 
+    S->startTime = startTime;
     S->time = startTime;
 
     return fmi2OK;
@@ -334,7 +329,7 @@ fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean loggingOn, size_t nC
     return (fmi2Status)setDebugLogging(S, loggingOn, nCategories, categories);
 }
 
-fmi2Status fmi2GetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
+fmi2Status fmi2GetReal(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
 
     ASSERT_STATE(GetReal)
 

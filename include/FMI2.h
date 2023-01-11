@@ -1,12 +1,4 @@
-#ifndef FMI2_H
-#define FMI2_H
-
-/**************************************************************
- *  Copyright (c) Modelica Association Project "FMI".         *
- *  All rights reserved.                                      *
- *  This file is part of the Reference FMUs. See LICENSE.txt  *
- *  in the project root for license information.              *
- **************************************************************/
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -228,5 +220,3 @@ FMI_STATIC FMIStatus FMI2GetStringStatus(FMIInstance *instance, const fmi2Status
 #ifdef __cplusplus
 }  /* end of extern "C" { */
 #endif
-
-#endif // FMI2_H

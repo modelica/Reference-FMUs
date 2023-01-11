@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.15)
+cmake_minimum_required (VERSION 3.17)
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
@@ -8,9 +8,6 @@ FUNCTION(cat IN_FILE OUT_FILE)
 ENDFUNCTION()
 
 project (Reference-FMUs)
-
-find_package (Python3)
-find_package (Git)
 
 set(FMI_VERSION 2 CACHE STRING "FMI Version")
 set_property(CACHE FMI_VERSION PROPERTY STRINGS 1 2 3)
@@ -22,6 +19,8 @@ if (${FMI_VERSION} GREATER 1)
   set(FMI_TYPE "")
 endif ()
 
+set(WITH_FMUSIM OFF CACHE BOOL "Add fmusim project")
+
 if (MSVC)
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
@@ -31,8 +30,6 @@ if (MSVC)
     message (SEND_ERROR "MSVC_VERSION ${MSVC_VERSION} is not a supported Visual Studio compiler version. Please use Visual Studio 2013 or any later version.")
   endif ()
 endif ()
-
-add_compile_definitions(FMI_VERSION=${FMI_VERSION})
 
 if (${FMI_VERSION} GREATER 2)
 
@@ -127,23 +124,24 @@ add_library(${TARGET_NAME} SHARED
   ${MODEL_NAME}/FMI${FMI_VERSION}${FMI_TYPE}.xml
 )
 
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/dist)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fmus)
 
 target_compile_definitions(${TARGET_NAME} PRIVATE
+  FMI_VERSION=${FMI_VERSION}
   DISABLE_PREFIX
 )
 
-if(MSVC)
+if (MSVC)
   target_compile_options(${TARGET_NAME} PRIVATE /W4 /WX)
 else()
   target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_link_options(${TARGET_NAME} PRIVATE "-static-libgcc")
 endif()
 
-if(CMAKE_C_COMPILER_ID STREQUAL "Intel")
+if (CMAKE_C_COMPILER_ID STREQUAL "Intel")
   target_link_options(${TARGET_NAME} PRIVATE "-static-intel" "-static-libgcc")
 endif()
 
@@ -181,12 +179,6 @@ add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E 
   "${FMU_BUILD_DIR}/modelDescription.xml"
 )
 
-if (${Python3_Interpreter_FOUND} AND ${Git_FOUND})
-  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/set_tool_version.py"
-    "${FMU_BUILD_DIR}/modelDescription.xml" "${GIT_EXECUTABLE}"
-  )
-endif()
-
 # model specific header and source
 foreach (SOURCE_FILE config.h model.c)
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
@@ -194,37 +186,6 @@ foreach (SOURCE_FILE config.h model.c)
     "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"
   )
 endforeach(SOURCE_FILE)
-
-# documentation
-if (${FMI_VERSION} EQUAL 1)
-  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-    "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/readme.html"
-    "${FMU_BUILD_DIR}/documentation/_main.html"
-  )
-else()
-  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-    "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/readme.html"
-    "${FMU_BUILD_DIR}/documentation/index.html"
-  )
-endif()
-
-# plot
-add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-  "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/${MODEL_NAME}_ref.svg"
-  "${FMU_BUILD_DIR}/documentation/${MODEL_NAME}_ref.svg"
-)
-
-# reference csv
-add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-  "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/${MODEL_NAME}_ref.csv"
-  "${FMU_BUILD_DIR}/documentation/${MODEL_NAME}_ref.csv"
-)
-
-# license
-add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-  "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt"
-  "${FMU_BUILD_DIR}/documentation/LICENSE.txt"
-)
 
 # common headers
 foreach (SOURCE_FILE model.h cosimulation.h)
@@ -255,7 +216,7 @@ else()
   )
 endif()
 
-set(ARCHIVE_FILES "modelDescription.xml" "binaries" "documentation" "sources")
+set(ARCHIVE_FILES "modelDescription.xml" "binaries" "sources")
 
 if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/resources")
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -265,16 +226,30 @@ if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/resources")
   set(ARCHIVE_FILES ${ARCHIVE_FILES} "resources")
 endif()
 
+# delete unintended files from binaries (Release configuration only)
+if (MSVC)
+  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND if $<CONFIG:Release> neq 0 (
+      ${CMAKE_COMMAND} -E rm -f
+      "${FMU_BUILD_DIR}/binaries/${FMI_PLATFORM}/${MODEL_NAME}.exp"
+      "${FMU_BUILD_DIR}/binaries/${FMI_PLATFORM}/${MODEL_NAME}.lib"
+     )
+  )
+endif()
+
 # create ZIP archive
 add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E tar "cfv" ${CMAKE_CURRENT_BINARY_DIR}/dist/${MODEL_NAME}.fmu --format=zip
+  COMMAND ${CMAKE_COMMAND} -E tar "cfv" ${CMAKE_CURRENT_BINARY_DIR}/fmus/${MODEL_NAME}.fmu --format=zip
   ${ARCHIVE_FILES}
-  WORKING_DIRECTORY ${FMU_BUILD_DIR}
+  WORKING_DIRECTORY ${FMU_BUILD_DIR} COMMENT "Creating ZIP archive"
 )
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/dist/${MODEL_NAME}.fmu DESTINATION .)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fmus/${MODEL_NAME}.fmu DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 endforeach(MODEL_NAME)
 
 # Examples
 include(examples/Examples.cmake)
+
+if (WITH_FMUSIM)
+  add_subdirectory(fmusim)
+endif ()

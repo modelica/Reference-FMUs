@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fmiModelDescription fmiVersion="3.0" modelName="Feedthrough" generationTool="Reference FMUs (development build)" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f004}">
+<fmiModelDescription fmiVersion="3.0" modelName="Feedthrough" generationTool="Reference FMUs (development build)" instantiationToken="{37B954F1-CC86-4D8F-B97F-C7C36F6670D2}">
 
   <ModelExchange
     modelIdentifier="Feedthrough"
@@ -29,8 +29,8 @@
 
     <Float32 name="Float32_continuous_input"  valueReference="1" causality="input" start="0"/>
     <Float32 name="Float32_continuous_output" valueReference="2" causality="output"/>
-    <Float32 name="Float32_discrete_input"    valueReference="3" causality="input" start="0"/>
-    <Float32 name="Float32_discrete_output"   valueReference="4" causality="output"/>
+    <Float32 name="Float32_discrete_input"    valueReference="3" causality="input" variability="discrete" start="0"/>
+    <Float32 name="Float32_discrete_output"   valueReference="4" causality="output" variability="discrete"/>
 
     <Float64 name="Float64_fixed_parameter" valueReference="5" causality="parameter" variability="fixed" start="0"/>
     <Float64 name="Float64_tunable_parameter" valueReference="6" causality="parameter" variability="tunable" start="0"/>

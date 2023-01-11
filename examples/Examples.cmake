@@ -21,15 +21,19 @@ if (${FMI_VERSION} EQUAL 3)
 
     # import_static_library
     add_executable(import_static_library
+        include/cosimulation.h
         include/fmi3Functions.h
         include/fmi3FunctionTypes.h
         include/fmi3PlatformTypes.h
+        include/model.h
+        VanDerPol/config.h
         src/fmi3Functions.c
         VanDerPol/model.c
         src/cosimulation.c
         examples/import_static_library.c
     )
     set_target_properties (import_static_library PROPERTIES FOLDER examples)
+    target_compile_definitions(import_static_library PRIVATE FMI_VERSION=${FMI_VERSION})
     target_include_directories(import_static_library PRIVATE include VanDerPol)
     set_target_properties(import_static_library PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY         temp
@@ -39,7 +43,12 @@ if (${FMI_VERSION} EQUAL 3)
 
     # import_shared_library
     add_executable(import_shared_library
-        ${EXAMPLE_SOURCES}
+        include/fmi3FunctionTypes.h
+        include/fmi3PlatformTypes.h
+        include/FMI.h
+        include/FMI${FMI_VERSION}.h
+        src/FMI.c
+        src/FMI${FMI_VERSION}.c
         examples/import_shared_library.c
     )
     add_dependencies(import_shared_library VanDerPol)
@@ -61,7 +70,7 @@ if (${FMI_VERSION} EQUAL 3)
     )
     add_dependencies(cs_early_return BouncingBall)
     set_target_properties(cs_early_return PROPERTIES FOLDER examples)
-    target_compile_definitions(cs_early_return PRIVATE DISABLE_PREFIX)
+    target_compile_definitions(cs_early_return PRIVATE FMI_VERSION=${FMI_VERSION} DISABLE_PREFIX)
     target_include_directories(cs_early_return PRIVATE include BouncingBall)
     target_link_libraries(cs_early_return ${LIBRARIES})
     set_target_properties(cs_early_return PROPERTIES
@@ -79,7 +88,7 @@ if (${FMI_VERSION} EQUAL 3)
     )
     add_dependencies(cs_event_mode BouncingBall)
     set_target_properties(cs_event_mode PROPERTIES FOLDER examples)
-    target_compile_definitions(cs_event_mode PRIVATE DISABLE_PREFIX)
+    target_compile_definitions(cs_event_mode PRIVATE FMI_VERSION=${FMI_VERSION} DISABLE_PREFIX)
     target_include_directories(cs_event_mode PRIVATE include BouncingBall)
     target_link_libraries(cs_event_mode ${LIBRARIES})
     set_target_properties(cs_event_mode PROPERTIES
@@ -97,7 +106,7 @@ if (${FMI_VERSION} EQUAL 3)
     )
     add_dependencies(cs_intermediate_update BouncingBall)
     set_target_properties(cs_intermediate_update PROPERTIES FOLDER examples)
-    target_compile_definitions(cs_intermediate_update PRIVATE DISABLE_PREFIX)
+    target_compile_definitions(cs_intermediate_update PRIVATE FMI_VERSION=${FMI_VERSION} DISABLE_PREFIX)
     target_include_directories(cs_intermediate_update PRIVATE include BouncingBall)
     target_link_libraries(cs_intermediate_update ${LIBRARIES})
     set_target_properties(cs_intermediate_update PROPERTIES
@@ -114,7 +123,7 @@ if (${FMI_VERSION} EQUAL 3)
     )
     add_dependencies(jacobian VanDerPol)
     set_target_properties(jacobian PROPERTIES FOLDER examples)
-    target_compile_definitions(jacobian PRIVATE DISABLE_PREFIX)
+    target_compile_definitions(jacobian PRIVATE FMI_VERSION=${FMI_VERSION} DISABLE_PREFIX)
     target_include_directories(jacobian PRIVATE include VanDerPol)
     target_link_libraries(jacobian ${LIBRARIES})
     set_target_properties(jacobian PROPERTIES
@@ -132,6 +141,7 @@ if (${FMI_VERSION} EQUAL 3)
     )
     add_dependencies(scs_synchronous Clocks)
     set_target_properties(scs_synchronous PROPERTIES FOLDER examples)
+    target_compile_definitions(scs_synchronous PRIVATE FMI_VERSION=${FMI_VERSION})
     target_include_directories(scs_synchronous PRIVATE include Clocks)
     target_link_libraries(scs_synchronous ${LIBRARIES})
     set_target_properties(scs_synchronous PROPERTIES
@@ -148,6 +158,7 @@ if (${FMI_VERSION} EQUAL 3)
         )
         add_dependencies(scs_threaded Clocks)
         set_target_properties(scs_threaded PROPERTIES FOLDER examples)
+        target_compile_definitions(scs_threaded PRIVATE FMI_VERSION=${FMI_VERSION})
         target_include_directories(scs_threaded PRIVATE include Clocks)
         target_link_libraries(scs_threaded ${LIBRARIES})
         set_target_properties(scs_threaded PROPERTIES
@@ -207,7 +218,7 @@ foreach (MODEL_NAME ${MODEL_NAMES})
         add_dependencies(${TARGET_NAME} ${MODEL_NAME})
         set_target_properties(${TARGET_NAME} PROPERTIES FOLDER examples)
         target_include_directories(${TARGET_NAME} PRIVATE include ${MODEL_NAME})
-        target_compile_definitions(${TARGET_NAME} PRIVATE DISABLE_PREFIX)
+        target_compile_definitions(${TARGET_NAME} PRIVATE FMI_VERSION=${FMI_VERSION} DISABLE_PREFIX)
         target_link_libraries(${TARGET_NAME} ${LIBRARIES})
         set_target_properties(${TARGET_NAME} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY         temp

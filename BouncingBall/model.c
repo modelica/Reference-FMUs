@@ -4,6 +4,8 @@
 #include "model.h"
 
 #define V_MIN (0.1)
+#define EVENT_EPSILON (1e-10)
+
 
 void setStartValues(ModelInstance *comp) {
     M(h) =  1;
@@ -18,27 +20,30 @@ Status calculateValues(ModelInstance *comp) {
     return OK;
 }
 
-Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
+Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
+
+    ASSERT_NVALUES(1);
+
     switch (vr) {
         case vr_time:
-            value[(*index)++] = comp->time;
+            values[(*index)++] = comp->time;
             return OK;
         case vr_h:
-            value[(*index)++] = M(h);
+            values[(*index)++] = M(h);
             return OK;
         case vr_der_h:
         case vr_v:
-            value[(*index)++] = M(v);
+            values[(*index)++] = M(v);
             return OK;
         case vr_der_v:
         case vr_g:
-            value[(*index)++] = M(g);
+            values[(*index)++] = M(g);
             return OK;
         case vr_e:
-            value[(*index)++] = M(e);
+            values[(*index)++] = M(e);
             return OK;
         case vr_v_min:
-            value[(*index)++] = V_MIN;
+            values[(*index)++] = V_MIN;
             return OK;
         default:
             logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
@@ -46,7 +51,10 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
     }
 }
 
-Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
+Status setFloat64(ModelInstance* comp, ValueReference vr, const double value[], size_t nValues, size_t* index) {
+
+    ASSERT_NVALUES(1);
+
     switch (vr) {
 
         case vr_h:
@@ -129,6 +137,8 @@ void eventUpdate(ModelInstance *comp) {
         getEventIndicators(comp, comp->z, NZ);
 
         comp->valuesOfContinuousStatesChanged = true;
+    } else {
+        comp->valuesOfContinuousStatesChanged = false;
     }
 
     comp->nominalsOfContinuousStatesChanged = false;
@@ -155,6 +165,13 @@ void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
 }
 
 void getEventIndicators(ModelInstance *comp, double z[], size_t nz) {
+
     UNUSED(nz);
-    z[0] = (M(h) == 0 && M(v) == 0) ? 1 : M(h);
+
+    if (M(h) > -EVENT_EPSILON && M(h) <= 0 && M(v) > 0) {
+        // hysteresis for better stability
+        z[0] = -EVENT_EPSILON;
+    } else {
+        z[0] = M(h);
+    }
 }

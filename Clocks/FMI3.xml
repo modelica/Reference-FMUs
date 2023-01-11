@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fmiModelDescription fmiVersion="3.0" modelName="Clocks" generationTool="Reference FMUs (development build)" instantiationToken="{8c4e810f-3df3-4a00-8276-176fa3c9f000}">
+<fmiModelDescription fmiVersion="3.0" modelName="Clocks" generationTool="Reference FMUs (development build)" instantiationToken="{C5F142BA-B849-42DA-B4A1-4745BFF3BE28}">
  <ScheduledExecution modelIdentifier="Clocks"/>
  <LogCategories>
   <Category name="logEvents" description="Log events"/>
@@ -11,7 +11,7 @@
   <Clock name="inClock1" valueReference="1001" causality="input" intervalVariability="constant" intervalDecimal="1.0" priority="0"/>
   <Clock name="inClock2" valueReference="1002" causality="input" intervalVariability="triggered" priority="1"/>
   <Clock name="inClock3" valueReference="1003" causality="input" intervalVariability="countdown" priority="2" clocks="1001"/>
-  <Clock name="outClock" valueReference="1005" causality="output" intervalVariability="triggered" priority="2" clocks="1001 1002 1003"/>
+  <Clock name="outClock" valueReference="1005" causality="output" intervalVariability="triggered" clocks="1001 1002 1003"/>
   <Int32 name="inClock1Ticks" valueReference="2001" causality="output" clocks="1001"/>
   <Int32 name="inClock2Ticks" valueReference="2002" causality="output" clocks="1002"/>
   <Int32 name="inClock3Ticks" valueReference="2003" causality="output"/>

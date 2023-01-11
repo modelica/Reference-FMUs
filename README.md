@@ -10,6 +10,33 @@ A set of hand-coded FMUs for development, testing and debugging of the [Function
 - [Stair](Stair) - a counter with time events
 - [VanDerPol](VanDerPol) - Van der Pol test equation
 
+Use the [fmusim](fmusim) executable to simulate an FMU:
+
+```commandline
+> fmusim --help
+Usage: fmusim [OPTION]... [FMU]
+Simulate a Functional Mock-up Unit and write the output to result.csv.
+
+  --help                        display this help and exit
+  --start-time [VALUE]          set the start time
+  --stop-time [VALUE]           set the stop time
+  --output-interval [VALUE]     set the output interval
+  --start-value [name] [value]  set a start value
+  --output-variable [name]      record a specific variable
+  --input-file [FILE]           read input from a CSV file
+  --output-file [FILE]          write output to a CSV file
+  --log-fmi-calls               log FMI calls
+  --fmi-log-file [FILE]         set the FMI log file
+  --solver [euler|cvode]        the solver to use
+  --early-return-allowed        allow early return
+  --event-mode-used             use event mode
+  --record-intermediate-values  record outputs in intermediate update
+
+Example:
+
+  fmusim BouncingBall.fmu  simulate with the default settings
+```
+
 ## Repository structure
 
 `<model>`
@@ -29,6 +56,9 @@ A set of hand-coded FMUs for development, testing and debugging of the [Function
 `examples`
 - `*.c` - various FMI 3.0 import examples
 - `Examples.cmake` - CMake configuration for the example projects
+
+`fmusim`
+- sources of the `fmusim` executable
 
 ## Build the FMUs
 
@@ -56,7 +86,7 @@ The FMUs will be in the `dist` folder inside the selected build folder.
 
 ## License and attribution
 
-Copyright &copy; 2021 Modelica Association Project "FMI".
+Copyright &copy; 2022, Modelica Association Project "FMI".
 All rights reserved.
 The code is released under the [2-Clause BSD License](LICENSE.txt).
 

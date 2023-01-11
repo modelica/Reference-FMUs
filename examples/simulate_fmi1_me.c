@@ -49,9 +49,9 @@ int main(int argc, char* argv[]) {
     CALL(applyContinuousInputs(S, false));
     CALL(applyDiscreteInputs(S));
 
-    CALL(FMI1Initialize(S, fmi1False, 0.0));
-
     fmi1EventInfo eventInfo = { 0 };
+
+    CALL(FMI1Initialize(S, fmi1False, 0.0, &eventInfo));
 
 #if NZ > 0
     // initialize previous event indicators
@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
 
     CALL(recordVariables(S, outputFile));
 
-    int steps = 0;
+    uint64_t step = 0;
 
     while (!eventInfo.terminateSimulation) {
 
@@ -123,11 +123,11 @@ int main(int argc, char* argv[]) {
         }
 
 #if NX > 0
-        // compute continous state derivatives
+        // compute continuous state derivatives
         CALL(FMI1GetDerivatives(S, der_x, NX));
 #endif
         // advance time
-        time = ++steps * fixedStep;
+        time = ++step * fixedStep;
 
         CALL(FMI1SetTime(S, time));
 

@@ -1,22 +1,18 @@
-#ifndef FMI_H
-#define FMI_H
-
-/**************************************************************
- *  Copyright (c) Modelica Association Project "FMI".         *
- *  All rights reserved.                                      *
- *  This file is part of the Reference FMUs. See LICENSE.txt  *
- *  in the project root for license information.              *
- **************************************************************/
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <Windows.h>
 #endif
 
 #include <stdbool.h>
+#include <stddef.h>
 
 #ifndef FMI_MAX_MESSAGE_LENGTH
 #define FMI_MAX_MESSAGE_LENGTH 4096
@@ -63,9 +59,9 @@ typedef enum {
 } FMIVariableType;
 
 typedef enum {
-    FMIVersion1,
-    FMIVersion2,
-    FMIVersion3
+    FMIVersion1 = 1,
+    FMIVersion2 = 2,
+    FMIVersion3 = 3
 } FMIVersion;
 
 typedef enum {
@@ -166,5 +162,3 @@ FMI_STATIC FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *mod
 #ifdef __cplusplus
 }  /* end of extern "C" { */
 #endif
-
-#endif // FMI_H

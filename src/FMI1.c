@@ -1,10 +1,3 @@
-/**************************************************************
- *  Copyright (c) Modelica Association Project "FMI".         *
- *  All rights reserved.                                      *
- *  This file is part of the Reference FMUs. See LICENSE.txt  *
- *  in the project root for license information.              *
- **************************************************************/
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -225,6 +218,10 @@ fail:
 
 void FMI1FreeModelInstance(FMIInstance *instance) {
 
+    if (!instance) {
+        return;
+    }
+
     currentInstance = instance;
 
     instance->fmi1Functions->fmi1FreeModelInstance(instance->component);
@@ -257,18 +254,15 @@ FMIStatus    FMI1CompletedIntegratorStep(FMIInstance *instance, fmi1Boolean* cal
     return status;
 }
 
-FMIStatus    FMI1Initialize(FMIInstance *instance, fmi1Boolean toleranceControlled, fmi1Real relativeTolerance) {
-    fmi1EventInfo *e = &instance->fmi1Functions->eventInfo;
+FMIStatus    FMI1Initialize(FMIInstance *instance, fmi1Boolean toleranceControlled, fmi1Real relativeTolerance, fmi1EventInfo* eventInfo) {
     currentInstance = instance;
-    FMIStatus status = (FMIStatus)instance->fmi1Functions->fmi1Initialize(instance->component, toleranceControlled, relativeTolerance, e);
+    FMIStatus status = (FMIStatus)instance->fmi1Functions->fmi1Initialize(instance->component, toleranceControlled, relativeTolerance, eventInfo);
     if (instance->logFunctionCall) {
         instance->logFunctionCall(instance, status,
             "fmi1Initialize(toleranceControlled=%d, relativeTolerance=%.16g, eventInfo={iterationConverged=%d, stateValueReferencesChanged=%d, stateValuesChanged=%d, terminateSimulation=%d, upcomingTimeEvent=%d, nextEventTime=%.16g})",
-            toleranceControlled, relativeTolerance, e->iterationConverged, e->stateValueReferencesChanged, e->stateValuesChanged, e->terminateSimulation, e->upcomingTimeEvent, e->nextEventTime);
+            toleranceControlled, relativeTolerance, eventInfo->iterationConverged, eventInfo->stateValueReferencesChanged, eventInfo->stateValuesChanged, eventInfo->terminateSimulation, eventInfo->upcomingTimeEvent, eventInfo->nextEventTime);
     }
     return status;
-
-
 }
 
 FMIStatus    FMI1GetDerivatives(FMIInstance *instance, fmi1Real derivatives[], size_t nx) {
@@ -427,6 +421,10 @@ FMIStatus    FMI1ResetSlave(FMIInstance *instance) {
 }
 
 void FMI1FreeSlaveInstance(FMIInstance *instance) {
+
+    if (!instance) {
+        return;
+    }
 
     currentInstance = instance;
 

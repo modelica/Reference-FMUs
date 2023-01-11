@@ -1,10 +1,3 @@
-/**************************************************************
- *  Copyright (c) Modelica Association Project "FMI".         *
- *  All rights reserved.                                      *
- *  This file is part of the Reference FMUs. See LICENSE.txt  *
- *  in the project root for license information.              *
- **************************************************************/
-
 #ifdef _WIN32
 #include <direct.h>
 #include "Shlwapi.h"
@@ -244,6 +237,10 @@ FMIStatus FMI2Instantiate(FMIInstance *instance, const char *fmuResourceLocation
 }
 
 void FMI2FreeInstance(FMIInstance *instance) {
+
+    if (!instance) {
+        return;
+    }
 
     instance->fmi2Functions->fmi2FreeInstance(instance->component);
 

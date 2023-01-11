@@ -1,10 +1,3 @@
-/**************************************************************
- *  Copyright (c) Modelica Association Project "FMI".         *
- *  All rights reserved.                                      *
- *  This file is part of the Reference FMUs. See LICENSE.txt  *
- *  in the project root for license information.              *
- **************************************************************/
-
 #ifdef _WIN32
 #include <direct.h>
 #include "Shlwapi.h"
@@ -435,6 +428,10 @@ FMIStatus FMI3InstantiateScheduledExecution(
 }
 
 FMIStatus FMI3FreeInstance(FMIInstance *instance) {
+
+    if (!instance) {
+        return FMIError;
+    }
 
     instance->fmi3Functions->fmi3FreeInstance(instance->component);
 

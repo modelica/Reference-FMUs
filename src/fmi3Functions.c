@@ -1,10 +1,3 @@
-/**************************************************************
- *  Copyright (c) Modelica Association Project "FMI".         *
- *  All rights reserved.                                      *
- *  This file is part of the Reference FMUs. See LICENSE.txt  *
- *  in the project root for license information.              *
- **************************************************************/
-
 #if FMI_VERSION != 3
 #error FMI_VERSION must be 3
 #endif
@@ -38,10 +31,11 @@ do { \
 
 #define GET_VARIABLES(T) \
 do { \
+    Status status = OK; \
+    if (nValueReferences == 0) return(fmi3Status)status; \
     ASSERT_NOT_NULL(valueReferences); \
     ASSERT_NOT_NULL(values); \
     size_t index = 0; \
-    Status status = OK; \
     if (nValueReferences == 0) return (fmi3Status)status; \
     if (S->isDirtyValues) { \
         Status s = calculateValues(S); \
@@ -50,53 +44,33 @@ do { \
         S->isDirtyValues = false; \
     } \
     for (size_t i = 0; i < nValueReferences; i++) { \
-        Status s = get ## T(S, (ValueReference)valueReferences[i], values, &index); \
+        Status s = get ## T(S, (ValueReference)valueReferences[i], values, nValues, &index); \
         status = max(status, s); \
         if (status > Warning) return (fmi3Status)status; \
+    } \
+    if (index != nValues) { \
+        logError(S, "Expected nValues = %zu but was %zu.", index, nValues); \
+        return fmi3Error; \
     } \
     return (fmi3Status)status; \
 } while (0)
 
 #define SET_VARIABLES(T) \
 do { \
+    Status status = OK; \
+    if (nValueReferences == 0) return(fmi3Status)status; \
     ASSERT_NOT_NULL(valueReferences); \
     ASSERT_NOT_NULL(values); \
     size_t index = 0; \
-    Status status = OK; \
     for (size_t i = 0; i < nValueReferences; i++) { \
-        Status s = set ## T(S, (ValueReference)valueReferences[i], values, &index); \
+        Status s = set ## T(S, (ValueReference)valueReferences[i], values, nValues, &index); \
         status = max(status, s); \
         if (status > Warning) return (fmi3Status)status; \
     } \
     if (nValueReferences > 0) S->isDirtyValues = true; \
-    return (fmi3Status)status; \
-} while (0)
-
-// TODO: make this work with arrays
-#define GET_BOOLEAN_VARIABLES \
-do { \
-    Status status = OK; \
-    for (size_t i = 0; i < nvr; i++) { \
-        bool v = false; \
-        size_t index = 0; \
-        Status s = getBoolean(S, (ValueReference)vr[i], &v, &index); \
-        value[i] = v; \
-        status = max(status, s); \
-        if (status > Warning) return (fmi3Status)status; \
-    } \
-    return (fmi3Status)status; \
-} while (0)
-
-// TODO: make this work with arrays
-#define SET_BOOLEAN_VARIABLES \
-do { \
-    Status status = OK; \
-    for (size_t i = 0; i < nvr; i++) { \
-        bool v = value[i]; \
-        size_t index = 0; \
-        Status s = setBoolean(S, (ValueReference)vr[i], &v, &index); \
-        status = max(status, s); \
-        if (status > Warning) return (fmi3Status)status; \
+    if (index != nValues) { \
+        logError(S, "Expected nValues = %zu but was %zu.", index, nValues); \
+        return fmi3Error; \
     } \
     return (fmi3Status)status; \
 } while (0)
@@ -134,7 +108,7 @@ do { \
 /* Common Functions */
 
 /* Getting and setting variable values */
-#define MASK_fmi3GetFloat32               (InitializationMode | ConfigurationMode | ReconfigurationMode | EventMode | ContinuousTimeMode | StepMode | ClockActivationMode | IntermediateUpdateMode | Terminated)
+#define MASK_fmi3GetFloat32               (Instantiated | InitializationMode | ConfigurationMode | ReconfigurationMode | EventMode | ContinuousTimeMode | StepMode | ClockActivationMode | IntermediateUpdateMode | Terminated)
 #define MASK_fmi3GetFloat64               MASK_fmi3GetFloat32
 #define MASK_fmi3GetInt8                  MASK_fmi3GetFloat32
 #define MASK_fmi3GetUInt8                 MASK_fmi3GetFloat32
@@ -177,7 +151,7 @@ do { \
 #define MASK_fmi3DeserializeFMUState      MASK_AnyState
 
 /* Getting partial derivatives */
-#define MASK_fmi3GetDirectionalDerivative (InitializationMode | EventMode | ContinuousTimeMode | Terminated)
+#define MASK_fmi3GetDirectionalDerivative (InitializationMode | StepMode | EventMode | ContinuousTimeMode | Terminated)
 #define MASK_fmi3GetAdjointDerivative     MASK_fmi3GetDirectionalDerivative
 
 /* Entering and exiting the Configuration or Reconfiguration Mode */
@@ -416,12 +390,13 @@ fmi3Status fmi3EnterInitializationMode(fmi3Instance instance,
 
     UNUSED(toleranceDefined);
     UNUSED(tolerance);
-    UNUSED(startTime);
     UNUSED(stopTimeDefined);
     UNUSED(stopTime);
 
     ASSERT_STATE(EnterInitializationMode);
 
+    S->startTime = startTime;
+    S->time = startTime;
     S->state = InitializationMode;
 
     return fmi3OK;
@@ -632,15 +607,13 @@ fmi3Status fmi3GetBinary(fmi3Instance instance,
     fmi3Binary values[],
     size_t nValues) {
 
-    UNUSED(nValues);
-
     ASSERT_STATE(GetBinary);
 
     Status status = OK;
 
     for (size_t i = 0; i < nValueReferences; i++) {
         size_t index = 0;
-        Status s = getBinary(S, (ValueReference)valueReferences[i], valueSizes, (const char**)values, &index);
+        Status s = getBinary(S, (ValueReference)valueReferences[i], valueSizes, (const char**)values, nValues, &index);
         status = max(status, s);
         if (status > Warning) return (fmi3Status)status;
     }
@@ -805,15 +778,13 @@ fmi3Status fmi3SetBinary(fmi3Instance instance,
     const fmi3Binary values[],
     size_t nValues) {
 
-    UNUSED(nValues);
-
     ASSERT_STATE(SetBinary);
 
     Status status = OK;
 
     for (size_t i = 0; i < nValueReferences; i++) {
         size_t index = 0;
-        Status s = setBinary(S, (ValueReference)valueReferences[i], valueSizes, (const char* const*)values, &index);
+        Status s = setBinary(S, (ValueReference)valueReferences[i], valueSizes, (const char* const*)values, nValues, &index);
         status = max(status, s);
         if (status > Warning) return (fmi3Status)status;
     }
