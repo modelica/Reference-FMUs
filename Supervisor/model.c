@@ -16,14 +16,15 @@ Status calculateValues(ModelInstance *comp) {
     return OK;
 }
 
-Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t *index) {
+Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
+    UNUSED(nValues);
     switch (vr) {
         case vr_as:
             if (comp->state == EventMode && M(stateEvent)) {
-                value[(*index)++] = M(as)*-1.0;
+                values[(*index)++] = M(as)*-1.0;
             }
             else {
-                value[(*index)++] = M(as);
+                values[(*index)++] = M(as);
             }
             return OK;
         default:
@@ -32,10 +33,11 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double *value, size_t 
     }
 }
 
-Status setFloat64(ModelInstance* comp, ValueReference vr, const double *value, size_t *index) {
+Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
+    UNUSED(nValues);
     switch (vr) {
         case vr_x:
-            M(x) = value[(*index)++];
+            M(x) = values[(*index)++];
             return OK;
         default:
             logError(comp, "Unexpected value reference: %d.", vr);
