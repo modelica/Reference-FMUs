@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
                 CALL(FMI3EnterEventMode(plant));
 
                 // Handle time event in controller
-                handleTimeEventController(controller, plant);
+                CALL(handleTimeEventController(controller, plant));
 
                 // Update discrete states of the controller
                 fmi3Boolean nominalsChanged = fmi3False;
@@ -315,7 +315,7 @@ int main(int argc, char *argv[])
                 CALL(FMI3EnterEventMode(controller));
 
                 // Handle state event supervisor
-                handleStateEventSupervisor(controller, supervisor);
+                CALL(handleStateEventSupervisor(controller, supervisor));
 
                 // Update discrete states of the controller and supervisor
                 fmi3Boolean nominalsChanged = fmi3False;
@@ -348,8 +348,8 @@ int main(int argc, char *argv[])
                 // Put Plantmodel into event mode, as its input is a discrete time variable
                 CALL(FMI3EnterEventMode(plant));
 
-                handleStateEventSupervisor(controller, supervisor);
-                handleTimeEventController(controller, plant);
+                CALL(handleStateEventSupervisor(controller, supervisor));
+                CALL(handleTimeEventController(controller, plant));
 
                 // Update discrete states of the controller and supervisor
                 fmi3Boolean nominalsChanged = fmi3False;
