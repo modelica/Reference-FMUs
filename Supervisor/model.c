@@ -21,8 +21,8 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
     switch (vr) {
         case vr_as:
             if (comp->state == EventMode && M(clock_s_ticking)) {
-                // We need this here because when clock s is ticking, we need to output the next state already 
-                //   (because the clocked partition depends on that value), 
+                // We need this here because when clock s is ticking, we need to output the next state already
+                //   (because the clocked partition depends on that value),
                 //   without executing the state transition.
                 // Therefore we compute the next state "M(as) * -1.0" and output it.
                 // The actual execution of the state transition happens in the eventUpdate function below.
@@ -61,8 +61,10 @@ Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
     // This is ok because as is part of the clocked partition of clock s,
     //  and therefore should not be queried when clock s is inactive.
 
-    // The reason we check for the event crossing here is to conclude that 
+    // The reason we check for the event crossing here is to conclude that
     //  we are in event mode because the clock s is about to tick.
+    // This should ideally be done in EnterEventMode, \
+    //  but I do not know how to do it without changing the underlying framework.
     if (comp->state == EventMode && M(pz) * M(z) < 0.0 && !M(clock_s_ticking)) {
         M(clock_s_ticking) = true;
     }
