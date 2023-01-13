@@ -12,8 +12,8 @@ When that happens, the dependencies between the variables must be taken into acc
 in order to correctly propagate the values for the clocked partitions.
 
 The supervisor monitors the plant's continuous output and when a particular event happens,
-activates a clock and changes one of the controller's inputs,
-which in turn change the controller algorithm.
+activates a clock and inverts one of the controller's inputs,
+which in turn changes the controller algorithm.
 The plant is just solving a basic ODE with an input from the controller.
 
 The scenario is as follows:
