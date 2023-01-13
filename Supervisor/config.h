@@ -16,7 +16,6 @@
 
 #define SET_FLOAT64
 #define GET_FLOAT64
-#define ENTER_EVENT_MODE
 #define EVENT_UPDATE
 #define GET_CLOCK
 
