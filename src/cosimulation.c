@@ -163,24 +163,33 @@ bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void
 
 Status setDebugLogging(ModelInstance *comp, bool loggingOn, size_t nCategories, const char * const categories[]) {
 
-    if (loggingOn) {
+    if (nCategories > 0) {
+
+        if (categories == NULL) {
+            logError(comp, "Argument categories must not be NULL.");
+            return Error;
+        }
+
         for (size_t i = 0; i < nCategories; i++) {
+
             if (categories[i] == NULL) {
-                logError(comp, "Log category[%d] must not be NULL", i);
+                logError(comp, "Argument categories[%zu] must not be NULL.", i);
                 return Error;
             } else if (strcmp(categories[i], "logEvents") == 0) {
-                comp->logEvents = true;
+                comp->logEvents = loggingOn;
             } else if (strcmp(categories[i], "logStatusError") == 0) {
-                comp->logErrors = true;
+                comp->logErrors = loggingOn;
             } else {
-                logError(comp, "Log category[%d] must be one of logEvents or logStatusError but was %s", i, categories[i]);
+                logError(comp, "Log categories[%zu] must be one of \"logEvents\" or \"logStatusError\" but was \"%s\".", i, categories[i]);
                 return Error;
             }
         }
+
     } else {
-        // disable logging
-        comp->logEvents = false;
-        comp->logErrors = false;
+
+        comp->logEvents = loggingOn;
+        comp->logErrors = loggingOn;
+
     }
 
     return OK;
