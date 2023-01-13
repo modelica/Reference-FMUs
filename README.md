@@ -37,6 +37,8 @@ Example:
   fmusim BouncingBall.fmu  simulate with the default settings
 ```
 
+You can download the pre-built Reference FMUs and fmusim executables from [releases](https://github.com/modelica/Reference-FMUs/releases).
+
 ## Repository structure
 
 `<model>`
