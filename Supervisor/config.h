@@ -31,7 +31,7 @@ typedef struct {
     bool s;    // Clock
     double x;  // Sample
     double as; // Output that is fed to the Controller
-    bool stateEvent; // State event
+    bool clock_s_ticking; // Keeps track of whether clock s is ticking during event mode.
     double z; // Event indicator
     double pz; // Previous Event Indicator
 } ModelData;

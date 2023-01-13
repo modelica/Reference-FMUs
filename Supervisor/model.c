@@ -6,7 +6,7 @@ void setStartValues(ModelInstance *comp) {
     M(s) = false;       // Clock
     M(x) = 0.0;         // Sample
     M(as) = 1.0;        // Discrete state/output
-    M(stateEvent) = false; // State Event
+    M(clock_s_ticking) = false; // State Event
     M(z) = 0.0;
     M(pz) = 0.0;
 }
@@ -20,8 +20,14 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
     UNUSED(nValues);
     switch (vr) {
         case vr_as:
-            if (comp->state == EventMode && M(stateEvent)) {
-                values[(*index)++] = M(as)*-1.0;
+            if (comp->state == EventMode && M(clock_s_ticking)) {
+                // We need this here because when clock s is ticking, we need to output the next state already 
+                //   (because the clocked partition depends on that value), 
+                //   without executing the state transition.
+                // Therefore we compute the next state "M(as) * -1.0" and output it.
+                // The actual execution of the state transition happens in the eventUpdate function below.
+                // See definition of clocked partition in 2.2.8.3. Model Partitions and Clocked Variables.
+                values[(*index)++] = M(as) * -1.0;
             }
             else {
                 values[(*index)++] = M(as);
@@ -38,12 +44,12 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
     UNUSED(nValues);
     switch (vr) {
-        case vr_x:
-            M(x) = values[(*index)++];
-            return OK;
-        default:
-            logError(comp, "Unexpected value reference: %d.", vr);
-            return Error;
+    case vr_x:
+        M(x) = values[(*index)++];
+        return OK;
+    default:
+        logError(comp, "Unexpected value reference: %d.", vr);
+        return Error;
     }
 }
 
@@ -54,34 +60,37 @@ Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
     //  so the variable M(as) can take on the value corresponding to the event.
     // This is ok because as is part of the clocked partition of clock s,
     //  and therefore should not be queried when clock s is inactive.
-    if (M(pz) * M(z) < 0.0 && !M(stateEvent)) {
-        M(stateEvent) = true;
+
+    // The reason we check for the event crossing here is to conclude that 
+    //  we are in event mode because the clock s is about to tick.
+    if (comp->state == EventMode && M(pz) * M(z) < 0.0 && !M(clock_s_ticking)) {
+        M(clock_s_ticking) = true;
     }
 
     switch (vr) {
-        case vr_s:
-            if (comp->state == EventMode && M(stateEvent)) {
-                (*value) = true;
-            }
-            else {
-                (*value) = false;
-            }
-            return OK;
-        default:
-            logError(comp, "Unexpected value reference: %d.", vr);
-            return Error;
+    case vr_s:
+        if (comp->state == EventMode && M(clock_s_ticking)) {
+            (*value) = true;
+        }
+        else {
+            (*value) = false;
+        }
+        return OK;
+    default:
+        logError(comp, "Unexpected value reference: %d.", vr);
+        return Error;
     }
 }
 
-void eventUpdate(ModelInstance *comp) {
+void eventUpdate(ModelInstance* comp) {
     comp->nominalsOfContinuousStatesChanged = false;
-    comp->terminateSimulation  = false;
+    comp->terminateSimulation = false;
     comp->nextEventTimeDefined = false;
 
-    if (M(stateEvent)) {
+    if (M(clock_s_ticking)) {
         // Execute state transition
         M(as) = M(as) * -1.0;
-        M(stateEvent) = false;
+        M(clock_s_ticking) = false;
 
         // The following has to be done in order to ensure that,
         //   if the FMU remains in event mode and the getClock function gets called, it will return false.
