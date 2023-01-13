@@ -93,7 +93,7 @@ static void logMessage(FMIInstance* instance, FMIStatus status, const char* cate
 
 //**************** Output aux functions ******************//
 
-#define OUTPUT_FILE_HEADER "time,x,r,x_r,u_r\n"
+#define OUTPUT_FILE_HEADER "time,x,r,x_r,u_r,a_s\n"
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
@@ -105,12 +105,12 @@ static FMIStatus recordVariables(FILE *outputFile, FMIInstance* controller, FMII
     fmi3Float64 plantmodel_vals[] = {0};
     CALL(FMI3GetFloat64(plant, plantmodel_vref, 1, plantmodel_vals, 1));
 
-    const fmi3ValueReference controller_vref[] = {Controller_X_ref, Controller_UR_ref};
-    fmi3Float64 controller_vals[] = {0.0, 0.0};
-    CALL(FMI3GetFloat64(controller, controller_vref, 2, controller_vals, 2));
+    const fmi3ValueReference controller_vref[] = {Controller_X_ref, Controller_UR_ref , Controller_AS_ref };
+    fmi3Float64 controller_vals[] = {0.0, 0.0 , 0.0 };
+    CALL(FMI3GetFloat64(controller, controller_vref, 3, controller_vals, 3));
 
-    //                                      time,     x,         r, x_r,                u_r
-    fprintf(outputFile, "%g,%g,%d,%g,%g\n", time, plantmodel_vals[0], 0, controller_vals[0], controller_vals[1]);
+    //                                         time,     x,              r,       x_r,                u_r                a_s
+    fprintf(outputFile, "%g,%g,%d,%g,%g,%g\n", time, plantmodel_vals[0], 0, controller_vals[0], controller_vals[1], controller_vals[2]);
 
 TERMINATE:
     return status;
