@@ -13,6 +13,8 @@ void setStartValues(ModelInstance *comp) {
 
 Status calculateValues(ModelInstance *comp) {
     UNUSED(comp);
+    M(pz) = M(z);
+    M(z) = 2.0 - M(x);
     return OK;
 }
 
@@ -46,6 +48,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
     switch (vr) {
     case vr_x:
         M(x) = values[(*index)++];
+        comp->isDirtyValues = true;
         return OK;
     default:
         logError(comp, "Unexpected value reference: %d.", vr);
@@ -63,7 +66,7 @@ Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
 
     // The reason we check for the event crossing here is to conclude that
     //  we are in event mode because the clock s is about to tick.
-    // This should ideally be done in EnterEventMode, \
+    // This should ideally be done in EnterEventMode,
     //  but I do not know how to do it without changing the underlying framework.
     if (comp->state == EventMode && M(pz) * M(z) < 0.0 && !M(clock_s_ticking)) {
         M(clock_s_ticking) = true;
@@ -103,7 +106,11 @@ void eventUpdate(ModelInstance* comp) {
 
 void getEventIndicators(ModelInstance* comp, double z[], size_t nz) {
     UNUSED(nz);
-    M(pz) = M(z);
-    M(z) = 2.0 - M(x);
+    if (comp->isDirtyValues) {
+        // This has to be done since it's the only way we can be sure that, 
+        //  when we enter event mode, we can check that it's because of the state event.
+        calculateValues(comp);
+        comp->isDirtyValues = true;
+    }
     z[0] = M(z);
 }
