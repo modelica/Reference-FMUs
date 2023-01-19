@@ -8,12 +8,13 @@ void setStartValues(ModelInstance *comp) {
     M(as) = 1.0;        // Discrete state/output
     M(clock_s_ticking) = false; // State Event
     M(z) = 0.0;
-    M(pz) = 0.0;
+    M(pz) = 0.0; 
+    // The following is suggested by Masoud.
+    M(pz) = 2.0 - M(x);
 }
 
 Status calculateValues(ModelInstance *comp) {
     UNUSED(comp);
-    M(pz) = M(z);
     M(z) = 2.0 - M(x);
     return OK;
 }
