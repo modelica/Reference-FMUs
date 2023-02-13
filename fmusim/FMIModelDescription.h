@@ -60,6 +60,12 @@ typedef struct {
 
 typedef struct {
 
+    FMIModelVariable* modelVariable;
+
+} FMIUnknown;
+
+typedef struct {
+
     FMIVersion fmiVersion;
     const char* modelName;
     const char* instantiationToken;
@@ -76,8 +82,14 @@ typedef struct {
     FMIModelVariable* modelVariables;
 
     size_t nOutputs;
+    FMIUnknown* outputs;
+
     size_t nContinuousStates;
+    FMIUnknown* derivatives;
+
     size_t nInitialUnknowns;
+    FMIUnknown* initialUnknowns;
+
     size_t nEventIndicators;
 
 } FMIModelDescription;

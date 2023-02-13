@@ -132,6 +132,27 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
     return modelDescription;
 }
 
+static void readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescription* modelDescription, const char* path, size_t* nUnkonwns, FMIUnknown** unknowns) {
+
+    xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)path, xpathCtx);
+    
+    *nUnkonwns = xpathObj->nodesetval->nodeNr;
+    *unknowns = calloc(*nUnkonwns, sizeof(FMIUnknown));
+
+    for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
+
+        xmlNodePtr unkownNode = xpathObj->nodesetval->nodeTab[i];
+
+        const char* indexLiteral = (char*)xmlGetProp(unkownNode, (xmlChar*)"index");
+
+        const size_t index = (size_t)strtoul(indexLiteral, NULL, 0);
+
+        (*unknowns)[i].modelVariable = &modelDescription->modelVariables[index - 1];
+    }
+
+    xmlXPathFreeObject(xpathObj);
+}
+
 static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
     FMIModelDescription* modelDescription = (FMIModelDescription*)calloc(1, sizeof(FMIModelDescription));
@@ -182,7 +203,9 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelVariables/ScalarVariable/*[self::Real or self::Integer or self::Enumeration or self::Boolean or self::String]", xpathCtx);
 
     modelDescription->nModelVariables = xpathObj->nodesetval->nodeNr;
-    modelDescription->modelVariables = calloc(xpathObj->nodesetval->nodeNr, sizeof(FMIModelVariable));
+    modelDescription->modelVariables = calloc(modelDescription->nModelVariables, sizeof(FMIModelVariable));
+
+    size_t* derivativeIndices = calloc(modelDescription->nModelVariables, sizeof(size_t));
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
@@ -197,6 +220,13 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
         if (!strcmp(typeName, "Real")) {
             type = FMIRealType;
+
+            const char* derivativeLiteral = (char*)xmlGetProp(typeNode, (xmlChar*)"derivative");
+
+            if (derivativeLiteral) {
+                derivativeIndices[i] = (size_t)strtoul(derivativeLiteral, NULL, 0);
+            }
+
         } else if (!strcmp(typeName, "Integer") || !strcmp(typeName, "Enumeration")) {
             type = FMIIntegerType;
         } else if (!strcmp(typeName, "Boolean")) {
@@ -232,17 +262,9 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
     xmlXPathFreeObject(xpathObj);
 
-    xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelStructure/Outputs/Unknown", xpathCtx);
-    modelDescription->nOutputs = xpathObj->nodesetval->nodeNr;
-    xmlXPathFreeObject(xpathObj);
-
-    xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelStructure/Derivatives/Unknown", xpathCtx);
-    modelDescription->nContinuousStates = xpathObj->nodesetval->nodeNr;
-    xmlXPathFreeObject(xpathObj);
-
-    xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelStructure/InitialUnknowns/Unknown", xpathCtx);
-    modelDescription->nInitialUnknowns = xpathObj->nodesetval->nodeNr;
-    xmlXPathFreeObject(xpathObj);
+    readUnknownsFMI2(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/Outputs/Unknown", &modelDescription->nOutputs, &modelDescription->outputs);
+    readUnknownsFMI2(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/Derivatives/Unknown", &modelDescription->nContinuousStates, &modelDescription->derivatives);
+    readUnknownsFMI2(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/InitialUnknowns/Unknown", &modelDescription->nInitialUnknowns, &modelDescription->initialUnknowns);
 
     xmlXPathFreeContext(xpathCtx);
 
