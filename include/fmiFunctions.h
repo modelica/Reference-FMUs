@@ -59,11 +59,15 @@
 #include "fmiPlatformTypes.h"
 #include <stdlib.h>
 
-/* Export fmi functions on Windows */
-#ifdef _MSC_VER
-#define DllExport __declspec( dllexport )
+/* Back-ported definition from FMI 2.0 */
+#if defined _WIN32 || defined __CYGWIN__
+  #define DllExport __declspec(dllexport)
 #else
-#define DllExport
+  #if __GNUC__ >= 4
+    #define DllExport __attribute__ ((visibility ("default")))
+  #else
+    #define DllExport
+  #endif
 #endif
 
 /* Macros to construct the real function name
