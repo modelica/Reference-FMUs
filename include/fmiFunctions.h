@@ -61,7 +61,7 @@
 
 /* Back-ported definition from FMI 2.0 */
 #if defined _WIN32 || defined __CYGWIN__
- #define DllExport __declspec(dllexport)
+  #define DllExport __declspec(dllexport)
 #else
   #if __GNUC__ >= 4
     #define DllExport __attribute__ ((visibility ("default")))
