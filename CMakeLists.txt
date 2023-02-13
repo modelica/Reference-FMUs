@@ -31,6 +31,11 @@ if (MSVC)
   endif ()
 endif ()
 
+# hide internal functions
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
+endif()
+
 if (${FMI_VERSION} GREATER 2)
 
   if (WIN32)
