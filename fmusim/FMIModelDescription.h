@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "FMI.h"
 
@@ -19,7 +20,9 @@ typedef enum {
 
 typedef struct FMIDimension FMIDimension;
 
-typedef struct {
+typedef struct FMIModelVariable FMIModelVariable;
+
+struct FMIModelVariable {
     
     const char* name;
     FMIVariableType type;
@@ -28,8 +31,9 @@ typedef struct {
     FMICausality causality;
     size_t nDimensions;
     FMIDimension* dimensions;
+    FMIModelVariable* derivative;
 
-} FMIModelVariable;
+};
 
 struct FMIDimension{
 
@@ -41,6 +45,7 @@ struct FMIDimension{
 typedef struct {
 
     const char* modelIdentifier;
+    bool providesDirectionalDerivatives;
 
 } FMIModelExchangeInterface;
 

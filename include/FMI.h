@@ -145,6 +145,12 @@ struct FMIInstance_ {
 
     FMIInterfaceType interfaceType;
 
+    size_t nContinuousStates;
+
+    FMIValueReference* continuousStateValueReferences;
+
+    FMIValueReference* derivativeValueReferences;
+
 };
 
 FMI_STATIC FMIInstance* FMICreateInstance(const char* instanceName, const char* libraryPath, FMILogMessage* logMessage, FMILogFunctionCall* logFunctionCall);

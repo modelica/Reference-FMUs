@@ -11,7 +11,8 @@
     modelIdentifier="VanDerPol"
     canNotUseMemoryManagementFunctions="true"
     canGetAndSetFMUstate="true"
-    canSerializeFMUstate="true">
+    canSerializeFMUstate="true"
+	providesDirectionalDerivative="true">
     <SourceFiles>
       <File name="all.c"/>
     </SourceFiles>

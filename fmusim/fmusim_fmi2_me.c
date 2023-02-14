@@ -1,7 +1,10 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "FMIUtil.h"
+
 #include "fmusim_fmi2_me.h"
+
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
@@ -89,24 +92,12 @@ FMIStatus simulateFMI2ME(
 
     CALL(FMI2EnterContinuousTimeMode(S));
 
-    //// from XML file
-    //const size_t nx = 2; // number of states
-    //const fmi2ValueReference x_ref[2]  = { 1, 3 }; // vector of value references of cont.-time states
-    //const fmi2ValueReference xd_ref[2] = { 2, 4 }; // vector of value references of state derivatives
+    S->nContinuousStates              = modelDescription->nContinuousStates;
+    S->continuousStateValueReferences = (FMIValueReference*)calloc(modelDescription->nContinuousStates, sizeof(FMIValueReference));
+    S->derivativeValueReferences      = (FMIValueReference*)calloc(modelDescription->nContinuousStates, sizeof(FMIValueReference));
 
-    //const fmi2Real dvKnown = 1;
-    //fmi2Real ci[2]; // auxiliary vector of nx elements
-    //fmi2Real J[2][2];
-
-    ////J[0][0] = 11; J[0][1] = 12;
-    ////J[1][0] = 21; J[1][1] = 22;
-    //
-    //// Construct the Jacobian elements J[:,:] columnwise
-    //for (size_t i = 0; i < nx; i++) {
-    //    CALL(FMI2GetDirectionalDerivative(S, xd_ref, nx, &x_ref[i], 1, &dvKnown, ci));
-    //    J[0][i] = ci[0];
-    //    J[1][i] = ci[1];
-    //}
+    // determine order of continuous states
+    CALL(FMIGetContinuousStateValueReferences(S, modelDescription));
 
     solver = settings->solverCreate(S, modelDescription, input, time);
 

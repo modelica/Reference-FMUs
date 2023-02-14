@@ -85,32 +85,15 @@ static int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void* user_data
     
     Solver* solver = (Solver*)user_data;
 
-    //SUNMatrixContent_Dense c = SM_CONTENT_D(J);
-
-    //sunindextype M;
-    //sunindextype N;
-    //realtype* data;
-    //sunindextype ldata;
-    //realtype** cols;
-
-    //SM_ROWS_D(J);
-    //SM_COLUMNS_D(J);
-    //SM_LDATA_D(J);
-
-    //A_cont = SM_CONTENT_D(A);
-    
-    // from XML file
-    const size_t nx = 2; // number of states
-    const fmi2ValueReference x_ref[2] = { 1, 3 }; // vector of value references of cont.-time states
-    const fmi2ValueReference xd_ref[2] = { 2, 4 }; // vector of value references of state derivatives
+    FMIInstance* S = solver->S;
 
     const fmi2Real dvKnown = 1;
 
     realtype** cols = SM_COLS_D(J);
 
-    // Construct the Jacobian elements J[:,:] columnwise
-    for (size_t i = 0; i < nx; i++) {
-        const FMIStatus status = FMI2GetDirectionalDerivative(solver->S, xd_ref, nx, &x_ref[i], 1, &dvKnown, cols[i]);
+    // construct the Jacobian columnwise
+    for (size_t i = 0; i < S->nContinuousStates; i++) {
+        const FMIStatus status = FMI2GetDirectionalDerivative(S, S->derivativeValueReferences, S->nContinuousStates, &S->continuousStateValueReferences[i], 1, &dvKnown, cols[i]);
         if (status != FMIOK) {
             return -1;
         }
@@ -194,8 +177,9 @@ Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
 
     CALL_CVODE(CVodeSetLinearSolver(solver->cvode_mem, solver->LS, solver->A));
 
-    // TODO: CVodeSetJacFn(cvode_mem, Jac);
-    CALL_CVODE(CVodeSetJacFn(solver->cvode_mem, Jac));
+    if (modelDescription->modelExchange->providesDirectionalDerivatives) {
+        CALL_CVODE(CVodeSetJacFn(solver->cvode_mem, Jac));
+    }
 
 TERMINATE:
 

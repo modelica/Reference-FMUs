@@ -187,6 +187,9 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     if (xpathObj->nodesetval->nodeNr == 1) {
         modelDescription->modelExchange = (FMIModelExchangeInterface*)calloc(1, sizeof(FMIModelExchangeInterface));
         modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"modelIdentifier");
+        char* providesDirectionalDerivative = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"providesDirectionalDerivative");
+        modelDescription->modelExchange->providesDirectionalDerivatives = providesDirectionalDerivative && strcmp(providesDirectionalDerivative, "true") == 0;
+        free(providesDirectionalDerivative);
     }
     xmlXPathFreeObject(xpathObj);
 
@@ -214,6 +217,8 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
         modelDescription->modelVariables[i].name = (char*)xmlGetProp(variableNode, (xmlChar*)"name");
         modelDescription->modelVariables[i].description = (char*)xmlGetProp(variableNode, (xmlChar*)"description");
+
+        modelDescription->modelVariables[i].derivative = (FMIModelVariable*)xmlGetProp(typeNode, (xmlChar*)"derivative");
 
         FMIVariableType type;
         const char* typeName = (char*)typeNode->name;
@@ -267,6 +272,17 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     readUnknownsFMI2(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/InitialUnknowns/Unknown", &modelDescription->nInitialUnknowns, &modelDescription->initialUnknowns);
 
     xmlXPathFreeContext(xpathCtx);
+
+    // resolve derivatives
+    for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        if (variable->derivative) {
+            char* derivative = (char*)variable->derivative;
+            const size_t j = strtoul(derivative, NULL, 0);
+            variable->derivative = &modelDescription->modelVariables[j - 1];
+            free(derivative);
+        }
+    }
 
     return modelDescription;
 }
