@@ -128,10 +128,11 @@ FMIStatus FMI3SetValues(
 
  FMIStatus FMIParseStartValues(FMIVariableType type, const char* literal, size_t nValues, void* values) {
 
+     char* next = (char*)literal;
+
      if (type == FMIFloat32Type || type == FMIDiscreteFloat32Type) {
 
          fmi3Float32* v = (fmi3Float32*)values;
-         char* next = literal;
 
          for (size_t i = 0; i < nValues; i++) {
              v[i] = strtof(next, &next);
@@ -140,7 +141,6 @@ FMIStatus FMI3SetValues(
      } else if (type == FMIFloat64Type || type == FMIDiscreteFloat64Type) {
 
          fmi3Float64* v = (fmi3Float64*)values;
-         char* next = literal;
 
          for (size_t i = 0; i < nValues; i++) {
              v[i] = strtod(next, &next);
@@ -149,7 +149,6 @@ FMIStatus FMI3SetValues(
      } else if (type == FMIInt8Type) {
 
          fmi3Int8* v = (fmi3Int8*)values;
-         char* next = literal;
 
          for (size_t i = 0; i < nValues; i++) {
              v[i] = strtol(next, &next, 10);
@@ -158,7 +157,6 @@ FMIStatus FMI3SetValues(
      } else if (type == FMIUInt8Type) {
 
          fmi3UInt8* v = (fmi3UInt8*)values;
-         char* next = literal;
 
          for (size_t i = 0; i < nValues; i++) {
              v[i] = strtoul(next, &next, 10);
@@ -167,7 +165,6 @@ FMIStatus FMI3SetValues(
      } else if (type == FMIInt16Type) {
 
          fmi3Int16* v = (fmi3Int16*)values;
-         char* next = literal;
 
          for (size_t i = 0; i < nValues; i++) {
              v[i] = strtol(next, &next, 10);
@@ -176,7 +173,6 @@ FMIStatus FMI3SetValues(
      } else if (type == FMIUInt16Type) {
 
          fmi3UInt16* v = (fmi3UInt16*)values;
-         char* next = literal;
 
          for (size_t i = 0; i < nValues; i++) {
              v[i] = strtoul(next, &next, 10);
@@ -185,7 +181,6 @@ FMIStatus FMI3SetValues(
      } else if (type == FMIInt32Type) {
 
          fmi3Int32* v = (fmi3Int32*)values;
-         char* next = literal;
 
          for (size_t i = 0; i < nValues; i++) {
              v[i] = strtol(next, &next, 10);
@@ -194,7 +189,6 @@ FMIStatus FMI3SetValues(
      } else if (type == FMIUInt32Type) {
 
          fmi3UInt32* v = (fmi3UInt32*)values;
-         char* next = literal;
 
          for (size_t i = 0; i < nValues; i++) {
              v[i] = strtoul(next, &next, 10);
@@ -203,7 +197,6 @@ FMIStatus FMI3SetValues(
      } else if (type == FMIInt64Type) {
 
          fmi3Int64* v = (fmi3Int64*)values;
-         char* next = literal;
 
          for (size_t i = 0; i < nValues; i++) {
              v[i] = strtol(next, &next, 10);
@@ -212,7 +205,6 @@ FMIStatus FMI3SetValues(
      } else if (type == FMIUInt64Type) {
 
          fmi3UInt64* v = (fmi3UInt64*)values;
-         char* next = literal;
 
          for (size_t i = 0; i < nValues; i++) {
              v[i] = strtoul(next, &next, 10);
@@ -221,7 +213,6 @@ FMIStatus FMI3SetValues(
      } else if (type == FMIBooleanType) {
 
          fmi3Boolean* v = (fmi3Boolean*)values;
-         char* next = literal;
 
          for (size_t i = 0; i < nValues; i++) {
              v[i] = strtoul(next, &next, 10);
@@ -238,7 +229,6 @@ FMIStatus FMI3SetValues(
      } else if (type == FMIClockType) {
 
          fmi3Clock* v = (fmi3Clock*)values;
-         char* next = literal;
 
          for (size_t i = 0; i < nValues; i++) {
              v[i] = strtoul(next, &next, 10);

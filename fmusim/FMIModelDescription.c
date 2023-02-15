@@ -36,7 +36,7 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
         modelDescription->nContinuousStates = atoi(numberOfContinuousStates);
     }
     
-    xmlFree(numberOfContinuousStates);
+    xmlFree((void*)numberOfContinuousStates);
 
     const char* numberOfEventIndicators = (char*)xmlGetProp(root, (xmlChar*)"numberOfEventIndicators");
     
@@ -44,7 +44,7 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
         modelDescription->nEventIndicators = atoi(numberOfEventIndicators);
     }
     
-    xmlFree(numberOfEventIndicators);
+    xmlFree((void*)numberOfEventIndicators);
 
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(root->doc);
 
@@ -104,7 +104,7 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 
         variable->valueReference = (FMIValueReference)strtoul(vr, NULL, 0);
 
-        xmlFree(vr);
+        xmlFree((void*)vr);
 
         const char* causality = (char*)xmlGetProp(variableNode, (xmlChar*)"causality");
 
@@ -122,7 +122,7 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
             variable->causality = FMILocal;
         }
 
-        xmlFree(causality);
+        xmlFree((void*)causality);
     }
 
     xmlXPathFreeObject(xpathObj);
@@ -594,7 +594,7 @@ FMIModelVariable* FMIModelVariableForValueReference(const FMIModelDescription* m
     
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-        const FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        FMIModelVariable* variable = &modelDescription->modelVariables[i];
 
         if (variable->valueReference == valueReference) {
             return variable;
