@@ -108,7 +108,7 @@ FMIStatus FMI3SetValues(
     case FMIInt32Type:
         return FMI3SetInt32(instance, valueReferences, nValueReferences, (fmi3Int32*)values, nValues);
     case FMIUInt32Type:
-        return FMI3SetUInt16(instance, valueReferences, nValueReferences, (fmi3UInt32*)values, nValues);
+        return FMI3SetUInt32(instance, valueReferences, nValueReferences, (fmi3UInt32*)values, nValues);
     case FMIInt64Type:
         return FMI3SetInt64(instance, valueReferences, nValueReferences, (fmi3Int64*)values, nValues);
     case FMIUInt64Type:
