@@ -68,35 +68,30 @@ static void logMessage(FMIInstance* instance, FMIStatus status, const char* cate
 
 static FILE* s_fmiLogFile = NULL;
 
-static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message, ...) {
+static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message) {
 
     FILE* const stream = s_fmiLogFile ? s_fmiLogFile : stdout;
-
-    va_list args;
-    va_start(args, message);
     
-    vfprintf(stream, message, args);
+    fputs(message, stream);
     
-    va_end(args);
-
     switch (status) {
     case FMIOK:
-        fprintf(stream, " -> OK\n");
+        fputs(" -> OK", stream);
         break;
     case FMIWarning:
-        fprintf(stream, " -> Warning\n");
+        fputs(" -> Warning", stream);
         break;
     case FMIDiscard:
-        fprintf(stream, " -> Discard\n");
+        fputs(" -> Discard", stream);
         break;
     case FMIError:
-        fprintf(stream, " -> Error\n");
+        fputs(" -> Error", stream);
         break;
     case FMIFatal:
-        fprintf(stream, " -> Fatal\n");
+        fputs(" -> Fatal", stream);
         break;
     case FMIPending:
-        fprintf(stream, " -> Pending\n");
+        fputs(" -> Pending", stream);
         break;
     default:
         fprintf(stream, " -> Unknown status (%d)\n", status);

@@ -51,10 +51,14 @@ typedef enum {
     FMIBinaryType,
     FMIClockType,
 
-    // Aliases for FMI 1.0 and 2.0
-    FMIRealType = FMIFloat64Type,
+    // non-variable types used as parameters
+    FMIValueReferenceType,
+    FMISizeTType,
+
+    // aliases for FMI 1.0 and 2.0 variable types
+    FMIRealType         = FMIFloat64Type,
     FMIDiscreteRealType = FMIDiscreteFloat64Type,
-    FMIIntegerType = FMIInt32Type,
+    FMIIntegerType      = FMIInt32Type,
 
 } FMIVariableType;
 
@@ -100,7 +104,7 @@ typedef struct FMI2Functions_ FMI2Functions;
 
 typedef struct FMI3Functions_ FMI3Functions;
 
-typedef void FMILogFunctionCall(FMIInstance *instance, FMIStatus status, const char *message, ...);
+typedef void FMILogFunctionCall(FMIInstance *instance, FMIStatus status, const char *message);
 
 typedef void FMILogMessage(FMIInstance *instance, FMIStatus status, const char *category, const char *message);
 
@@ -123,11 +127,9 @@ struct FMIInstance_ {
 
     double time;
 
-    char *buf1;
-    char *buf2;
-
-    size_t bufsize1;
-    size_t bufsize2;
+    char* logMessageBuffer;
+    size_t logMessageBufferSize;
+    size_t logMessageBufferPosition;
 
     void *component;
 
@@ -145,13 +147,13 @@ struct FMIInstance_ {
 
 };
 
-FMI_STATIC FMIInstance *FMICreateInstance(const char *instanceName, const char *libraryPath, FMILogMessage *logMessage, FMILogFunctionCall *logFunctionCall);
+FMI_STATIC FMIInstance* FMICreateInstance(const char* instanceName, const char* libraryPath, FMILogMessage* logMessage, FMILogFunctionCall* logFunctionCall);
 
 FMI_STATIC void FMIFreeInstance(FMIInstance *instance);
 
-FMI_STATIC const char* FMIValueReferencesToString(FMIInstance *instance, const FMIValueReference vr[], size_t nvr);
+FMI_STATIC void FMIAppendToLogMessageBuffer(FMIInstance* instance, const char* format, ...);
 
-FMI_STATIC const char* FMIValuesToString(FMIInstance *instance, size_t vValues, const size_t sizes[], const void* values, FMIVariableType variableType);
+FMI_STATIC void FMIAppendArrayToLogMessageBuffer(FMIInstance* instance, const void* values, size_t nValues, const size_t sizes[], FMIVariableType variableType);
 
 FMI_STATIC FMIStatus FMIURIToPath(const char *uri, char *path, const size_t pathLength);
 
