@@ -43,13 +43,13 @@
       <Real start="2"/>
     </ScalarVariable>
     <ScalarVariable name="der(x0)" valueReference="2" causality="local" variability="continuous" initial="calculated">
-      <Real derivative="1"/>
+      <Real derivative="2"/>
     </ScalarVariable>
     <ScalarVariable name="x1" valueReference="3" description="the second state" causality="output" variability="continuous" initial="exact">
       <Real start="0"/>
     </ScalarVariable>
     <ScalarVariable name="der(x1)" valueReference="4" causality="local" variability="continuous" initial="calculated">
-      <Real derivative="3"/>
+      <Real derivative="4"/>
     </ScalarVariable>
     <ScalarVariable name="mu" valueReference="5" causality="parameter" variability="fixed" initial="exact">
       <Real start="1"/>

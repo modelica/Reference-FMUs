@@ -43,7 +43,7 @@
       <Real start="1"/>
     </ScalarVariable>
     <ScalarVariable name="der(x)" valueReference="2" causality="local" variability="continuous" initial="calculated">
-      <Real derivative="1"/>
+      <Real derivative="2"/>
     </ScalarVariable>
     <ScalarVariable name="k" valueReference="3" causality="parameter" variability="fixed" initial="exact">
       <Real start="1"/>

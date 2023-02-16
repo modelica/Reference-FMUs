@@ -67,13 +67,13 @@
       <Real start="1" declaredType="Position"/>
     </ScalarVariable>
     <ScalarVariable name="der(h)" valueReference="2" causality="local" variability="continuous" initial="calculated" description="Derivative of h">
-      <Real derivative="1" declaredType="Velocity"/>
+      <Real derivative="2" declaredType="Velocity"/>
     </ScalarVariable>
     <ScalarVariable name="v" valueReference="3" causality="output" variability="continuous" initial="exact" description="Velocity of the ball">
       <Real start="0" reinit="true" declaredType="Velocity"/>
     </ScalarVariable>
     <ScalarVariable name="der(v)" valueReference="4" causality="local" variability="continuous" initial="calculated" description="Derivative of v">
-      <Real derivative="3" declaredType="Acceleration"/>
+      <Real derivative="4" declaredType="Acceleration"/>
     </ScalarVariable>
     <ScalarVariable name="g" valueReference="5" causality="parameter" variability="fixed" initial="exact" description="Gravity acting on the ball">
       <Real start="-9.81" derivative="2" declaredType="Acceleration"/>
