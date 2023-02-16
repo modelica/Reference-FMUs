@@ -99,6 +99,11 @@ void FMIFreeInstance(FMIInstance *instance) {
     free(instance);
 }
 
+void FMIClearLogMessageBuffer(FMIInstance* instance) {
+    instance->logMessageBufferPosition = 0;
+    snprintf(instance->logMessageBuffer, instance->logMessageBufferSize, "");
+}
+
 void FMIAppendToLogMessageBuffer(FMIInstance* instance, const char* format, ...) {
 
     va_list args;
@@ -130,8 +135,12 @@ void FMIAppendArrayToLogMessageBuffer(FMIInstance* instance, const void* values,
 
     for (size_t i = 0; i < nValues;) {
 
+        // pointer to the last byte (terminator)
         char* s = &instance->logMessageBuffer[instance->logMessageBufferPosition];
+
+        // remaining bytes in the buffer
         size_t n = instance->logMessageBufferSize - instance->logMessageBufferPosition;
+
         int length;
 
         switch (variableType) {

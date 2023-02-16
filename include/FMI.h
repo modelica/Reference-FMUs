@@ -151,6 +151,8 @@ FMI_STATIC FMIInstance* FMICreateInstance(const char* instanceName, const char* 
 
 FMI_STATIC void FMIFreeInstance(FMIInstance *instance);
 
+FMI_STATIC void FMIClearLogMessageBuffer(FMIInstance* instance);
+
 FMI_STATIC void FMIAppendToLogMessageBuffer(FMIInstance* instance, const char* format, ...);
 
 FMI_STATIC void FMIAppendArrayToLogMessageBuffer(FMIInstance* instance, const void* values, size_t nValues, const size_t sizes[], FMIVariableType variableType);

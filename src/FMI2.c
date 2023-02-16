@@ -74,7 +74,7 @@ do { \
 do { \
     const FMIStatus status = (FMIStatus)instance->fmi2Functions-> fmi2 ## f (instance->component, __VA_ARGS__); \
     if (instance->logFunctionCall) { \
-        instance->logMessageBufferPosition = 0; \
+        FMIClearLogMessageBuffer(instance); \
         FMIAppendToLogMessageBuffer(instance, "fmi2" #f "(" m ")", __VA_ARGS__); \
         instance->logFunctionCall(instance, status, instance->logMessageBuffer); \
     } \
@@ -85,7 +85,7 @@ do { \
 do { \
     const FMIStatus status = (FMIStatus)instance->fmi2Functions->fmi2 ## s ## t(instance->component, vr, nvr, value); \
     if (instance->logFunctionCall) { \
-        instance->logMessageBufferPosition = 0; \
+        FMIClearLogMessageBuffer(instance); \
         FMIAppendToLogMessageBuffer(instance, "fmi2" #s #t "(vr={"); \
         FMIAppendArrayToLogMessageBuffer(instance, vr, nvr, NULL, FMIValueReferenceType); \
         FMIAppendToLogMessageBuffer(instance, "}, nvr=%zu, value={", nvr); \
@@ -124,7 +124,7 @@ FMIStatus FMI2SetDebugLogging(FMIInstance *instance, fmi2Boolean loggingOn, size
     const FMIStatus status = (FMIStatus)instance->fmi2Functions->fmi2SetDebugLogging(instance->component, loggingOn, nCategories, categories);
 
     if (instance->logFunctionCall) {
-        instance->logMessageBufferPosition = 0;
+        FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance, "fmi2SetDebugLogging(loggingOn=%d, nCategories=%zu, categories={");
         FMIAppendArrayToLogMessageBuffer(instance, categories, nCategories, NULL, FMIStringType);
         FMIAppendToLogMessageBuffer(instance, "})");
@@ -237,7 +237,7 @@ FMIStatus FMI2Instantiate(FMIInstance *instance, const char *fmuResourceLocation
 
     if (instance->logFunctionCall) {
         fmi2CallbackFunctions* f = &instance->fmi2Functions->callbacks;
-        instance->logMessageBufferPosition = 0;
+        FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance, "fmi2Instantiate(instanceName=\"%s\", fmuType=%d, fmuGUID=\"%s\", fmuResourceLocation=\"%s\", functions={logger=0x%p, allocateMemory=0x%p, freeMemory=0x%p, stepFinished=0x%p, componentEnvironment=0x%p}, visible=%d, loggingOn=%d)",
             instance->name, fmuType, fmuGUID, fmuResourceLocation, f->logger, f->allocateMemory, f->freeMemory, f->stepFinished, f->componentEnvironment, visible, loggingOn);
         instance->logFunctionCall(instance, instance->component ? FMIOK : FMIError, instance->logMessageBuffer);
@@ -350,7 +350,7 @@ FMIStatus FMI2SerializedFMUstateSize(FMIInstance *instance, fmi2FMUstate  FMUsta
     const FMIStatus status = (FMIStatus)instance->fmi2Functions->fmi2SerializedFMUstateSize(instance->component, FMUstate, size);
 
     if (instance->logFunctionCall) {
-        instance->logMessageBufferPosition = 0;
+        FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance, "fmi2SerializedFMUstateSize(FMUstate=0x%p, size=%zu)", FMUstate, *size);
         instance->logFunctionCall(instance, status, instance->logMessageBuffer);
     }
@@ -376,7 +376,7 @@ FMIStatus FMI2GetDirectionalDerivative(FMIInstance *instance,
     const FMIStatus status = (FMIStatus)instance->fmi2Functions->fmi2GetDirectionalDerivative(instance->component, vUnknown_ref, nUnknown, vKnown_ref, nKnown, dvKnown, dvUnknown);
 
     if (instance->logFunctionCall) {
-        instance->logMessageBufferPosition = 0;
+        FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance, "fmi2GetDirectionalDerivative(vUnknown_ref={");
         FMIAppendArrayToLogMessageBuffer(instance, vUnknown_ref, nUnknown, NULL, FMIValueReferenceType);
         FMIAppendToLogMessageBuffer(instance, "}, nUnknown=%zu, vKnown_ref={", nUnknown);
@@ -407,7 +407,7 @@ FMIStatus FMI2NewDiscreteStates(FMIInstance *instance, fmi2EventInfo *eventInfo)
     const FMIStatus status = (FMIStatus)instance->fmi2Functions->fmi2NewDiscreteStates(instance->component, eventInfo);
 
     if (instance->logFunctionCall) {
-        instance->logMessageBufferPosition = 0;
+        FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance,
             "fmi2NewDiscreteStates(eventInfo={newDiscreteStatesNeeded=%d, terminateSimulation=%d, nominalsOfContinuousStatesChanged=%d, valuesOfContinuousStatesChanged=%d, nextEventTimeDefined=%d, nextEventTime=%.16g})",
             eventInfo->newDiscreteStatesNeeded, eventInfo->terminateSimulation, eventInfo->nominalsOfContinuousStatesChanged, eventInfo->valuesOfContinuousStatesChanged, eventInfo->nextEventTimeDefined, eventInfo->nextEventTime);
@@ -430,7 +430,7 @@ FMIStatus FMI2CompletedIntegratorStep(FMIInstance *instance,
     const FMIStatus status = (FMIStatus)instance->fmi2Functions->fmi2CompletedIntegratorStep(instance->component, noSetFMUStatePriorToCurrentPoint, enterEventMode, terminateSimulation);
 
     if (instance->logFunctionCall) {
-        instance->logMessageBufferPosition = 0;
+        FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance,
             "fmi2CompletedIntegratorStep(noSetFMUStatePriorToCurrentPoint=%d, enterEventMode=%d, terminateSimulation=%d)",
             noSetFMUStatePriorToCurrentPoint, *enterEventMode, *terminateSimulation);
@@ -451,7 +451,7 @@ FMIStatus FMI2SetContinuousStates(FMIInstance *instance, const fmi2Real x[], siz
     const FMIStatus status = (FMIStatus)instance->fmi2Functions->fmi2SetContinuousStates(instance->component, x, nx);
 
     if (instance->logFunctionCall) {
-        instance->logMessageBufferPosition = 0;
+        FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance, "fmi2SetContinuousStates(x={");
         FMIAppendArrayToLogMessageBuffer(instance, x, nx, NULL, FMIRealType);
         FMIAppendToLogMessageBuffer(instance, "}, nx=%zu)", nx);
@@ -467,7 +467,7 @@ FMIStatus FMI2GetDerivatives(FMIInstance *instance, fmi2Real derivatives[], size
     const FMIStatus status = (FMIStatus)instance->fmi2Functions->fmi2GetDerivatives(instance->component, derivatives, nx);
 
     if (instance->logFunctionCall) {
-        instance->logMessageBufferPosition = 0;
+        FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance, "fmi2GetDerivatives(derivatives={");
         FMIAppendArrayToLogMessageBuffer(instance, derivatives, nx, NULL, FMIRealType);
         FMIAppendToLogMessageBuffer(instance, "}, nx=%zu)", nx);
@@ -482,7 +482,7 @@ FMIStatus FMI2GetEventIndicators(FMIInstance *instance, fmi2Real eventIndicators
     const FMIStatus status = (FMIStatus)instance->fmi2Functions->fmi2GetEventIndicators(instance->component, eventIndicators, ni);
 
     if (instance->logFunctionCall) {
-        instance->logMessageBufferPosition = 0;
+        FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance, "fmi2GetEventIndicators(eventIndicators={");
         FMIAppendArrayToLogMessageBuffer(instance, eventIndicators, ni, NULL, FMIRealType);
         FMIAppendToLogMessageBuffer(instance, "}, ni=%zu)", ni);
@@ -497,7 +497,7 @@ FMIStatus FMI2GetContinuousStates(FMIInstance *instance, fmi2Real x[], size_t nx
     const FMIStatus status = (FMIStatus)instance->fmi2Functions->fmi2GetContinuousStates(instance->component, x, nx);
 
     if (instance->logFunctionCall) {
-        instance->logMessageBufferPosition = 0;
+        FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance, "fmi2GetContinuousStates(x={");
         FMIAppendArrayToLogMessageBuffer(instance, x, nx, NULL, FMIRealType);
         FMIAppendToLogMessageBuffer(instance, "}, nx=%zu)", nx);
@@ -512,7 +512,7 @@ FMIStatus FMI2GetNominalsOfContinuousStates(FMIInstance *instance, fmi2Real x_no
     const FMIStatus status = (FMIStatus)instance->fmi2Functions->fmi2GetNominalsOfContinuousStates(instance->component, x_nominal, nx);
 
     if (instance->logFunctionCall) {
-        instance->logMessageBufferPosition = 0;
+        FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance, "fmi2GetNominalsOfContinuousStates(x_nominal={");
         FMIAppendArrayToLogMessageBuffer(instance, x_nominal, nx, NULL, FMIRealType);
         FMIAppendToLogMessageBuffer(instance, "}, nx=%zu)", nx);
@@ -562,7 +562,7 @@ FMIStatus FMI2GetStatus(FMIInstance *instance, const fmi2StatusKind s, fmi2Statu
     const FMIStatus status = (FMIStatus)instance->fmi2Functions->fmi2GetStatus(instance->component, s, value);
 
     if (instance->logFunctionCall) {
-        instance->logMessageBufferPosition = 0;
+        FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance, "fmi2GetStatus(s=%d, value=%d)", s, *value);
         instance->logFunctionCall(instance, status, instance->logMessageBuffer);
     }
@@ -575,7 +575,7 @@ FMIStatus FMI2GetRealStatus(FMIInstance *instance, const fmi2StatusKind s, fmi2R
     const FMIStatus status = (FMIStatus)instance->fmi2Functions->fmi2GetRealStatus(instance->component, s, value);
 
     if (instance->logFunctionCall) {
-        instance->logMessageBufferPosition = 0;
+        FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance, "fmi2GetRealStatus(s=%d, value=%.16g)", s, *value);
         instance->logFunctionCall(instance, status, instance->logMessageBuffer);
     }
@@ -588,7 +588,7 @@ FMIStatus FMI2GetIntegerStatus(FMIInstance *instance, const fmi2StatusKind s, fm
     const FMIStatus status = (FMIStatus)instance->fmi2Functions->fmi2GetIntegerStatus(instance->component, s, value);
 
     if (instance->logFunctionCall) {
-        instance->logMessageBufferPosition = 0;
+        FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance, "fmi2GetIntegerStatus(s=%d, value=%d)", s, *value);
         instance->logFunctionCall(instance, status, instance->logMessageBuffer);
     }
@@ -601,7 +601,7 @@ FMIStatus FMI2GetBooleanStatus(FMIInstance *instance, const fmi2StatusKind s, fm
     const FMIStatus status = (FMIStatus)instance->fmi2Functions->fmi2GetBooleanStatus(instance->component, s, value);
 
     if (instance->logFunctionCall) {
-        instance->logMessageBufferPosition = 0;
+        FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance, "fmi2GetBooleanStatus(s=%d, value=%d)", s, *value);
         instance->logFunctionCall(instance, status, instance->logMessageBuffer);
     }
@@ -614,7 +614,7 @@ FMIStatus FMI2GetStringStatus(FMIInstance *instance, const fmi2StatusKind s, fmi
     const FMIStatus status = (FMIStatus)instance->fmi2Functions->fmi2GetStringStatus(instance->component, s, value);
 
     if (instance->logFunctionCall) {
-        instance->logMessageBufferPosition = 0;
+        FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance, "fmi2GetStringStatus(s=%d, value=\"%s\")", s, *value);
         instance->logFunctionCall(instance, status, instance->logMessageBuffer);
     }
