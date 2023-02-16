@@ -76,22 +76,22 @@ static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char*
     
     switch (status) {
     case FMIOK:
-        fputs(" -> OK", stream);
+        fputs(" -> OK\n", stream);
         break;
     case FMIWarning:
-        fputs(" -> Warning", stream);
+        fputs(" -> Warning\n", stream);
         break;
     case FMIDiscard:
-        fputs(" -> Discard", stream);
+        fputs(" -> Discard\n", stream);
         break;
     case FMIError:
-        fputs(" -> Error", stream);
+        fputs(" -> Error\n", stream);
         break;
     case FMIFatal:
-        fputs(" -> Fatal", stream);
+        fputs(" -> Fatal\n", stream);
         break;
     case FMIPending:
-        fputs(" -> Pending", stream);
+        fputs(" -> Pending\n", stream);
         break;
     default:
         fprintf(stream, " -> Unknown status (%d)\n", status);
