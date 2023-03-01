@@ -57,6 +57,9 @@ void setStartValues(ModelInstance *comp) {
     strncpy(M(Binary_input), BINARY_START, BINARY_MAX_LEN);
     M(Binary_output_size) = strlen(BINARY_START);
     strncpy(M(Binary_output), BINARY_START, BINARY_MAX_LEN);
+
+    M(Enumeration_input)  = Option1;
+    M(Enumeration_output) = Option1;
 }
 
 Status calculateValues(ModelInstance *comp) {
@@ -87,6 +90,8 @@ Status calculateValues(ModelInstance *comp) {
 
     M(Binary_output_size) = M(Binary_input_size);
     memcpy(M(Binary_output), M(Binary_input), M(Binary_input_size));
+
+    M(Enumeration_output) = M(Enumeration_input);
 
     return OK;
 }
@@ -237,6 +242,14 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t
         case vr_Int32_output:
             values[(*index)++] = M(Int32_output);
             break;
+#if FMI_VERSION == 1 || FMI_VERSION == 2
+        case vr_Enumeration_input:
+            values[(*index)++] = M(Enumeration_input);
+            break;
+        case vr_Enumeration_output:
+            values[(*index)++] = M(Enumeration_output);
+            break;
+#endif
         default:
             logError(comp, "Get Int32 is not allowed for value reference %u.", vr);
             return Error;
@@ -275,6 +288,14 @@ Status getInt64(ModelInstance* comp, ValueReference vr, int64_t values[], size_t
         case vr_Int64_output:
             values[(*index)++] = M(Int64_output);
             break;
+#if FMI_VERSION == 3
+        case vr_Enumeration_input:
+            values[(*index)++] = M(Enumeration_input);
+            break;
+        case vr_Enumeration_output:
+            values[(*index)++] = M(Enumeration_output);
+            break;
+#endif
         default:
             logError(comp, "Get Int64 is not allowed for value reference %u.", vr);
             return Error;
@@ -517,6 +538,15 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], 
         case vr_Int32_input:
             M(Int32_input) = values[(*index)++];
             break;
+#if FMI_VERSION == 1 || FMI_VERSION == 2
+        case vr_Enumeration_input:
+            if (values[*index] != Option1 && values[*index] != Option2) {
+                logError(comp, "%d is not a legal value for Enumeration_input.", values[*index]);
+                return Error;
+            }
+            M(Enumeration_input) = values[(*index)++];
+            break;
+#endif
         default:
             logError(comp, "Set Int32 is not allowed for value reference %u.", vr);
             return Error;
@@ -553,6 +583,15 @@ Status setInt64(ModelInstance* comp, ValueReference vr, const int64_t values[], 
         case vr_Int64_input:
             M(Int64_input) = values[(*index)++];
             break;
+#if FMI_VERSION == 3
+        case vr_Enumeration_input:
+            if (values[*index] != Option1 && values[*index] != Option2) {
+                logError(comp, "%llu is not a legal value for Enumeration_input.", values[*index]);
+                return Error;
+            }
+            M(Enumeration_input) = values[(*index)++];
+            break;
+#endif
         default:
             logError(comp, "Set Int64 is not allowed for value reference %u.", vr);
             return Error;

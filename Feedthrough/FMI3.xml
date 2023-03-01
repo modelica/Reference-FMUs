@@ -16,6 +16,13 @@
     fixedInternalStepSize="0.1"
     hasEventMode="true"/>
 
+  <TypeDefinitions>
+    <EnumerationType name="Option">
+      <Item name="Option 1" value="1" description="First option"/>
+      <Item name="Option 2" value="2" description="Second option"/>
+    </EnumerationType>
+  </TypeDefinitions>
+
   <LogCategories>
     <Category name="logEvents" description="Log events"/>
     <Category name="logStatusError" description="Log error messages"/>
@@ -75,6 +82,9 @@
     </Binary>
     <Binary name="Binary_output" valueReference="31" causality="output"/>
 
+    <Enumeration name="Enumeration_input" declaredType="Option" valueReference="32" causality="input" start="1"/>
+    <Enumeration name="Enumeration_output" declaredType="Option" valueReference="33" causality="output"/>
+
   </ModelVariables>
 
   <ModelStructure>
@@ -92,6 +102,7 @@
     <Output valueReference="26" dependencies="25" dependenciesKind="constant"/>
     <Output valueReference="28" dependencies="27" dependenciesKind="constant"/>
     <Output valueReference="31" dependencies="30" dependenciesKind="constant"/>
+    <Output valueReference="33" dependencies="32" dependenciesKind="constant"/>
     <InitialUnknown valueReference="2" dependencies="1" dependenciesKind="constant"/>
     <InitialUnknown valueReference="4" dependencies="3" dependenciesKind="constant"/>
     <InitialUnknown valueReference="8" dependencies="7" dependenciesKind="constant"/>
@@ -106,6 +117,7 @@
     <InitialUnknown valueReference="26" dependencies="25" dependenciesKind="constant"/>
     <InitialUnknown valueReference="28" dependencies="27" dependenciesKind="constant"/>
     <InitialUnknown valueReference="31" dependencies="30" dependenciesKind="constant"/>
+    <InitialUnknown valueReference="33" dependencies="32" dependenciesKind="constant"/>
   </ModelStructure>
 
 </fmiModelDescription>

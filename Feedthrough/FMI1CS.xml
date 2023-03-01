@@ -9,6 +9,15 @@
   numberOfContinuousStates="0"
   numberOfEventIndicators="0">
 
+  <TypeDefinitions>
+    <Type name="Option">
+      <EnumerationType>
+        <Item name="Option 1" description="First option"/>
+        <Item name="Option 2" description="Second option"/>
+      </EnumerationType>
+    </Type>
+  </TypeDefinitions>
+
   <DefaultExperiment startTime="0" stopTime="2"/>
 
   <ModelVariables>
@@ -47,6 +56,12 @@
     </ScalarVariable>
     <ScalarVariable name="String_parameter" valueReference="29" variability="parameter">
       <String start="Set me!"/>
+    </ScalarVariable>
+    <ScalarVariable name="Enumeration_input" valueReference="32" causality="input" variability="discrete">
+      <Enumeration declaredType="Option" start="1"/>
+    </ScalarVariable>
+    <ScalarVariable name="Enumeration_output" valueReference="33" causality="output" variability="discrete">
+      <Enumeration declaredType="Option"/>
     </ScalarVariable>
   </ModelVariables>
 

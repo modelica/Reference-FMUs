@@ -301,7 +301,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         " or self::UInt32"
         " or self::Int64"
         " or self::UInt64"
-        " or self::UInt64"
+        " or self::Enumeration"
         " or self::Boolean"
         " or self::String"
         " or self::Binary"
@@ -340,7 +340,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             type = FMIInt32Type;
         } else if (!strcmp(name, "UInt32")) {
             type = FMIUInt32Type;
-        } else if (!strcmp(name, "Int64")) {
+        } else if (!strcmp(name, "Int64") || !strcmp(name, "Enumeration")) {
             type = FMIInt64Type;
         } else if (!strcmp(name, "UInt64")) {
             type = FMIUInt64Type;
