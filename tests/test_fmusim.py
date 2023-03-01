@@ -64,13 +64,15 @@ def test_start_value_types(fmi_version, interface_type):
             '--start-value', 'Float64_continuous_input', '-5e-1',
             '--start-value', 'Int32_input', '2',
             '--start-value', 'Boolean_input', '1',
-            '--start-value', 'String_parameter', 'FMI is awesome!'
+            '--start-value', 'String_parameter', 'FMI is awesome!',
+            '--start-value', 'Enumeration_input', '2',
         ],
         model='Feedthrough.fmu')
 
     assert result['Float64_continuous_output'][0] == -0.5
     assert result['Int32_output'][0] == 2
     assert result['Boolean_output'][0] == 1
+    assert result['Enumeration_output'][0] == 2
 
 
 @pytest.mark.parametrize('interface_type', ['cs', 'me'])

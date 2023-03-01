@@ -99,7 +99,15 @@ typedef enum {
     vr_Binary_input,
     vr_Binary_output,
 
+    vr_Enumeration_input,
+    vr_Enumeration_output
+
 } ValueReference;
+
+typedef enum {
+    Option1 = 1,
+    Option2
+} Option;
 
 typedef struct {
 
@@ -148,6 +156,9 @@ typedef struct {
     char Binary_input[BINARY_MAX_LEN];
     size_t Binary_output_size;
     char Binary_output[BINARY_MAX_LEN];
+
+    Option Enumeration_input;
+    Option Enumeration_output;
 
 } ModelData;
 
