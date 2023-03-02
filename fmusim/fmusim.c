@@ -105,6 +105,7 @@ void printUsage() {
         "Simulate a Functional Mock-up Unit and write the output to result.csv.\n"
         "\n"
         "  --help                        display this help and exit\n"
+        "  --interface-type [me|cs]      the interface type to use\n"
         "  --start-time [VALUE]          set the start time\n"
         "  --stop-time [VALUE]           set the stop time\n"
         "  --output-interval [VALUE]     set the output interval\n"

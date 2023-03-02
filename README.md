@@ -18,6 +18,7 @@ Usage: fmusim [OPTION]... [FMU]
 Simulate a Functional Mock-up Unit and write the output to result.csv.
 
   --help                        display this help and exit
+  --interface-type [me|cs]      the interface type to use
   --start-time [VALUE]          set the start time
   --stop-time [VALUE]           set the stop time
   --output-interval [VALUE]     set the output interval
