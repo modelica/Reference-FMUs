@@ -1,10 +1,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "FMIUtil.h"
-
 #include "fmusim_fmi2_me.h"
-
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
@@ -91,13 +88,6 @@ FMIStatus simulateFMI2ME(
     }
 
     CALL(FMI2EnterContinuousTimeMode(S));
-
-    S->nContinuousStates              = modelDescription->nContinuousStates;
-    S->continuousStateValueReferences = (FMIValueReference*)calloc(modelDescription->nContinuousStates, sizeof(FMIValueReference));
-    S->derivativeValueReferences      = (FMIValueReference*)calloc(modelDescription->nContinuousStates, sizeof(FMIValueReference));
-
-    // determine order of continuous states
-    CALL(FMIGetContinuousStateValueReferences(S, modelDescription));
 
     solver = settings->solverCreate(S, modelDescription, input, time);
 

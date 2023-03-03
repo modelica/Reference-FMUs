@@ -18,14 +18,21 @@
 
 #define ASSERT_NOT_NULL(f) do { if (!f) { status = FMIError; goto TERMINATE; } } while (0)
 
+#define CALL(f) do { if (f > FMIOK) return -1; } while (0)
+
 
 typedef struct SolverImpl Solver;
 
 struct SolverImpl {
     FMIInstance* S;
+    const FMIModelDescription* modelDescription;
     const FMUStaticInput* input;
     size_t nx;
     size_t nz;
+    FMIValueReference* xvr;
+    FMIValueReference* dxvr;
+    double* pre_x_temp;
+    double* x_temp;
     SUNContext sunctx;
     N_Vector x;
     N_Vector abstol;
@@ -38,7 +45,6 @@ struct SolverImpl {
     FMIStatus(*get_dx)(FMIInstance* instance, double dx[], size_t nx);
     FMIStatus(*get_z)(FMIInstance* instance, double z[], size_t nz);
 } SolverImpl_;
-
 
 // Right-hand-side function
 static int f(realtype t, N_Vector x, N_Vector ydot, void* user_data) {
@@ -81,22 +87,45 @@ TERMINATE:
     return status > FMIOK ? CV_ERR_FAILURE : CV_SUCCESS;
 }
 
+// Jacobian function
 static int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
     
     Solver* solver = (Solver*)user_data;
 
     FMIInstance* S = solver->S;
 
+    // set the index as a the value for the continuous states
+    for (size_t i = 0; i < solver->nx; i++) {
+        solver->x_temp[i] = i;
+    }
+
+    // remember the original values of the continuous states
+    CALL(FMI2GetContinuousStates(solver->S, solver->pre_x_temp, solver->nx));
+
+    // set the indices
+    CALL(FMI2SetContinuousStates(solver->S, solver->x_temp, solver->nx));
+
+    // collect value references of the continuous states and derivatives
+    for (size_t i = 0; i < solver->nx; i++) {
+        const FMIModelVariable* derivative = solver->modelDescription->derivatives[i].modelVariable;
+        const FMIModelVariable* state = derivative->derivative;
+        fmi2Real value;
+        CALL(FMI2GetReal(solver->S, &state->valueReference, 1, &value));
+        const size_t j = (size_t)value;
+        solver->xvr[j] = state->valueReference;
+        solver->dxvr[j] = derivative->valueReference;
+    }
+
+    // set the original values of the continuous states
+    CALL(FMI2SetContinuousStates(solver->S, solver->pre_x_temp, solver->nx));
+
     const fmi2Real dvKnown = 1;
 
     realtype** cols = SM_COLS_D(J);
 
     // construct the Jacobian columnwise
-    for (size_t i = 0; i < S->nContinuousStates; i++) {
-        const FMIStatus status = FMI2GetDirectionalDerivative(S, S->derivativeValueReferences, S->nContinuousStates, &S->continuousStateValueReferences[i], 1, &dvKnown, cols[i]);
-        if (status != FMIOK) {
-            return -1;
-        }
+    for (size_t i = 0; i < solver->nx; i++) {
+        CALL(FMI2GetDirectionalDerivative(S, solver->dxvr, solver->nx, &solver->xvr[i], 1, &dvKnown, cols[i]));
     }
 
     return 0;
@@ -111,11 +140,18 @@ Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
 
     ASSERT_NOT_NULL(solver);
 
+    solver->modelDescription = modelDescription;
+
     solver->S = S;
     solver->input = input;
     
     solver->nx = modelDescription->nContinuousStates;
     solver->nz = modelDescription->nEventIndicators;
+
+    solver->xvr        = (FMIValueReference*)calloc(solver->nx, sizeof(FMIValueReference));
+    solver->dxvr       = (FMIValueReference*)calloc(solver->nx, sizeof(FMIValueReference));
+    solver->pre_x_temp = (double*)calloc(solver->nx, sizeof(double));
+    solver->x_temp     = (double*)calloc(solver->nx, sizeof(double));
 
     if (S->fmiVersion == FMIVersion1) {
         solver->set_time = FMI1SetTime;
@@ -189,7 +225,7 @@ TERMINATE:
 
         FMICVodeFree(solver);
 
-            return NULL;
+        return NULL;
     }
 
     return solver;
@@ -197,17 +233,21 @@ TERMINATE:
 
 void FMICVodeFree(Solver* solver) {
 
-    if (solver) {
+    if (!solver) return;
 
-        if (solver->x)         N_VDestroy(solver->x);
-        if (solver->abstol)    N_VDestroy(solver->abstol);
-        if (solver->cvode_mem) CVodeFree(&solver->cvode_mem);
-        if (solver->LS)        SUNLinSolFree(solver->LS);
-        if (solver->A)         SUNMatDestroy(solver->A);
-        if (solver->sunctx)    SUNContext_Free(&solver->sunctx);
+    if (solver->x)         N_VDestroy(solver->x);
+    if (solver->abstol)    N_VDestroy(solver->abstol);
+    if (solver->cvode_mem) CVodeFree(&solver->cvode_mem);
+    if (solver->LS)        SUNLinSolFree(solver->LS);
+    if (solver->A)         SUNMatDestroy(solver->A);
+    if (solver->sunctx)    SUNContext_Free(&solver->sunctx);
 
-        free(solver);
-    }
+    free(solver->xvr);
+    free(solver->dxvr);
+    free(solver->pre_x_temp);
+    free(solver->x_temp);
+
+    free(solver);
 }
 
 FMIStatus FMICVodeStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent) {
