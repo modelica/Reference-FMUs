@@ -90,42 +90,54 @@ TERMINATE:
 // Jacobian function
 static int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
     
-    Solver* solver = (Solver*)user_data;
+    Solver* s = (Solver*)user_data;
 
-    FMIInstance* S = solver->S;
+    FMIInstance* S = s->S;
 
     // set the index as a the value for the continuous states
-    for (size_t i = 0; i < solver->nx; i++) {
-        solver->x_temp[i] = i;
+    for (size_t i = 0; i < s->nx; i++) {
+        s->x_temp[i] = i;
     }
 
-    // remember the original values of the continuous states
-    CALL(FMI2GetContinuousStates(solver->S, solver->pre_x_temp, solver->nx));
-
-    // set the indices
-    CALL(FMI2SetContinuousStates(solver->S, solver->x_temp, solver->nx));
+    // remember the original values of the continuous states and set indices
+    if (S->fmiVersion == FMIVersion2) {
+        CALL(FMI2GetContinuousStates(s->S, s->pre_x_temp, s->nx));
+        CALL(FMI2SetContinuousStates(s->S, s->x_temp, s->nx));
+    } else {
+        CALL(FMI3GetContinuousStates(s->S, s->pre_x_temp, s->nx));
+        CALL(FMI3SetContinuousStates(s->S, s->x_temp, s->nx));
+    }
 
     // collect value references of the continuous states and derivatives
-    for (size_t i = 0; i < solver->nx; i++) {
-        const FMIModelVariable* derivative = solver->modelDescription->derivatives[i].modelVariable;
+    for (size_t i = 0; i < s->nx; i++) {
+        const FMIModelVariable* derivative = s->modelDescription->derivatives[i].modelVariable;
         const FMIModelVariable* state = derivative->derivative;
-        fmi2Real value;
-        CALL(FMI2GetReal(solver->S, &state->valueReference, 1, &value));
+        double value;
+        if (S->fmiVersion == FMIVersion2) {
+            CALL(FMI2GetReal(s->S, &state->valueReference, 1, &value));
+        } else {
+            CALL(FMI3GetFloat64(s->S, &state->valueReference, 1, &value, 1));
+        }
         const size_t j = (size_t)value;
-        solver->xvr[j] = state->valueReference;
-        solver->dxvr[j] = derivative->valueReference;
+        s->xvr[j] = state->valueReference;
+        s->dxvr[j] = derivative->valueReference;
     }
 
-    // set the original values of the continuous states
-    CALL(FMI2SetContinuousStates(solver->S, solver->pre_x_temp, solver->nx));
-
-    const fmi2Real dvKnown = 1;
+    const double dvKnown = 1;
 
     realtype** cols = SM_COLS_D(J);
 
-    // construct the Jacobian columnwise
-    for (size_t i = 0; i < solver->nx; i++) {
-        CALL(FMI2GetDirectionalDerivative(S, solver->dxvr, solver->nx, &solver->xvr[i], 1, &dvKnown, cols[i]));
+    // set the original values of the continuous states and construct the Jacobian columnwise
+    if (S->fmiVersion == FMIVersion2) {
+        CALL(FMI2SetContinuousStates(s->S, s->pre_x_temp, s->nx));
+        for (size_t i = 0; i < s->nx; i++) {
+            CALL(FMI2GetDirectionalDerivative(S, s->dxvr, s->nx, &s->xvr[i], 1, &dvKnown, cols[i]));
+        }
+    } else {
+        CALL(FMI3SetContinuousStates(s->S, s->pre_x_temp, s->nx));
+        for (size_t i = 0; i < s->nx; i++) {
+            CALL(FMI3GetDirectionalDerivative(S, s->dxvr, s->nx, &s->xvr[i], 1, &dvKnown, 1, cols[i], s->nx));
+        }
     }
 
     return 0;

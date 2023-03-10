@@ -96,6 +96,7 @@ typedef struct {
     FMIUnknown* initialUnknowns;
 
     size_t nEventIndicators;
+    FMIUnknown* eventIndicators;
 
 } FMIModelDescription;
 

@@ -1,6 +1,7 @@
 #include "FMIModelDescription.h"
 
 #include <string.h>
+#include <stdint.h>
 
 #include <libxml/parser.h>
 #include <libxml/xmlschemas.h>
@@ -132,6 +133,20 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
     return modelDescription;
 }
 
+static bool getBooleanAttribute(const xmlNodePtr node, const char* name) {
+    char* literal = (char*)xmlGetProp(node, (xmlChar*)name);
+    bool value = literal && (strcmp(literal, "true") == 0 || strcmp(literal, "1") == 0);
+    free(literal);
+    return value;
+}
+
+static uint32_t getUInt32Attribute(const xmlNodePtr node, const char* name) {
+    char* literal = (char*)xmlGetProp(node, (xmlChar*)name);
+    uint32_t value = strtoul(literal, NULL, 0);
+    free(literal);
+    return value;
+}
+
 static void readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescription* modelDescription, const char* path, size_t* nUnkonwns, FMIUnknown** unknowns) {
 
     xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)path, xpathCtx);
@@ -147,7 +162,33 @@ static void readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescription* m
 
         const size_t index = (size_t)strtoul(indexLiteral, NULL, 0);
 
+        // TODO: check index
         (*unknowns)[i].modelVariable = &modelDescription->modelVariables[index - 1];
+    }
+
+    xmlXPathFreeObject(xpathObj);
+}
+
+static void readUnknownsFMI3(xmlXPathContextPtr xpathCtx, FMIModelDescription* modelDescription, const char* path, size_t* nUnkonwns, FMIUnknown** unknowns) {
+
+    xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)path, xpathCtx);
+
+    *nUnkonwns = xpathObj->nodesetval->nodeNr;
+    *unknowns = calloc(*nUnkonwns, sizeof(FMIUnknown));
+
+    for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
+
+        xmlNodePtr unknownNode = xpathObj->nodesetval->nodeTab[i];
+
+        FMIValueReference valueReference = getUInt32Attribute(unknownNode, "valueReference");
+
+        for (size_t j = 0; j < modelDescription->nModelVariables; j++) {
+            FMIModelVariable* variable = &modelDescription->modelVariables[j];
+            if (variable->valueReference == valueReference) {
+                (*unknowns)[i].modelVariable = variable;
+                break;
+            }
+        }
     }
 
     xmlXPathFreeObject(xpathObj);
@@ -279,6 +320,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
         if (variable->derivative) {
             char* derivative = (char*)variable->derivative;
             const size_t j = strtoul(derivative, NULL, 0);
+            // TODO: check j
             variable->derivative = &modelDescription->modelVariables[j - 1];
             free(derivative);
         }
@@ -313,8 +355,10 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelExchange", xpathCtx);
     if (xpathObj->nodesetval->nodeNr == 1) {
+        xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
         modelDescription->modelExchange = (FMIModelExchangeInterface*)calloc(1, sizeof(FMIModelExchangeInterface));
-        modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"modelIdentifier");
+        modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(node, (xmlChar*)"modelIdentifier");
+        modelDescription->modelExchange->providesDirectionalDerivatives = getBooleanAttribute(node, "providesDirectionalDerivatives");
     }
     xmlXPathFreeObject(xpathObj);
 
@@ -420,6 +464,8 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             variable->causality = FMILocal;
         }
 
+        variable->derivative = (FMIModelVariable*)xmlGetProp(node, (xmlChar*)"derivative");
+
         xmlXPathObjectPtr xpathObj2 = xmlXPathNodeEval(node, ".//Dimension", xpathCtx);
 
         for (size_t j = 0; j < xpathObj2->nodesetval->nodeNr; j++) {
@@ -458,23 +504,29 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
     xmlXPathFreeObject(xpathObj);
 
-    xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelStructure/Output", xpathCtx);
-    modelDescription->nOutputs = xpathObj->nodesetval->nodeNr;
-    xmlXPathFreeObject(xpathObj);
-
-    xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelStructure/ContinuousStateDerivative", xpathCtx);
-    modelDescription->nContinuousStates = xpathObj->nodesetval->nodeNr;
-    xmlXPathFreeObject(xpathObj);
-
-    xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelStructure/InitialUnknown", xpathCtx);
-    modelDescription->nInitialUnknowns = xpathObj->nodesetval->nodeNr;
-    xmlXPathFreeObject(xpathObj);
-
-    xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelStructure/EventIndicator", xpathCtx);
-    modelDescription->nEventIndicators = xpathObj->nodesetval->nodeNr;
-    xmlXPathFreeObject(xpathObj);
+    readUnknownsFMI3(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/Output", &modelDescription->nOutputs, &modelDescription->outputs);
+    readUnknownsFMI3(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/ContinuousStateDerivative", &modelDescription->nContinuousStates, &modelDescription->derivatives);
+    readUnknownsFMI3(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/InitialUnknown", &modelDescription->nInitialUnknowns, &modelDescription->initialUnknowns);
+    readUnknownsFMI3(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/EventIndicator", &modelDescription->nEventIndicators, &modelDescription->eventIndicators);
 
     xmlXPathFreeContext(xpathCtx);
+
+    // resolve derivatives
+    for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        if (variable->derivative) {
+            char* literal = (char*)variable->derivative;
+            const FMIValueReference vr = strtoul(literal, NULL, 0);
+            for (size_t j = 0; j < modelDescription->nModelVariables; j++) {
+                FMIModelVariable* state = &modelDescription->modelVariables[j];
+                if (state->valueReference == vr) {
+                    variable->derivative = state;
+                    break;
+                }
+            }
+            free(literal);
+        }
+    }
 
     return modelDescription;
 }

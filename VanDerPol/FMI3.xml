@@ -4,7 +4,8 @@
   <ModelExchange
     modelIdentifier="VanDerPol"
     canGetAndSetFMUState="true"
-    canSerializeFMUState="true"/>
+    canSerializeFMUState="true"
+	providesDirectionalDerivatives="true"/>
 
   <CoSimulation
     modelIdentifier="VanDerPol"
@@ -13,7 +14,8 @@
     canHandleVariableCommunicationStepSize="true"
     providesIntermediateUpdate="true"
     canReturnEarlyAfterIntermediateUpdate="true"
-    fixedInternalStepSize="1e-2"/>
+    fixedInternalStepSize="1e-2"
+	providesDirectionalDerivatives="true"/>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>
