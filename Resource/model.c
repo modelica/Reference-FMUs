@@ -8,6 +8,8 @@
 #ifdef _WIN32
 #include "shlwapi.h"
 #pragma comment(lib, "shlwapi.lib")
+#else
+#include <ctype.h>
 #endif
 
 #define MAX_PATH_LENGTH 4096
@@ -15,6 +17,41 @@
 void setStartValues(ModelInstance *comp) {
     M(y) = 0;
 }
+
+#ifndef _WIN32
+// taken from https://stackoverflow.com/questions/2673207/c-c-url-decode-library
+void urldecode2(char *dst, const char *src) {
+    char a, b;
+
+    while (*src) {
+        if ((*src == '%') && ((a = src[1]) && (b = src[2])) && (isxdigit(a) && isxdigit(b))) {
+            if (a >= 'a')
+                a -= 'a' - 'A';
+            if (a >= 'A')
+                a -= ('A' - 10);
+            else
+                a -= '0';
+
+            if (b >= 'a')
+                b -= 'a' - 'A';
+            if (b >= 'A')
+                b -= ('A' - 10);
+            else
+                b -= '0';
+
+            *dst++ = 16 * a + b;
+            src += 3;
+        } else if (*src == '+') {
+            *dst++ = ' ';
+            src++;
+        } else {
+            *dst++ = *src++;
+        }
+    }
+
+    *dst++ = '\0';
+}
+#endif
 
 Status calculateValues(ModelInstance *comp) {
 
@@ -63,6 +100,8 @@ Status calculateValues(ModelInstance *comp) {
         logError(comp, "The resourceLocation must start with \"file:/\" or \"file:///\"");
         return Error;
     }
+
+    urldecode2(path, path);
 #else
     strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
 #endif
