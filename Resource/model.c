@@ -63,6 +63,27 @@ Status calculateValues(ModelInstance *comp) {
         logError(comp, "The resourceLocation must start with \"file:/\" or \"file:///\"");
         return Error;
     }
+
+    // decode percent encoded characters
+    char* src = path;
+    char* dst = path;
+
+    char buf[3] = { '\0', '\0', '\0' };
+
+    while (*src) {
+
+        if (*src == '%' && (buf[0] = src[1]) && (buf[1] = src[2])) {
+            *dst = strtol(buf, NULL, 16);
+            src += 3;
+        } else {
+            *dst = *src;
+            src++;
+        }
+
+        dst++;
+    }
+
+    *dst = '\0';
 #else
     strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
 #endif
