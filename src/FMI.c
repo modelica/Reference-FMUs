@@ -291,11 +291,46 @@ FMIStatus FMIPathToURI(const char *path, char *uri, const size_t uriLength) {
         return FMIError;
     }
 #else
-    snprintf(uri, uriLength, "file://%s", path);
+    const size_t pathLen = strlen(path);
 
-    if (path[strlen(path) - 1] != '/') {
-        strncat(uri, "/", uriLength);
+    if (uriLength < strlen(path) + 8) {
+        return FMIError;
     }
+
+    strcpy(uri, "file://");
+
+    size_t p = 7;
+
+    // percent encode special characters
+    for (size_t i = 0; i < pathLen; i++) {
+
+        if (uriLength < p + 4) {
+            return FMIError;
+        }
+
+        const char c = path[i];
+
+        bool encode = true;
+
+        const char* legal = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=";
+
+        for (size_t j = 0; j < 84; j++) {
+            if (c == legal[j]) {
+                encode = false;
+                break;
+            }
+        }
+
+        if (encode) {
+            sprintf(&uri[p], "%%%2X", c);
+            p += 3;
+        } else {
+            uri[p++] = c;
+        }
+
+    }
+
+    uri[p] = '\0';
 #endif
 
     return FMIOK;
