@@ -487,6 +487,7 @@ Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueRe
     UNUSED(unknown);
     UNUSED(known);
     UNUSED(partialDerivative);
+    logError(comp, "Directional derivatives are not supported.");
     return Error;
 }
 #endif
