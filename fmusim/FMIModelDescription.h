@@ -104,8 +104,14 @@ FMIModelDescription* FMIReadModelDescription(const char* filename);
 
 void FMIFreeModelDescription(FMIModelDescription* modelDescription);
 
+FMIValueReference FMIValueReferenceForLiteral(const char* literal);
+
 FMIModelVariable* FMIModelVariableForName(const FMIModelDescription* modelDescription, const char* name);
 
 FMIModelVariable* FMIModelVariableForValueReference(const FMIModelDescription* modelDescription, FMIValueReference valueReference);
+
+FMIModelVariable* FMIModelVariableForIndexLiteral(const FMIModelDescription* modelDescription, const char* index);
+
+size_t FMIValidateModelStructure(const FMIModelDescription* modelDescription);
 
 void FMIDumpModelDescription(FMIModelDescription* modelDescription, FILE* file);

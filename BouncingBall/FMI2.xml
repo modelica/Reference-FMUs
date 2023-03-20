@@ -76,7 +76,7 @@
       <Real derivative="4" declaredType="Acceleration"/>
     </ScalarVariable>
     <ScalarVariable name="g" valueReference="5" causality="parameter" variability="fixed" initial="exact" description="Gravity acting on the ball">
-      <Real start="-9.81" derivative="2" declaredType="Acceleration"/>
+      <Real start="-9.81" declaredType="Acceleration"/>
     </ScalarVariable>
     <ScalarVariable name="e" valueReference="6" causality="parameter" variability="tunable" initial="exact" description="Coefficient of restitution">
       <Real start="0.7" min="0.5" max="1"/>

@@ -314,16 +314,27 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
     xmlXPathFreeContext(xpathCtx);
 
+    size_t nProblems = 0;
+
     // resolve derivatives
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
         if (variable->derivative) {
-            char* derivative = (char*)variable->derivative;
-            const size_t j = strtoul(derivative, NULL, 0);
-            // TODO: check j
-            variable->derivative = &modelDescription->modelVariables[j - 1];
-            free(derivative);
+            char* literal = (char*)variable->derivative;
+            variable->derivative = FMIModelVariableForIndexLiteral(modelDescription, literal);
+            if (!variable->derivative) {
+                printf("Failed to resolve attribute derivative=\"%s\" for model variable \"%s\".", literal, variable->name);
+                nProblems++;
+            }
+            free(literal);
         }
+    }
+
+    nProblems += FMIValidateModelStructure(modelDescription);
+
+    if (nProblems > 0) {
+        FMIFreeModelDescription(modelDescription);
+        modelDescription = NULL;
     }
 
     return modelDescription;
@@ -511,21 +522,31 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
     xmlXPathFreeContext(xpathCtx);
 
+    size_t nProblems = 0;
+
     // resolve derivatives
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        
         if (variable->derivative) {
             char* literal = (char*)variable->derivative;
-            const FMIValueReference vr = strtoul(literal, NULL, 0);
-            for (size_t j = 0; j < modelDescription->nModelVariables; j++) {
-                FMIModelVariable* state = &modelDescription->modelVariables[j];
-                if (state->valueReference == vr) {
-                    variable->derivative = state;
-                    break;
-                }
+            const FMIValueReference vr = FMIValueReferenceForLiteral(literal);
+            variable->derivative = FMIModelVariableForValueReference(modelDescription, vr);
+            if (!variable->derivative) {
+                nProblems++;
+                printf("Failed to resolve attribute derivative=\"%s\" for model variable \"%s\".\n", literal, variable->name);
             }
             free(literal);
         }
+
+    }
+
+    nProblems += FMIValidateModelStructure(modelDescription);
+
+    if (nProblems > 0) {
+        FMIFreeModelDescription(modelDescription);
+        modelDescription = NULL;
     }
 
     return modelDescription;
@@ -666,6 +687,10 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
     free(modelDescription);
 }
 
+FMIValueReference FMIValueReferenceForLiteral(const char* literal) {
+    return (FMIValueReference)strtoul(literal, NULL, 0);
+}
+
 FMIModelVariable* FMIModelVariableForName(const FMIModelDescription* modelDescription, const char* name) {
 
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
@@ -681,7 +706,7 @@ FMIModelVariable* FMIModelVariableForName(const FMIModelDescription* modelDescri
 }
 
 FMIModelVariable* FMIModelVariableForValueReference(const FMIModelDescription* modelDescription, FMIValueReference valueReference) {
-    
+
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
@@ -692,6 +717,52 @@ FMIModelVariable* FMIModelVariableForValueReference(const FMIModelDescription* m
     }
 
     return NULL;
+}
+
+FMIModelVariable* FMIModelVariableForIndexLiteral(const FMIModelDescription* modelDescription, const char* index) {
+
+    const size_t i = strtoul(index, NULL, 0);
+
+    if (i == 0 || i > modelDescription->nModelVariables) {
+        return NULL;
+    }
+
+    return &modelDescription->modelVariables[i - 1];
+}
+
+size_t FMIValidateModelStructure(const FMIModelDescription* modelDescription) {
+
+    size_t nProblems = 0;
+    size_t nDerivatives = 0;
+    size_t nOutputs = 0;
+
+    for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+
+        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+
+        if (variable->derivative) {
+            nDerivatives++;
+        }
+
+        if (variable->causality == FMIOutput) {
+            nOutputs++;
+        }
+
+    }
+
+    if (nDerivatives != modelDescription->nContinuousStates) {
+        nProblems++;
+        printf("The number of model varialbes with attribute derivate (%zu) must match the number of continuous state derivatives"
+            " in the model structure (%zu).\n", nDerivatives, modelDescription->nContinuousStates);
+    }
+
+    if (nOutputs != modelDescription->nOutputs) {
+        nProblems++;
+        printf("The number of model varialbes with causality=\"output\" (%zu) must match the number of outputs"
+            " in the model structure (%zu).\n", nDerivatives, modelDescription->nContinuousStates);
+    }
+
+    return nProblems;
 }
 
 void FMIDumpModelDescription(FMIModelDescription* modelDescription, FILE* file) {
