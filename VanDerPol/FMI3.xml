@@ -5,7 +5,7 @@
     modelIdentifier="VanDerPol"
     canGetAndSetFMUState="true"
     canSerializeFMUState="true"
-	providesDirectionalDerivatives="true"/>
+    providesDirectionalDerivatives="true"/>
 
   <CoSimulation
     modelIdentifier="VanDerPol"
@@ -15,7 +15,7 @@
     providesIntermediateUpdate="true"
     canReturnEarlyAfterIntermediateUpdate="true"
     fixedInternalStepSize="1e-2"
-	providesDirectionalDerivatives="true"/>
+    providesDirectionalDerivatives="true"/>
 
   <LogCategories>
     <Category name="logEvents" description="Log events"/>

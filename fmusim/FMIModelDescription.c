@@ -16,6 +16,20 @@
 #include "fmi2schema.h"
 #include "fmi3schema.h"
 
+static bool getBooleanAttribute(const xmlNodePtr node, const char* name) {
+    char* literal = (char*)xmlGetProp(node, (xmlChar*)name);
+    bool value = literal && (strcmp(literal, "true") == 0 || strcmp(literal, "1") == 0);
+    free(literal);
+    return value;
+}
+
+static uint32_t getUInt32Attribute(const xmlNodePtr node, const char* name) {
+    char* literal = (char*)xmlGetProp(node, (xmlChar*)name);
+    uint32_t value = strtoul(literal, NULL, 0);
+    free(literal);
+    return value;
+}
+
 static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 
     FMIModelDescription* modelDescription = (FMIModelDescription*)calloc(1, sizeof(FMIModelDescription));
@@ -101,11 +115,7 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
             continue;
         }
 
-        const char* vr = (char*)xmlGetProp(variableNode, (xmlChar*)"valueReference");
-
-        variable->valueReference = (FMIValueReference)strtoul(vr, NULL, 0);
-
-        xmlFree((void*)vr);
+        variable->valueReference = getUInt32Attribute(variableNode, "valueReference");
 
         const char* causality = (char*)xmlGetProp(variableNode, (xmlChar*)"causality");
 
@@ -133,20 +143,6 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
     return modelDescription;
 }
 
-static bool getBooleanAttribute(const xmlNodePtr node, const char* name) {
-    char* literal = (char*)xmlGetProp(node, (xmlChar*)name);
-    bool value = literal && (strcmp(literal, "true") == 0 || strcmp(literal, "1") == 0);
-    free(literal);
-    return value;
-}
-
-static uint32_t getUInt32Attribute(const xmlNodePtr node, const char* name) {
-    char* literal = (char*)xmlGetProp(node, (xmlChar*)name);
-    uint32_t value = strtoul(literal, NULL, 0);
-    free(literal);
-    return value;
-}
-
 static void readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescription* modelDescription, const char* path, size_t* nUnkonwns, FMIUnknown** unknowns) {
 
     xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)path, xpathCtx);
@@ -160,10 +156,9 @@ static void readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescription* m
 
         const char* indexLiteral = (char*)xmlGetProp(unkownNode, (xmlChar*)"index");
 
-        const size_t index = (size_t)strtoul(indexLiteral, NULL, 0);
+        (*unknowns)[i].modelVariable = FMIModelVariableForIndexLiteral(modelDescription, indexLiteral);
 
-        // TODO: check index
-        (*unknowns)[i].modelVariable = &modelDescription->modelVariables[index - 1];
+        free(indexLiteral);
     }
 
     xmlXPathFreeObject(xpathObj);
@@ -249,8 +244,6 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     modelDescription->nModelVariables = xpathObj->nodesetval->nodeNr;
     modelDescription->modelVariables = calloc(modelDescription->nModelVariables, sizeof(FMIModelVariable));
 
-    size_t* derivativeIndices = calloc(modelDescription->nModelVariables, sizeof(size_t));
-
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
         xmlNodePtr typeNode = xpathObj->nodesetval->nodeTab[i];
@@ -266,13 +259,6 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
         if (!strcmp(typeName, "Real")) {
             type = FMIRealType;
-
-            const char* derivativeLiteral = (char*)xmlGetProp(typeNode, (xmlChar*)"derivative");
-
-            if (derivativeLiteral) {
-                derivativeIndices[i] = (size_t)strtoul(derivativeLiteral, NULL, 0);
-            }
-
         } else if (!strcmp(typeName, "Integer") || !strcmp(typeName, "Enumeration")) {
             type = FMIIntegerType;
         } else if (!strcmp(typeName, "Boolean")) {
@@ -287,8 +273,10 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
         const char* vr = (char*)xmlGetProp(variableNode, (xmlChar*)"valueReference");
 
-        modelDescription->modelVariables[i].valueReference = (FMIValueReference)strtoul(vr, NULL, 0);
+        modelDescription->modelVariables[i].valueReference = FMIValueReferenceForLiteral(vr);
 
+        free(vr);
+        
         const char* causality = (char*)xmlGetProp(variableNode, (xmlChar*)"causality");
 
         if (!causality) {
@@ -304,6 +292,8 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
         } else {
             modelDescription->modelVariables[i].causality = FMILocal;
         }
+
+        free(causality);
     }
 
     xmlXPathFreeObject(xpathObj);
@@ -453,7 +443,9 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
         const char* vr = (char*)xmlGetProp(node, (xmlChar*)"valueReference");
 
-        variable->valueReference = (FMIValueReference)strtoul(vr, NULL, 0);
+        variable->valueReference = FMIValueReferenceForLiteral(vr);
+
+        free(vr);
 
         const char* causality = (char*)xmlGetProp(node, (xmlChar*)"causality");
 
