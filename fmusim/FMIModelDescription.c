@@ -223,9 +223,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     if (xpathObj->nodesetval->nodeNr == 1) {
         modelDescription->modelExchange = (FMIModelExchangeInterface*)calloc(1, sizeof(FMIModelExchangeInterface));
         modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"modelIdentifier");
-        char* providesDirectionalDerivative = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"providesDirectionalDerivative");
-        modelDescription->modelExchange->providesDirectionalDerivatives = providesDirectionalDerivative && strcmp(providesDirectionalDerivative, "true") == 0;
-        free(providesDirectionalDerivative);
+        modelDescription->modelExchange->providesDirectionalDerivatives = getBooleanAttribute(xpathObj->nodesetval->nodeTab[0], "providesDirectionalDerivative");
     }
     xmlXPathFreeObject(xpathObj);
 
