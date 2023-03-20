@@ -175,16 +175,13 @@ static void logMessage(FMIInstance *instance, FMIStatus status, const char *cate
     puts(message);
 }
 
-static void logFunctionCall(FMIInstance *instance, FMIStatus status, const char *message, ...) {
+static void logFunctionCall(FMIInstance *instance, FMIStatus status, const char *message) {
 
     if (!logFile) {
         return;
     }
 
-    va_list args;
-    va_start(args, message);
-
-    vfprintf(logFile, message, args);
+    fprintf(logFile, message);
 
     switch (status) {
     case FMIOK:
@@ -209,8 +206,6 @@ static void logFunctionCall(FMIInstance *instance, FMIStatus status, const char 
         fprintf(logFile, " -> Unknown status (%d)\n", status);
         break;
     }
-
-    va_end(args);
 }
 
 static FMIStatus setUp() {
