@@ -104,22 +104,24 @@ void printUsage() {
         "Usage: " PROGNAME " [OPTION]... [FMU]\n"
         "Simulate a Functional Mock-up Unit and write the output to result.csv.\n"
         "\n"
-        "  --help                        display this help and exit\n"
-        "  --interface-type [me|cs]      the interface type to use\n"
-        "  --tolerance [TOLERANCE]       relative tolerance\n"
-        "  --start-time [VALUE]          set the start time\n"
-        "  --stop-time [VALUE]           set the stop time\n"
-        "  --output-interval [VALUE]     set the output interval\n"
-        "  --start-value [name] [value]  set a start value\n"
-        "  --output-variable [name]      record a specific variable\n"
-        "  --input-file [FILE]           read input from a CSV file\n"
-        "  --output-file [FILE]          write output to a CSV file\n"
-        "  --log-fmi-calls               log FMI calls\n"
-        "  --fmi-log-file [FILE]         set the FMI log file\n"
-        "  --solver [euler|cvode]        the solver to use\n"
-        "  --early-return-allowed        allow early return\n"
-        "  --event-mode-used             use event mode\n"
-        "  --record-intermediate-values  record outputs in intermediate update\n"
+        "  --help                           display this help and exit\n"
+        "  --interface-type [me|cs]         the interface type to use\n"
+        "  --tolerance [TOLERANCE]          relative tolerance\n"
+        "  --start-time [VALUE]             start time\n"
+        "  --stop-time [VALUE]              stop time\n"
+        "  --output-interval [VALUE]        set the output interval\n"
+        "  --start-value [name] [value]     set a start value\n"
+        "  --output-variable [name]         record a specific variable\n"
+        "  --input-file [FILE]              read input from a CSV file\n"
+        "  --output-file [FILE]             write output to a CSV file\n"
+        "  --log-fmi-calls                  log FMI calls\n"
+        "  --fmi-log-file [FILE]            set the FMI log file\n"
+        "  --solver [euler|cvode]           the solver to use\n"
+        "  --early-return-allowed           allow early return\n"
+        "  --event-mode-used                use event mode\n"
+        "  --record-intermediate-values     record outputs in intermediate update\n"
+        "  --initial-fmu-state-file [FILE]  file to read the serialized FMU state\n"
+        "  --final-fmu-state-file [FILE]    file to save the serialized FMU state\n"
         "\n"
         "Example:\n"
         "\n"
@@ -275,6 +277,8 @@ int main(int argc, const char* argv[]) {
     const char* inputFile = NULL;
     const char* outputFile = NULL;
     const char* fmiLogFile = NULL;
+    const char* initialFMUStateFile = NULL;
+    const char* finalFMUStateFile = NULL;
 
     const char* startTimeLiteral = NULL;
     const char* stopTimeLiteral = NULL;
@@ -351,6 +355,10 @@ int main(int argc, const char* argv[]) {
             eventModeUsed = true;
         } else if (!strcmp(v, "--record-intermediate-values")) {
             recordIntermediateValues = true;
+        } else if (!strcmp(v, "--initial-fmu-state-file")) {
+            initialFMUStateFile = argv[++i];
+        } else if (!strcmp(v, "--final-fmu-state-file")) {
+            finalFMUStateFile = argv[++i];
         } else {
             printf(PROGNAME ": unrecognized option '%s'\n", v);
             printf("Try '" PROGNAME " --help' for more information.\n");
@@ -526,16 +534,18 @@ int main(int argc, const char* argv[]) {
 
     FMISimulationSettings settings;
 
-    settings.tolerance = tolerance;
-    settings.nStartValues = nStartValues;
-    settings.startVariables = startVariables;
-    settings.startValues = startValues;
-    settings.startTime = startTime;
-    settings.outputInterval = outputInterval;
-    settings.stopTime = stopTime;
-    settings.earlyReturnAllowed = earlyReturnAllowed;
-    settings.eventModeUsed = eventModeUsed;
+    settings.tolerance                = tolerance;
+    settings.nStartValues             = nStartValues;
+    settings.startVariables           = startVariables;
+    settings.startValues              = startValues;
+    settings.startTime                = startTime;
+    settings.outputInterval           = outputInterval;
+    settings.stopTime                 = stopTime;
+    settings.earlyReturnAllowed       = earlyReturnAllowed;
+    settings.eventModeUsed            = eventModeUsed;
     settings.recordIntermediateValues = recordIntermediateValues;
+    settings.initialFMUStateFile      = initialFMUStateFile;
+    settings.finalFMUStateFile        = finalFMUStateFile;
 
     if (!strcmp("euler", solver)) {
         settings.solverCreate = FMIEulerCreate;

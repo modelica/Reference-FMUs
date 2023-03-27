@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "FMIUtil.h"
+
 #include "fmusim_fmi2_me.h"
 
 
@@ -53,6 +55,10 @@ FMIStatus simulateFMI2ME(
 
     time = settings->startTime;
 
+    if (settings->initialFMUStateFile) {
+        CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
+    }
+
     // set start values
     CALL(applyStartValues(S, settings));
     CALL(FMIApplyInput(S, input, time,
@@ -61,33 +67,36 @@ FMIStatus simulateFMI2ME(
         false  // after event
     ));
 
-    // initialize
-    CALL(FMI2SetupExperiment(S, settings->tolerance > 0, settings->tolerance, time, fmi2True, settings->stopTime));
-    CALL(FMI2EnterInitializationMode(S));
-    CALL(FMI2ExitInitializationMode(S));
+    if (!settings->initialFMUStateFile) {
 
-    // intial event iteration
-    nominalsChanged = fmi2False;
-    statesChanged = fmi2False;
+        // initialize
+        CALL(FMI2SetupExperiment(S, settings->tolerance > 0, settings->tolerance, time, fmi2False, 0));
+        CALL(FMI2EnterInitializationMode(S));
+        CALL(FMI2ExitInitializationMode(S));
 
-    do {
+        // intial event iteration
+        nominalsChanged = fmi2False;
+        statesChanged = fmi2False;
 
-        CALL(FMI2NewDiscreteStates(S, &eventInfo));
+        do {
 
-        if (eventInfo.terminateSimulation) {
-            goto TERMINATE;
+            CALL(FMI2NewDiscreteStates(S, &eventInfo));
+
+            if (eventInfo.terminateSimulation) {
+                goto TERMINATE;
+            }
+
+            nominalsChanged |= eventInfo.nominalsOfContinuousStatesChanged;
+            statesChanged |= eventInfo.valuesOfContinuousStatesChanged;
+
+        } while (eventInfo.newDiscreteStatesNeeded);
+
+        if (!eventInfo.nextEventTimeDefined) {
+            eventInfo.nextEventTime = INFINITY;
         }
 
-        nominalsChanged |= eventInfo.nominalsOfContinuousStatesChanged;
-        statesChanged |= eventInfo.valuesOfContinuousStatesChanged;
-
-    } while (eventInfo.newDiscreteStatesNeeded);
-
-    if (!eventInfo.nextEventTimeDefined) {
-        eventInfo.nextEventTime = INFINITY;
+        CALL(FMI2EnterContinuousTimeMode(S));
     }
-
-    CALL(FMI2EnterContinuousTimeMode(S));
 
     solver = settings->solverCreate(S, modelDescription, input, settings->tolerance, time);
 
@@ -181,6 +190,10 @@ FMIStatus simulateFMI2ME(
             settings->solverReset(solver, time);
         }
 
+    }
+
+    if (settings->finalFMUStateFile) {
+        CALL(FMISaveFMUStateToFile(S, settings->finalFMUStateFile));
     }
 
 TERMINATE:

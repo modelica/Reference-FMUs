@@ -290,3 +290,122 @@ FMIStatus FMI3SetValues(
 
      return FMIOK;
  }
+
+FMIStatus FMIRestoreFMUStateFromFile(FMIInstance* S, const char* filename) {
+
+     FMIStatus status = FMIOK;
+
+     FILE* file = NULL;
+
+     file = fopen(filename, "rb");
+
+     if (!file) {
+         return FMIError;
+     }
+
+     fseek(file, 0L, SEEK_END);
+     
+     const size_t serializedFMUStateSize = ftell(file);
+
+     fseek(file, 0L, SEEK_SET);
+
+     char* serializedFMUState = (char*)calloc(serializedFMUStateSize, sizeof(char));
+
+     if (!serializedFMUState) {
+         return FMIError;
+     }
+
+     fread(serializedFMUState, sizeof(char), serializedFMUStateSize, file);
+
+     fclose(file);
+
+     void* FMUState = NULL;
+
+     switch (S->fmiVersion) {
+     case FMIVersion2:
+         CALL(FMI2DeSerializeFMUstate(S, serializedFMUState, serializedFMUStateSize, &FMUState));
+         CALL(FMI2SetFMUstate(S, FMUState));
+         CALL(FMI2FreeFMUstate(S, FMUState));
+         break;
+     case FMIVersion3:
+         CALL(FMI3DeserializeFMUState(S, serializedFMUState, serializedFMUStateSize, &FMUState));
+         CALL(FMI3SetFMUState(S, FMUState));
+         CALL(FMI3FreeFMUState(S, FMUState));
+         break;
+     default:
+         status = FMIError;
+         break;
+     }
+
+ TERMINATE:
+
+     free(serializedFMUState);
+
+     return status;
+}
+
+FMIStatus FMISaveFMUStateToFile(FMIInstance* S, const char* filename) {
+
+    if (S->fmiVersion == FMIVersion1) {
+        return FMIError;
+    }
+
+    FMIStatus status = FMIOK;
+
+    void* FMUState = NULL;
+
+    if (S->fmiVersion == FMIVersion2) {
+        CALL(FMI2GetFMUstate(S, &FMUState));
+    } else {
+        CALL(FMI3GetFMUState(S, &FMUState));
+    }
+
+    size_t serializedFMUStateSize = 0;
+
+    if (S->fmiVersion == FMIVersion2) {
+        CALL(FMI2SerializedFMUstateSize(S, FMUState, &serializedFMUStateSize));
+    } else {
+        CALL(FMI3SerializedFMUStateSize(S, FMUState, &serializedFMUStateSize));
+    }
+
+    char* serializedFMUState = (char*)calloc(serializedFMUStateSize, sizeof(char));
+
+    if (!serializedFMUState) {
+        status = FMIError;
+        goto TERMINATE;
+    }
+
+    if (S->fmiVersion == FMIVersion2) {
+        CALL(FMI2SerializeFMUstate(S, FMUState, serializedFMUState, serializedFMUStateSize));
+    } else {
+        CALL(FMI3SerializeFMUState(S, FMUState, serializedFMUState, serializedFMUStateSize));
+    }
+
+    FILE* file = fopen(filename, "wb");
+
+    if (!file) {
+        status = FMIError;
+        goto TERMINATE;
+    }
+
+    const size_t written = fwrite(serializedFMUState, sizeof(char), serializedFMUStateSize, file);
+
+    fclose(file);
+
+    if (written != serializedFMUStateSize) {
+        status = FMIError;
+        goto TERMINATE;
+    }
+
+    free(serializedFMUState);
+
+    if (S->fmiVersion == FMIVersion2) {
+        CALL(FMI2FreeFMUstate(S, FMUState));
+    } else {
+        CALL(FMI3FreeFMUState(S, FMUState));
+    }
+
+TERMINATE:
+
+    return status;
+}

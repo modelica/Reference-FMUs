@@ -496,7 +496,9 @@ void* getFMUState(ModelInstance* comp) {
 
     ModelInstance* fmuState = (ModelInstance*)calloc(1, sizeof(ModelInstance));
 
-    memcpy(fmuState, comp, sizeof(ModelInstance));
+    if (fmuState) {
+        memcpy(fmuState, comp, sizeof(ModelInstance));
+    }
 
     return fmuState;
 }
@@ -506,6 +508,7 @@ void setFMUState(ModelInstance* comp, void* FMUState) {
     ModelInstance* s = (ModelInstance*)FMUState;
 
     comp->startTime = s->startTime;
+    comp->stopTime = s->stopTime;
     comp->time = s->time;
     comp->status = s->status;
     comp->state = s->state;

@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "FMIUtil.h"
+
 #include "fmusim_fmi3_me.h"
 
 
@@ -51,6 +53,10 @@ FMIStatus simulateFMI3ME(
 
     time = settings->startTime;
 
+    if (settings->initialFMUStateFile) {
+        CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
+    }
+
     // set start values
     CALL(applyStartValues(S, settings));
     CALL(FMIApplyInput(S, input, time,
@@ -59,38 +65,41 @@ FMIStatus simulateFMI3ME(
         false  // after event
     ));
 
-    // initialize
-    CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, time, fmi3True, settings->stopTime));
-    CALL(FMI3ExitInitializationMode(S));
+    if (!settings->initialFMUStateFile) {
 
-    // intial event iteration
-    nominalsChanged = fmi3False;
-    statesChanged = fmi3False;
+        // initialize
+        CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, time, fmi3False, 0));
+        CALL(FMI3ExitInitializationMode(S));
 
-    do {
+        // intial event iteration
+        nominalsChanged = fmi3False;
+        statesChanged = fmi3False;
 
-        CALL(FMI3UpdateDiscreteStates(S,
-            &discreteStatesNeedUpdate,
-            &terminateSimulation,
-            &nominalsOfContinuousStatesChanged,
-            &valuesOfContinuousStatesChanged,
-            &nextEventTimeDefined,
-            &nextEventTime));
+        do {
 
-        if (terminateSimulation) {
-            goto TERMINATE;
+            CALL(FMI3UpdateDiscreteStates(S,
+                &discreteStatesNeedUpdate,
+                &terminateSimulation,
+                &nominalsOfContinuousStatesChanged,
+                &valuesOfContinuousStatesChanged,
+                &nextEventTimeDefined,
+                &nextEventTime));
+
+            if (terminateSimulation) {
+                goto TERMINATE;
+            }
+
+            nominalsChanged |= nominalsOfContinuousStatesChanged;
+            statesChanged |= valuesOfContinuousStatesChanged;
+
+        } while (discreteStatesNeedUpdate);
+
+        if (!nextEventTimeDefined) {
+            nextEventTime = INFINITY;
         }
 
-        nominalsChanged |= nominalsOfContinuousStatesChanged;
-        statesChanged |= valuesOfContinuousStatesChanged;
-
-    } while (discreteStatesNeedUpdate);
-
-    if (!nextEventTimeDefined) {
-        nextEventTime = INFINITY;
+        CALL(FMI3EnterContinuousTimeMode(S));
     }
-
-    CALL(FMI3EnterContinuousTimeMode(S));
 
     solver = settings->solverCreate(S, modelDescription, input, settings->tolerance, time);
     
@@ -188,6 +197,10 @@ FMIStatus simulateFMI3ME(
             settings->solverReset(solver, time);
         }
 
+    }
+
+    if (settings->finalFMUStateFile) {
+        CALL(FMISaveFMUStateToFile(S, settings->finalFMUStateFile));
     }
 
 TERMINATE:

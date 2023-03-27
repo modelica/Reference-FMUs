@@ -242,3 +242,37 @@ def test_event_mode_time_events():
 
     assert np.all(result['time'] == [0, 1, 1, 2, 2, 2.5, 3, 3, 4, 4, 5, 5])
     assert np.all(result['counter'] == [1, 1, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6])
+
+
+@pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
+def test_restore_fmu_state(fmi_version, interface_type):
+
+    result1 = call_fmusim(
+        fmi_version=fmi_version,
+        interface_type=interface_type,
+        test_name='test_restore_fmu_state',
+        args=[
+            '--stop-time', '1',
+            '--final-fmu-state-file',
+            f'FMUState_{fmi_version}_{interface_type}.bin'
+        ],
+        model='BouncingBall.fmu'
+    )
+
+    assert result1['time'][-1] == 1
+
+    result2 = call_fmusim(
+        fmi_version=fmi_version,
+        interface_type=interface_type,
+        test_name='test_fmu_state',
+        args=[
+            '--start-time', '1',
+            '--stop-time', '2',
+            '--initial-fmu-state-file',
+            f'FMUState_{fmi_version}_{interface_type}.bin'
+        ],
+        model='BouncingBall.fmu'
+    )
+
+    assert result2['time'][0] == 1
+    assert result2['h'][0] == result1['h'][-1]

@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "FMIUtil.h"
+
 #include "fmusim_fmi3_cs.h"
 
 
@@ -90,36 +92,42 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
 
     free(requiredIntermediateVariables);
 
+    if (settings->initialFMUStateFile) {
+        CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
+    }
+
     CALL(applyStartValues(S, settings));
     CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
 
-    // initialize
-    CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, settings->startTime, fmi3True, settings->stopTime));
-    CALL(FMI3ExitInitializationMode(S));
+    if (!settings->initialFMUStateFile) {
 
-    if (settings->eventModeUsed) {
+        CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, settings->startTime, fmi3False, 0));
+        CALL(FMI3ExitInitializationMode(S));
+
+        if (settings->eventModeUsed) {
      
-        do {
+            do {
 
-            CALL(FMI3UpdateDiscreteStates(S,
-                &discreteStatesNeedUpdate,
-                &terminateSimulation,
-                &nominalsOfContinuousStatesChanged,
-                &valuesOfContinuousStatesChanged,
-                &nextEventTimeDefined,
-                &nextEventTime));
+                CALL(FMI3UpdateDiscreteStates(S,
+                    &discreteStatesNeedUpdate,
+                    &terminateSimulation,
+                    &nominalsOfContinuousStatesChanged,
+                    &valuesOfContinuousStatesChanged,
+                    &nextEventTimeDefined,
+                    &nextEventTime));
 
-            if (terminateSimulation) {
-                goto TERMINATE;
+                if (terminateSimulation) {
+                    goto TERMINATE;
+                }
+
+            } while (discreteStatesNeedUpdate);
+
+            if (!nextEventTimeDefined) {
+                nextEventTime = INFINITY;
             }
 
-        } while (discreteStatesNeedUpdate);
-
-        if (!nextEventTimeDefined) {
-            nextEventTime = INFINITY;
+            CALL(FMI3EnterStepMode(S));
         }
-
-        CALL(FMI3EnterStepMode(S));
     }
 
     size_t nSteps = 0;
@@ -217,6 +225,10 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
 
             CALL(FMI3EnterStepMode(S));
         }
+    }
+
+    if (settings->finalFMUStateFile) {
+        CALL(FMISaveFMUStateToFile(S, settings->finalFMUStateFile));
     }
 
 TERMINATE:
