@@ -55,8 +55,8 @@ FMIStatus simulateFMI2ME(
 
     time = settings->startTime;
 
-    if (settings->initialStateFile) {
-        CALL(FMIRestoreFMUStateFromFile(S, settings->initialStateFile));
+    if (settings->initialFMUStateFile) {
+        CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
     }
 
     // set start values
@@ -67,7 +67,7 @@ FMIStatus simulateFMI2ME(
         false  // after event
     ));
 
-    if (!settings->initialStateFile) {
+    if (!settings->initialFMUStateFile) {
 
         // initialize
         CALL(FMI2SetupExperiment(S, settings->tolerance > 0, settings->tolerance, time, fmi2False, 0));
@@ -192,8 +192,8 @@ FMIStatus simulateFMI2ME(
 
     }
 
-    if (settings->finalStateFile) {
-        CALL(FMISaveFMUStateToFile(S, settings->finalStateFile));
+    if (settings->finalFMUStateFile) {
+        CALL(FMISaveFMUStateToFile(S, settings->finalFMUStateFile));
     }
 
 TERMINATE:

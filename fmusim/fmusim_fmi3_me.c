@@ -53,8 +53,8 @@ FMIStatus simulateFMI3ME(
 
     time = settings->startTime;
 
-    if (settings->initialStateFile) {
-        CALL(FMIRestoreFMUStateFromFile(S, settings->initialStateFile));
+    if (settings->initialFMUStateFile) {
+        CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
     }
 
     // set start values
@@ -65,7 +65,7 @@ FMIStatus simulateFMI3ME(
         false  // after event
     ));
 
-    if (!settings->initialStateFile) {
+    if (!settings->initialFMUStateFile) {
 
         // initialize
         CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, time, fmi3False, 0));
@@ -199,8 +199,8 @@ FMIStatus simulateFMI3ME(
 
     }
 
-    if (settings->finalStateFile) {
-        CALL(FMISaveFMUStateToFile(S, settings->finalStateFile));
+    if (settings->finalFMUStateFile) {
+        CALL(FMISaveFMUStateToFile(S, settings->finalFMUStateFile));
     }
 
 TERMINATE:

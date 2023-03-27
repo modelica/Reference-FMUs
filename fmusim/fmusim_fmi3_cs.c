@@ -92,14 +92,14 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
 
     free(requiredIntermediateVariables);
 
-    if (settings->initialStateFile) {
-        CALL(FMIRestoreFMUStateFromFile(S, settings->initialStateFile));
+    if (settings->initialFMUStateFile) {
+        CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
     }
 
     CALL(applyStartValues(S, settings));
     CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
 
-    if (!settings->initialStateFile) {
+    if (!settings->initialFMUStateFile) {
 
         CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, settings->startTime, fmi3False, 0));
         CALL(FMI3ExitInitializationMode(S));
@@ -227,8 +227,8 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
         }
     }
 
-    if (settings->finalStateFile) {
-        CALL(FMISaveFMUStateToFile(S, settings->finalStateFile));
+    if (settings->finalFMUStateFile) {
+        CALL(FMISaveFMUStateToFile(S, settings->finalFMUStateFile));
     }
 
 TERMINATE:

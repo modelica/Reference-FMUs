@@ -544,8 +544,8 @@ int main(int argc, const char* argv[]) {
     settings.earlyReturnAllowed       = earlyReturnAllowed;
     settings.eventModeUsed            = eventModeUsed;
     settings.recordIntermediateValues = recordIntermediateValues;
-    settings.initialStateFile         = initialFMUStateFile;
-    settings.finalStateFile           = finalFMUStateFile;
+    settings.initialFMUStateFile      = initialFMUStateFile;
+    settings.finalFMUStateFile        = finalFMUStateFile;
 
     if (!strcmp("euler", solver)) {
         settings.solverCreate = FMIEulerCreate;

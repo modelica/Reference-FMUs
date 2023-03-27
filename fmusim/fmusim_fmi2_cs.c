@@ -24,14 +24,14 @@ FMIStatus simulateFMI2CS(
         fmi2False                             // loggingOn
     ));
 
-    if (settings->initialStateFile) {
-        CALL(FMIRestoreFMUStateFromFile(S, settings->initialStateFile));
+    if (settings->initialFMUStateFile) {
+        CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
     }
 
     CALL(applyStartValues(S, settings));
     CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
 
-    if (!settings->initialStateFile) {
+    if (!settings->initialFMUStateFile) {
         CALL(FMI2SetupExperiment(S, settings->tolerance > 0, settings->tolerance, settings->startTime, fmi2False, 0));
         CALL(FMI2EnterInitializationMode(S));
         CALL(FMI2ExitInitializationMode(S));
@@ -73,8 +73,8 @@ FMIStatus simulateFMI2CS(
 
     }
 
-    if (settings->finalStateFile) {
-        CALL(FMISaveFMUStateToFile(S, settings->finalStateFile));
+    if (settings->finalFMUStateFile) {
+        CALL(FMISaveFMUStateToFile(S, settings->finalFMUStateFile));
     }
 
 TERMINATE:
