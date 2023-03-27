@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <assert.h>
+#include <math.h>
 
 #include "config.h"
 #include "model.h"
@@ -220,9 +221,11 @@ fmiComponent fmiInstantiateSlave(fmiString  instanceName, fmiString GUID,
 
 fmiStatus fmiInitializeSlave(fmiComponent c, fmiReal tStart, fmiBoolean StopTimeDefined, fmiReal tStop) {
 
-    UNUSED(tStart);
-    UNUSED(StopTimeDefined);
-    UNUSED(tStop);
+    ModelInstance* instance = (ModelInstance*)c;
+
+    instance->startTime = tStart;
+    instance->stopTime = StopTimeDefined ? tStop : INFINITY;
+    instance->time = tStart;
 
     return init(c);
 }
@@ -297,6 +300,13 @@ fmiStatus fmiDoStep(fmiComponent c, fmiReal currentCommunicationPoint, fmiReal c
     UNUSED(newStep);
 
     ModelInstance* instance = (ModelInstance *)c;
+
+    if (currentCommunicationPoint + communicationStepSize > instance->stopTime + EPSILON) {
+        logError(instance, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
+            currentCommunicationPoint, communicationStepSize, instance->stopTime);
+        instance->state = modelError;
+        return fmiError;
+    }
 
     const fmiReal nextCommunicationPoint = currentCommunicationPoint + communicationStepSize + EPSILON;
 

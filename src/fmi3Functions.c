@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <assert.h>
+#include <math.h>
 
 #include "config.h"
 #include "model.h"
@@ -390,12 +391,11 @@ fmi3Status fmi3EnterInitializationMode(fmi3Instance instance,
 
     UNUSED(toleranceDefined);
     UNUSED(tolerance);
-    UNUSED(stopTimeDefined);
-    UNUSED(stopTime);
 
     ASSERT_STATE(EnterInitializationMode);
 
     S->startTime = startTime;
+    S->stopTime = stopTimeDefined ? stopTime : INFINITY;
     S->time = startTime;
     S->state = InitializationMode;
 
@@ -1393,6 +1393,13 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
 
     if (communicationStepSize <= 0) {
         logError(S, "fmi3DoStep: communication step size must be > 0 but was %g.", communicationStepSize);
+        S->state = modelError;
+        return fmi3Error;
+    }
+
+    if (currentCommunicationPoint + communicationStepSize > S->stopTime + EPSILON) {
+        logError(S, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
+            currentCommunicationPoint, communicationStepSize, S->stopTime);
         S->state = modelError;
         return fmi3Error;
     }

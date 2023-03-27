@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <assert.h>
+#include <math.h>
 
 #include "config.h"
 #include "model.h"
@@ -238,12 +239,11 @@ fmi2Status fmi2SetupExperiment(fmi2Component c, fmi2Boolean toleranceDefined, fm
 
     UNUSED(toleranceDefined);
     UNUSED(tolerance);
-    UNUSED(stopTimeDefined);
-    UNUSED(stopTime);
 
     ASSERT_STATE(SetupExperiment)
 
     S->startTime = startTime;
+    S->stopTime = stopTimeDefined ? stopTime : INFINITY;
     S->time = startTime;
 
     return fmi2OK;
@@ -631,7 +631,14 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
     ASSERT_STATE(DoStep);
 
     if (communicationStepSize <= 0) {
-        logError(S, "fmi2DoStep: communication step size must be > 0 but was %g.", communicationStepSize);
+        logError(S, "Communication step size must be > 0 but was %g.", communicationStepSize);
+        S->state = modelError;
+        return fmi2Error;
+    }
+
+    if (currentCommunicationPoint + communicationStepSize > S->stopTime + EPSILON) {
+        logError(S, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
+            currentCommunicationPoint, communicationStepSize, S->stopTime);
         S->state = modelError;
         return fmi2Error;
     }
