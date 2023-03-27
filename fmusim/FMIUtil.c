@@ -342,7 +342,7 @@ FMIStatus FMIRestoreFMUStateFromFile(FMIInstance* S, const char* filename) {
      free(serializedFMUState);
 
      return status;
- }
+}
 
 FMIStatus FMISaveFMUStateToFile(FMIInstance* S, const char* filename) {
 
