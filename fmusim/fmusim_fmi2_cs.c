@@ -27,7 +27,7 @@ FMIStatus simulateFMI2CS(
     CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
 
     // initialize
-    CALL(FMI2SetupExperiment(S, fmi2False, 0.0, settings->startTime, fmi2True, settings->stopTime));
+    CALL(FMI2SetupExperiment(S, settings->tolerance > 0, settings->tolerance, settings->startTime, fmi2True, settings->stopTime));
     CALL(FMI2EnterInitializationMode(S));
     CALL(FMI2ExitInitializationMode(S));
 

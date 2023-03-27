@@ -3,7 +3,7 @@
 #include "FMISolver.h"
 
 
-Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double startTime);
+Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double tolerance, double startTime);
 
 void FMICVodeFree(Solver* solver);
 

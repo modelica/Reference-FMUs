@@ -3,7 +3,7 @@
 #include "FMISolver.h"
 
 
-Solver* FMIEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double startTime);
+Solver* FMIEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double tolerance, double startTime);
 
 void FMIEulerFree(Solver* solver);
 

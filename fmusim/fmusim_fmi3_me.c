@@ -60,7 +60,7 @@ FMIStatus simulateFMI3ME(
     ));
 
     // initialize
-    CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, time, fmi3True, settings->stopTime));
+    CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, time, fmi3True, settings->stopTime));
     CALL(FMI3ExitInitializationMode(S));
 
     // intial event iteration
@@ -92,7 +92,7 @@ FMIStatus simulateFMI3ME(
 
     CALL(FMI3EnterContinuousTimeMode(S));
 
-    solver = settings->solverCreate(S, modelDescription, input, time);
+    solver = settings->solverCreate(S, modelDescription, input, settings->tolerance, time);
     
     if (!solver) {
         status = FMIError;
