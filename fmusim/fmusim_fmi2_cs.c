@@ -1,3 +1,5 @@
+#include "FMIUtil.h"
+
 #include "fmusim_fmi2_cs.h"
 
 
@@ -22,14 +24,18 @@ FMIStatus simulateFMI2CS(
         fmi2False                             // loggingOn
     ));
 
-    // set start values
+    if (settings->initialStateFile) {
+        CALL(FMIRestoreFMUStateFromFile(S, settings->initialStateFile));
+    }
+
     CALL(applyStartValues(S, settings));
     CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
 
-    // initialize
-    CALL(FMI2SetupExperiment(S, settings->tolerance > 0, settings->tolerance, settings->startTime, fmi2False, 0));
-    CALL(FMI2EnterInitializationMode(S));
-    CALL(FMI2ExitInitializationMode(S));
+    if (!settings->initialStateFile) {
+        CALL(FMI2SetupExperiment(S, settings->tolerance > 0, settings->tolerance, settings->startTime, fmi2False, 0));
+        CALL(FMI2EnterInitializationMode(S));
+        CALL(FMI2ExitInitializationMode(S));
+    }
 
     for (unsigned long step = 0;; step++) {
         
@@ -65,6 +71,10 @@ FMIStatus simulateFMI2CS(
             CALL(doStepStatus);
         }
 
+    }
+
+    if (settings->finalStateFile) {
+        CALL(FMISaveFMUStateToFile(S, settings->finalStateFile));
     }
 
 TERMINATE:

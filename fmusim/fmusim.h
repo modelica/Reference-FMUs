@@ -13,6 +13,8 @@ typedef struct {
     double startTime;
     double stopTime;
     double outputInterval;
+    const char* initialStateFile;
+    const char* finalStateFile;
 
     // Co-Simulation
     bool earlyReturnAllowed;

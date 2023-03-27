@@ -34,3 +34,7 @@ FMIStatus FMI3SetValues(
 FMIStatus FMIParseStartValues(FMIVariableType type, const char* literal, size_t nValues, void* values);
 
 FMIStatus FMIHexToBinary(const char* hex, size_t* size, unsigned char** value);
+
+FMIStatus FMIRestoreFMUStateFromFile(FMIInstance* S, const char* filename);
+
+FMIStatus FMISaveFMUStateToFile(FMIInstance* S, const char* filename);
