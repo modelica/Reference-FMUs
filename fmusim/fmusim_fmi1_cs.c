@@ -71,13 +71,17 @@ FMIStatus simulateFMI1CS(
 
 TERMINATE:
 
-    if (status != FMIFatal) {
+    if (status < FMIError) {
 
         const FMIStatus terminateStatus = FMI1TerminateSlave(S);
 
-        if (terminateStatus != FMIFatal) {
-            FMI1FreeSlaveInstance(S);
+        if (terminateStatus > status) {
+            status = terminateStatus;
         }
+    }
+
+    if (status != FMIFatal) {
+        FMI1FreeSlaveInstance(S);
     }
 
     return status;

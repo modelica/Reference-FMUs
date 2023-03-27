@@ -185,13 +185,17 @@ FMIStatus simulateFMI2ME(
 
 TERMINATE:
 
-    if (status != FMIFatal) {
+    if (status < FMIError) {
 
         const FMIStatus terminateStatus = FMI2Terminate(S);
 
-        if (terminateStatus != FMIFatal) {
-            FMI2FreeInstance(S);
+        if (terminateStatus > status) {
+            status = terminateStatus;
         }
+    }
+
+    if (status != FMIFatal) {
+        FMI2FreeInstance(S);
     }
 
     if (solver) {
