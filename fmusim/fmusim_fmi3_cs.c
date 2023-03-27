@@ -221,13 +221,17 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
 
 TERMINATE:
 
-    if (status != FMIFatal) {
+    if (status < FMIError) {
 
         const FMIStatus terminateStatus = FMI3Terminate(S);
 
-        if (terminateStatus != FMIFatal) {
-            FMI3FreeInstance(S);
+        if (terminateStatus > status) {
+            status = terminateStatus;
         }
+    }
+
+    if (status != FMIFatal) {
+        FMI3FreeInstance(S);
     }
 
     return status;
