@@ -60,7 +60,7 @@ FMIStatus simulateFMI3ME(
     ));
 
     // initialize
-    CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, time, fmi3True, settings->stopTime));
+    CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, time, fmi3False, 0));
     CALL(FMI3ExitInitializationMode(S));
 
     // intial event iteration

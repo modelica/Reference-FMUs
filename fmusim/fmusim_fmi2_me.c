@@ -62,7 +62,7 @@ FMIStatus simulateFMI2ME(
     ));
 
     // initialize
-    CALL(FMI2SetupExperiment(S, settings->tolerance > 0, settings->tolerance, time, fmi2True, settings->stopTime));
+    CALL(FMI2SetupExperiment(S, settings->tolerance > 0, settings->tolerance, time, fmi2False, 0));
     CALL(FMI2EnterInitializationMode(S));
     CALL(FMI2ExitInitializationMode(S));
 

@@ -30,7 +30,7 @@ FMIStatus simulateFMI1CS(
     CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
 
     // initialize
-    CALL(FMI1InitializeSlave(S, settings->startTime, fmi1True, settings->stopTime));
+    CALL(FMI1InitializeSlave(S, settings->startTime, fmi1False, 0));
 
     for (unsigned long step = 0;; step++) {
         

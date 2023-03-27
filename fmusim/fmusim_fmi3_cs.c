@@ -94,7 +94,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
     CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
 
     // initialize
-    CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, settings->startTime, fmi3True, settings->stopTime));
+    CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, settings->startTime, fmi3False, 0));
     CALL(FMI3ExitInitializationMode(S));
 
     if (settings->eventModeUsed) {
