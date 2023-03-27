@@ -10,8 +10,6 @@
 #include "FMI3.h"
 
 
-#define RTOL  RCONST(1.0e-4)
-
 #define CALL_CVODE(f) do { flag = f; if (flag < 0) { status = FMIError; goto TERMINATE; } } while (0)
 
 #define CALL_FMI(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
@@ -143,7 +141,7 @@ static int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void* user_data
     return 0;
 }
 
-Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double startTime) {
+Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double tolerance, double startTime) {
 
     int flag = CV_SUCCESS;
     FMIStatus status = FMIOK;
@@ -151,6 +149,10 @@ Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
     Solver* solver = (Solver*)calloc(1, sizeof(SolverImpl_));
 
     ASSERT_NOT_NULL(solver);
+
+    if (tolerance <= 0) {
+        tolerance = 1e-4; // default tolerance
+    }
 
     solver->modelDescription = modelDescription;
 
@@ -203,7 +205,7 @@ Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
     ASSERT_NOT_NULL(solver->abstol);
 
     for (size_t i = 0; i < NV_LENGTH_S(solver->x); i++) {
-        NV_DATA_S(solver->abstol)[i] = RTOL;
+        NV_DATA_S(solver->abstol)[i] = tolerance;
     }
 
     solver->cvode_mem = CVodeCreate(CV_BDF, solver->sunctx);
@@ -213,7 +215,7 @@ Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
 
     CALL_CVODE(CVodeInit(solver->cvode_mem, f, startTime, solver->x));
 
-    CALL_CVODE(CVodeSVtolerances(solver->cvode_mem, RTOL, solver->abstol));
+    CALL_CVODE(CVodeSVtolerances(solver->cvode_mem, tolerance, solver->abstol));
 
     CALL_CVODE(CVodeRootInit(solver->cvode_mem, (int)solver->nz, g));
 

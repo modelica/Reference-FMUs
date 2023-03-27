@@ -25,7 +25,9 @@ struct SolverImpl {
     FMIStatus(*get_z)(FMIInstance* instance, double z[], size_t nz);
 } SolverImpl_;
 
-Solver* FMIEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double startTime) {
+Solver* FMIEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double tolerance, double startTime) {
+
+    (void)tolerance; // unused
 
     Solver* solver = (Solver*)calloc(1, sizeof(SolverImpl_));
 

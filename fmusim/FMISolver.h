@@ -6,7 +6,7 @@
 
 typedef struct SolverImpl Solver;
 
-typedef Solver* (*SolverCreate)(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double startTime);
+typedef Solver* (*SolverCreate)(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double tolerance, double startTime);
 
 typedef void (*SolverFree)(Solver* solver);
 

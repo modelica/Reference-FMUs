@@ -106,6 +106,7 @@ void printUsage() {
         "\n"
         "  --help                        display this help and exit\n"
         "  --interface-type [me|cs]      the interface type to use\n"
+        "  --tolerance [TOLERANCE]       relative tolerance\n"
         "  --start-time [VALUE]          set the start time\n"
         "  --stop-time [VALUE]           set the stop time\n"
         "  --output-interval [VALUE]     set the output interval\n"
@@ -296,6 +297,7 @@ int main(int argc, const char* argv[]) {
     bool earlyReturnAllowed = false;
     bool eventModeUsed = false;
     bool recordIntermediateValues = false;
+    double tolerance = 0;
 
     for (int i = 1; i < argc - 1; i++) {
 
@@ -330,6 +332,9 @@ int main(int argc, const char* argv[]) {
             outputFile = argv[++i];
         } else if (!strcmp(v, "--fmi-log-file")) {
             fmiLogFile = argv[++i];
+        } else if (!strcmp(v, "--tolerance")) {
+            char* error;
+            tolerance = strtod(argv[++i], &error);
         } else if (!strcmp(v, "--start-time")) {
             startTimeLiteral = argv[++i];
         } else if (!strcmp(v, "--stop-time")) {
@@ -521,6 +526,7 @@ int main(int argc, const char* argv[]) {
 
     FMISimulationSettings settings;
 
+    settings.tolerance = tolerance;
     settings.nStartValues = nStartValues;
     settings.startVariables = startVariables;
     settings.startValues = startValues;
