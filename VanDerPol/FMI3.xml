@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fmiModelDescription fmiVersion="3.0" modelName="van der Pol oscillator" generationTool="Reference FMUs (development build)" instantiationToken="{BD403596-3166-4232-ABC2-132BDF73E644}">
+<fmiModelDescription
+  fmiVersion="3.0"
+  modelName="van der Pol oscillator"
+  generationTool="Reference FMUs (development build)"
+  instantiationToken="{BD403596-3166-4232-ABC2-132BDF73E644}">
 
   <ModelExchange
     modelIdentifier="VanDerPol"
