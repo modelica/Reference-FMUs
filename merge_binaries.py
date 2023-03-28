@@ -1,3 +1,5 @@
+from datetime import datetime
+import pytz
 import shutil
 import subprocess
 import zipfile
@@ -45,7 +47,8 @@ parameters = {
 
 
 def set_tool_version(filename, git_executable='git'):
-    """ Set the Git tag or hash in the generationTool attribute if the repo is clean """
+    """ Set the Git tag or hash in the generationTool and generationDateAndTime attributes
+        if the repo is clean """
 
     cwd = os.path.dirname(__file__)
 
@@ -67,7 +70,10 @@ def set_tool_version(filename, git_executable='git'):
     with open(filename, 'r') as f:
         lines = f.read()
 
-    lines = lines.replace('"Reference FMUs (development build)"', f'"Reference FMUs ({version})"')
+    isodate = datetime.now(pytz.utc).isoformat()
+
+    lines = lines.replace('"Reference FMUs (development build)"',
+                          f'"Reference FMUs ({version})"\n  generationDateAndTime="{isodate}"')
 
     with open(filename, 'w') as f:
         f.write(lines)
