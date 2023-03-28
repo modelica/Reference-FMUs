@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fmiModelDescription fmiVersion="3.0" modelName="Dahlquist" generationTool="Reference FMUs (development build)" instantiationToken="{221063D2-EF4A-45FE-B954-B5BFEEA9A59B}">
+<fmiModelDescription
+  fmiVersion="3.0"
+  modelName="Dahlquist"
+  generationTool="Reference FMUs (development build)"
+  instantiationToken="{221063D2-EF4A-45FE-B954-B5BFEEA9A59B}">
 
   <ModelExchange
     modelIdentifier="Dahlquist"

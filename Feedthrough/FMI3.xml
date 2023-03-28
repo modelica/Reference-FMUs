@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fmiModelDescription fmiVersion="3.0" modelName="Feedthrough" generationTool="Reference FMUs (development build)" instantiationToken="{37B954F1-CC86-4D8F-B97F-C7C36F6670D2}">
+<fmiModelDescription
+  fmiVersion="3.0"
+  modelName="Feedthrough"
+  generationTool="Reference FMUs (development build)"
+  instantiationToken="{37B954F1-CC86-4D8F-B97F-C7C36F6670D2}">
 
   <ModelExchange
     modelIdentifier="Feedthrough"
