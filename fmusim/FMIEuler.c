@@ -65,7 +65,9 @@ Solver* FMIEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
         return NULL;
     }
 
-    solver->get_z(solver->S, solver->prez, solver->nz);
+    if (solver->nz > 0) {
+        solver->get_z(solver->S, solver->prez, solver->nz);
+    }
 
     return solver;
 }
@@ -92,29 +94,36 @@ FMIStatus FMIEulerStep(Solver* solver, double nextTime, double* timeReached, boo
 
     FMIStatus status = FMIOK;
 
-    CALL(solver->get_x(solver->S, solver->x, solver->nx));
-    CALL(solver->get_dx(solver->S, solver->dx, solver->nx));
-
     const double dt = nextTime - solver->time;
 
-    for (size_t i = 0; i < solver->nx; i++) {
-        solver->x[i] += dt * solver->dx[i];
-    }
+    if (solver->nx > 0) {
 
-    CALL(solver->set_x(solver->S, solver->x, solver->nx));
-    CALL(solver->get_z(solver->S, solver->z, solver->nz));
+        CALL(solver->get_x(solver->S, solver->x, solver->nx));
+        CALL(solver->get_dx(solver->S, solver->dx, solver->nx));
+
+        for (size_t i = 0; i < solver->nx; i++) {
+            solver->x[i] += dt * solver->dx[i];
+        }
+
+        CALL(solver->set_x(solver->S, solver->x, solver->nx));
+    }
 
     *stateEvent = false;
 
-    for (size_t i = 0; i < solver->nz; i++) {
+    if (solver->nz > 0) {
 
-        if (solver->prez[i] <= 0 && solver->z[i] > 0) {
-            *stateEvent = true;  // -\+
-        } else if (solver->prez[i] > 0 && solver->z[i] <= 0) {
-            *stateEvent = true;  // +/-
+        CALL(solver->get_z(solver->S, solver->z, solver->nz));
+
+        for (size_t i = 0; i < solver->nz; i++) {
+
+            if (solver->prez[i] <= 0 && solver->z[i] > 0) {
+                *stateEvent = true;  // -\+
+            } else if (solver->prez[i] > 0 && solver->z[i] <= 0) {
+                *stateEvent = true;  // +/-
+            }
+
+            solver->prez[i] = solver->z[i];
         }
-
-        solver->prez[i] = solver->z[i];
     }
 
     solver->time = nextTime;

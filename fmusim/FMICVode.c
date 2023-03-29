@@ -217,7 +217,9 @@ Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
 
     CALL_CVODE(CVodeSVtolerances(solver->cvode_mem, tolerance, solver->abstol));
 
-    CALL_CVODE(CVodeRootInit(solver->cvode_mem, (int)solver->nz, g));
+    if (solver->nz > 0) {
+        CALL_CVODE(CVodeRootInit(solver->cvode_mem, (int)solver->nz, g));
+    }
 
     solver->A = SUNDenseMatrix(NV_LENGTH_S(solver->x), NV_LENGTH_S(solver->x), solver->sunctx);
     ASSERT_NOT_NULL(solver->A);
