@@ -104,7 +104,13 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
         const char* typeName = (char*)typeNode->name;
 
         if (!strcmp(typeName, "Real")) {
-            variable->type = FMIRealType;
+            const char* variability = (char*)xmlGetProp(variableNode, (xmlChar*)"variability");
+            if (variability && !strcmp(variability, "discrete")) {
+                variable->type = FMIDiscreteRealType;
+            } else {
+                variable->type = FMIRealType;
+            }
+            free((void*)variability);
         } else if (!strcmp(typeName, "Integer") || !strcmp(typeName, "Enumeration")) {
             variable->type = FMIIntegerType;
         } else if (!strcmp(typeName, "Boolean")) {
@@ -247,16 +253,24 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
         xmlNodePtr typeNode = xpathObj->nodesetval->nodeTab[i];
         xmlNodePtr variableNode = typeNode->parent;
 
-        modelDescription->modelVariables[i].name = (char*)xmlGetProp(variableNode, (xmlChar*)"name");
-        modelDescription->modelVariables[i].description = (char*)xmlGetProp(variableNode, (xmlChar*)"description");
+        FMIModelVariable* variable = &modelDescription->modelVariables[i];
 
-        modelDescription->modelVariables[i].derivative = (FMIModelVariable*)xmlGetProp(typeNode, (xmlChar*)"derivative");
+        variable->name = (char*)xmlGetProp(variableNode, (xmlChar*)"name");
+        variable->description = (char*)xmlGetProp(variableNode, (xmlChar*)"description");
+
+        variable->derivative = (FMIModelVariable*)xmlGetProp(typeNode, (xmlChar*)"derivative");
 
         FMIVariableType type;
         const char* typeName = (char*)typeNode->name;
 
         if (!strcmp(typeName, "Real")) {
-            type = FMIRealType;
+            const char* variability = (char*)xmlGetProp(variableNode, (xmlChar*)"variability");
+            if (variability && (!strcmp(variability, "discrete") || !strcmp(variability, "tunable"))) {
+                type = FMIDiscreteRealType;
+            } else {
+                type = FMIRealType;
+            }
+            free((void*)variability);
         } else if (!strcmp(typeName, "Integer") || !strcmp(typeName, "Enumeration")) {
             type = FMIIntegerType;
         } else if (!strcmp(typeName, "Boolean")) {
@@ -267,28 +281,28 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
             continue;
         }
 
-        modelDescription->modelVariables[i].type = type;
+        variable->type = type;
 
         const char* vr = (char*)xmlGetProp(variableNode, (xmlChar*)"valueReference");
 
-        modelDescription->modelVariables[i].valueReference = FMIValueReferenceForLiteral(vr);
+        variable->valueReference = FMIValueReferenceForLiteral(vr);
 
         free(vr);
         
         const char* causality = (char*)xmlGetProp(variableNode, (xmlChar*)"causality");
 
         if (!causality) {
-            modelDescription->modelVariables[i].causality = FMILocal;
+            variable->causality = FMILocal;
         } else if (!strcmp(causality, "parameter")) {
-            modelDescription->modelVariables[i].causality = FMIParameter;
+            variable->causality = FMIParameter;
         } else if (!strcmp(causality, "input")) {
-            modelDescription->modelVariables[i].causality = FMIInput;
+            variable->causality = FMIInput;
         } else if (!strcmp(causality, "output")) {
-            modelDescription->modelVariables[i].causality = FMIOutput;
+            variable->causality = FMIOutput;
         } else if (!strcmp(causality, "independent")) {
-            modelDescription->modelVariables[i].causality = FMIIndependent;
+            variable->causality = FMIIndependent;
         } else {
-            modelDescription->modelVariables[i].causality = FMILocal;
+            variable->causality = FMILocal;
         }
 
         free(causality);
@@ -405,10 +419,14 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         
         const char* name = (char*)node->name;
 
+        const char* variability = (char*)xmlGetProp(node, (xmlChar*)"variability");
+        const bool discrete = variability && (!strcmp(variability, "discrete") || !strcmp(variability, "tunable"));
+        free((void*)variability);
+
         if (!strcmp(name, "Float32")) {
-            type = FMIFloat32Type;
+            type = discrete ? FMIDiscreteFloat32Type : FMIFloat32Type;
         } else if (!strcmp(name, "Float64")) {
-            type = FMIFloat64Type;
+            type = discrete ? FMIDiscreteFloat64Type : FMIFloat64Type;
         } else if (!strcmp(name, "Int8")) {
             type = FMIInt8Type;
         } else if (!strcmp(name, "UInt8")) {
