@@ -741,33 +741,21 @@ FMIModelVariable* FMIModelVariableForIndexLiteral(const FMIModelDescription* mod
 size_t FMIValidateModelStructure(const FMIModelDescription* modelDescription) {
 
     size_t nProblems = 0;
-    size_t nDerivatives = 0;
     size_t nOutputs = 0;
 
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
 
-        if (variable->derivative) {
-            nDerivatives++;
-        }
-
         if (variable->causality == FMIOutput) {
             nOutputs++;
         }
-
-    }
-
-    if (nDerivatives != modelDescription->nContinuousStates) {
-        nProblems++;
-        printf("The number of model varialbes with attribute derivate (%zu) must match the number of continuous state derivatives"
-            " in the model structure (%zu).\n", nDerivatives, modelDescription->nContinuousStates);
     }
 
     if (nOutputs != modelDescription->nOutputs) {
         nProblems++;
         printf("The number of model varialbes with causality=\"output\" (%zu) must match the number of outputs"
-            " in the model structure (%zu).\n", nDerivatives, modelDescription->nContinuousStates);
+            " in the model structure (%zu).\n", nOutputs, modelDescription->nContinuousStates);
     }
 
     return nProblems;
