@@ -152,10 +152,10 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, doub
 
 	for (size_t i = 0; i < input->nVariables; i++) {
 
-		const FMIModelVariable*  variable = input->variables[i];
-		const FMIVariableType    type     = variable->type;
-		const fmi2ValueReference vr       = variable->valueReference;
-		const double             value    = input->values[(input->nVariables * row) + i];
+		const FMIModelVariable* variable = input->variables[i];
+		const FMIVariableType   type     = variable->type;
+		const FMIValueReference vr       = variable->valueReference;
+		const double            value    = input->values[(input->nVariables * row) + i];
 
 		double interpolatedValue;
 
@@ -216,27 +216,80 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, doub
 			}
 
 		} else if (instance->fmiVersion == FMIVersion3) {
+
+			if (continuous) {
+
+				if (type == FMIFloat32Type) {
+
+					const fmi3Float32 float32Value = (fmi3Float32)interpolatedValue;
+					CALL(FMI3SetFloat32(instance, &vr, 1, &float32Value, 1));
+
+				} else if (type == FMIFloat64Type) {
+
+					CALL(FMI3SetFloat64(instance, &vr, 1, (fmi3Float64*)&interpolatedValue, 1));
+
+				}
+			}
+			
+			if (discrete) {
 		
-			if (type == FMIFloat64Type && continuous) {
+				if (type == FMIDiscreteFloat32Type) {
 
-				CALL(FMI3SetFloat64(instance, &vr, 1, (fmi3Float64*)&interpolatedValue, 1));
+					const fmi3Float32 float32Value = (fmi3Float32)value;
+					CALL(FMI3SetFloat32(instance, &vr, 1, &float32Value, 1));
 
-			} else if (type == FMIDiscreteFloat64Type && discrete) {
+				} else if (type == FMIDiscreteFloat64Type) {
 
-				CALL(FMI3SetFloat64(instance, &vr, 1, (fmi3Float64*)&value, 1));
+					CALL(FMI3SetFloat64(instance, &vr, 1, (fmi3Float64*)&value, 1));
 
-			} else if (type == FMIInt32Type && discrete) {
+				} else if (type == FMIInt8Type) {
 
-				const fmi3Int32 int32Value = (fmi2Integer)value;
-				CALL(FMI3SetInt32(instance, &vr, 1, (fmi3Int32*)&int32Value, 1));
+					const fmi3Int8 int8Value = (fmi3Int8)value;
+					CALL(FMI3SetInt8(instance, &vr, 1, &int8Value, 1));
 
-			} else if (type == FMIBooleanType && discrete) {
+				} else if (type == FMIUInt8Type) {
 
-				const fmi3Boolean booleanValue = value != fmi3False ? fmi3True : fmi3False;
-				CALL(FMI3SetBoolean(instance, &vr, 1, (fmi3Boolean*)&booleanValue, 1));
+					const fmi3UInt8 uint8Value = (fmi3UInt8)value;
+					CALL(FMI3SetUInt8(instance, &vr, 1, &uint8Value, 1));
+
+				} else if (type == FMIInt16Type) {
+
+					const fmi3Int16 int16Value = (fmi3Int16)value;
+					CALL(FMI3SetInt16(instance, &vr, 1, &int16Value, 1));
+
+				} else if (type == FMIUInt16Type) {
+
+					const fmi3UInt16 uint16Value = (fmi3UInt16)value;
+					CALL(FMI3SetUInt16(instance, &vr, 1, &uint16Value, 1));
+
+				} else if (type == FMIInt32Type) {
+
+					const fmi3Int32 int32Value = (fmi3Int32)value;
+					CALL(FMI3SetInt32(instance, &vr, 1, &int32Value, 1));
+
+				} else if (type == FMIUInt32Type) {
+
+					const fmi3UInt32 uint32Value = (fmi3UInt32)value;
+					CALL(FMI3SetUInt32(instance, &vr, 1, &uint32Value, 1));
+
+				} else if (type == FMIInt64Type) {
+
+					const fmi3Int64 int64Value = (fmi3Int64)value;
+					CALL(FMI3SetInt64(instance, &vr, 1, &int64Value, 1));
+
+				} else if (type == FMIUInt64Type) {
+
+					const fmi3UInt64 uint64Value = (fmi3UInt64)value;
+					CALL(FMI3SetUInt64(instance, &vr, 1, &uint64Value, 1));
+
+				} else if (type == FMIBooleanType) {
+
+					const fmi3Boolean booleanValue = value != fmi3False ? fmi3True : fmi3False;
+					CALL(FMI3SetBoolean(instance, &vr, 1, &booleanValue, 1));
+
+				}
 
 			}
-
 		}
 		
 	}
