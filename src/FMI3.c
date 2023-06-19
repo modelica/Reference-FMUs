@@ -468,6 +468,8 @@ FMIStatus FMI3EnterInitializationMode(FMIInstance *instance,
 
     instance->state = FMI2InitializationModeState;
 
+    instance->time = startTime;
+
     CALL_ARGS(EnterInitializationMode,
         "fmi3EnterInitializationMode(toleranceDefined=%d, tolerance=%.16g, startTime=%.16g, stopTimeDefined=%d, stopTime=%.16g)",
         toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime);
