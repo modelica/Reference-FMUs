@@ -202,24 +202,30 @@ static void logMessage(ModelInstance *comp, int status, const char *category, co
     }
 
     va_list args1;
-    size_t len = 0;
+    int len = 0;
     char *buf = "";
 
     va_copy(args1, args);
     len = vsnprintf(buf, len, message, args1);
     va_end(args1);
 
+    if (len < 0) {
+        return;
+    }
+
     va_copy(args1, args);
     buf = (char *)calloc(len + 1, sizeof(char));
-    vsnprintf(buf, len + 1, message, args);
+    len = vsnprintf(buf, len + 1, message, args);
     va_end(args1);
 
-    // no need to distinguish between FMI versions since we're not using variadic arguments
+    if (len >= 0) {
+        // no need to distinguish between FMI versions since we're not using variadic arguments
 #if FMI_VERSION < 3
-    comp->logger(comp->componentEnvironment, comp->instanceName, status, category, buf);
+        comp->logger(comp->componentEnvironment, comp->instanceName, status, category, buf);
 #else
-    comp->logger(comp->componentEnvironment, status, category, buf);
+        comp->logger(comp->componentEnvironment, status, category, buf);
 #endif
+    }
 
     free(buf);
 }
