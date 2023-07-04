@@ -189,7 +189,7 @@ do { \
 
 #define MASK_fmi3EnterStepMode            (InitializationMode | EventMode)
 #define MASK_fmi3SetInputDerivatives      (Instantiated | InitializationMode | StepMode)
-#define MASK_fmi3GetOutputDerivatives     (StepMode | StepDiscarded | Terminated | Error)
+#define MASK_fmi3GetOutputDerivatives     (StepMode | StepDiscarded | Terminated | modelError)
 #define MASK_fmi3DoStep                   StepMode
 #define MASK_fmi3ActivateModelPartition   ClockActivationMode
 #define MASK_fmi3DoEarlyReturn            IntermediateUpdateMode
