@@ -15,7 +15,7 @@
     <ScalarVariable name="time" valueReference="0" causality="internal" variability="continuous" description="Simulation time">
       <Real/>
     </ScalarVariable>
-    <ScalarVariable name="counter" valueReference="1" description="counts the seconds" causality="output">
+    <ScalarVariable name="counter" valueReference="1" description="counts the seconds" causality="output" variability="discrete">
       <Integer start="1" fixed="true"/>
     </ScalarVariable>
   </ModelVariables>
