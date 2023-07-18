@@ -405,9 +405,6 @@ fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t n
 
     ASSERT_STATE(SetReal)
 
-    if (invalidState(S, "fmi2SetReal", MASK_fmi2SetReal))
-        return fmi2Error;
-
     if (nvr > 0 && nullPointer(S, "fmi2SetReal", "vr[]", vr))
         return fmi2Error;
 
@@ -667,9 +664,6 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
 
 /* Inquire slave status */
 static fmi2Status getStatus(char* fname, fmi2Component c, const fmi2StatusKind s) {
-
-    if (invalidState(S, fname, MASK_fmi2GetStatus)) // all get status have the same MASK_fmi2GetStatus
-        return fmi2Error;
 
     switch(s) {
     case fmi2DoStepStatus: logError(S,
