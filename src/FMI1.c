@@ -485,6 +485,9 @@ fail:
 }
 
 FMIStatus FMI1InitializeSlave(FMIInstance *instance, fmi1Real tStart, fmi1Boolean stopTimeDefined, fmi1Real tStop) {
+
+    instance->time = tStart;
+
     CALL_ARGS(InitializeSlave, "tStart=%.16g, stopTimeDefined=%d, tStop=%.16g", tStart, stopTimeDefined, tStop);
 }
 
