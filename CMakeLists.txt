@@ -127,6 +127,7 @@ add_library(${TARGET_NAME} SHARED
   ${HEADERS}
   ${SOURCES}
   ${MODEL_NAME}/FMI${FMI_VERSION}${FMI_TYPE}.xml
+  ${MODEL_NAME}/buildDescription.xml
 )
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fmus)
