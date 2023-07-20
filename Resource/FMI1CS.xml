@@ -15,7 +15,7 @@
     <ScalarVariable name="time" valueReference="0" causality="internal" variability="continuous" description="Simulation time">
       <Real/>
     </ScalarVariable>
-    <ScalarVariable name="y" valueReference="1" description="Value of the first character in resources/y.txt" causality="output">
+    <ScalarVariable name="y" valueReference="1" description="Value of the first character in resources/y.txt" causality="output" variability="discrete">
       <Integer/>
     </ScalarVariable>
   </ModelVariables>

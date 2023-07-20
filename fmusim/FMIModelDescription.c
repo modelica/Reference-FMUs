@@ -103,6 +103,40 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 
         const char* typeName = (char*)typeNode->name;
 
+        const char* causality = (char*)xmlGetProp(variableNode, (xmlChar*)"causality");
+
+        if (!causality) {
+            // default
+            variable->causality = FMILocal;
+        } else if (!strcmp(causality, "input")) {
+            variable->causality = FMIInput;
+        } else if (!strcmp(causality, "output")) {
+            variable->causality = FMIOutput;
+        } else {
+            // "internal" or "none"
+            variable->causality = FMILocal;
+        }
+
+        xmlFree((void*)causality);
+        
+        const char* variability = (char*)xmlGetProp(variableNode, (xmlChar*)"variability");
+
+        if (!variability) {
+            // default
+            variable->variability = FMIContinuous;
+        } else if (!strcmp(variability, "constant")) {
+            variable->variability = FMIConstant;
+        } else if (!strcmp(variability, "parameter")) {
+            variable->causality = FMIParameter;
+            variable->variability = FMITunable;
+        } else if (!strcmp(variability, "discrete")) {
+            variable->variability = FMIDiscrete;
+        } else if (!strcmp(variability, "continuous")) {
+            variable->variability = FMIContinuous;
+        }
+
+        free((void*)variability);
+
         if (!strcmp(typeName, "Real")) {
             const char* variability = (char*)xmlGetProp(variableNode, (xmlChar*)"variability");
             if (variability && !strcmp(variability, "discrete")) {
@@ -123,28 +157,29 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 
         variable->valueReference = getUInt32Attribute(variableNode, "valueReference");
 
-        const char* causality = (char*)xmlGetProp(variableNode, (xmlChar*)"causality");
+    }
 
-        if (!causality) {
-            variable->causality = FMILocal;
-        } else if (!strcmp(causality, "parameter")) {
-            variable->causality = FMIParameter;
-        } else if (!strcmp(causality, "input")) {
-            variable->causality = FMIInput;
-        } else if (!strcmp(causality, "output")) {
-            variable->causality = FMIOutput;
-        } else if (!strcmp(causality, "independent")) {
-            variable->causality = FMIIndependent;
-        } else {
-            variable->causality = FMILocal;
+    size_t nProblems = 0;
+
+    // check variabilities
+    for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        if (variable->type != FMIRealType && variable->type != FMIDiscreteRealType && variable->variability == FMIContinuous) {
+            printf("Variable \"%s\" is not of type Real but has variability = continuous.\n", variable->name);
+            nProblems++;
         }
-
-        xmlFree((void*)causality);
     }
 
     xmlXPathFreeObject(xpathObj);
 
     xmlXPathFreeContext(xpathCtx);
+
+    if (nProblems > 0) {
+        FMIFreeModelDescription(modelDescription);
+        modelDescription = NULL;
+    }
+
+    return modelDescription;
 
     return modelDescription;
 }
@@ -260,28 +295,37 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
         variable->derivative = (FMIModelVariable*)xmlGetProp(typeNode, (xmlChar*)"derivative");
 
-        FMIVariableType type;
         const char* typeName = (char*)typeNode->name;
 
+        const char* variability = (char*)xmlGetProp(variableNode, (xmlChar*)"variability");
+        
+        if (!variability) {
+            variable->variability = FMIContinuous;
+        } else if(!strcmp(variability, "constant")) {
+            variable->variability = FMIConstant;
+        } else if (!strcmp(variability, "fixed")) {
+            variable->variability = FMIFixed;
+        } else if (!strcmp(variability, "tunable")) {
+            variable->variability = FMITunable;
+        } else if (!strcmp(variability, "discrete")) {
+            variable->variability = FMIDiscrete;
+        } else {
+            variable->variability = FMIContinuous;
+        }
+
+        free((void*)variability);
+
         if (!strcmp(typeName, "Real")) {
-            const char* variability = (char*)xmlGetProp(variableNode, (xmlChar*)"variability");
-            if (variability && (!strcmp(variability, "discrete") || !strcmp(variability, "tunable"))) {
-                type = FMIDiscreteRealType;
-            } else {
-                type = FMIRealType;
-            }
-            free((void*)variability);
+            variable->type = variable->variability == FMIDiscrete ? FMIDiscreteRealType : FMIRealType;
         } else if (!strcmp(typeName, "Integer") || !strcmp(typeName, "Enumeration")) {
-            type = FMIIntegerType;
+            variable->type = FMIIntegerType;
         } else if (!strcmp(typeName, "Boolean")) {
-            type = FMIBooleanType;
+            variable->type = FMIBooleanType;
         } else if (!strcmp(typeName, "String")) {
-            type = FMIStringType;
+            variable->type = FMIStringType;
         } else {
             continue;
         }
-
-        variable->type = type;
 
         const char* vr = (char*)xmlGetProp(variableNode, (xmlChar*)"valueReference");
 
@@ -329,6 +373,15 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
                 nProblems++;
             }
             free(literal);
+        }
+    }
+
+    // check variabilities
+    for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        if (variable->type != FMIRealType && variable->type != FMIDiscreteRealType && variable->variability == FMIContinuous) {
+            printf("Variable \"%s\" is not of type Real but has variability = continuous.\n", variable->name);
+            nProblems++;
         }
     }
 
@@ -420,13 +473,43 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         const char* name = (char*)node->name;
 
         const char* variability = (char*)xmlGetProp(node, (xmlChar*)"variability");
-        const bool discrete = variability && (!strcmp(variability, "discrete") || !strcmp(variability, "tunable"));
+
+        if (!variability) {
+            variable->variability = -1;  // infer from type
+        } else if (!strcmp(variability, "constant")) {
+            variable->variability = FMIConstant;
+        } else if (!strcmp(variability, "fixed")) {
+            variable->variability = FMIFixed;
+        } else if (!strcmp(variability, "tunable")) {
+            variable->variability = FMITunable;
+        } else if (!strcmp(variability, "discrete")) {
+            variable->variability = FMIDiscrete;
+        } else {
+            variable->variability = FMIContinuous;
+        }
+
         free((void*)variability);
 
         if (!strcmp(name, "Float32")) {
-            type = discrete ? FMIDiscreteFloat32Type : FMIFloat32Type;
+            switch (variable->variability) {
+            case -1:
+            case FMIContinuous:
+                type = FMIFloat32Type;
+                break;
+            default:
+                type = FMIDiscreteFloat32Type;
+                break;
+            }
         } else if (!strcmp(name, "Float64")) {
-            type = discrete ? FMIDiscreteFloat64Type : FMIFloat64Type;
+            switch (variable->variability) {
+            case -1:
+            case FMIContinuous:
+                type = FMIFloat64Type;
+                break;
+            default:
+                type = FMIDiscreteFloat64Type;
+                break;
+            }
         } else if (!strcmp(name, "Int8")) {
             type = FMIInt8Type;
         } else if (!strcmp(name, "UInt8")) {
@@ -457,6 +540,18 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
         variable->type = type;
 
+        if (variable->variability == -1) {
+            switch (variable->type) {
+            case FMIFloat32Type:
+            case FMIFloat64Type:
+                variable->variability = FMIContinuous;
+                break;
+            default:
+                variable->variability = FMIDiscrete;
+                break;
+            }
+        }
+
         const char* vr = (char*)xmlGetProp(node, (xmlChar*)"valueReference");
 
         variable->valueReference = FMIValueReferenceForLiteral(vr);
@@ -482,6 +577,8 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         } else {
             variable->causality = FMILocal;
         }
+
+        free(causality);
 
         variable->derivative = (FMIModelVariable*)xmlGetProp(node, (xmlChar*)"derivative");
 
@@ -531,6 +628,17 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
     xmlXPathFreeContext(xpathCtx);
 
     size_t nProblems = 0;
+
+    // check variabilities
+    for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+
+        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        
+        if (variable->type != FMIFloat32Type && variable->type != FMIFloat64Type && variable->variability == FMIContinuous) {
+            printf("Variable \"%s\" is not of type Float{32|64} but has variability = continuous.\n", variable->name);
+            nProblems++;
+        }
+    }
 
     // resolve derivatives
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
