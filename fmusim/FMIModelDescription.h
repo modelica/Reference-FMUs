@@ -18,6 +18,16 @@ typedef enum {
 
 } FMICausality;
 
+typedef enum {
+
+    FMIConstant, 
+    FMIFixed, 
+    FMITunable, 
+    FMIDiscrete, 
+    FMIContinuous
+
+} FMIVariability;
+
 typedef struct FMIDimension FMIDimension;
 
 typedef struct FMIModelVariable FMIModelVariable;
@@ -29,6 +39,7 @@ struct FMIModelVariable {
     const char* description;
     unsigned int valueReference;
     FMICausality causality;
+    FMIVariability variability;
     size_t nDimensions;
     FMIDimension* dimensions;
     FMIModelVariable* derivative;
