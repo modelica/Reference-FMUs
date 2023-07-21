@@ -4,8 +4,6 @@
 #include <inttypes.h>
 
 #ifdef _WIN32
-#include <shlwapi.h>
-#pragma comment(lib, "shlwapi.lib")
 #else
 #include <stdarg.h>
 #include <dlfcn.h>
@@ -28,9 +26,6 @@ FMIInstance *FMICreateInstance(const char *instanceName, const char *libraryPath
 
     // convert path to unicode
     mbstowcs(dllDirectory, libraryPath, MAX_PATH);
-
-    // remove the file name
-    PathRemoveFileSpecW(dllDirectory);
 
     // add the binaries directory temporarily to the DLL path to allow discovery of dependencies
     DLL_DIRECTORY_COOKIE dllDirectoryCookie = AddDllDirectory(dllDirectory);
@@ -246,60 +241,23 @@ void FMIAppendArrayToLogMessageBuffer(FMIInstance* instance, const void* values,
     }
 }
 
-FMIStatus FMIURIToPath(const char *uri, char *path, const size_t pathLength) {
-
-#ifdef _WIN32
-    DWORD pcchPath = (DWORD)pathLength;
-
-    if (PathCreateFromUrlA(uri, path, &pcchPath, 0) != S_OK) {
-        return FMIError;
-    }
-#else
-    const char *scheme1 = "file:///";
-    const char *scheme2 = "file:/";
-
-    strncpy(path, uri, pathLength);
-
-    if (strncmp(uri, scheme1, strlen(scheme1)) == 0) {
-        strncpy(path, &uri[strlen(scheme1)] - 1, pathLength);
-    } else if (strncmp(uri, scheme2, strlen(scheme2)) == 0) {
-        strncpy(path, &uri[strlen(scheme2) - 1], pathLength);
-    } else {
-        return FMIError;
-    }
-#endif
-
-#ifdef _WIN32
-    const char* sep = "\\";
-#else
-    const char* sep = "/";
-#endif
-
-    if (path[strlen(path) - 1] != sep[0]) {
-        strncat(path, sep, pathLength);
-    }
-
-    return FMIOK;
-}
-
 FMIStatus FMIPathToURI(const char *path, char *uri, const size_t uriLength) {
 
-#ifdef _WIN32
-    DWORD pcchUri = (DWORD)uriLength;
-
-    if (UrlCreateFromPathA(path, uri, &pcchUri, 0) != S_OK) {
-        return FMIError;
-    }
-#else
     const size_t pathLen = strlen(path);
 
     if (uriLength < strlen(path) + 8) {
         return FMIError;
     }
 
-    strcpy(uri, "file://");
+#ifdef _WIN32
+    const char* scheme = "file:///";
+#else
+    const char* scheme = "file://";
+#endif
 
-    size_t p = 7;
+    strcpy(uri, scheme);
+
+    size_t p = strlen(scheme);
 
     // percent encode special characters
     for (size_t i = 0; i < pathLen; i++) {
@@ -308,7 +266,13 @@ FMIStatus FMIPathToURI(const char *path, char *uri, const size_t uriLength) {
             return FMIError;
         }
 
-        const char c = path[i];
+        char c = path[i];
+
+#ifdef _WIN32
+        if (c == '\\') {
+            c = '/';
+        }
+#endif
 
         bool encode = true;
 
@@ -331,7 +295,6 @@ FMIStatus FMIPathToURI(const char *path, char *uri, const size_t uriLength) {
     }
 
     uri[p] = '\0';
-#endif
 
     return FMIOK;
 }

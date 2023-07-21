@@ -152,8 +152,6 @@ FMI_STATIC void FMIAppendToLogMessageBuffer(FMIInstance* instance, const char* f
 
 FMI_STATIC void FMIAppendArrayToLogMessageBuffer(FMIInstance* instance, const void* values, size_t nValues, const size_t sizes[], FMIVariableType variableType);
 
-FMI_STATIC FMIStatus FMIURIToPath(const char *uri, char *path, const size_t pathLength);
-
 FMI_STATIC FMIStatus FMIPathToURI(const char *path, char *uri, const size_t uriLength);
 
 FMI_STATIC FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *modelIdentifier, FMIVersion fmiVersion, char *platformBinaryPath, size_t size);

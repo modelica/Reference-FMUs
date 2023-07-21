@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <Windows.h>
 #include <Shlwapi.h>
+#pragma comment(lib, "shlwapi.lib")
 #include <process.h>
 #include <strsafe.h>
 #else

@@ -1,7 +1,5 @@
 #ifdef _WIN32
 #include <direct.h>
-#include "Shlwapi.h"
-#pragma comment(lib, "shlwapi.lib")
 #define strdup _strdup
 #define INTERNET_MAX_URL_LENGTH 2083 // from wininet.h
 #else
