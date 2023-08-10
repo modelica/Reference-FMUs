@@ -8,7 +8,7 @@ on:
     branches: [ main ]
 
 env:
-  FMPY: https://github.com/CATIA-Systems/FMPy/archive/d9547792af143b9e25f23073cb44a327289e0f5e.zip
+  FMPY: https://github.com/CATIA-Systems/FMPy/archive/e167cc65f270775ee42ea14ab98b322070757edc.zip
   CONDA_PACKAGES: dask lark-parser lxml numpy pathlib pip pytest requests scipy
 
 jobs:
