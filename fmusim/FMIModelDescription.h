@@ -35,6 +35,15 @@ typedef enum {
 
 } FMIVariableNamingConvention;
 
+typedef enum {
+
+    FMIUndefined,
+    FMIExact,
+    FMIApprox,
+    FMICalculated
+
+} FMIInitial;
+
 typedef struct FMIDimension FMIDimension;
 
 typedef struct FMIModelVariable FMIModelVariable;
@@ -48,6 +57,7 @@ struct FMIModelVariable {
     unsigned int valueReference;
     FMICausality causality;
     FMIVariability variability;
+    FMIInitial initial;
     size_t nDimensions;
     FMIDimension* dimensions;
     FMIModelVariable* derivative;
@@ -133,7 +143,7 @@ FMIModelVariable* FMIModelVariableForValueReference(const FMIModelDescription* m
 
 FMIModelVariable* FMIModelVariableForIndexLiteral(const FMIModelDescription* modelDescription, const char* index);
 
-size_t FMIValidateModelStructure(const FMIModelDescription* modelDescription);
+size_t FMIValidateModelDescription(const FMIModelDescription* modelDescription);
 
 size_t FMIValidateVariableNames(const FMIModelDescription* modelDescription);
 
