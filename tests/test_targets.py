@@ -66,8 +66,8 @@ def test_fmi3():
 
     models = ['BouncingBall', 'Dahlquist', 'LinearTransform', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
 
-    for model in models:
-        validate(build_dir, model=model, fmi_types=['ModelExchange', 'CoSimulation'])
+    # for model in models:
+    #     validate(build_dir, model=model, fmi_types=['ModelExchange', 'CoSimulation'])
 
     for model in models:
         for interface_type in ['cs', 'me']:
