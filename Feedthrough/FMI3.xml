@@ -45,7 +45,7 @@
 
     <Float64 name="Float64_fixed_parameter" valueReference="5" causality="parameter" variability="fixed" start="0"/>
     <Float64 name="Float64_tunable_parameter" valueReference="6" causality="parameter" variability="tunable" start="0"/>
-    <Float64 name="Float64_continuous_input" valueReference="7" causality="input" start="0"/>
+    <Float64 name="Float64_continuous_input" valueReference="7" causality="input" start="0" initial="exact"/>
     <Float64 name="Float64_continuous_output" valueReference="8" causality="output" initial="calculated"/>
     <Float64 name="Float64_discrete_input" valueReference="9" causality="input" variability="discrete" start="0"/>
     <Float64 name="Float64_discrete_output" valueReference="10" causality="output" variability="discrete" initial="calculated"/>
