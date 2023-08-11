@@ -235,9 +235,9 @@ Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
 
     CALL_CVODE(CVodeSetLinearSolver(solver->cvode_mem, solver->LS, solver->A));
 
-    if (modelDescription->modelExchange->providesDirectionalDerivatives) {
-        CALL_CVODE(CVodeSetJacFn(solver->cvode_mem, Jac));
-    }
+    //if (modelDescription->modelExchange->providesDirectionalDerivatives) {
+    //    CALL_CVODE(CVodeSetJacFn(solver->cvode_mem, Jac));
+    //}
 
 TERMINATE:
 
