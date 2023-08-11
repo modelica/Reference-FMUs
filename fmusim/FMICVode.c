@@ -37,11 +37,12 @@ struct SolverImpl {
     SUNMatrix A;
     SUNLinearSolver LS;
     void* cvode_mem;
-    FMIStatus(*set_time)(FMIInstance* instance, double time);
-    FMIStatus(*get_x)(FMIInstance* instance, double x[], size_t nx);
-    FMIStatus(*set_x)(FMIInstance* instance, const double x[], size_t nx);
-    FMIStatus(*get_dx)(FMIInstance* instance, double dx[], size_t nx);
-    FMIStatus(*get_z)(FMIInstance* instance, double z[], size_t nz);
+    FMIStatus (*set_time)    (FMIInstance* instance, double time);
+    FMIStatus (*get_x)       (FMIInstance* instance, double x[], size_t nx);
+    FMIStatus (*set_x)       (FMIInstance* instance, const double x[], size_t nx);
+    FMIStatus (*get_nominals)(FMIInstance* instance, const double x[], size_t nx);
+    FMIStatus (*get_dx)      (FMIInstance* instance, double dx[], size_t nx);
+    FMIStatus (*get_z)       (FMIInstance* instance, double z[], size_t nz);
 } SolverImpl_;
 
 // Right-hand-side function
@@ -168,23 +169,26 @@ Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
     solver->x_temp     = (double*)calloc(solver->nx, sizeof(double));
 
     if (S->fmiVersion == FMIVersion1) {
-        solver->set_time = FMI1SetTime;
-        solver->get_x    = FMI1GetContinuousStates;
-        solver->set_x    = FMI1SetContinuousStates;
-        solver->get_dx   = FMI1GetDerivatives;
-        solver->get_z    = FMI1GetEventIndicators;
+        solver->set_time     = FMI1SetTime;
+        solver->get_x        = FMI1GetContinuousStates;
+        solver->set_x        = FMI1SetContinuousStates;
+        solver->get_dx       = FMI1GetDerivatives;
+        solver->get_nominals = FMI1GetNominalContinuousStates;
+        solver->get_z        = FMI1GetEventIndicators;
     } else if (S->fmiVersion == FMIVersion2) {
-        solver->set_time = FMI2SetTime;
-        solver->get_x    = FMI2GetContinuousStates;
-        solver->set_x    = FMI2SetContinuousStates;
-        solver->get_dx   = FMI2GetDerivatives;
-        solver->get_z    = FMI2GetEventIndicators;
+        solver->set_time     = FMI2SetTime;
+        solver->get_x        = FMI2GetContinuousStates;
+        solver->set_x        = FMI2SetContinuousStates;
+        solver->get_dx       = FMI2GetDerivatives;
+        solver->get_nominals = FMI2GetNominalsOfContinuousStates;
+        solver->get_z        = FMI2GetEventIndicators;
     } else if (S->fmiVersion == FMIVersion3) {
-        solver->set_time = FMI3SetTime;
-        solver->get_x    = FMI3GetContinuousStates;
-        solver->set_x    = FMI3SetContinuousStates;
-        solver->get_dx   = FMI3GetContinuousStateDerivatives;
-        solver->get_z    = FMI3GetEventIndicators;
+        solver->set_time     = FMI3SetTime;
+        solver->get_x        = FMI3GetContinuousStates;
+        solver->set_x        = FMI3SetContinuousStates;
+        solver->get_dx       = FMI3GetContinuousStateDerivatives;
+        solver->get_nominals = FMI3GetNominalsOfContinuousStates;
+        solver->get_z        = FMI3GetEventIndicators;
     } else {
         return NULL;
     }
@@ -204,8 +208,10 @@ Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
     solver->abstol = N_VNew_Serial(NV_LENGTH_S(solver->x), solver->sunctx);
     ASSERT_NOT_NULL(solver->abstol);
 
+    CALL_FMI(solver->get_nominals(solver->S, NV_DATA_S(solver->abstol), solver->nx));
+
     for (size_t i = 0; i < NV_LENGTH_S(solver->x); i++) {
-        NV_DATA_S(solver->abstol)[i] = tolerance;
+        NV_DATA_S(solver->abstol)[i] *= tolerance;
     }
 
     solver->cvode_mem = CVodeCreate(CV_BDF, solver->sunctx);
