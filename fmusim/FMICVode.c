@@ -33,6 +33,7 @@ struct SolverImpl {
     double* x_temp;
     SUNContext sunctx;
     N_Vector x;
+    realtype reltol;
     N_Vector abstol;
     SUNMatrix A;
     SUNLinearSolver LS;
@@ -156,6 +157,8 @@ Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
     }
 
     solver->modelDescription = modelDescription;
+
+    solver->reltol = tolerance;
 
     solver->S = S;
     solver->input = input;
@@ -302,16 +305,28 @@ TERMINATE:
 }
 
 FMIStatus FMICVodeReset(Solver* solver, double time) {
-    
+
+    FMIStatus status = FMIOK;
+
+    int flag = CV_SUCCESS;
+
     if (!solver) {
         return FMIError;
     }
 
     if (solver->nx > 0) {
-        solver->get_x(solver->S, NV_DATA_S(solver->x), NV_LENGTH_S(solver->x));
+
+        CALL_FMI(solver->get_x(solver->S, NV_DATA_S(solver->x), NV_LENGTH_S(solver->x)));
+        
+        CALL_FMI(solver->get_nominals(solver->S, NV_DATA_S(solver->abstol), solver->nx));
+
+        for (size_t i = 0; i < NV_LENGTH_S(solver->x); i++) {
+            NV_DATA_S(solver->abstol)[i] *= solver->reltol;
+        }
     }
 
-    CVodeReInit(solver->cvode_mem, time, solver->x);
+    CALL_CVODE(CVodeReInit(solver->cvode_mem, time, solver->x));
 
-    return FMIOK;
+TERMINATE:
+    return status;
 }
