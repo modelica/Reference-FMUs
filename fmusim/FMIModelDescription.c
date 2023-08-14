@@ -98,6 +98,7 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
 
+        variable->line = variableNode->line;
         variable->name = (char*)xmlGetProp(variableNode, (xmlChar*)"name");
         variable->description = (char*)xmlGetProp(variableNode, (xmlChar*)"description");
 
@@ -290,6 +291,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
 
+        variable->line = variableNode->line;
         variable->name = (char*)xmlGetProp(variableNode, (xmlChar*)"name");
         variable->description = (char*)xmlGetProp(variableNode, (xmlChar*)"description");
 
@@ -463,16 +465,17 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
 
-        xmlNodePtr node = xpathObj->nodesetval->nodeTab[i];
+        xmlNodePtr variableNode = xpathObj->nodesetval->nodeTab[i];
 
-        variable->name = (char*)xmlGetProp(node, (xmlChar*)"name");
-        variable->description = (char*)xmlGetProp(node, (xmlChar*)"description");
+        variable->line = variableNode->line;
+        variable->name = (char*)xmlGetProp(variableNode, (xmlChar*)"name");
+        variable->description = (char*)xmlGetProp(variableNode, (xmlChar*)"description");
 
         FMIVariableType type;
         
-        const char* name = (char*)node->name;
+        const char* name = (char*)variableNode->name;
 
-        const char* variability = (char*)xmlGetProp(node, (xmlChar*)"variability");
+        const char* variability = (char*)xmlGetProp(variableNode, (xmlChar*)"variability");
 
         if (!variability) {
             variable->variability = -1;  // infer from type
@@ -552,13 +555,13 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             }
         }
 
-        const char* vr = (char*)xmlGetProp(node, (xmlChar*)"valueReference");
+        const char* vr = (char*)xmlGetProp(variableNode, (xmlChar*)"valueReference");
 
         variable->valueReference = FMIValueReferenceForLiteral(vr);
 
         free(vr);
 
-        const char* causality = (char*)xmlGetProp(node, (xmlChar*)"causality");
+        const char* causality = (char*)xmlGetProp(variableNode, (xmlChar*)"causality");
 
         if (!causality) {
             variable->causality = FMILocal;
@@ -580,9 +583,9 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
         free(causality);
 
-        variable->derivative = (FMIModelVariable*)xmlGetProp(node, (xmlChar*)"derivative");
+        variable->derivative = (FMIModelVariable*)xmlGetProp(variableNode, (xmlChar*)"derivative");
 
-        xmlXPathObjectPtr xpathObj2 = xmlXPathNodeEval(node, ".//Dimension", xpathCtx);
+        xmlXPathObjectPtr xpathObj2 = xmlXPathNodeEval(variableNode, ".//Dimension", xpathCtx);
 
         for (size_t j = 0; j < xpathObj2->nodesetval->nodeNr; j++) {
 
