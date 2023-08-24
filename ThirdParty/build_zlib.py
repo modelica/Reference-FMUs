@@ -1,19 +1,20 @@
 import os
+import tarfile
 from pathlib import Path
 from subprocess import check_call
 
 from fmpy.util import download_file
-from fmpy import extract
 
 
-archive = download_file('https://www.zlib.net/zlib1213.zip',
-                        checksum='d233fca7cf68db4c16dc5287af61f3cd01ab62495224c66639ca3da537701e42')
+archive = download_file('https://www.zlib.net/fossils/zlib-1.3.tar.gz',
+                        checksum='ff0ba4c292013dbc27530b3a81e1f9a813cd39de01ca5e0f8bf355702efa593e')
 
 root = Path(__file__).parent
 
-extract(archive, root)
+with tarfile.open(archive) as tf:
+    tf.extractall(root)
 
-build_dir = root / 'zlib-1.2.13' / 'build'
+build_dir = root / 'zlib-1.3' / 'build'
 
 install_prefix = build_dir / 'install'
 
@@ -33,7 +34,7 @@ check_call(
     args +
     ['-B', build_dir,
     '-D', f'CMAKE_INSTALL_PREFIX={ install_prefix }',
-    root / 'zlib-1.2.13']
+    root / 'zlib-1.3']
 )
 
 check_call([
