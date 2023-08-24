@@ -43,6 +43,7 @@ struct FMIModelVariable {
     size_t nDimensions;
     FMIDimension* dimensions;
     FMIModelVariable* derivative;
+    unsigned short line;
 
 };
 
