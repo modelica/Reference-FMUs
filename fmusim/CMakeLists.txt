@@ -3,8 +3,8 @@ cmake_minimum_required (VERSION 3.17)
 set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)
 
 set(LIBXML2_DIR  ${CMAKE_SOURCE_DIR}/ThirdParty/libxml2-2.10.3/build/install/)
-set(ZLIB_DIR     ${CMAKE_SOURCE_DIR}/ThirdParty/zlib-1.2.13/build/install/)
-set(ZLIB_SRC_DIR ${CMAKE_SOURCE_DIR}/ThirdParty/zlib-1.2.13/)
+set(ZLIB_DIR     ${CMAKE_SOURCE_DIR}/ThirdParty/zlib-1.3/build/install/)
+set(ZLIB_SRC_DIR ${CMAKE_SOURCE_DIR}/ThirdParty/zlib-1.3/)
 set(CVODE_DIR    ${CMAKE_SOURCE_DIR}/ThirdParty/cvode-6.4.1/build/install/)
 
 if (WIN32)
