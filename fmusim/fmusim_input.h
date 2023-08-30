@@ -2,14 +2,25 @@
 
 #include "FMIModelDescription.h"
 
+//typedef struct {
+//
+//	FMIModelVariable* variable;
+//	size_t* nValues;
+//	void** values;
+//
+//} FMIStaticInputColumn;
 
 typedef struct {
 	
 	size_t nVariables;
 	const FMIModelVariable** variables;
+	size_t* nValues;
+	void** values;
 	size_t nRows;
 	double* time;
-	double* values;
+
+	void* buffer;
+	size_t bufferSize;
 
 } FMUStaticInput;
 
@@ -19,4 +30,4 @@ void FMIFreeInput(FMUStaticInput* input);
 
 double FMINextInputEvent(const FMUStaticInput* input, double time);
 
-FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, double time, bool discrete, bool continuous, bool afterEvent);
+FMIStatus FMIApplyInput(FMIInstance* instance, FMUStaticInput* input, double time, bool discrete, bool continuous, bool afterEvent);

@@ -34,8 +34,9 @@ typedef struct FMIModelVariable FMIModelVariable;
 
 struct FMIModelVariable {
     
-    const char* name;
     FMIVariableType type;
+    const char* name;
+    const char* start;
     const char* description;
     unsigned int valueReference;
     FMICausality causality;
