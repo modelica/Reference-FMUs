@@ -3,6 +3,7 @@
 #include "FMI1.h"
 #include "FMI2.h"
 #include "FMI3.h"
+#include "FMIUtil.h"
 #include "fmusim_input.h"
 
 
@@ -100,16 +101,60 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 				case FMIFloat32Type:
 				case FMIDiscreteFloat32Type:
 					input->values[index] = realloc(input->values[index], sizeof(fmi3Float32) * (j + 1));
-					((fmi3Float32*)input->values[index])[j] = strtod(eptr, &eptr);
+					((fmi3Float32*)input->values[index])[j] = strtof(eptr, &eptr);
 					break;
 				case FMIFloat64Type:
 				case FMIDiscreteFloat64Type:
 					input->values[index] = realloc(input->values[index], sizeof(fmi3Float64) * (j + 1));
 					((fmi3Float64*)input->values[index])[j] = strtod(eptr, &eptr);
 					break;
+				case FMIInt8Type:
+					input->values[index] = realloc(input->values[index], sizeof(fmi3Int8) * (j + 1));
+					((fmi3Int8*)input->values[index])[j] = strtol(eptr, &eptr, 10);
+					break;
+				case FMIUInt8Type:
+					input->values[index] = realloc(input->values[index], sizeof(fmi3UInt8) * (j + 1));
+					((fmi3UInt8*)input->values[index])[j] = strtoul(eptr, &eptr, 10);
+					break;
+				case FMIInt16Type:
+					input->values[index] = realloc(input->values[index], sizeof(fmi3Int16) * (j + 1));
+					((fmi3Int16*)input->values[index])[j] = strtol(eptr, &eptr, 10);
+					break;
+				case FMIUInt16Type:
+					input->values[index] = realloc(input->values[index], sizeof(fmi3UInt16) * (j + 1));
+					((fmi3UInt16*)input->values[index])[j] = strtoul(eptr, &eptr, 10);
+					break;
+				case FMIInt32Type:
+					input->values[index] = realloc(input->values[index], sizeof(fmi3Int32) * (j + 1));
+					((fmi3Int32*)input->values[index])[j] = strtol(eptr, &eptr, 10);
+					break;
+				case FMIUInt32Type:
+					input->values[index] = realloc(input->values[index], sizeof(fmi3UInt32) * (j + 1));
+					((fmi3UInt32*)input->values[index])[j] = strtoul(eptr, &eptr, 10);
+					break;
+				case FMIInt64Type:
+					input->values[index] = realloc(input->values[index], sizeof(fmi3Int64) * (j + 1));
+					((fmi3Int64*)input->values[index])[j] = strtol(eptr, &eptr, 10);
+					break;
 				case FMIUInt64Type:
 					input->values[index] = realloc(input->values[index], sizeof(fmi3UInt64) * (j + 1));
-					((fmi3UInt64*)input->values[index])[j] = strtol(eptr, &eptr, 10);
+					((fmi3UInt64*)input->values[index])[j] = strtoul(eptr, &eptr, 10);
+					break;
+				case FMIBooleanType:
+					if (modelDescription->fmiVersion == FMIVersion1) {
+						input->values[index] = realloc(input->values[index], sizeof(fmi1Boolean) * (j + 1));
+						((fmi1Boolean*)input->values[index])[j] = strtol(eptr, &eptr, 10);
+					} else if (modelDescription->fmiVersion == FMIVersion2) {
+						input->values[index] = realloc(input->values[index], sizeof(fmi2Boolean) * (j + 1));
+						((fmi2Boolean*)input->values[index])[j] = strtol(eptr, &eptr, 10);
+					} else if (modelDescription->fmiVersion == FMIVersion3) {
+						input->values[index] = realloc(input->values[index], sizeof(fmi3Boolean) * (j + 1));
+						((fmi3Boolean*)input->values[index])[j] = strtol(eptr, &eptr, 10);
+					}
+					break;
+				case FMIClockType:
+					input->values[index] = realloc(input->values[index], sizeof(fmi3Clock) * (j + 1));
+					((fmi3Clock*)input->values[index])[j] = strtol(eptr, &eptr, 10);
 					break;
 				default:
 					printf("Unspported input variable type.\n");
@@ -264,21 +309,17 @@ FMIStatus FMIApplyInput(FMIInstance* instance, FMUStaticInput* input, double tim
 
 				for (size_t k = 0; k < nValues; k++) {
 
-					double interpolatedValue;
-
 					if (row >= input->nRows - 1) {
-						interpolatedValue = values0[k]; // input->values[(input->nVariables * row) + i];
+						buffer[k] = values0[k];
 					} else {
 						const double t0 = input->time[row];
 						const double t1 = input->time[row + 1];
 
-						const double x0 = values0[k]; // input->values[(input->nVariables * row) + i];
-						const double x1 = values1[k]; // input->values[(input->nVariables * (row + 1)) + i];
+						const double x0 = values0[k];
+						const double x1 = values1[k];
 
-						interpolatedValue = x0 + (time - t0) * (x1 - x0) / (t1 - t0);
+						buffer[k] = x0 + (time - t0) * (x1 - x0) / (t1 - t0);
 					}
-
-					buffer[k] = interpolatedValue;
 
 				}
 
@@ -286,164 +327,12 @@ FMIStatus FMIApplyInput(FMIInstance* instance, FMUStaticInput* input, double tim
 
 		}
 
-		//const double            value = 0; // input->values[(input->nVariables * row) + i];
-
-		//double interpolatedValue;
-
-		//if (row >= input->nRows - 1) {
-		//	interpolatedValue = 0; // input->values[(input->nVariables * row) + i];
-		//} else {
-		//	const double t0 = input->time[row];
-		//	const double t1 = input->time[row + 1];
-
-		//	const double x0 = 0; // input->values[(input->nVariables * row) + i];
-		//	const double x1 = 0; // input->values[(input->nVariables * (row + 1)) + i];
-
-		//	interpolatedValue = x0 + (time - t0) * (x1 - x0) / (t1 - t0);
-		//}
-
 		if (instance->fmiVersion == FMIVersion1) {
-
-			//if (type == FMIRealType && continuous) {
-
-			//	CALL(FMI1SetReal(instance, &vr, 1, (fmi1Real*)&interpolatedValue));
-
-			//} else if (type == FMIDiscreteRealType && discrete) {
-
-			//	CALL(FMI1SetReal(instance, &vr, 1, (fmi1Real*)&value));
-
-			//} else if (type == FMIIntegerType && discrete) {
-
-			//	const fmi1Integer integerValue = (fmi1Integer)value;
-			//	CALL(FMI1SetInteger(instance, &vr, 1, (fmi1Integer*)&integerValue));
-
-			//} else if (type == FMIBooleanType && discrete) {
-
-			//	const fmi1Boolean booleanValue = value != fmi1False ? fmi1True : fmi1False;
-			//	CALL(FMI1SetBoolean(instance, &vr, 1, (fmi1Boolean*)&booleanValue));
-
-			//}
-
+			CALL(FMI1SetValues(instance, type, &vr, 1, continuous ? input->buffer : values));
 		} else if(instance->fmiVersion == FMIVersion2) {
-
-			//if (type == FMIRealType && continuous) {
-
-			//	CALL(FMI2SetReal(instance, &vr, 1, (fmi2Real*)&interpolatedValue));
-
-			//} else if (type == FMIDiscreteRealType && discrete) {
-
-			//	CALL(FMI2SetReal(instance, &vr, 1, (fmi2Real*)&value));
-
-			//} else if (type == FMIIntegerType && discrete) {
-
-			//	const fmi2Integer integerValue = (fmi2Integer)value;
-			//	CALL(FMI2SetInteger(instance, &vr, 1, (fmi2Integer*)&integerValue));
-
-			//} else if (type == FMIBooleanType && discrete) {
-
-			//	const fmi2Boolean booleanValue = value != fmi2False ? fmi2True : fmi2False;
-			//	CALL(FMI2SetBoolean(instance, &vr, 1, (fmi2Boolean*)&booleanValue));
-
-			//}
-
+			CALL(FMI2SetValues(instance, type, &vr, 1, continuous ? input->buffer : values));
 		} else if (instance->fmiVersion == FMIVersion3) {
-
-			if (continuous) {
-
-				if (type == FMIFloat32Type) {
-
-					CALL(FMI3SetFloat32(instance, &vr, 1, (const fmi3Float32*)input->buffer, nValues));
-
-				//	const fmi3Float32 float32Value = (fmi3Float32)interpolatedValue;
-				//	CALL(FMI3SetFloat32(instance, &vr, 1, &float32Value, 1));
-				//if (type == FMIUInt64Type) {
-
-				//	if (variable->causality == FMIStructuralParameter) {
-				//		CALL(FMI3EnterConfigurationMode(instance));
-				//	}
-
-				//	CALL(FMI3SetUInt64(instance, &vr, 1, (const fmi3UInt64*)values, nValues));
-
-				//	if (variable->causality == FMIStructuralParameter) {
-				//		CALL(FMI3ExitConfigurationMode(instance));
-				//	}
-
-				} else if (type == FMIFloat64Type) {
-
-					CALL(FMI3SetFloat64(instance, &vr, 1, (const fmi3Float64*)input->buffer, nValues));
-
-				}
-			}
-			
-			if (discrete) {
-		
-				if (type == FMIDiscreteFloat32Type) {
-
-					CALL(FMI3SetFloat32(instance, &vr, 1, (const fmi3Float32*)values, nValues));
-
-				} else if (type == FMIDiscreteFloat64Type) {
-
-					CALL(FMI3SetFloat64(instance, &vr, 1, (const fmi3Float64*)values, nValues));
-
-				} 
-				//else if (type == FMIInt8Type) {
-
-				//	const fmi3Int8 int8Value = (fmi3Int8)value;
-				//	CALL(FMI3SetInt8(instance, &vr, 1, &int8Value, 1));
-
-				//} else if (type == FMIUInt8Type) {
-
-				//	const fmi3UInt8 uint8Value = (fmi3UInt8)value;
-				//	CALL(FMI3SetUInt8(instance, &vr, 1, &uint8Value, 1));
-
-				//} else if (type == FMIInt16Type) {
-
-				//	const fmi3Int16 int16Value = (fmi3Int16)value;
-				//	CALL(FMI3SetInt16(instance, &vr, 1, &int16Value, 1));
-
-				//} else if (type == FMIUInt16Type) {
-
-				//	const fmi3UInt16 uint16Value = (fmi3UInt16)value;
-				//	CALL(FMI3SetUInt16(instance, &vr, 1, &uint16Value, 1));
-
-				//} else if (type == FMIInt32Type) {
-
-				//	const fmi3Int32 int32Value = (fmi3Int32)value;
-				//	CALL(FMI3SetInt32(instance, &vr, 1, &int32Value, 1));
-
-				//} else if (type == FMIUInt32Type) {
-
-				//	const fmi3UInt32 uint32Value = (fmi3UInt32)value;
-				//	CALL(FMI3SetUInt32(instance, &vr, 1, &uint32Value, 1));
-
-				//} else if (type == FMIInt64Type) {
-
-				//	const fmi3Int64 int64Value = (fmi3Int64)value;
-				//	CALL(FMI3SetInt64(instance, &vr, 1, &int64Value, 1));
-
-				//} else 
-				if (type == FMIUInt64Type) {
-
-					if (variable->causality == FMIStructuralParameter) {
-						CALL(FMI3EnterConfigurationMode(instance));
-					}
-
-					CALL(FMI3SetUInt64(instance, &vr, 1, (const fmi3UInt64*)values, nValues));
-
-					if (variable->causality == FMIStructuralParameter) {
-						CALL(FMI3ExitConfigurationMode(instance));
-					}
-				
-				}
-
-				// else if (type == FMIBooleanType) {
-
-				//	const fmi3Boolean booleanValue = value != fmi3False ? fmi3True : fmi3False;
-				//	CALL(FMI3SetBoolean(instance, &vr, 1, &booleanValue, 1));
-
-				//}
-
-			}
+			CALL(FMI3SetValues(instance, type, &vr, 1, continuous ? input->buffer : values, nValues));
 		}
 		
 	}
