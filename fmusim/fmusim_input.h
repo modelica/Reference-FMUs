@@ -12,6 +12,7 @@
 
 typedef struct {
 	
+	FMIVersion fmiVersion;
 	size_t nVariables;
 	const FMIModelVariable** variables;
 	size_t* nValues;

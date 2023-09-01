@@ -51,6 +51,7 @@ FMIStatus FMI1SetValues(
 
      switch (type) {
      case FMIRealType:
+     case FMIDiscreteRealType:
          return FMI1SetReal(instance, valueReferences, nValueReferences, (fmi1Real*)values);
      case FMIIntegerType:
          return FMI1SetInteger(instance, valueReferences, nValueReferences, (fmi1Integer*)values);
@@ -72,6 +73,7 @@ FMIStatus FMI2SetValues(
 
     switch (type) {
     case FMIRealType:
+    case FMIDiscreteRealType:
         return FMI2SetReal(instance, valueReferences, nValueReferences, (fmi2Real*)values);
     case FMIIntegerType:
         return FMI2SetInteger(instance, valueReferences, nValueReferences, (fmi2Integer*)values);
@@ -94,8 +96,10 @@ FMIStatus FMI3SetValues(
 
     switch (type) {
     case FMIFloat32Type:
+    case FMIDiscreteFloat32Type:
         return FMI3SetFloat32(instance, valueReferences, nValueReferences, (fmi3Float32*)values, nValues);
     case FMIFloat64Type:
+    case FMIDiscreteFloat64Type:
         return FMI3SetFloat64(instance, valueReferences, nValueReferences, (fmi3Float64*)values, nValues);
     case FMIInt8Type:
         return FMI3SetInt8(instance, valueReferences, nValueReferences, (fmi3Int8*)values, nValues);

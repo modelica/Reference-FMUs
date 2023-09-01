@@ -37,6 +37,8 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 	FMUStaticInput* input = (FMUStaticInput*)calloc(1, sizeof(FMUStaticInput));
 
+	input->fmiVersion = modelDescription->fmiVersion;
+
 	char* row = NULL;
 	int cols = 0;
 
@@ -179,6 +181,69 @@ void FMIFreeInput(FMUStaticInput* input) {
 	// TODO
 }
 
+static size_t FMISizeOf(FMIVariableType type, FMIVersion fmiVersion) {
+
+	switch (type) {
+
+	case FMIFloat32Type:
+	case FMIDiscreteFloat32Type:
+		return sizeof(fmi3Float32);
+	
+	case FMIFloat64Type:
+	case FMIDiscreteFloat64Type:
+		return sizeof(fmi3Float64);
+	
+	case FMIInt8Type:
+		return sizeof(fmi3Int8);
+	
+	case FMIUInt8Type:
+		return sizeof(fmi3UInt8);
+	
+	case FMIInt16Type:
+		return sizeof(fmi3Int16);
+	
+	case FMIUInt16Type:
+		return sizeof(fmi3UInt16);
+	
+	case FMIInt32Type:
+		return sizeof(fmi3Int32);
+	
+	case FMIUInt32Type:
+		return sizeof(fmi3UInt32);
+	
+	case FMIInt64Type:
+		return sizeof(fmi3Int64);
+	
+	case FMIUInt64Type:
+		return sizeof(fmi3UInt64);
+	
+	case FMIBooleanType:
+		switch (fmiVersion) {
+		case FMIVersion1:
+			return sizeof(fmi1Boolean);
+		case FMIVersion2:
+			return sizeof(fmi2Boolean);
+		case FMIVersion3:
+			return sizeof(fmi3Boolean);
+		default: 
+			return 0;
+		}
+	
+	case FMIClockType:
+		return sizeof(fmi3Clock);
+	
+	case FMIValueReferenceType:
+		return sizeof(FMIValueReference);
+	
+	case FMISizeTType:
+		return sizeof(size_t);
+	
+	default:
+		return 0;
+	}
+
+}
+
 double FMINextInputEvent(const FMUStaticInput* input, double time) {
 
 	if (!input) {
@@ -202,17 +267,30 @@ double FMINextInputEvent(const FMUStaticInput* input, double time) {
 			
 			const FMIModelVariable* variable = input->variables[j];
 			const FMIVariableType   type     = variable->type;
+			const size_t            nValues = input->nValues[j];
 
-			if (type == FMIFloat32Type || type == FMIFloat64Type) {
+		    if (type == FMIFloat32Type || type == FMIFloat64Type) {
 				continue;  // skip continuous variables
 			}
 
-			const double v0 = 0; // input->values[i * input->nVariables + j];
-			const double v1 = 0; // input->values[(i + 1) * input->nVariables + j];
+			const void* values0 = input->values[i * input->nVariables + j];
+			const void* values1 = input->values[(i + 1) * input->nVariables + j];
+			const size_t size = FMISizeOf(type, input->fmiVersion) * nValues;
 
-			if (v0 != v1) {
-				return t1;  // discrete variable change
+			if (memcmp(values0, values1, size)) {
+				return t1;
 			}
+
+			//if (type == FMIFloat32Type || type == FMIFloat64Type) {
+			//	continue;  // skip continuous variables
+			//}
+
+			//const double v0 = 0; // input->values[i * input->nVariables + j];
+			//const double v1 = 0; // input->values[(i + 1) * input->nVariables + j];
+
+			//if (v0 != v1) {
+			//	return t1;  // discrete variable change
+			//}
 		}
 
 	}
@@ -264,7 +342,7 @@ FMIStatus FMIApplyInput(FMIInstance* instance, FMUStaticInput* input, double tim
 		const size_t nValues = input->nValues[j];
 		const void* values   = input->values[j];
 
-		if (variable->variability == FMIContinuous) {
+		if (continuous && variable->variability == FMIContinuous) {
 			
 			const size_t requiredBufferSize = nValues * sizeof(fmi3Float64);
 
@@ -325,16 +403,26 @@ FMIStatus FMIApplyInput(FMIInstance* instance, FMUStaticInput* input, double tim
 
 			}
 
+			if (instance->fmiVersion == FMIVersion1) {
+				CALL(FMI1SetValues(instance, type, &vr, 1, input->buffer));
+			} else if (instance->fmiVersion == FMIVersion2) {
+				CALL(FMI2SetValues(instance, type, &vr, 1, input->buffer));
+			} else if (instance->fmiVersion == FMIVersion3) {
+				CALL(FMI3SetValues(instance, type, &vr, 1, input->buffer, nValues));
+			}
+
+		} else if (discrete && (variable->variability == FMIDiscrete || variable->variability == FMITunable)) {
+
+			if (instance->fmiVersion == FMIVersion1) {
+				CALL(FMI1SetValues(instance, type, &vr, 1, values));
+			} else if (instance->fmiVersion == FMIVersion2) {
+				CALL(FMI2SetValues(instance, type, &vr, 1, values));
+			} else if (instance->fmiVersion == FMIVersion3) {
+				CALL(FMI3SetValues(instance, type, &vr, 1, values, nValues));
+			}
+
 		}
 
-		if (instance->fmiVersion == FMIVersion1) {
-			CALL(FMI1SetValues(instance, type, &vr, 1, continuous ? input->buffer : values));
-		} else if(instance->fmiVersion == FMIVersion2) {
-			CALL(FMI2SetValues(instance, type, &vr, 1, continuous ? input->buffer : values));
-		} else if (instance->fmiVersion == FMIVersion3) {
-			CALL(FMI3SetValues(instance, type, &vr, 1, continuous ? input->buffer : values, nValues));
-		}
-		
 	}
 
 TERMINATE:
