@@ -1,3 +1,4 @@
+#include <string.h>
 #include <math.h>
 #include "csv.h"
 #include "FMI1.h"
