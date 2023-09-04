@@ -2,6 +2,7 @@ import os
 from itertools import product
 from pathlib import Path
 from subprocess import check_call
+from typing import Iterable
 
 import numpy as np
 import pytest
@@ -17,7 +18,7 @@ work = Path(__file__).parent / 'work'
 os.makedirs(work, exist_ok=True)
 
 
-def call_fmusim(fmi_version, interface_type, test_name, args, model='BouncingBall.fmu'):
+def call_fmusim(fmi_version: int, interface_type: str, test_name: str, args: Iterable[str], model: str = 'BouncingBall.fmu'):
 
     if fmi_version == 1:
         install = root / f'fmi{fmi_version}_{interface_type}' / 'install'
@@ -76,18 +77,28 @@ def test_start_value_types(fmi_version, interface_type):
 
 
 @pytest.mark.parametrize('interface_type', ['cs', 'me'])
-def test_start_value_arrays(interface_type):
+def test_start_value_arrays(work_dir, interface_type):
 
-    result = call_fmusim(
+    call_fmusim(
         fmi_version=3,
         interface_type=interface_type,
         test_name='test_start_value_arrays',
-        args=['--start-value', 'u', '2 3', '--log-fmi-calls'],
+        args=[
+            '--start-value', 'u', '2 3',
+            '--log-fmi-calls',
+            '--stop-time', '1',
+            '--output-interval', '1',
+        ],
         model='LinearTransform.fmu'
     )
 
-    assert result['y[0]'][0] == 2
-    assert result['y[1]'][0] == 3
+    with open(work_dir / 'test_start_value_arrays_fmi3_cs.csv') as f:
+        file = f.read()
+
+    assert file == '''"time","y"
+0,2 3
+1,2 3
+'''
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([1, 2, 3], ['cs', 'me']))
@@ -120,6 +131,33 @@ def test_input_file(fmi_version, interface_type):
     # extrapolation
     assert result['Int32_output'][-1] == 2
 
+
+def test_array_input(work_dir):
+
+    call_fmusim(
+        fmi_version=3,
+        interface_type='cs',
+        test_name='test_array_input',
+        args=[
+            '--input-file', resources / f'LinearTransform_in.csv',
+            '--output-interval', '1',
+            '--stop-time', '2',
+            '--start-value', 'm', '3',
+            '--start-value', 'n', '3',
+            '--start-value', 'A', '0 0 1 0 1 0 1 0 0',
+            '--log-fmi-calls'
+        ],
+        model='LinearTransform.fmu'
+    )
+
+    with open(work_dir / 'test_array_input_fmi3_cs.csv') as f:
+        file = f.read()
+
+    assert file == '''"time","y"
+0,3 2 1
+1,3 2 1
+2,6 5 4
+'''
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([1, 2, 3], ['cs', 'me']))
 def test_fmi_log_file(fmi_version, interface_type):
