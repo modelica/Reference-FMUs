@@ -2,13 +2,6 @@
 
 #include "FMIModelDescription.h"
 
-//typedef struct {
-//
-//	FMIModelVariable* variable;
-//	size_t* nValues;
-//	void** values;
-//
-//} FMIStaticInputColumn;
 
 typedef struct {
 	

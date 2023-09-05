@@ -203,7 +203,7 @@ FMIStatus FMI3SetValues(
          fmi3Int64* v = (fmi3Int64*)values;
 
          for (size_t i = 0; i < nValues; i++) {
-             v[i] = strtol(next, &next, 10);
+             v[i] = strtoll(next, &next, 10);
          }
 
      } else if (type == FMIUInt64Type) {
@@ -211,7 +211,7 @@ FMIStatus FMI3SetValues(
          fmi3UInt64* v = (fmi3UInt64*)values;
 
          for (size_t i = 0; i < nValues; i++) {
-             v[i] = strtoul(next, &next, 10);
+             v[i] = strtoull(next, &next, 10);
          }
 
      } else if (type == FMIBooleanType) {

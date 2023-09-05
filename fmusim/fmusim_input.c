@@ -11,29 +11,6 @@
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-//static size_t FMIGetNumberOfValues(const FMIModelDescription* modelDescription, const FMIModelVariable* variable) {
-//
-//	size_t nValues = 1;
-//
-//	for (size_t i = 0; i < variable->nDimensions; i++) {
-//		
-//		const FMIDimension* dimension = &variable->dimensions[i];
-//
-//		size_t n;
-//
-//		if (dimension->variable) {
-//			n = atoi(dimension->variable->start);
-//		} else {
-//			n = dimension->start;
-//		}
-//
-//		nValues *= n;
-//
-//	}
-//
-//	return nValues;
-//}
-
 FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const char* filename) {
 
 	FMUStaticInput* input = (FMUStaticInput*)calloc(1, sizeof(FMUStaticInput));
@@ -61,8 +38,6 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 		input->variables = realloc(input->variables, (input->nVariables + 1) * sizeof(FMIModelVariable*));
 		input->variables[input->nVariables] = variable;
-		//const size_t nValues = FMIGetNumberOfValues(modelDescription, variable);
-		//input->nValues[input->nVariables] = nValues;
 		input->nVariables++;
 	}
 
@@ -281,17 +256,6 @@ double FMINextInputEvent(const FMUStaticInput* input, double time) {
 			if (memcmp(values0, values1, size)) {
 				return t1;
 			}
-
-			//if (type == FMIFloat32Type || type == FMIFloat64Type) {
-			//	continue;  // skip continuous variables
-			//}
-
-			//const double v0 = 0; // input->values[i * input->nVariables + j];
-			//const double v1 = 0; // input->values[(i + 1) * input->nVariables + j];
-
-			//if (v0 != v1) {
-			//	return t1;  // discrete variable change
-			//}
 		}
 
 	}
