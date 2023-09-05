@@ -309,11 +309,11 @@ void fmi2FreeInstance(fmi2Component c) {
 // FMI functions: class methods not depending of a specific model instance
 // ---------------------------------------------------------------------------
 
-const char* fmi2GetVersion() {
+const char* fmi2GetVersion(void) {
     return fmi2Version;
 }
 
-const char* fmi2GetTypesPlatform() {
+const char* fmi2GetTypesPlatform(void) {
     return fmi2TypesPlatform;
 }
 
