@@ -130,6 +130,152 @@ FMIStatus FMI3SetValues(
     }
  }
 
+FMIStatus FMIRealloc(void** memory, size_t size) {
+
+    if (!memory) {
+        printf("Pointer to memory must not be NULL.");
+        return FMIError;
+    }
+
+    void* temp = realloc(*memory, size);
+
+    if (!temp) {
+        printf("Failed to reallocate memory.");
+        return FMIError;
+    }
+
+    *memory = temp;
+
+    return FMIOK;
+}
+
+#define PARSE_VALUES(t, f) \
+    while (strlen(next) > 0) { \
+        CALL(FMIRealloc(values, sizeof(t)* ((*nValues) + 1))); \
+        t* v = (t*)*values; \
+        char* end; \
+        const unsigned long l = f(next, &end, 10); \
+        if (end == next) {  \
+            status = FMIError; \
+            goto TERMINATE; \
+        } \
+        next = end; \
+        v[*nValues] = l; \
+        (*nValues)++; \
+    }
+
+FMIStatus FMIParseValues(FMIVersion fmiVersion, FMIVariableType type, const char* literal, size_t* nValues, void** values) {
+
+    FMIStatus status = FMIOK;
+
+    if (!literal) {
+        printf("Value literal must not be NULL.\n");
+        return FMIError;
+    }
+
+    *nValues = 0;
+    *values = NULL;
+
+    char* next = (char*)literal;
+
+    switch (type) {
+    case FMIFloat32Type:
+    case FMIDiscreteFloat32Type:
+        PARSE_VALUES(fmi3Float32, strtof);
+        break;
+    case FMIInt8Type:
+        PARSE_VALUES(fmi3Int8, strtol);
+        break;
+    case FMIUInt8Type:
+        PARSE_VALUES(fmi3UInt8, strtoul);
+        break;
+    case FMIInt16Type:
+        PARSE_VALUES(fmi3Int16, strtol);
+        break;
+    case FMIUInt16Type:
+        PARSE_VALUES(fmi3UInt16, strtoul);
+        break;
+    case FMIInt32Type:
+        PARSE_VALUES(fmi3Int32, strtol);
+        break;
+    case FMIUInt32Type:
+        PARSE_VALUES(fmi3UInt32, strtoul);
+        break;
+    case FMIInt64Type:
+        PARSE_VALUES(fmi3Int64, strtol);
+        break;
+    case FMIUInt64Type:
+        PARSE_VALUES(fmi3UInt64, strtoul);
+        break;
+    case FMIStringType: {
+        CALL(FMIRealloc(values, sizeof(fmi3String)));
+        fmi3String* v = *values;
+        v[0] = literal;
+        *nValues = 1;
+        break;
+    }
+    case FMIBooleanType:
+    case FMIClockType: {
+
+        size_t size = 0;
+
+        switch (fmiVersion) {
+        case FMIVersion1:
+            size = sizeof(fmi1Boolean);
+            break;
+        case FMIVersion2:
+            size = sizeof(fmi2Boolean);
+            break;
+        case FMIVersion3:
+            size = sizeof(fmi2Boolean);
+            break;
+        }
+
+        while (strlen(next) > 0) {
+
+            CALL(FMIRealloc(values, size * ((*nValues) + 1)));
+            
+            fmi3Boolean* v = (fmi3Boolean*)*values;
+
+            size_t delimiter = strcspn(next, " ");
+
+            if (!strncmp(next, "0", delimiter) || !strncmp(next, "false", delimiter)) {
+                v[*nValues] = fmi3False;
+            } else if (!strncmp(next, "1", delimiter) || !strncmp(next, "true", delimiter)) {
+                v[*nValues] = fmi3True;
+            } else {
+                printf("Values for boolean must be one of 0, false, 1, or true.\n");
+                status = FMIError;
+                goto TERMINATE;
+            }
+
+            (*nValues)++;
+
+            if (strlen(next) == delimiter) {
+                break;
+            }
+
+            next += delimiter + 1;
+        }
+        break;
+    }
+    default:
+        printf("Unsupported value type.");
+        status = FMIError;
+        goto TERMINATE;
+    }
+
+TERMINATE:
+    if (status != FMIOK) {
+        *nValues = 0;
+        free(*values);
+        *values = NULL;
+        printf("Failed to parse value literal \"%s\".\n", literal);
+    }
+
+    return status;
+}
+
  FMIStatus FMIParseStartValues(FMIVariableType type, const char* literal, size_t nValues, void* values) {
 
      char* next = (char*)literal;

@@ -134,8 +134,7 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
     FMIStatus status = FMIOK;
 
     size_t nValues = 0;
-    size_t valuesSize = 0;
-    char* values = NULL;
+    void* values = NULL;
 
     bool configurationMode = false;
 
@@ -149,21 +148,17 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
 
         if (causality == FMIStructuralParameter && type == FMIUInt64Type) {
 
-            nValues = 1;
-
-            if (valuesSize < nValues * 8) {
-                valuesSize = nValues * 8;
-                values = realloc(values, valuesSize);
-            }
+            CALL(FMIParseValues(FMIVersion3, type, literal, &nValues, &values));
 
             if (!configurationMode) {
                 CALL(FMI3EnterConfigurationMode(S));
                 configurationMode = true;
             }
 
-            CALL(FMIParseStartValues(type, literal, nValues, values));
-
             CALL(FMI3SetUInt64(S, &vr, 1, (fmi3UInt64*)values, nValues));
+
+            free(values);
+            values = NULL;
         }
     }
 
@@ -183,52 +178,7 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
             continue;
         }
 
-        CALL(FMIGetNumberOfVariableValues(S, variable, &nValues));
-
-        if (valuesSize < nValues * 8) {
-            valuesSize = nValues * 8;
-            values = realloc(values, valuesSize);
-        }
-
-        if (type == FMIStringType) {
-            
-            if (nValues != 1) {
-                printf("Setting start values of String arrays is not supported.\n");
-                status = FMIError;
-                goto TERMINATE;
-            }
-
-            if (S->fmiVersion == FMIVersion1) {
-                CALL(FMI1SetString(S, &vr, 1, &literal));
-            } else if(S->fmiVersion == FMIVersion2) {
-                CALL(FMI2SetString(S, &vr, 1, &literal));
-            } else if (S->fmiVersion == FMIVersion3) {
-                CALL(FMI3SetString(S, &vr, 1, &literal, 1));
-            }
-
-            continue;
-
-        } else if (type == FMIBinaryType) {
-            
-            if (nValues != 1) {
-                printf("Setting start values of Binary arrays is not supported.\n");
-                status = FMIError;
-                goto TERMINATE;
-            }
-
-            fmi3Binary value = NULL;
-            size_t size = 0;
-
-            CALL(FMIHexToBinary(literal, &size, &value));
-            
-            CALL(FMI3SetBinary(S, &vr, 1, &size, &value, 1));
-            
-            free((void*)value);
-            
-            continue;
-        }
-
-        CALL(FMIParseStartValues(type, literal, nValues, values));
+        CALL(FMIParseValues(S->fmiVersion, type, literal, &nValues, &values));
 
         if (S->fmiVersion == FMIVersion1) {
             CALL(FMI1SetValues(S, type, &vr, 1, values));
@@ -237,11 +187,16 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
         } else if (S->fmiVersion == FMIVersion3) {
             CALL(FMI3SetValues(S, type, &vr, 1, values, nValues));
         }
+
+        free(values);
+        values = NULL;
     }
 
-    free(values);
-
 TERMINATE:
+    if (values) {
+        free(values);
+    }
+
     return status;
 }
 
