@@ -87,8 +87,9 @@ typedef void (*loggerType) (void *componentEnvironment, const char *instanceName
 typedef void (*loggerType) (void *componentEnvironment, int status, const char *category, const char *message);
 #endif
 
-typedef void (*lockPreemptionType)   ();
-typedef void (*unlockPreemptionType) ();
+typedef void (*lockPreemptionType)   (void);
+typedef void (*unlockPreemptionType) (void);
+
 
 typedef void (*intermediateUpdateType) (void *instanceEnvironment,
                                         double intermediateUpdateTime,
