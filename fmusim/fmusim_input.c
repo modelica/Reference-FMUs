@@ -13,8 +13,12 @@
 
 FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const char* filename) {
 
-	FMUStaticInput* input = (FMUStaticInput*)calloc(1, sizeof(FMUStaticInput));
+	FMIStatus status = FMIOK;
 
+	FMUStaticInput* input = NULL;
+
+	CALL(FMICalloc(&input, 1, sizeof(FMUStaticInput)));
+	
 	input->fmiVersion = modelDescription->fmiVersion;
 
 	char* row = NULL;
@@ -36,7 +40,7 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 			return NULL;
 		}
 
-		input->variables = realloc(input->variables, (input->nVariables + 1) * sizeof(FMIModelVariable*));
+		CALL(FMIRealloc(&input->variables, (input->nVariables + 1) * sizeof(FMIModelVariable*)));
 		input->variables[input->nVariables] = variable;
 		input->nVariables++;
 	}
@@ -44,9 +48,9 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 	// data
 	while (row = CsvReadNextRow(handle)) {
 
-		input->time    = realloc(input->time,    (input->nRows + 1) * sizeof(double));
-		input->nValues = realloc(input->nValues, (input->nRows + 1) * input->nVariables * sizeof(size_t));
-		input->values  = realloc(input->values,  (input->nRows + 1) * input->nVariables * sizeof(void*));
+		CALL(FMIRealloc(&input->time,    (input->nRows + 1) * sizeof(double)));
+		CALL(FMIRealloc(&input->nValues, (input->nRows + 1) * input->nVariables * sizeof(size_t)));
+		CALL(FMIRealloc(&input->values,  (input->nRows + 1) * input->nVariables * sizeof(void*)));
 		
 		memset(&input->values[input->nRows * input->nVariables], 0x0, input->nVariables * sizeof(void*));
 
@@ -70,85 +74,17 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 			const size_t index = (input->nRows * input->nVariables) + i;
 
-			eptr = col;
-			size_t j = 0; // value index
-
-			while (strlen(eptr) > 0) {
-				
-				switch (variable->type) {
-				case FMIFloat32Type:
-				case FMIDiscreteFloat32Type:
-					input->values[index] = realloc(input->values[index], sizeof(fmi3Float32) * (j + 1));
-					((fmi3Float32*)input->values[index])[j] = strtof(eptr, &eptr);
-					break;
-				case FMIFloat64Type:
-				case FMIDiscreteFloat64Type:
-					input->values[index] = realloc(input->values[index], sizeof(fmi3Float64) * (j + 1));
-					((fmi3Float64*)input->values[index])[j] = strtod(eptr, &eptr);
-					break;
-				case FMIInt8Type:
-					input->values[index] = realloc(input->values[index], sizeof(fmi3Int8) * (j + 1));
-					((fmi3Int8*)input->values[index])[j] = strtol(eptr, &eptr, 10);
-					break;
-				case FMIUInt8Type:
-					input->values[index] = realloc(input->values[index], sizeof(fmi3UInt8) * (j + 1));
-					((fmi3UInt8*)input->values[index])[j] = strtoul(eptr, &eptr, 10);
-					break;
-				case FMIInt16Type:
-					input->values[index] = realloc(input->values[index], sizeof(fmi3Int16) * (j + 1));
-					((fmi3Int16*)input->values[index])[j] = strtol(eptr, &eptr, 10);
-					break;
-				case FMIUInt16Type:
-					input->values[index] = realloc(input->values[index], sizeof(fmi3UInt16) * (j + 1));
-					((fmi3UInt16*)input->values[index])[j] = strtoul(eptr, &eptr, 10);
-					break;
-				case FMIInt32Type:
-					input->values[index] = realloc(input->values[index], sizeof(fmi3Int32) * (j + 1));
-					((fmi3Int32*)input->values[index])[j] = strtol(eptr, &eptr, 10);
-					break;
-				case FMIUInt32Type:
-					input->values[index] = realloc(input->values[index], sizeof(fmi3UInt32) * (j + 1));
-					((fmi3UInt32*)input->values[index])[j] = strtoul(eptr, &eptr, 10);
-					break;
-				case FMIInt64Type:
-					input->values[index] = realloc(input->values[index], sizeof(fmi3Int64) * (j + 1));
-					((fmi3Int64*)input->values[index])[j] = strtol(eptr, &eptr, 10);
-					break;
-				case FMIUInt64Type:
-					input->values[index] = realloc(input->values[index], sizeof(fmi3UInt64) * (j + 1));
-					((fmi3UInt64*)input->values[index])[j] = strtoul(eptr, &eptr, 10);
-					break;
-				case FMIBooleanType:
-					if (modelDescription->fmiVersion == FMIVersion1) {
-						input->values[index] = realloc(input->values[index], sizeof(fmi1Boolean) * (j + 1));
-						((fmi1Boolean*)input->values[index])[j] = strtol(eptr, &eptr, 10);
-					} else if (modelDescription->fmiVersion == FMIVersion2) {
-						input->values[index] = realloc(input->values[index], sizeof(fmi2Boolean) * (j + 1));
-						((fmi2Boolean*)input->values[index])[j] = strtol(eptr, &eptr, 10);
-					} else if (modelDescription->fmiVersion == FMIVersion3) {
-						input->values[index] = realloc(input->values[index], sizeof(fmi3Boolean) * (j + 1));
-						((fmi3Boolean*)input->values[index])[j] = strtol(eptr, &eptr, 10);
-					}
-					break;
-				case FMIClockType:
-					input->values[index] = realloc(input->values[index], sizeof(fmi3Clock) * (j + 1));
-					((fmi3Clock*)input->values[index])[j] = strtol(eptr, &eptr, 10);
-					break;
-				default:
-					printf("Unspported input variable type.\n");
-					return NULL;
-				}
-				
-				j++;
-			}
-
-			input->nValues[index] = j;
+			CALL(FMIParseValues(modelDescription->fmiVersion, variable->type, col, &input->nValues[index], &input->values[index]));
 			
 			i++;
 		}
 
 		input->nRows++;
 	}
+
+TERMINATE:
+
+	// TODO: clean up on error
 
 	return input;
 }

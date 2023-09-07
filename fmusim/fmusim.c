@@ -180,12 +180,25 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
 
         CALL(FMIParseValues(S->fmiVersion, type, literal, &nValues, &values));
 
-        if (S->fmiVersion == FMIVersion1) {
-            CALL(FMI1SetValues(S, type, &vr, 1, values));
-        } else if (S->fmiVersion == FMIVersion2) {
-            CALL(FMI2SetValues(S, type, &vr, 1, values));
-        } else if (S->fmiVersion == FMIVersion3) {
-            CALL(FMI3SetValues(S, type, &vr, 1, values, nValues));
+
+        if (variable->type == FMIBinaryType) {
+
+            const size_t size = strlen(literal) / 2;
+            //CALL(FMICalloc(&values, 1, size * sizeof(fmi3Byte)));
+            //fmi3Binary* v = values;
+            //CALL(FMIHexToBinary(literal, size, values));
+            CALL(FMI3SetBinary(S, &vr, 1, &size, values, 1));
+        
+        } else {
+
+
+            if (S->fmiVersion == FMIVersion1) {
+                CALL(FMI1SetValues(S, type, &vr, 1, values));
+            } else if (S->fmiVersion == FMIVersion2) {
+                CALL(FMI2SetValues(S, type, &vr, 1, values));
+            } else if (S->fmiVersion == FMIVersion3) {
+                CALL(FMI3SetValues(S, type, &vr, 1, values, nValues));
+            }
         }
 
         free(values);
@@ -198,20 +211,6 @@ TERMINATE:
     }
 
     return status;
-}
-
-static FMIStatus FMIRealloc(void** ptr, size_t new_size) {
-
-    void* old_ptr = *ptr;
-
-    *ptr = realloc(*ptr, new_size);
-
-    if (!*ptr) {
-        *ptr = old_ptr;
-        return FMIError;
-    }
-
-    return FMIOK;
 }
 
 int main(int argc, const char* argv[]) {

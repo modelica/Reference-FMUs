@@ -130,6 +130,23 @@ FMIStatus FMI3SetValues(
     }
  }
 
+FMIStatus FMICalloc(void** memory, size_t count, size_t size) {
+
+    if (!memory) {
+        printf("Pointer to memory must not be NULL.");
+        return FMIError;
+    }
+
+    *memory = calloc(count, size);
+
+    if (!*memory) {
+        printf("Failed to reallocate memory.");
+        return FMIError;
+    }
+
+    return FMIOK;
+}
+
 FMIStatus FMIRealloc(void** memory, size_t size) {
 
     if (!memory) {
@@ -149,18 +166,17 @@ FMIStatus FMIRealloc(void** memory, size_t size) {
     return FMIOK;
 }
 
-#define PARSE_VALUES(t, f) \
+#define PARSE_VALUES(t, f, ...) \
     while (strlen(next) > 0) { \
         CALL(FMIRealloc(values, sizeof(t)* ((*nValues) + 1))); \
         t* v = (t*)*values; \
         char* end; \
-        const unsigned long l = f(next, &end, 10); \
+        v[*nValues] = f(next, &end, ##__VA_ARGS__); \
         if (end == next) {  \
             status = FMIError; \
             goto TERMINATE; \
         } \
         next = end; \
-        v[*nValues] = l; \
         (*nValues)++; \
     }
 
@@ -183,29 +199,33 @@ FMIStatus FMIParseValues(FMIVersion fmiVersion, FMIVariableType type, const char
     case FMIDiscreteFloat32Type:
         PARSE_VALUES(fmi3Float32, strtof);
         break;
+    case FMIFloat64Type:
+    case FMIDiscreteFloat64Type:
+        PARSE_VALUES(fmi3Float64, strtod);
+        break;
     case FMIInt8Type:
-        PARSE_VALUES(fmi3Int8, strtol);
+        PARSE_VALUES(fmi3Int8, strtol, 10);
         break;
     case FMIUInt8Type:
-        PARSE_VALUES(fmi3UInt8, strtoul);
+        PARSE_VALUES(fmi3UInt8, strtoul, 10);
         break;
     case FMIInt16Type:
-        PARSE_VALUES(fmi3Int16, strtol);
+        PARSE_VALUES(fmi3Int16, strtol, 10);
         break;
     case FMIUInt16Type:
-        PARSE_VALUES(fmi3UInt16, strtoul);
+        PARSE_VALUES(fmi3UInt16, strtoul, 10);
         break;
     case FMIInt32Type:
-        PARSE_VALUES(fmi3Int32, strtol);
+        PARSE_VALUES(fmi3Int32, strtol, 10);
         break;
     case FMIUInt32Type:
-        PARSE_VALUES(fmi3UInt32, strtoul);
+        PARSE_VALUES(fmi3UInt32, strtoul, 10);
         break;
     case FMIInt64Type:
-        PARSE_VALUES(fmi3Int64, strtol);
+        PARSE_VALUES(fmi3Int64, strtoll, 10);
         break;
     case FMIUInt64Type:
-        PARSE_VALUES(fmi3UInt64, strtoul);
+        PARSE_VALUES(fmi3UInt64, strtoull, 10);
         break;
     case FMIStringType: {
         CALL(FMIRealloc(values, sizeof(fmi3String)));
@@ -257,6 +277,15 @@ FMIStatus FMIParseValues(FMIVersion fmiVersion, FMIVariableType type, const char
 
             next += delimiter + 1;
         }
+        break;
+    }
+    case FMIBinaryType: {
+        const size_t size = strlen(literal) / 2;
+        CALL(FMICalloc(values, 1, sizeof(fmi3Binary) + size * sizeof(fmi3Byte)));
+        fmi3Binary* v = (fmi3Binary*)*values;
+        CALL(FMIHexToBinary(literal, size, &v[1]));
+        v[0] = &v[1];
+        *nValues = 1;
         break;
     }
     default:
@@ -408,34 +437,25 @@ TERMINATE:
      return 1;
  }
 
- FMIStatus FMIHexToBinary(const char* hex, size_t* size, unsigned char** value) {
+ FMIStatus FMIHexToBinary(const char* hex, size_t size, unsigned char* binary) {
 
-     if (hex == NULL || *hex == '\0' || value == NULL) {
+     if (hex == NULL || *hex == '\0' || binary == NULL) {
+         // TODO: print message
          return FMIError;
      }
          
-     *size = strlen(hex);
-
-     if (*size % 2 != 0) {
+     if (size != strlen(hex) / 2) {
+         // TODO: print message
          return FMIError;
      }
 
-     *size /= 2;
-
-     *value = malloc(*size);
-
-     if (!*value) {
-         return FMIError;
-     }
-
-     memset(*value, 'A', *size);
-
-     for (size_t i = 0; i < *size; i++) {
+     for (size_t i = 0; i < size; i++) {
          char b1, b2;
          if (!hexchr2bin(hex[i * 2], &b1) || !hexchr2bin(hex[i * 2 + 1], &b2)) {
-             return 0;
+             // TODO: print message
+             return FMIError;
          }
-         (*value)[i] = (b1 << 4) | b2;
+         binary[i] = (b1 << 4) | b2;
      }
 
      return FMIOK;

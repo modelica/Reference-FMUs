@@ -76,7 +76,7 @@ def test_start_value_types(fmi_version, interface_type):
             '--start-value', 'UInt32_input', '4294967295',
             '--start-value', 'Int64_input', '9223372036854775807',
             '--start-value', 'UInt64_input', '18446744073709551615',
-            '--start-value', 'Binary_input', 'SGVsbG8sIEZNSSE=',
+            '--start-value', 'Binary_input', '42696E617279',
         ]
 
     result = call_fmusim(
