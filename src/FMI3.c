@@ -243,7 +243,7 @@ static FMIStatus loadSymbols3(FMIInstance *instance) {
     LOAD_SYMBOL(DoStep);
     LOAD_SYMBOL(ActivateModelPartition);
 
-    instance->state = FMI2StartAndEndState;
+    instance->state = FMIStartAndEndState;
 
     return FMIOK;
 
@@ -294,7 +294,7 @@ FMIStatus FMI3InstantiateModelExchange(
     }
 
     instance->interfaceType = FMIModelExchange;
-    instance->state = FMI2InstantiatedState;
+    instance->state = FMIInstantiatedState;
 
     return status;
 }
@@ -369,7 +369,7 @@ FMIStatus FMI3InstantiateCoSimulation(
     }
 
     instance->interfaceType = FMICoSimulation;
-    instance->state = FMI2InstantiatedState;
+    instance->state = FMIInstantiatedState;
 
     return FMIOK;
 }
@@ -436,7 +436,7 @@ FMIStatus FMI3InstantiateScheduledExecution(
     }
 
     instance->interfaceType = FMIScheduledExecution;
-    instance->state = FMI2InstantiatedState;
+    instance->state = FMIInstantiatedState;
 
     return FMIOK;
 }
@@ -466,7 +466,7 @@ FMIStatus FMI3EnterInitializationMode(FMIInstance *instance,
     fmi3Boolean stopTimeDefined,
     fmi3Float64 stopTime) {
 
-    instance->state = FMI2InitializationModeState;
+    instance->state = FMIInitializationModeState;
 
     instance->time = startTime;
 
@@ -478,26 +478,26 @@ FMIStatus FMI3EnterInitializationMode(FMIInstance *instance,
 FMIStatus FMI3ExitInitializationMode(FMIInstance *instance) {
 
     if (instance->interfaceType == FMIModelExchange || (instance->fmiVersion == FMIVersion3 && instance->interfaceType == FMICoSimulation && instance->fmi3Functions->eventModeUsed)) {
-        instance->state = FMI2EventModeState;
+        instance->state = FMIEventModeState;
     } else {
-        instance->state = FMI2StepCompleteState;
+        instance->state = FMIStepCompleteState;
     }
 
     CALL(ExitInitializationMode);
 }
 
 FMIStatus FMI3EnterEventMode(FMIInstance *instance) {
-    instance->state = FMI2EventModeState;
+    instance->state = FMIEventModeState;
     CALL(EnterEventMode);
 }
 
 FMIStatus FMI3Terminate(FMIInstance *instance) {
-    instance->state = FMI2TerminatedState;
+    instance->state = FMITerminatedState;
     CALL(Terminate);
 }
 
 FMIStatus FMI3Reset(FMIInstance *instance) {
-    instance->state = FMI2InstantiatedState;
+    instance->state = FMIInstantiatedState;
     CALL(Reset);
 }
 
@@ -991,7 +991,7 @@ Types for Functions for Model Exchange
 ****************************************************/
 
 FMIStatus FMI3EnterContinuousTimeMode(FMIInstance *instance) {
-    instance->state = FMI2ContinuousTimeModeState;
+    instance->state = FMIContinuousTimeModeState;
     CALL(EnterContinuousTimeMode);
 }
 

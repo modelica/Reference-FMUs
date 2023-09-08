@@ -153,7 +153,7 @@ FMIStatus FMI2Instantiate(FMIInstance *instance, const char *fmuResourceLocation
     instance->fmi2Functions->eventInfo.nextEventTimeDefined              = fmi2False;
     instance->fmi2Functions->eventInfo.nextEventTime                     = 0.0;
 
-    instance->state = FMI2StartAndEndState;
+    instance->state = FMIStartAndEndState;
 
 #if !defined(FMI_VERSION) || FMI_VERSION == 2
 
@@ -248,7 +248,7 @@ FMIStatus FMI2Instantiate(FMIInstance *instance, const char *fmuResourceLocation
     }
 
     instance->interfaceType = (FMIInterfaceType)fmuType;
-    instance->state = FMI2InstantiatedState;
+    instance->state = FMIInstantiatedState;
 
     return FMIOK;
 }
@@ -280,22 +280,22 @@ FMIStatus FMI2SetupExperiment(FMIInstance *instance,
 }
 
 FMIStatus FMI2EnterInitializationMode(FMIInstance *instance) {
-    instance->state = FMI2InitializationModeState;
+    instance->state = FMIInitializationModeState;
     CALL(EnterInitializationMode);
 }
 
 FMIStatus FMI2ExitInitializationMode(FMIInstance *instance) {
-    instance->state = instance->interfaceType == FMIModelExchange ? FMI2EventModeState : FMI2StepCompleteState;
+    instance->state = instance->interfaceType == FMIModelExchange ? FMIEventModeState : FMIStepCompleteState;
     CALL(ExitInitializationMode);
 }
 
 FMIStatus FMI2Terminate(FMIInstance *instance) {
-    instance->state = FMI2TerminatedState;
+    instance->state = FMITerminatedState;
     CALL(Terminate);
 }
 
 FMIStatus FMI2Reset(FMIInstance *instance) {
-    instance->state = FMI2InstantiatedState;
+    instance->state = FMIInstantiatedState;
     CALL(Reset);
 }
 
@@ -398,7 +398,7 @@ Model Exchange
 
 /* Enter and exit the different modes */
 FMIStatus FMI2EnterEventMode(FMIInstance *instance) {
-    instance->state = FMI2EventModeState;
+    instance->state = FMIEventModeState;
     CALL(EnterEventMode);
 }
 
@@ -418,7 +418,7 @@ FMIStatus FMI2NewDiscreteStates(FMIInstance *instance, fmi2EventInfo *eventInfo)
 }
 
 FMIStatus FMI2EnterContinuousTimeMode(FMIInstance *instance) {
-    instance->state = FMI2ContinuousTimeModeState;
+    instance->state = FMIContinuousTimeModeState;
     CALL(EnterContinuousTimeMode);
 }
 
