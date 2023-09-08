@@ -75,24 +75,24 @@ typedef enum {
 } FMIInterfaceType;
 
 typedef enum {
-    FMI2StartAndEndState        = 1 << 0,
-    FMI2InstantiatedState       = 1 << 1,
-    FMI2InitializationModeState = 1 << 2,
+    FMIStartAndEndState        = 1 << 0,
+    FMIInstantiatedState       = 1 << 1,
+    FMIInitializationModeState = 1 << 2,
 
     // model exchange states
-    FMI2EventModeState          = 1 << 3,
-    FMI2ContinuousTimeModeState = 1 << 4,
+    FMIEventModeState          = 1 << 3,
+    FMIContinuousTimeModeState = 1 << 4,
 
     // co-simulation states
-    FMI2StepCompleteState       = 1 << 5,
-    FMI2StepInProgressState     = 1 << 6,
-    FMI2StepFailedState         = 1 << 7,
-    FMI2StepCanceledState       = 1 << 8,
+    FMIStepCompleteState       = 1 << 5,
+    FMIStepInProgressState     = 1 << 6,
+    FMIStepFailedState         = 1 << 7,
+    FMIStepCanceledState       = 1 << 8,
 
-    FMI2TerminatedState         = 1 << 9,
-    FMI2ErrorState              = 1 << 10,
-    FMI2FatalState              = 1 << 11,
-} FMI2State;
+    FMITerminatedState         = 1 << 9,
+    FMIErrorState              = 1 << 10,
+    FMIFatalState              = 1 << 11,
+} FMIState;
 
 typedef unsigned int FMIValueReference;
 
@@ -137,7 +137,7 @@ struct FMIInstance_ {
 
     bool logFMICalls;
 
-    FMI2State state;
+    FMIState state;
 
     FMIStatus status;
 
