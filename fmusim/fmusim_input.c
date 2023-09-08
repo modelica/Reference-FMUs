@@ -199,7 +199,7 @@ double FMINextInputEvent(const FMUStaticInput* input, double time) {
 	return INFINITY;
 }
 
-FMIStatus FMIApplyInput(FMIInstance* instance, FMUStaticInput* input, double time, bool discrete, bool continuous, bool afterEvent) {
+FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, double time, bool discrete, bool continuous, bool afterEvent) {
 
 	FMIStatus status = FMIOK;
 
@@ -249,7 +249,7 @@ FMIStatus FMIApplyInput(FMIInstance* instance, FMUStaticInput* input, double tim
 
 			if (input->bufferSize < requiredBufferSize) {
 				CALL(FMIRealloc(&input->buffer, requiredBufferSize));
-				input->bufferSize = requiredBufferSize;
+				((FMUStaticInput*)input)->bufferSize = requiredBufferSize;
 			}
 
 			if (variable->type == FMIFloat32Type) {

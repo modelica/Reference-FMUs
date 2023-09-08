@@ -41,7 +41,7 @@ struct SolverImpl {
     FMIStatus (*set_time)    (FMIInstance* instance, double time);
     FMIStatus (*get_x)       (FMIInstance* instance, double x[], size_t nx);
     FMIStatus (*set_x)       (FMIInstance* instance, const double x[], size_t nx);
-    FMIStatus (*get_nominals)(FMIInstance* instance, const double x[], size_t nx);
+    FMIStatus (*get_nominals)(FMIInstance* instance, double x[], size_t nx);
     FMIStatus (*get_dx)      (FMIInstance* instance, double dx[], size_t nx);
     FMIStatus (*get_z)       (FMIInstance* instance, double z[], size_t nz);
 } SolverImpl_;
