@@ -66,21 +66,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
         fprintf(result->file, "\"time\"");
 
         for (size_t i = 0; i < result->nVariables; i++) {
-
             const FMIModelVariable* variable = result->variables[i];
-
-            const char* name = result->variables[i]->name;
-
-            if (variable->nDimensions == 0) {
-                fprintf(result->file, ",\"%s\"", name);
-            } else {
-                size_t nValues;
-                CALL(FMIGetNumberOfVariableValues(instance, variable, &nValues));
-                for (size_t j = 0; j < nValues; j++) {
-                    fprintf(result->file, ",\"%s[%zu]\"", name, j);
-                }
-            }
-
+            fprintf(result->file, ",\"%s\"", result->variables[i]->name);
         }
 
         fputc('\n', result->file);
@@ -155,6 +142,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 }
             }
 
+            fprintf(file, ",");
+
             if (type == FMIFloat32Type || type == FMIDiscreteFloat32Type) {
 
                 fmi3Float32* values = (fmi3Float32*)result->values;
@@ -162,7 +151,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 CALL(FMI3GetFloat32(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%.7g", values[j]);
+                    if (j > 0) fputc(' ', file);
+                    fprintf(file, "%.7g", values[j]);
                 }
 
             } else if (type == FMIFloat64Type || type == FMIDiscreteFloat64Type) {
@@ -172,7 +162,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 CALL(FMI3GetFloat64(instance, vr, 1, values, nValues));
                 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%.16g", values[j]);
+                    if (j > 0) fputc(' ', file);
+                    fprintf(file, "%.16g", values[j]);
                 }
 
             } else if (type == FMIInt8Type) {
@@ -182,7 +173,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 CALL(FMI3GetInt8(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%" PRId8, values[j]);
+                    if (j > 0) fputc(' ', file);
+                    fprintf(file, "%" PRId8, values[j]);
                 }
 
             } else if (type == FMIUInt8Type) {
@@ -192,7 +184,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 CALL(FMI3GetUInt8(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%" PRIu8, values[j]);
+                    if (j > 0) fputc(' ', file);
+                    fprintf(file, "%" PRIu8, values[j]);
                 }
 
             } else if (type == FMIInt16Type) {
@@ -202,7 +195,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 CALL(FMI3GetInt16(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%" PRId16, values[j]);
+                    if (j > 0) fputc(' ', file);
+                    fprintf(file, "%" PRId16, values[j]);
                 }
 
             } else if (type == FMIUInt16Type) {
@@ -212,7 +206,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 CALL(FMI3GetUInt16(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%" PRIu16, values[j]);
+                    if (j > 0) fputc(' ', file);
+                    fprintf(file, "%" PRIu16, values[j]);
                 }
 
             } else if (type == FMIInt32Type) {
@@ -222,7 +217,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 CALL(FMI3GetInt32(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%" PRId32, values[j]);
+                    if (j > 0) fputc(' ', file);
+                    fprintf(file, "%" PRId32, values[j]);
                 }
 
             } else if (type == FMIUInt32Type) {
@@ -232,7 +228,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 CALL(FMI3GetUInt32(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%" PRIu32, values[j]);
+                    if (j > 0) fputc(' ', file);
+                    fprintf(file, "%" PRIu32, values[j]);
                 }
 
             } else if (type == FMIInt64Type) {
@@ -242,7 +239,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 CALL(FMI3GetInt64(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%" PRId64, values[j]);
+                    if (j > 0) fputc(' ', file);
+                    fprintf(file, "%" PRId64, values[j]);
                 }
 
             } else if (type == FMIUInt64Type) {
@@ -252,7 +250,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 CALL(FMI3GetUInt64(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%" PRIu64, values[j]);
+                    if (j > 0) fputc(' ', file);
+                    fprintf(file, "%" PRIu64, values[j]);
                 }
 
             } else if (type == FMIBooleanType) {
@@ -262,7 +261,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 CALL(FMI3GetBoolean(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",%d", values[j]);
+                    if (j > 0) fputc(' ', file);
+                    fprintf(file, "%d", values[j]);
                 }
 
             } else if (type == FMIStringType) {
@@ -272,7 +272,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 CALL(FMI3GetString(instance, vr, 1, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fprintf(file, ",\"%s\"", values[j]);
+                    if (j > 0) fputc(' ', file);
+                    fprintf(file, "\"%s\"", values[j]);
                 }
 
             } else if (type == FMIBinaryType) {
@@ -283,7 +284,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 CALL(FMI3GetBinary(instance, vr, 1, sizes, values, nValues));
 
                 for (size_t j = 0; j < nValues; j++) {
-                    fputc(',', file);
+                    
+                    if (j > 0) fputc(' ', file);
 
                     for (size_t k = 0; k < sizes[j]; k++) {
                         const char* value = values[j];

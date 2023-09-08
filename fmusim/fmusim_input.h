@@ -5,11 +5,16 @@
 
 typedef struct {
 	
+	FMIVersion fmiVersion;
 	size_t nVariables;
 	const FMIModelVariable** variables;
+	size_t* nValues;
+	void** values;
 	size_t nRows;
 	double* time;
-	double* values;
+
+	void* buffer;
+	size_t bufferSize;
 
 } FMUStaticInput;
 

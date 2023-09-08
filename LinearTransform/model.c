@@ -117,6 +117,7 @@ Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[]
     ASSERT_NVALUES(1);
 
     if (comp->state != ConfigurationMode && comp->state != ReconfigurationMode) {
+        logError(comp, "Structural variables can only be set in Configuration Mode or Reconfiguration Mode.");
         return Error;
     }
 

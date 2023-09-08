@@ -469,6 +469,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
         variable->line = variableNode->line;
         variable->name = (char*)xmlGetProp(variableNode, (xmlChar*)"name");
+        variable->start = (char*)xmlGetProp(variableNode, (xmlChar*)"start");
         variable->description = (char*)xmlGetProp(variableNode, (xmlChar*)"description");
 
         FMIVariableType type;
@@ -798,9 +799,11 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
 
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
-        free((void*)modelDescription->modelVariables[i].name);
-        free((void*)modelDescription->modelVariables[i].description);
+        free((void*)variable->name);
+        free((void*)variable->start);
+        free((void*)variable->description);
     }
+
     free(modelDescription->modelVariables);
 
     free(modelDescription);
