@@ -181,7 +181,7 @@ double FMINextInputEvent(const FMUStaticInput* input, double time) {
 			const FMIVariableType   type     = variable->type;
 			const size_t            nValues = input->nValues[j];
 
-		    if (type == FMIFloat32Type || type == FMIFloat64Type) {
+			if (type == FMIFloat32Type || type == FMIFloat64Type) {
 				continue;  // skip continuous variables
 			}
 

@@ -184,13 +184,9 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
         if (variable->type == FMIBinaryType) {
 
             const size_t size = strlen(literal) / 2;
-            //CALL(FMICalloc(&values, 1, size * sizeof(fmi3Byte)));
-            //fmi3Binary* v = values;
-            //CALL(FMIHexToBinary(literal, size, values));
             CALL(FMI3SetBinary(S, &vr, 1, &size, values, 1));
         
         } else {
-
 
             if (S->fmiVersion == FMIVersion1) {
                 CALL(FMI1SetValues(S, type, &vr, 1, values));
