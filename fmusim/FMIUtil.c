@@ -283,8 +283,9 @@ FMIStatus FMIParseValues(FMIVersion fmiVersion, FMIVariableType type, const char
         const size_t size = strlen(literal) / 2;
         CALL(FMICalloc(values, 1, sizeof(fmi3Binary) + size * sizeof(fmi3Byte)));
         fmi3Binary* v = (fmi3Binary*)*values;
-        CALL(FMIHexToBinary(literal, size, &v[1]));
-        v[0] = &v[1];
+        fmi3Byte* b = (fmi3Byte*)&v[1];
+        CALL(FMIHexToBinary(literal, size, b));
+        v[0] = b;
         *nValues = 1;
         break;
     }
