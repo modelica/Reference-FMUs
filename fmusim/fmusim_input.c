@@ -248,7 +248,7 @@ FMIStatus FMIApplyInput(FMIInstance* instance, FMUStaticInput* input, double tim
 			const size_t requiredBufferSize = nValues * sizeof(fmi3Float64);
 
 			if (input->bufferSize < requiredBufferSize) {
-				input->buffer = realloc(input->buffer, requiredBufferSize);
+				CALL(FMIRealloc(&input->buffer, requiredBufferSize));
 				input->bufferSize = requiredBufferSize;
 			}
 
@@ -261,10 +261,8 @@ FMIStatus FMIApplyInput(FMIInstance* instance, FMUStaticInput* input, double tim
 
 				for (size_t k = 0; k < nValues; k++) {
 
-					float interpolatedValue;
-
 					if (row >= input->nRows - 1) {
-						interpolatedValue = values0[k];
+						buffer[k] = values0[k];
 					} else {
 						const double t0 = input->time[row];
 						const double t1 = input->time[row + 1];
@@ -272,10 +270,8 @@ FMIStatus FMIApplyInput(FMIInstance* instance, FMUStaticInput* input, double tim
 						const double x0 = values0[k];
 						const double x1 = values1[k];
 
-						interpolatedValue = x0 + (time - t0) * (x1 - x0) / (t1 - t0);
+						buffer[k] = x0 + (time - t0) * (x1 - x0) / (t1 - t0);
 					}
-
-					buffer[k] = interpolatedValue;
 
 				}
 
