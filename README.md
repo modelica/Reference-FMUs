@@ -90,6 +90,10 @@ To build the FMUs you need [CMake](https://cmake.org/) and a supported [build to
 
 The FMUs will be in the `dist` folder inside the selected build folder.
 
+## Building fmusim
+
+To build the `fmusim` executable, run the `ThirdParty/build_*.py` Python scripts and enable `WITH_FMUSIM` before generating the CMake project.
+
 ## License and attribution
 
 Copyright &copy; 2022, Modelica Association Project "FMI".
