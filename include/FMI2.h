@@ -10,7 +10,6 @@ extern "C" {
 struct FMI2Functions_ {
 
     fmi2CallbackFunctions            callbacks;
-    fmi2EventInfo                    eventInfo;
 
     /***************************************************
     Common Functions for FMI 2.0
