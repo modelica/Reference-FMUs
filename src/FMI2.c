@@ -285,7 +285,7 @@ FMIStatus FMI2EnterInitializationMode(FMIInstance *instance) {
 }
 
 FMIStatus FMI2ExitInitializationMode(FMIInstance *instance) {
-    instance->state = instance->interfaceType == FMIModelExchange ? FMIEventModeState : FMIStepCompleteState;
+    instance->state = instance->interfaceType == FMIModelExchange ? FMIEventModeState : FMIStepModeState;
     CALL(ExitInitializationMode);
 }
 

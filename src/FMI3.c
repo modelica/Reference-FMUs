@@ -477,10 +477,12 @@ FMIStatus FMI3EnterInitializationMode(FMIInstance *instance,
 
 FMIStatus FMI3ExitInitializationMode(FMIInstance *instance) {
 
-    if (instance->interfaceType == FMIModelExchange || (instance->fmiVersion == FMIVersion3 && instance->interfaceType == FMICoSimulation && instance->fmi3Functions->eventModeUsed)) {
+    if (instance->interfaceType == FMIModelExchange) {
         instance->state = FMIEventModeState;
+    } else if (instance->interfaceType == FMICoSimulation) {
+        instance->state = instance->fmi3Functions->eventModeUsed ? FMIEventModeState : FMIStepModeState;
     } else {
-        instance->state = FMIStepCompleteState;
+        instance->state = FMIClockActivationMode;
     }
 
     CALL(ExitInitializationMode);
@@ -874,10 +876,32 @@ FMIStatus FMI3GetAdjointDerivative(FMIInstance *instance,
 
 /* Entering and exiting the Configuration or Reconfiguration Mode */
 FMIStatus FMI3EnterConfigurationMode(FMIInstance *instance) {
+    instance->state = instance->state == FMIInstantiatedState ? FMIConfigurationModeState: FMIReconfigurationModeState;
     CALL(EnterConfigurationMode);
 }
 
 FMIStatus FMI3ExitConfigurationMode(FMIInstance *instance) {
+
+    if (instance->state == FMIConfigurationModeState) {
+
+        instance->state = FMIInstantiatedState;
+
+    } else if (instance->state == FMIReconfigurationModeState) {
+
+        if (instance->interfaceType == FMIModelExchange) {
+            instance->state = FMIEventModeState;
+        } else if (instance->interfaceType == FMICoSimulation) {
+            instance->state = FMIStepModeState;
+        } else {
+            instance->state = FMIClockActivationMode;
+        }
+
+    } else {
+
+        return FMIError;
+
+    }
+
     CALL(ExitConfigurationMode);
 }
 
