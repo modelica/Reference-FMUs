@@ -75,23 +75,18 @@ typedef enum {
 } FMIInterfaceType;
 
 typedef enum {
-    FMIStartAndEndState        = 1 << 0,
-    FMIInstantiatedState       = 1 << 1,
-    FMIInitializationModeState = 1 << 2,
 
-    // model exchange states
-    FMIEventModeState          = 1 << 3,
-    FMIContinuousTimeModeState = 1 << 4,
+    FMIStartAndEndState         = 1 << 0,
+    FMIInstantiatedState        = 1 << 1,
+    FMIInitializationModeState  = 1 << 2,
+    FMITerminatedState          = 1 << 3,
+    FMIConfigurationModeState   = 1 << 4,
+    FMIReconfigurationModeState = 1 << 5,
+    FMIEventModeState           = 1 << 6,
+    FMIContinuousTimeModeState  = 1 << 7,
+    FMIStepModeState            = 1 << 8,
+    FMIClockActivationMode      = 1 << 9
 
-    // co-simulation states
-    FMIStepCompleteState       = 1 << 5,
-    FMIStepInProgressState     = 1 << 6,
-    FMIStepFailedState         = 1 << 7,
-    FMIStepCanceledState       = 1 << 8,
-
-    FMITerminatedState         = 1 << 9,
-    FMIErrorState              = 1 << 10,
-    FMIFatalState              = 1 << 11,
 } FMIState;
 
 typedef unsigned int FMIValueReference;
