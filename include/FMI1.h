@@ -14,7 +14,6 @@ struct FMI1Functions_ {
     ****************************************************/
 
     fmi1CallbackFunctions   callbacks;
-    fmi1EventInfo           eventInfo;
 
     fmi1SetRealTYPE         *fmi1SetReal;
     fmi1SetIntegerTYPE      *fmi1SetInteger;

@@ -146,13 +146,6 @@ FMIStatus FMI2Instantiate(FMIInstance *instance, const char *fmuResourceLocation
         return FMIError;
     }
 
-    instance->fmi2Functions->eventInfo.newDiscreteStatesNeeded           = fmi2False;
-    instance->fmi2Functions->eventInfo.terminateSimulation               = fmi2False;
-    instance->fmi2Functions->eventInfo.nominalsOfContinuousStatesChanged = fmi2False;
-    instance->fmi2Functions->eventInfo.valuesOfContinuousStatesChanged   = fmi2False;
-    instance->fmi2Functions->eventInfo.nextEventTimeDefined              = fmi2False;
-    instance->fmi2Functions->eventInfo.nextEventTime                     = 0.0;
-
     instance->state = FMIStartAndEndState;
 
 #if !defined(FMI_VERSION) || FMI_VERSION == 2
