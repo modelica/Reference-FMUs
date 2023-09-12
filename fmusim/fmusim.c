@@ -383,7 +383,9 @@ int main(int argc, const char* argv[]) {
 
     }
 
-    FMIModelVariable** startVariables = calloc(nStartValues, sizeof(FMIModelVariable*));
+    FMIModelVariable** startVariables = NULL;
+
+    CALL(FMICalloc(&startVariables, nStartValues, sizeof(FMIModelVariable*)));
 
     for (size_t i = 0; i < nStartValues; i++) {
 
@@ -407,7 +409,9 @@ int main(int argc, const char* argv[]) {
     S = FMICreateInstance("instance1", platformBinaryPath, logMessage, logFMICalls ? logFunctionCall : NULL);
 
     size_t nOutputVariables = 0;
-    FMIModelVariable** outputVariables = (FMIModelVariable**)calloc(modelDescription->nModelVariables, sizeof(FMIModelVariable*));
+    FMIModelVariable** outputVariables = NULL;
+    
+    CALL(FMICalloc(&outputVariables, modelDescription->nModelVariables, sizeof(FMIModelVariable*)));
 
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 

@@ -166,6 +166,14 @@ FMIStatus FMIRealloc(void** memory, size_t size) {
     return FMIOK;
 }
 
+void FMIFree(void** memory) {
+
+    if (*memory) {
+        free(*memory);
+        *memory = NULL;
+    }
+}
+
 #define PARSE_VALUES(t, f, ...) \
     while (strlen(next) > 0) { \
         CALL(FMIRealloc(values, sizeof(t)* ((*nValues) + 1))); \
@@ -473,6 +481,7 @@ FMIStatus FMIRestoreFMUStateFromFile(FMIInstance* S, const char* filename) {
      file = fopen(filename, "rb");
 
      if (!file) {
+         // TODO: log message
          return FMIError;
      }
 
@@ -482,11 +491,9 @@ FMIStatus FMIRestoreFMUStateFromFile(FMIInstance* S, const char* filename) {
 
      fseek(file, 0L, SEEK_SET);
 
-     char* serializedFMUState = (char*)calloc(serializedFMUStateSize, sizeof(char));
+     char* serializedFMUState = NULL;
 
-     if (!serializedFMUState) {
-         return FMIError;
-     }
+     CALL(FMICalloc(&serializedFMUState, serializedFMUStateSize, sizeof(char)));
 
      fread(serializedFMUState, sizeof(char), serializedFMUStateSize, file);
 
@@ -506,6 +513,7 @@ FMIStatus FMIRestoreFMUStateFromFile(FMIInstance* S, const char* filename) {
          CALL(FMI3FreeFMUState(S, FMUState));
          break;
      default:
+         // TODO: log message
          status = FMIError;
          break;
      }
@@ -541,12 +549,9 @@ FMIStatus FMISaveFMUStateToFile(FMIInstance* S, const char* filename) {
         CALL(FMI3SerializedFMUStateSize(S, FMUState, &serializedFMUStateSize));
     }
 
-    char* serializedFMUState = (char*)calloc(serializedFMUStateSize, sizeof(char));
-
-    if (!serializedFMUState) {
-        status = FMIError;
-        goto TERMINATE;
-    }
+    char* serializedFMUState = NULL; 
+    
+    CALL(FMICalloc(&serializedFMUState, serializedFMUStateSize, sizeof(char)));
 
     if (S->fmiVersion == FMIVersion2) {
         CALL(FMI2SerializeFMUstate(S, FMUState, serializedFMUState, serializedFMUStateSize));

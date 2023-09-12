@@ -14,11 +14,11 @@
 
 FMIRecorder* FMICreateRecorder(size_t nVariables, const FMIModelVariable* variables[], const char* file) {
 
-    FMIRecorder* result = calloc(1, sizeof(FMIRecorder));
+    FMIStatus status = FMIOK;
 
-    if (!result) {
-        return NULL;
-    }
+    FMIRecorder* result = NULL;
+    
+    CALL(FMICalloc(&result, 1, sizeof(FMIRecorder)));
 
     result->nVariables = nVariables;
     result->variables = variables;
@@ -27,6 +27,12 @@ FMIRecorder* FMICreateRecorder(size_t nVariables, const FMIModelVariable* variab
     if (!result->file) {
         free(result);
         return NULL;
+    }
+
+TERMINATE:
+
+    if (status != FMIOK) {
+        FMIFree(result);
     }
 
     return result;

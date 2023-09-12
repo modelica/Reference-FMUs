@@ -40,7 +40,7 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 			return NULL;
 		}
 
-		CALL(FMIRealloc(&input->variables, (input->nVariables + 1) * sizeof(FMIModelVariable*)));
+		CALL(FMIRealloc((void**)&input->variables, (input->nVariables + 1) * sizeof(FMIModelVariable*)));
 		input->variables[input->nVariables] = variable;
 		input->nVariables++;
 	}
@@ -50,7 +50,7 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 		CALL(FMIRealloc(&input->time,    (input->nRows + 1) * sizeof(double)));
 		CALL(FMIRealloc(&input->nValues, (input->nRows + 1) * input->nVariables * sizeof(size_t)));
-		CALL(FMIRealloc(&input->values,  (input->nRows + 1) * input->nVariables * sizeof(void*)));
+		CALL(FMIRealloc((void**)&input->values, (input->nRows + 1) * input->nVariables * sizeof(void*)));
 		
 		memset(&input->values[input->nRows * input->nVariables], 0x0, input->nVariables * sizeof(void*));
 
@@ -248,13 +248,14 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, doub
 			const size_t requiredBufferSize = nValues * sizeof(fmi3Float64);
 
 			if (input->bufferSize < requiredBufferSize) {
-				CALL(FMIRealloc(&input->buffer, requiredBufferSize));
+				// TODO: allocate in FMIReadInput()
+				CALL(FMIRealloc((void**)&input->buffer, requiredBufferSize));
 				((FMUStaticInput*)input)->bufferSize = requiredBufferSize;
 			}
 
 			if (variable->type == FMIFloat32Type) {
 
-				float* buffer = (double*)input->buffer;
+				float* buffer = (float*)input->buffer;
 
 				const float* values0 = (float*)input->values[row * input->nVariables + i];
 				const float* values1 = (float*)input->values[(row + 1) * input->nVariables + i];

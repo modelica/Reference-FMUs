@@ -62,12 +62,8 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
     if (settings->recordIntermediateValues) {
 
         nRequiredIntermediateVariables = recorder->nVariables;
-        
-        requiredIntermediateVariables = (fmi3ValueReference*)calloc(nRequiredIntermediateVariables, sizeof(fmi3ValueReference));
 
-        if (!requiredIntermediateVariables) {
-            return FMIError;
-        }
+        CALL(FMICalloc(&requiredIntermediateVariables, nRequiredIntermediateVariables, sizeof(fmi3ValueReference)));
         
         for (size_t i = 0; i < nRequiredIntermediateVariables; i++) {
             requiredIntermediateVariables[i] = recorder->variables[i]->valueReference;

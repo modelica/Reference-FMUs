@@ -2,6 +2,8 @@
 #include "FMI2.h"
 #include "FMI3.h"
 
+#include "FMIUtil.h"
+
 #include "FMIEuler.h"
 
 
@@ -29,22 +31,22 @@ Solver* FMIEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
 
     (void)tolerance; // unused
 
-    Solver* solver = (Solver*)calloc(1, sizeof(SolverImpl_));
+    FMIStatus status = FMIOK;
 
-    if (!solver) {
-        return NULL;
-    }
-
+    Solver* solver = NULL; 
+    
+    CALL(FMICalloc(&solver, 1, sizeof(SolverImpl_)));
+    
     solver->S = S;
     solver->time = startTime;
 
     solver->nx = modelDescription->nContinuousStates;
-    solver->x  = (double*)calloc(solver->nx, sizeof(double));
-    solver->dx = (double*)calloc(solver->nx, sizeof(double));
+    CALL(FMICalloc(&solver->x, solver->nx, sizeof(double)));
+    CALL(FMICalloc(&solver->dx, solver->nx, sizeof(double)));
 
     solver->nz   = modelDescription->nEventIndicators;
-    solver->z    = (double*)calloc(solver->nx, sizeof(double));
-    solver->prez = (double*)calloc(solver->nx, sizeof(double));
+    CALL(FMICalloc(&solver->z, solver->nx, sizeof(double)));
+    CALL(FMICalloc(&solver->prez, solver->nx, sizeof(double)));
 
     if (S->fmiVersion == FMIVersion1) {
         solver->get_x  = FMI1GetContinuousStates;
@@ -69,6 +71,12 @@ Solver* FMIEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
         solver->get_z(solver->S, solver->prez, solver->nz);
     }
 
+TERMINATE:
+
+    if (status != FMIOK) {
+        FMIEulerFree(solver);
+    }
+
     return solver;
 }
 
@@ -78,12 +86,12 @@ void FMIEulerFree(Solver* solver) {
         return;
     }
 
-    free(solver->x);
-    free(solver->dx);
-    free(solver->z);
-    free(solver->prez);
+    FMIFree(&solver->x);
+    FMIFree(&solver->dx);
+    FMIFree(&solver->z);
+    FMIFree(&solver->prez);
 
-    free(solver);
+    FMIFree(&solver);
 }
 
 FMIStatus FMIEulerStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent) {
