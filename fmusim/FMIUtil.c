@@ -228,9 +228,11 @@ FMIStatus FMIParseValues(FMIVersion fmiVersion, FMIVariableType type, const char
         PARSE_VALUES(fmi3UInt64, strtoull, 10);
         break;
     case FMIStringType: {
-        CALL(FMIRealloc(values, sizeof(fmi3String)));
+        const size_t len = strlen(literal);
+        CALL(FMIRealloc(values, sizeof(fmi3String*) + len + 1));
         fmi3String* v = *values;
-        v[0] = literal;
+        v[0] = &v[1];
+        strncpy(&v[1], literal, len + 1);
         *nValues = 1;
         break;
     }
