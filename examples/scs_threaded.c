@@ -31,9 +31,9 @@ static bool checkCountdownClocks(FMIInstance *S);
 
 void cb_clockUpdate(fmi3InstanceEnvironment instanceEnvironment);
 
-void cb_lockPreemption();
+void cb_lockPreemption(void);
 
-void cb_unlockPreemption();
+void cb_unlockPreemption(void);
 
 void logEvent(const char* message, ...) {
 
@@ -380,7 +380,7 @@ void cb_clockUpdate(fmi3InstanceEnvironment instanceEnvironment) {
  * Callback function to grab a lock in order to avoid preemption in a critical section
  * Works on a globally defined variable initialized by the importer
 */
-void cb_lockPreemption() {
+void cb_lockPreemption(void) {
     GlobalLock(globalLockVar);
 }
 /*
@@ -388,7 +388,7 @@ void cb_lockPreemption() {
  * Callback function to release a lock
  * Works on a globally defined variable initialized by the importer
 */
-void cb_unlockPreemption() {
+void cb_unlockPreemption(void) {
     GlobalUnlock(globalLockVar);
 }
 
