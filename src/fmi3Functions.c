@@ -919,6 +919,10 @@ fmi3Status fmi3DeserializeFMUState(fmi3Instance instance,
 
     if (*FMUState == NULL) {
         *FMUState = calloc(1, sizeof(ModelInstance));
+        if (*FMUState == NULL) {
+            printf("Failed to allocate memory for FMUState.\n");
+            return fmi3Error;
+        }
     }
 
     memcpy(*FMUState, serializedState, sizeof(ModelInstance));
