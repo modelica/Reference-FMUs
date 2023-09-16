@@ -95,6 +95,10 @@ FMIInstance *FMICreateInstance(const char *instanceName, const char *libraryPath
 
     FMIInstance* instance = (FMIInstance*)calloc(1, sizeof(FMIInstance));
 
+    if (!instance) {
+        return NULL;
+    }
+
     instance->libraryHandle = libraryHandle;
 
     instance->logMessage = logMessage;
