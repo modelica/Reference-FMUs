@@ -16,6 +16,50 @@
 #include "FMI.h"
 
 
+FMIStatus FMICalloc(void** memory, size_t count, size_t size) {
+
+    if (!memory) {
+        printf("Pointer to memory must not be NULL.");
+        return FMIError;
+    }
+
+    *memory = calloc(count, size);
+
+    if (!*memory) {
+        printf("Failed to reallocate memory.");
+        return FMIError;
+    }
+
+    return FMIOK;
+}
+
+FMIStatus FMIRealloc(void** memory, size_t size) {
+
+    if (!memory) {
+        printf("Pointer to memory must not be NULL.");
+        return FMIError;
+    }
+
+    void* temp = realloc(*memory, size);
+
+    if (!temp) {
+        printf("Failed to reallocate memory.");
+        return FMIError;
+    }
+
+    *memory = temp;
+
+    return FMIOK;
+}
+
+void FMIFree(void** memory) {
+
+    if (*memory) {
+        free(*memory);
+        *memory = NULL;
+    }
+}
+
 FMIInstance *FMICreateInstance(const char *instanceName, const char *libraryPath, FMILogMessage *logMessage, FMILogFunctionCall *logFunctionCall) {
 
 # ifdef _WIN32

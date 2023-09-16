@@ -31,12 +31,6 @@ FMIStatus FMI3SetValues(
     const void* values,
     size_t nValues);
 
-FMIStatus FMICalloc(void** memory, size_t count, size_t size);
-
-FMIStatus FMIRealloc(void** memory, size_t size);
-
-void FMIFree(void** memory);
-
 FMIStatus FMIParseValues(FMIVersion fmiVerion, FMIVariableType type, const char* literal, size_t* nValues, void** values);
 
 FMIStatus FMIParseStartValues(FMIVariableType type, const char* literal, size_t nValues, void* values);
