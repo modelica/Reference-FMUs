@@ -103,6 +103,8 @@ typedef void FMILogFunctionCall(FMIInstance *instance, FMIStatus status, const c
 
 typedef void FMILogMessage(FMIInstance *instance, FMIStatus status, const char *category, const char *message);
 
+typedef void FMILogErrorMessage(const char* message, va_list args);
+
 struct FMIInstance_ {
 
     FMI1Functions *fmi1Functions;
@@ -141,6 +143,8 @@ struct FMIInstance_ {
     FMIInterfaceType interfaceType;
 
 };
+
+FMI_STATIC void FMILogError(const char* message, ...);
 
 FMI_STATIC FMIStatus FMICalloc(void** memory, size_t count, size_t size);
 

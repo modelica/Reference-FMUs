@@ -26,6 +26,12 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 	CsvHandle handle = CsvOpen(filename);
 
+	if (!handle) {
+		status = FMIError;
+		FMILogError("Failed to read input file %s.\n", filename);
+		goto TERMINATE;
+	}
+
 	// variable names
 	row = CsvReadNextRow(handle);
 
@@ -84,13 +90,26 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 TERMINATE:
 
-	// TODO: clean up on error
+	if (status == FMIOK) {
+		return input;
+	}
 
-	return input;
+	FMIFreeInput(input);
+
+	return NULL;
 }
 
 void FMIFreeInput(FMUStaticInput* input) {
-	// TODO
+
+	if (!input) {
+		return;
+	}
+
+	FMIFree(&input->variables);
+	FMIFree(&input->nValues);
+	FMIFree(&input->buffer);
+
+	FMIFree(&input);
 }
 
 static size_t FMISizeOf(FMIVariableType type, FMIVersion fmiVersion) {

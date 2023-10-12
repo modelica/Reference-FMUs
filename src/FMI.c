@@ -16,6 +16,15 @@
 #include "FMI.h"
 
 
+static FMILogErrorMessage* logErrorMessage = vprintf;
+
+void FMILogError(const char* message, ...) {
+    va_list args;
+    va_start(args, message);
+    logErrorMessage(message, args);
+    va_end(args);
+}
+
 FMIStatus FMICalloc(void** memory, size_t count, size_t size) {
 
     if (!memory) {

@@ -457,6 +457,7 @@ int main(int argc, const char* argv[]) {
     if (inputFile) {
         input = FMIReadInput(modelDescription, inputFile);
         if (!input) {
+            status = FMIError;
             goto TERMINATE;
         }
     }
@@ -553,6 +554,10 @@ int main(int argc, const char* argv[]) {
     }
 
 TERMINATE:
+
+    if (input) {
+        FMIFreeInput(input);
+    }
 
     if (result) {
         FMIFreeRecorder(result);
