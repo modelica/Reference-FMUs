@@ -115,6 +115,24 @@ if (${FMI_VERSION} EQUAL 3)
         RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
     )
 
+    # cs_reconfiguration
+    add_executable(cs_reconfiguration
+        ${EXAMPLE_SOURCES}
+        StateSpace/config.h
+        examples/StateSpace.c
+        examples/cs_reconfiguration.c
+    )
+    add_dependencies(cs_reconfiguration StateSpace)
+    set_target_properties(cs_reconfiguration PROPERTIES FOLDER examples)
+    target_compile_definitions(cs_reconfiguration PRIVATE FMI_VERSION=${FMI_VERSION} DISABLE_PREFIX)
+    target_include_directories(cs_reconfiguration PRIVATE include StateSpace)
+    target_link_libraries(cs_reconfiguration ${LIBRARIES})
+    set_target_properties(cs_reconfiguration PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY         temp
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG   temp
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE temp
+    )
+
     # jacobian
     add_executable(jacobian
         ${EXAMPLE_SOURCES}
@@ -184,7 +202,7 @@ elseif(${FMI_VERSION} EQUAL 2)
     set(MODEL_NAMES ${MODEL_NAMES} Resource)
     set(INTERFACE_TYPES cs me)
 else()
-    set(MODEL_NAMES ${MODEL_NAMES} LinearTransform Resource)
+    set(MODEL_NAMES ${MODEL_NAMES} Resource StateSpace)
     set(INTERFACE_TYPES cs me)
 endif()
 

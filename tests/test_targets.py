@@ -91,7 +91,7 @@ def test_fmi3(arch):
 
     build_dir = root / 'fmi3'
 
-    models = ['BouncingBall', 'Dahlquist', 'LinearTransform', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
+    models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'StateSpace', 'VanDerPol']
 
     for model in models:
         validate(build_dir, model=model, fmi_types=['ModelExchange', 'CoSimulation'], simulate=arch in {'x86', 'x86_64'})
