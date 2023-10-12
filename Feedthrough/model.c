@@ -530,7 +530,6 @@ Status setUInt16(ModelInstance* comp, ValueReference vr, const uint16_t values[]
     return OK;
 }
 
-
 Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], size_t nValues, size_t* index) {
 
     ASSERT_NVALUES(1);

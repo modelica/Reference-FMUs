@@ -74,6 +74,11 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
     }
 }
 
+size_t getNumberOfContinuousStates(ModelInstance* comp) {
+    UNUSED(comp);
+    return 2;
+}
+
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
     UNUSED(nx);
     x[0] = M(x0);

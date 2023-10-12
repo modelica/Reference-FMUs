@@ -8,9 +8,8 @@
 #define CO_SIMULATION
 #define MODEL_EXCHANGE
 
-// define model size
-#define NX 2
-#define NZ 1
+#define HAS_CONTINUOUS_STATES
+#define HAS_EVENT_INDICATORS
 
 #define SET_FLOAT64
 #define GET_OUTPUT_DERIVATIVE

@@ -111,7 +111,42 @@ void freeModelInstance(ModelInstance *comp) {
 
     if (comp->resourceLocation) free((void*)comp->resourceLocation);
 
+    if (comp->prez) free(comp->prez);
+
+    if (comp->z) free(comp->z);
+
+    if (comp->x) free(comp->x);
+
+    if (comp->dx) free(comp->dx);
+
     free(comp);
+}
+
+void exitInitializationMode(ModelInstance* comp) {
+
+#if !defined(HAS_EVENT_INDICATORS) && !defined(HAS_CONTINUOUS_STATES)
+    UNUSED(comp);
+#endif
+
+#ifdef HAS_EVENT_INDICATORS
+    comp->nz = getNumberOfEventIndicators(comp);
+
+    if (comp->nz > 0) {
+        comp->prez = calloc(comp->nz, sizeof(double));
+        comp->z    = calloc(comp->nz, sizeof(double));
+    }
+
+    getEventIndicators(comp, comp->prez, comp->nz);
+#endif
+
+#ifdef HAS_CONTINUOUS_STATES
+    comp->nx = getNumberOfContinuousStates(comp);
+
+    if (comp->nx > 0) {
+        comp->x  = calloc(comp->nx, sizeof(double));
+        comp->dx = calloc(comp->nx, sizeof(double));
+    }
+#endif
 }
 
 void reset(ModelInstance* comp) {
@@ -255,16 +290,6 @@ void logError(ModelInstance *comp, const char *message, ...) {
     logMessage(comp, Error, "logStatusError", message, args);
     va_end(args);
 }
-
-// default implementations
-#if NZ < 1
-void getEventIndicators(ModelInstance *comp, double z[], size_t nz) {
-    UNUSED(comp);
-    UNUSED(z);
-    UNUSED(nz);
-    // do nothing
-}
-#endif
 
 #define GET_NOT_ALLOWED(t) do { \
     UNUSED(vr); \
@@ -473,26 +498,6 @@ Status activateModelPartition(ModelInstance* comp, ValueReference vr, double act
 }
 #endif
 
-#if NX < 1
-void getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
-    UNUSED(comp);
-    UNUSED(x);
-    UNUSED(nx);
-}
-
-void setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
-    UNUSED(comp);
-    UNUSED(x);
-    UNUSED(nx);
-}
-
-void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
-    UNUSED(comp);
-    UNUSED(dx);
-    UNUSED(nx);
-}
-#endif
-
 #ifndef GET_PARTIAL_DERIVATIVE
 Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative) {
     UNUSED(comp);
@@ -533,27 +538,27 @@ void setFMUState(ModelInstance* comp, void* FMUState) {
     comp->clocksTicked = s->clocksTicked;
     comp->isDirtyValues = s->isDirtyValues;
     comp->modelData = s->modelData;
-#if NZ > 0
-    memcpy(comp->z, s->z, NZ * sizeof(double));
-#endif
+    if (comp->nz) {
+        memcpy(comp->z, s->z, s->nz * sizeof(double));
+    }
     comp->nSteps = s->nSteps;
 }
 
 void doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
 
-#if NX > 0
-    double  x[NX] = { 0 };
-    double dx[NX] = { 0 };
+#ifdef HAS_CONTINUOUS_STATES
+    if (comp->nx > 0) {
 
-    getContinuousStates(comp, x, NX);
-    getDerivatives(comp, dx, NX);
+        getContinuousStates(comp, comp->x, comp->nx);
+        getDerivatives(comp, comp->dx, comp->nx);
 
-    // forward Euler step
-    for (int i = 0; i < NX; i++) {
-        x[i] += FIXED_SOLVER_STEP * dx[i];
+        // forward Euler step
+        for (size_t i = 0; i < comp->nx; i++) {
+            comp->x[i] += FIXED_SOLVER_STEP * comp->dx[i];
+        }
+
+        setContinuousStates(comp, comp->x, comp->nx);
     }
-
-    setContinuousStates(comp, x, NX);
 #endif
 
     comp->nSteps++;
@@ -563,18 +568,23 @@ void doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
     // state event
     *stateEvent = false;
 
-#if NZ > 0
-    double z[NZ] = { 0.0 };
+#ifdef HAS_EVENT_INDICATORS
+    if (comp->nz > 0) {
 
-    getEventIndicators(comp, z, NZ);
+        getEventIndicators(comp, comp->z, comp->nz);
 
-    // check for zero-crossings
-    for (int i = 0; i < NZ; i++) {
-        *stateEvent |= (comp->z[i] <= 0 && z[i] > 0) || (comp->z[i] > 0 && z[i] <= 0);
+        // check for zero-crossings
+        for (size_t i = 0; i < comp->nz; i++) {
+            *stateEvent |=
+                (comp->prez[i] <= 0 && comp->z[i] >  0) ||
+                (comp->prez[i] >  0 && comp->z[i] <= 0);
+        }
+
+        // remember the current event indicators
+        double* temp = comp->prez;
+        comp->prez = comp->z;
+        comp->z = temp;
     }
-
-    // remember the current event indicators
-    memcpy(comp->z, z, sizeof(double) * NZ);
 #endif
 
     // time event

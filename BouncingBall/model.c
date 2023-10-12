@@ -133,9 +133,6 @@ void eventUpdate(ModelInstance *comp) {
             M(g) = 0;
         }
 
-        // reset previous event indicators
-        getEventIndicators(comp, comp->z, NZ);
-
         comp->valuesOfContinuousStatesChanged = true;
     } else {
         comp->valuesOfContinuousStatesChanged = false;
@@ -144,6 +141,16 @@ void eventUpdate(ModelInstance *comp) {
     comp->nominalsOfContinuousStatesChanged = false;
     comp->terminateSimulation  = false;
     comp->nextEventTimeDefined = false;
+}
+
+size_t getNumberOfEventIndicators(ModelInstance* comp) {
+    UNUSED(comp);
+    return 1;
+}
+
+size_t getNumberOfContinuousStates(ModelInstance* comp) {
+    UNUSED(comp);
+    return 2;
 }
 
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx) {

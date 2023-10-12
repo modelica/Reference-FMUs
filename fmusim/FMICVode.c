@@ -213,7 +213,11 @@ Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
     solver->abstol = N_VNew_Serial(NV_LENGTH_S(solver->x), solver->sunctx);
     ASSERT_NOT_NULL(solver->abstol);
 
-    CALL_FMI(solver->get_nominals(solver->S, NV_DATA_S(solver->abstol), solver->nx));
+    if (solver->nx > 0) {
+        CALL_FMI(solver->get_nominals(solver->S, NV_DATA_S(solver->abstol), solver->nx));
+    } else {
+        NV_DATA_S(solver->abstol)[0] = 1;
+    }
 
     for (size_t i = 0; i < NV_LENGTH_S(solver->x); i++) {
         NV_DATA_S(solver->abstol)[i] *= tolerance;
