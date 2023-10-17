@@ -12,6 +12,8 @@
 #include <Windows.h>
 #endif
 
+#include "calc.tab.h"
+
 #include "fmi1schema.h"
 #include "fmi2schema.h"
 #include "fmi3schema.h"
@@ -896,24 +898,8 @@ size_t FMIValidateModelStructure(const FMIModelDescription* modelDescription) {
 void set_input_string(const char* in);
 void end_lexical_scan(void);
 
-/* This function parses a string */
-int parse_string_(const char* in) {
-    set_input_string(in);
-    int rv = yyparse();
-    end_lexical_scan();
-    return rv;
-}
-
-//int main(int argc, char* argv) {
-//
-//    parse_string_("der(a.b.c[0,2],3)");
-//
-//    return 0;
-//}
-
-void yyerror(const char* s) {
-    fprintf(stderr, "Parse error: %s\n", s);
-    //exit(1);
+void yyerror(char* name, const char* s) {
+    printf("\"%s\" is not a valid variable name for variableNamingConvention=\"structured\".\n", name);
 }
 
 size_t FMIValidateVariableNames(const FMIModelDescription* modelDescription) {
@@ -924,10 +910,13 @@ size_t FMIValidateVariableNames(const FMIModelDescription* modelDescription) {
 
         for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-            if (parse_string_(modelDescription->modelVariables[i].name)) {
+            set_input_string(modelDescription->modelVariables[i].name);
+            
+            if (yyparse(modelDescription->modelVariables[i].name)) {
                 nProblems++;
             }
-
+            
+            end_lexical_scan();
         }
     }
 
