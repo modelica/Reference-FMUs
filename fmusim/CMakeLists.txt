@@ -65,6 +65,8 @@ set(sources
   miniunzip.c
   ${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c
   ${ZLIB_SRC_DIR}/contrib/minizip/unzip.c
+  ../src/lex.yy.c
+  ../src/calc.tab.c
 )
 
 if (WIN32)
@@ -76,13 +78,14 @@ add_executable(fmusim ${sources})
 target_include_directories(fmusim PRIVATE
   .
   ../include
+  ../src
   ${LIBXML2_DIR}/include/libxml2
   ${ZLIB_DIR}/include
   ${ZLIB_SRC_DIR}/contrib/minizip
   ${CVODE_DIR}/include
 )
 
-add_compile_definitions(LIBXML_STATIC)
+target_compile_definitions(fmusim PRIVATE YY_NO_UNISTD_H LIBXML_STATIC)
 
 if (WIN32)
     set(libraries

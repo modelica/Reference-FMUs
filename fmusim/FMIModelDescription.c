@@ -16,6 +16,7 @@
 #include "fmi2schema.h"
 #include "fmi3schema.h"
 
+
 static bool getBooleanAttribute(const xmlNodePtr node, const char* name) {
     char* literal = (char*)xmlGetProp(node, (xmlChar*)name);
     bool value = literal && (strcmp(literal, "true") == 0 || strcmp(literal, "1") == 0);
@@ -28,6 +29,13 @@ static uint32_t getUInt32Attribute(const xmlNodePtr node, const char* name) {
     uint32_t value = strtoul(literal, NULL, 0);
     free(literal);
     return value;
+}
+
+static FMIVariableNamingConvention getVariableNamingConvention(const xmlNodePtr node) {
+    const char* value = (char*)xmlGetProp(node, (xmlChar*)"variableNamingConvention");
+    FMIVariableNamingConvention variableNamingConvention = (value && !strcmp(value, "structured")) ? FMIStructured : FMIFlat;
+    free(value);
+    return variableNamingConvention;
 }
 
 static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
@@ -44,6 +52,7 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
     modelDescription->description = (char*)xmlGetProp(root, (xmlChar*)"description");
     modelDescription->generationTool = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
     modelDescription->generationDate = (char*)xmlGetProp(root, (xmlChar*)"generationDateAndTime");
+    modelDescription->variableNamingConvention = getVariableNamingConvention(root);
 
     const char* numberOfContinuousStates = (char*)xmlGetProp(root, (xmlChar*)"numberOfContinuousStates");
     
@@ -175,6 +184,8 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 
     xmlXPathFreeContext(xpathCtx);
 
+    nProblems += FMIValidateVariableNames(modelDescription);
+
     if (nProblems > 0) {
         FMIFreeModelDescription(modelDescription);
         modelDescription = NULL;
@@ -245,6 +256,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     modelDescription->description = (char*)xmlGetProp(root, (xmlChar*)"description");
     modelDescription->generationTool = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
     modelDescription->generationDate = (char*)xmlGetProp(root, (xmlChar*)"generationDate");
+    modelDescription->variableNamingConvention = getVariableNamingConvention(root);
 
     const char* numberOfEventIndicators = (char*)xmlGetProp(root, (xmlChar*)"numberOfEventIndicators");
 
@@ -389,6 +401,8 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
     nProblems += FMIValidateModelStructure(modelDescription);
 
+    nProblems += FMIValidateVariableNames(modelDescription);
+
     if (nProblems > 0) {
         FMIFreeModelDescription(modelDescription);
         modelDescription = NULL;
@@ -411,6 +425,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
     modelDescription->description = (char*)xmlGetProp(root, (xmlChar*)"description");
     modelDescription->generationTool = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
     modelDescription->generationDate = (char*)xmlGetProp(root, (xmlChar*)"generationDate");
+    modelDescription->variableNamingConvention = getVariableNamingConvention(root);
 
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(root->doc);
 
@@ -664,6 +679,8 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
     nProblems += FMIValidateModelStructure(modelDescription);
 
+    nProblems += FMIValidateVariableNames(modelDescription);
+
     if (nProblems > 0) {
         FMIFreeModelDescription(modelDescription);
         modelDescription = NULL;
@@ -870,6 +887,48 @@ size_t FMIValidateModelStructure(const FMIModelDescription* modelDescription) {
         nProblems++;
         printf("The number of model varialbes with causality=\"output\" (%zu) must match the number of outputs"
             " in the model structure (%zu).\n", nOutputs, modelDescription->nContinuousStates);
+    }
+
+    return nProblems;
+}
+
+/* Declarations */
+void set_input_string(const char* in);
+void end_lexical_scan(void);
+
+/* This function parses a string */
+int parse_string_(const char* in) {
+    set_input_string(in);
+    int rv = yyparse();
+    end_lexical_scan();
+    return rv;
+}
+
+//int main(int argc, char* argv) {
+//
+//    parse_string_("der(a.b.c[0,2],3)");
+//
+//    return 0;
+//}
+
+void yyerror(const char* s) {
+    fprintf(stderr, "Parse error: %s\n", s);
+    //exit(1);
+}
+
+size_t FMIValidateVariableNames(const FMIModelDescription* modelDescription) {
+
+    size_t nProblems = 0;
+
+    if (modelDescription->variableNamingConvention == FMIStructured) {
+
+        for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+
+            if (parse_string_(modelDescription->modelVariables[i].name)) {
+                nProblems++;
+            }
+
+        }
     }
 
     return nProblems;

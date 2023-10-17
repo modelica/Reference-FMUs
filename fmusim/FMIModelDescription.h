@@ -28,6 +28,13 @@ typedef enum {
 
 } FMIVariability;
 
+typedef enum {
+
+    FMIFlat,
+    FMIStructured
+
+} FMIVariableNamingConvention;
+
 typedef struct FMIDimension FMIDimension;
 
 typedef struct FMIModelVariable FMIModelVariable;
@@ -90,6 +97,7 @@ typedef struct {
     const char* description;
     const char* generationTool;
     const char* generationDate;
+    FMIVariableNamingConvention variableNamingConvention;
 
     FMIModelExchangeInterface* modelExchange;
     FMICoSimulationInterface* coSimulation;
@@ -126,5 +134,7 @@ FMIModelVariable* FMIModelVariableForValueReference(const FMIModelDescription* m
 FMIModelVariable* FMIModelVariableForIndexLiteral(const FMIModelDescription* modelDescription, const char* index);
 
 size_t FMIValidateModelStructure(const FMIModelDescription* modelDescription);
+
+size_t FMIValidateVariableNames(const FMIModelDescription* modelDescription);
 
 void FMIDumpModelDescription(FMIModelDescription* modelDescription, FILE* file);
