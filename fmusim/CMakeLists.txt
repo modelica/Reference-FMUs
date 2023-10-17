@@ -85,7 +85,11 @@ target_include_directories(fmusim PRIVATE
   ${CVODE_DIR}/include
 )
 
-target_compile_definitions(fmusim PRIVATE YY_NO_UNISTD_H LIBXML_STATIC)
+if (WIN32)
+    target_compile_definitions(fmusim PRIVATE YY_NO_UNISTD_H LIBXML_STATIC)
+else ()
+    target_compile_definitions(fmusim PRIVATE LIBXML_STATIC)
+endif ()
 
 if (WIN32)
     set(libraries
