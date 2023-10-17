@@ -586,22 +586,46 @@
 #include <stdio.h>
 #include "calc.tab.h"
 
-extern FILE* yyin;
+//extern FILE* yyin;
+//
+//
+//
+//int main(int argc, char* argv) {
+//
+//	yyin = stdin;
+//
+//	do {
+//		yyparse();
+//	} while (!feof(yyin));
+//
+//	return 0;
+//}
+//
+//void yyerror(const char* s) {
+//	fprintf(stderr, "Parse error: %s\n", s);
+//	exit(1);
+//}
 
+/* Declarations */
+void set_input_string(const char* in);
+void end_lexical_scan(void);
 
+/* This function parses a string */
+int parse_string(const char* in) {
+	set_input_string(in);
+	int rv = yyparse();
+	end_lexical_scan();
+	return rv;
+}
 
 int main(int argc, char* argv) {
 
-	yyin = stdin;
-
-	do {
-		yyparse();
-	} while (!feof(yyin));
+	parse_string("1+3\n");
 
 	return 0;
 }
 
 void yyerror(const char* s) {
 	fprintf(stderr, "Parse error: %s\n", s);
-	exit(1);
+	//exit(1);
 }
