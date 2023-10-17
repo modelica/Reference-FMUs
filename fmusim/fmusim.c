@@ -209,7 +209,29 @@ TERMINATE:
     return status;
 }
 
-int main(int argc, const char* argv[]) {
+
+int main_old(int argc, const char* argv[]) {
+
+
+    //yyscan_t scanner;
+
+    //YY_BUFFER_STATE buf;
+
+    ///* check variable name syntax */
+    //yylex_init(&scanner);
+
+    //void* cb = NULL;
+
+    //char* name = "a.b.c";
+    //buf = yy_scan_string(name, scanner);
+    //yyparse(scanner, cb, name);
+    //yy_delete_buffer(buf, scanner);
+
+    //yylex_destroy(scanner);
+
+
+    ////////////////////////////////
+
 
     if (argc < 2) {
         printf("Missing argument [FMU].\n\n");
