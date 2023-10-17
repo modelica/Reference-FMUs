@@ -620,7 +620,7 @@ int parse_string(const char* in) {
 
 int main(int argc, char* argv) {
 
-	parse_string("1+3\n");
+	parse_string("a.b.c");
 
 	return 0;
 }

@@ -9,20 +9,26 @@
 
 %}
 
+q_name		      "'"({q_char}|{s_escape})+"'"
+nondigit	      [_a-zA-Z]
+digit		      [0-9]
+q_char		      {nondigit}|{digit}|[!#$%&()*+,-\./:;<>=?@\[\]\^{}|~ ]
+s_escape	      ("\\'")|("\\\"")|("\\?")|("\\\\")|("\\a")|("\\b")|("\\f")|("\\n")|("\\r")|("\\t")|("\\v")
+unsigned_integer  {digit}+
+
 %%
 
-[ \t]	; // ignore all whitespace
-[0-9]+\.[0-9]+ 	{yylval.fval = atof(yytext); return T_FLOAT;}
-[0-9]+		{yylval.ival = atoi(yytext); return T_INT;}
-\n		{return T_NEWLINE;}
-"+"		{return T_PLUS;}
-"-"		{return T_MINUS;}
-"*"		{return T_MULTIPLY;}
-"/"		{return T_DIVIDE;}
-"("		{return T_LEFT;}
-")"		{return T_RIGHT;}
-"exit"		{return T_QUIT;}
-"quit"		{return T_QUIT;}
+"der("             { return DER; }
+"("                { return '('; }
+")"                { return ')'; }
+","                { return ','; }
+"."                { return '.'; }
+"["                { return '['; }
+"]"                { return ']'; }
+{q_name}           { return Q_NAME; }
+{nondigit}         { return NONDIGIT; }
+{digit}            { return DIGIT; }
+{unsigned_integer} { return UNSIGNED_INTEGER; }
 
 %%
 
