@@ -34,8 +34,8 @@
 /* Undocumented macros, especially those whose name start with YY_,
    are private implementation details.  Do not rely on them.  */
 
-#ifndef YY_YY_CALC_TAB_H_INCLUDED
-# define YY_YY_CALC_TAB_H_INCLUDED
+#ifndef YY_YY_STRUCTURED_VARIABLE_NAME_TAB_H_INCLUDED
+# define YY_YY_STRUCTURED_VARIABLE_NAME_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -68,4 +68,4 @@ extern YYSTYPE yylval;
 
 int yyparse (void* variable);
 
-#endif /* !YY_YY_CALC_TAB_H_INCLUDED  */
+#endif /* !YY_YY_STRUCTURED_VARIABLE_NAME_TAB_H_INCLUDED  */

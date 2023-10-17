@@ -65,8 +65,9 @@ set(sources
   miniunzip.c
   ${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c
   ${ZLIB_SRC_DIR}/contrib/minizip/unzip.c
-  ../src/lex.yy.c
-  ../src/calc.tab.c
+  ../src/structured_variable_name.yy.c
+  ../include/structured_variable_name.tab.h
+  ../src/structured_variable_name.tab.c
 )
 
 if (WIN32)
@@ -78,7 +79,6 @@ add_executable(fmusim ${sources})
 target_include_directories(fmusim PRIVATE
   .
   ../include
-  ../src
   ${LIBXML2_DIR}/include/libxml2
   ${ZLIB_DIR}/include
   ${ZLIB_SRC_DIR}/contrib/minizip

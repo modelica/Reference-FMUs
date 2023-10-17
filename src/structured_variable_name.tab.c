@@ -66,7 +66,7 @@
 
 
 /* First part of user prologue.  */
-#line 1 "calc.y"
+#line 1 "structured_variable_name.y"
 
 
 #include <stdio.h>
@@ -78,7 +78,7 @@ extern FILE* yyin;
 
 void yyerror(void* variable, const char* s);
 
-#line 82 "calc.tab.c"
+#line 82 "structured_variable_name.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -111,8 +111,8 @@ void yyerror(void* variable, const char* s);
 
 /* Use api.header.include to #include this header
    instead of duplicating it here.  */
-#ifndef YY_YY_CALC_TAB_H_INCLUDED
-# define YY_YY_CALC_TAB_H_INCLUDED
+#ifndef YY_YY_STRUCTURED_VARIABLE_NAME_TAB_H_INCLUDED
+# define YY_YY_STRUCTURED_VARIABLE_NAME_TAB_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -145,7 +145,7 @@ extern YYSTYPE yylval;
 
 int yyparse (void* variable);
 
-#endif /* !YY_YY_CALC_TAB_H_INCLUDED  */
+#endif /* !YY_YY_STRUCTURED_VARIABLE_NAME_TAB_H_INCLUDED  */
 
 
 
@@ -1311,7 +1311,7 @@ yyreduce:
   switch (yyn)
     {
 
-#line 1315 "calc.tab.c"
+#line 1315 "structured_variable_name.tab.c"
 
       default: break;
     }
@@ -1543,5 +1543,5 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 55 "calc.y"
+#line 55 "structured_variable_name.y"
 

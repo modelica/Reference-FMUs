@@ -1,5 +1,6 @@
+#line 2 "structured_variable_name.yy.c"
 
-#line 3 "lex.yy.c"
+#line 4 "structured_variable_name.yy.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -461,16 +462,16 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "calc.l"
-#line 4 "calc.l"
+#line 1 "structured_variable_name.l"
+#line 4 "structured_variable_name.l"
 #include <stdio.h>
 
 #define YY_DECL int yylex()
 
-#include "calc.tab.h"
+#include "structured_variable_name.tab.h"
 
-#line 473 "lex.yy.c"
-#line 474 "lex.yy.c"
+#line 474 "structured_variable_name.yy.c"
+#line 475 "structured_variable_name.yy.c"
 
 #define INITIAL 0
 
@@ -687,10 +688,10 @@ YY_DECL
 		}
 
 	{
-#line 19 "calc.l"
+#line 19 "structured_variable_name.l"
 
 
-#line 694 "lex.yy.c"
+#line 695 "structured_variable_name.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -749,65 +750,65 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 21 "calc.l"
+#line 21 "structured_variable_name.l"
 { return DER; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 22 "calc.l"
+#line 22 "structured_variable_name.l"
 { return '('; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 23 "calc.l"
+#line 23 "structured_variable_name.l"
 { return ')'; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 24 "calc.l"
+#line 24 "structured_variable_name.l"
 { return ','; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 25 "calc.l"
+#line 25 "structured_variable_name.l"
 { return '.'; }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 26 "calc.l"
+#line 26 "structured_variable_name.l"
 { return '['; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 27 "calc.l"
+#line 27 "structured_variable_name.l"
 { return ']'; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 28 "calc.l"
+#line 28 "structured_variable_name.l"
 { return Q_NAME; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 29 "calc.l"
+#line 29 "structured_variable_name.l"
 { return NONDIGIT; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 30 "calc.l"
+#line 30 "structured_variable_name.l"
 { return UNSIGNED_INTEGER; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 31 "calc.l"
+#line 31 "structured_variable_name.l"
 { return *yytext; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 33 "calc.l"
+#line 33 "structured_variable_name.l"
 ECHO;
 	YY_BREAK
-#line 811 "lex.yy.c"
+#line 812 "structured_variable_name.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1812,7 +1813,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 33 "calc.l"
+#line 33 "structured_variable_name.l"
 
 
 void set_input_string(const char* in) {

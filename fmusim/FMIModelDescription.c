@@ -12,7 +12,7 @@
 #include <Windows.h>
 #endif
 
-#include "calc.tab.h"
+#include "structured_variable_name.tab.h"
 
 #include "fmi1schema.h"
 #include "fmi2schema.h"
