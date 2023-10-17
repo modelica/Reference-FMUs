@@ -620,7 +620,7 @@ int parse_string(const char* in) {
 
 int main(int argc, char* argv) {
 
-	parse_string("a.b.c");
+	parse_string("der(a.b.c[0,2],3)");
 
 	return 0;
 }

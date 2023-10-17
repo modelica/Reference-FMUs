@@ -27,8 +27,8 @@ unsigned_integer  {digit}+
 "]"                { return ']'; }
 {q_name}           { return Q_NAME; }
 {nondigit}         { return NONDIGIT; }
-{digit}            { return DIGIT; }
 {unsigned_integer} { return UNSIGNED_INTEGER; }
+.                  { return *yytext; }
 
 %%
 

@@ -52,8 +52,7 @@ extern int yydebug;
     DER = 258,
     UNSIGNED_INTEGER = 259,
     NONDIGIT = 260,
-    DIGIT = 261,
-    Q_NAME = 262
+    Q_NAME = 261
   };
 #endif
 

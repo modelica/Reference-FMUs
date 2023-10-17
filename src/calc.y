@@ -10,7 +10,9 @@ extern FILE* yyin;
 void yyerror(const char* s);
 %}
 
-%token DER UNSIGNED_INTEGER NONDIGIT DIGIT Q_NAME
+%define parse.error verbose
+
+%token DER UNSIGNED_INTEGER NONDIGIT Q_NAME
 
 %start name
 
@@ -39,7 +41,7 @@ bname:
 
 nondigit_or_digit:
 	/* empty */
-	| DIGIT nondigit_or_digit
+	| UNSIGNED_INTEGER nondigit_or_digit
 	| NONDIGIT nondigit_or_digit
 ;
 
