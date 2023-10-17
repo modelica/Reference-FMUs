@@ -66,6 +66,6 @@ typedef int YYSTYPE;
 
 extern YYSTYPE yylval;
 
-int yyparse (char* name);
+int yyparse (void* variable);
 
 #endif /* !YY_YY_CALC_TAB_H_INCLUDED  */

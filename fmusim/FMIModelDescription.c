@@ -898,8 +898,8 @@ size_t FMIValidateModelStructure(const FMIModelDescription* modelDescription) {
 void set_input_string(const char* in);
 void end_lexical_scan(void);
 
-void yyerror(char* name, const char* s) {
-    printf("\"%s\" is not a valid variable name for variableNamingConvention=\"structured\".\n", name);
+void yyerror(const FMIModelVariable* variable, const char* s) {
+    printf("\"%s\" (line %d) is not a valid variable name for variableNamingConvention=\"structured\".\n", variable->name, variable->line);
 }
 
 size_t FMIValidateVariableNames(const FMIModelDescription* modelDescription) {
@@ -910,9 +910,11 @@ size_t FMIValidateVariableNames(const FMIModelDescription* modelDescription) {
 
         for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-            set_input_string(modelDescription->modelVariables[i].name);
+            const FMIModelVariable* variable = &modelDescription->modelVariables[i];
+
+            set_input_string(variable->name);
             
-            if (yyparse(modelDescription->modelVariables[i].name)) {
+            if (yyparse(variable)) {
                 nProblems++;
             }
             
