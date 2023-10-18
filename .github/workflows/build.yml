@@ -7,10 +7,6 @@ on:
   pull_request:
     branches: [ main ]
 
-env:
-  FMPY: https://github.com/CATIA-Systems/FMPy/archive/e167cc65f270775ee42ea14ab98b322070757edc.zip
-  CONDA_PACKAGES: dask lark-parser lxml numpy pathlib pip pytest requests scipy
-
 jobs:
 
   lint-files:
@@ -35,7 +31,7 @@ jobs:
         conda-channels: conda-forge
     - run: conda --version
     - run: which python
-    - run: conda install fmpy-base pytest scipy
+    - run: python -m pip install fmpy=0.3.18 pytest scipy
     - run: python ThirdParty/build_cvode.py
     - run: python ThirdParty/build_libxml2.py
     - run: python ThirdParty/build_zlib.py
@@ -54,7 +50,7 @@ jobs:
     - uses: s-weigand/setup-conda@v1.1.1
       with:
         conda-channels: conda-forge
-    - run: conda install fmpy-base pytest scipy python-kaleido markdown2 plotly
+    - run: python -m pip install fmpy=0.3.18 pytest scipy python-kaleido markdown2 plotly
     - uses: actions/checkout@v3
     - uses: actions/download-artifact@v3
       with:
