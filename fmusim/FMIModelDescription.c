@@ -186,8 +186,6 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 
     xmlXPathFreeContext(xpathCtx);
 
-    nProblems += FMIValidateVariableNames(modelDescription);
-
     if (nProblems > 0) {
         FMIFreeModelDescription(modelDescription);
         modelDescription = NULL;
@@ -401,9 +399,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
         }
     }
 
-    nProblems += FMIValidateModelStructure(modelDescription);
-
-    nProblems += FMIValidateVariableNames(modelDescription);
+    nProblems += FMIValidateModelDescription(modelDescription);
 
     if (nProblems > 0) {
         FMIFreeModelDescription(modelDescription);
@@ -679,9 +675,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
     }
 
-    nProblems += FMIValidateModelStructure(modelDescription);
-
-    nProblems += FMIValidateVariableNames(modelDescription);
+    nProblems += FMIValidateModelDescription(modelDescription);
 
     if (nProblems > 0) {
         FMIFreeModelDescription(modelDescription);
@@ -871,9 +865,165 @@ FMIModelVariable* FMIModelVariableForIndexLiteral(const FMIModelDescription* mod
     return &modelDescription->modelVariables[i - 1];
 }
 
-size_t FMIValidateModelStructure(const FMIModelDescription* modelDescription) {
+static bool isLegalCombination(FMIModelVariable* variable) {
+
+    //FMICausality causality, FMIVariability variability, FMIInitial initial;
+
+    if (variable->causality == FMIStructuralParameter || variable->causality == FMIParameter) {
+        
+        if (variable->variability == FMIFixed || variable->variability == FMITunable) {
+
+            if (variable->initial == FMIUndefined) {
+                variable->initial = FMIExact;
+            }
+        
+            if (variable->initial == FMIExact) {
+                return true;
+            }
+
+        }
+
+    } else if (variable->causality == FMICalculatedParameter) {
+        
+        if (variable->variability == FMIFixed || variable->variability == FMITunable) {
+
+            if (variable->initial == FMIUndefined) {
+                variable->initial = FMICalculated;
+            }
+        
+            if (variable->initial == FMICalculated || variable->initial == FMIApprox) {
+                return true;
+            }
+
+        }
+
+    } else if (variable->causality == FMIInput) {
+        
+        if (variable->variability == FMIDiscrete || variable->variability == FMIContinuous) {
+        
+            if (variable->initial == FMIUndefined) {
+                variable->initial = FMIExact;
+            }
+
+            if (variable->initial == FMIExact) {
+                return true;
+            }
+
+        }
+
+    } else if (variable->causality == FMIOutput) {
+
+        if (variable->variability == FMIConstant) {
+
+            if (variable->initial == FMIUndefined) {
+                variable->initial = FMIExact;
+            }
+
+            if (variable->initial == FMIExact) {
+                return true;
+            }
+
+        } else if (variable->variability == FMIDiscrete || variable->variability == FMIContinuous) {
+
+            if (variable->initial == FMIUndefined) {
+                variable->initial = FMICalculated;
+            }
+
+            if (variable->initial == FMICalculated || variable->initial == FMIExact || variable->initial == FMIApprox) {
+                return true;
+            }
+
+        }
+
+    } else if (variable->causality == FMILocal) {
+
+        if (variable->variability == FMIConstant) {
+
+            if (variable->initial == FMIUndefined) {
+                variable->initial = FMIExact;
+            }
+
+            if (variable->initial == FMIExact) {
+                return true;
+            }
+
+        } else if (variable->variability == FMIFixed || variable->variability == FMITunable) {
+
+            if (variable->initial == FMIUndefined) {
+                variable->initial = FMICalculated;
+            }
+
+            if (variable->initial == FMICalculated || variable->initial == FMIApprox) {
+                return true;
+            }
+
+        } else if (variable->variability == FMIDiscrete || variable->variability == FMIContinuous) {
+
+            if (variable->initial == FMIUndefined) {
+                variable->initial = FMICalculated;
+            }
+
+            if (variable->initial == FMICalculated || variable->initial == FMIExact || variable->initial == FMIApprox) {
+                return true;
+            }
+
+        }
+
+    } else if (variable->causality == FMIIndependent) {
+
+        if (variable->variability == FMIContinuous) {
+
+            if (variable->initial == FMIUndefined) {
+                return true;
+            }
+
+        }
+
+    }
+
+    return false;
+}
+
+void set_input_string(const char* in);
+
+void end_lexical_scan(void);
+
+void yyerror(const FMIModelVariable* variable, const char* s) {
+    printf("\"%s\" (line %d) is not a valid variable name for variableNamingConvention=\"structured\".\n", variable->name, variable->line);
+}
+
+size_t FMIValidateModelDescription(const FMIModelDescription* modelDescription) {
 
     size_t nProblems = 0;
+
+    // validate structured variable names
+    if (modelDescription->variableNamingConvention == FMIStructured) {
+
+        for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+
+            const FMIModelVariable* variable = &modelDescription->modelVariables[i];
+
+            set_input_string(variable->name);
+
+            if (yyparse(variable)) {
+                nProblems++;
+            }
+
+            end_lexical_scan();
+        }
+    }
+
+    // check combinations of causality, variability, and initial
+    for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+
+        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+
+        if (!isLegalCombination(variable)) {
+            nProblems++;
+            printf("The variable \"%s\" has an illegal combination of causality, variability, and initial.\n", variable->name);
+        }
+    }
+
     size_t nOutputs = 0;
 
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
@@ -889,37 +1039,6 @@ size_t FMIValidateModelStructure(const FMIModelDescription* modelDescription) {
         nProblems++;
         printf("The number of model varialbes with causality=\"output\" (%zu) must match the number of outputs"
             " in the model structure (%zu).\n", nOutputs, modelDescription->nContinuousStates);
-    }
-
-    return nProblems;
-}
-
-/* Declarations */
-void set_input_string(const char* in);
-void end_lexical_scan(void);
-
-void yyerror(const FMIModelVariable* variable, const char* s) {
-    printf("\"%s\" (line %d) is not a valid variable name for variableNamingConvention=\"structured\".\n", variable->name, variable->line);
-}
-
-size_t FMIValidateVariableNames(const FMIModelDescription* modelDescription) {
-
-    size_t nProblems = 0;
-
-    if (modelDescription->variableNamingConvention == FMIStructured) {
-
-        for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
-
-            const FMIModelVariable* variable = &modelDescription->modelVariables[i];
-
-            set_input_string(variable->name);
-            
-            if (yyparse(variable)) {
-                nProblems++;
-            }
-            
-            end_lexical_scan();
-        }
     }
 
     return nProblems;
