@@ -23,9 +23,9 @@ jobs:
     needs: lint-files
     steps:
     - uses: actions/checkout@v3
-    - uses: actions/setup-python@v2
+    - uses: actions/setup-python@v4
       with:
-        python-version: 3.8
+        python-version: '3.10'
     - uses: s-weigand/setup-conda@v1.1.1
       with:
         conda-channels: conda-forge
