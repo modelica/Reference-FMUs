@@ -186,8 +186,6 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 
     xmlXPathFreeContext(xpathCtx);
 
-    nProblems += FMIValidateVariableNames(modelDescription);
-
     if (nProblems > 0) {
         FMIFreeModelDescription(modelDescription);
         modelDescription = NULL;
@@ -402,8 +400,6 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     }
 
     nProblems += FMIValidateModelDescription(modelDescription);
-
-    nProblems += FMIValidateVariableNames(modelDescription);
 
     if (nProblems > 0) {
         FMIFreeModelDescription(modelDescription);
@@ -680,8 +676,6 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
     }
 
     nProblems += FMIValidateModelDescription(modelDescription);
-
-    nProblems += FMIValidateVariableNames(modelDescription);
 
     if (nProblems > 0) {
         FMIFreeModelDescription(modelDescription);
@@ -990,9 +984,34 @@ static bool isLegalCombination(FMIModelVariable* variable) {
     return false;
 }
 
+void set_input_string(const char* in);
+
+void end_lexical_scan(void);
+
+void yyerror(const FMIModelVariable* variable, const char* s) {
+    printf("\"%s\" (line %d) is not a valid variable name for variableNamingConvention=\"structured\".\n", variable->name, variable->line);
+}
+
 size_t FMIValidateModelDescription(const FMIModelDescription* modelDescription) {
 
     size_t nProblems = 0;
+
+    // validate structured variable names
+    if (modelDescription->variableNamingConvention == FMIStructured) {
+
+        for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+
+            const FMIModelVariable* variable = &modelDescription->modelVariables[i];
+
+            set_input_string(variable->name);
+
+            if (yyparse(variable)) {
+                nProblems++;
+            }
+
+            end_lexical_scan();
+        }
+    }
 
     // check combinations of causality, variability, and initial
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
@@ -1020,37 +1039,6 @@ size_t FMIValidateModelDescription(const FMIModelDescription* modelDescription) 
         nProblems++;
         printf("The number of model varialbes with causality=\"output\" (%zu) must match the number of outputs"
             " in the model structure (%zu).\n", nOutputs, modelDescription->nContinuousStates);
-    }
-
-    return nProblems;
-}
-
-/* Declarations */
-void set_input_string(const char* in);
-void end_lexical_scan(void);
-
-void yyerror(const FMIModelVariable* variable, const char* s) {
-    printf("\"%s\" (line %d) is not a valid variable name for variableNamingConvention=\"structured\".\n", variable->name, variable->line);
-}
-
-size_t FMIValidateVariableNames(const FMIModelDescription* modelDescription) {
-
-    size_t nProblems = 0;
-
-    if (modelDescription->variableNamingConvention == FMIStructured) {
-
-        for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
-
-            const FMIModelVariable* variable = &modelDescription->modelVariables[i];
-
-            set_input_string(variable->name);
-            
-            if (yyparse(variable)) {
-                nProblems++;
-            }
-            
-            end_lexical_scan();
-        }
     }
 
     return nProblems;

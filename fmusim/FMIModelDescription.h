@@ -145,6 +145,4 @@ FMIModelVariable* FMIModelVariableForIndexLiteral(const FMIModelDescription* mod
 
 size_t FMIValidateModelDescription(const FMIModelDescription* modelDescription);
 
-size_t FMIValidateVariableNames(const FMIModelDescription* modelDescription);
-
 void FMIDumpModelDescription(FMIModelDescription* modelDescription, FILE* file);
