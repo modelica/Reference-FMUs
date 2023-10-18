@@ -12,9 +12,12 @@
 #include <Windows.h>
 #endif
 
+#include "structured_variable_name.tab.h"
+
 #include "fmi1schema.h"
 #include "fmi2schema.h"
 #include "fmi3schema.h"
+
 
 static bool getBooleanAttribute(const xmlNodePtr node, const char* name) {
     char* literal = (char*)xmlGetProp(node, (xmlChar*)name);
@@ -28,6 +31,13 @@ static uint32_t getUInt32Attribute(const xmlNodePtr node, const char* name) {
     uint32_t value = strtoul(literal, NULL, 0);
     free(literal);
     return value;
+}
+
+static FMIVariableNamingConvention getVariableNamingConvention(const xmlNodePtr node) {
+    const char* value = (char*)xmlGetProp(node, (xmlChar*)"variableNamingConvention");
+    FMIVariableNamingConvention variableNamingConvention = (value && !strcmp(value, "structured")) ? FMIStructured : FMIFlat;
+    free(value);
+    return variableNamingConvention;
 }
 
 static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
@@ -44,6 +54,7 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
     modelDescription->description = (char*)xmlGetProp(root, (xmlChar*)"description");
     modelDescription->generationTool = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
     modelDescription->generationDate = (char*)xmlGetProp(root, (xmlChar*)"generationDateAndTime");
+    modelDescription->variableNamingConvention = getVariableNamingConvention(root);
 
     const char* numberOfContinuousStates = (char*)xmlGetProp(root, (xmlChar*)"numberOfContinuousStates");
     
@@ -175,6 +186,8 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 
     xmlXPathFreeContext(xpathCtx);
 
+    nProblems += FMIValidateVariableNames(modelDescription);
+
     if (nProblems > 0) {
         FMIFreeModelDescription(modelDescription);
         modelDescription = NULL;
@@ -245,6 +258,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     modelDescription->description = (char*)xmlGetProp(root, (xmlChar*)"description");
     modelDescription->generationTool = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
     modelDescription->generationDate = (char*)xmlGetProp(root, (xmlChar*)"generationDate");
+    modelDescription->variableNamingConvention = getVariableNamingConvention(root);
 
     const char* numberOfEventIndicators = (char*)xmlGetProp(root, (xmlChar*)"numberOfEventIndicators");
 
@@ -389,6 +403,8 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
     nProblems += FMIValidateModelStructure(modelDescription);
 
+    nProblems += FMIValidateVariableNames(modelDescription);
+
     if (nProblems > 0) {
         FMIFreeModelDescription(modelDescription);
         modelDescription = NULL;
@@ -411,6 +427,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
     modelDescription->description = (char*)xmlGetProp(root, (xmlChar*)"description");
     modelDescription->generationTool = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
     modelDescription->generationDate = (char*)xmlGetProp(root, (xmlChar*)"generationDate");
+    modelDescription->variableNamingConvention = getVariableNamingConvention(root);
 
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(root->doc);
 
@@ -664,6 +681,8 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
     nProblems += FMIValidateModelStructure(modelDescription);
 
+    nProblems += FMIValidateVariableNames(modelDescription);
+
     if (nProblems > 0) {
         FMIFreeModelDescription(modelDescription);
         modelDescription = NULL;
@@ -870,6 +889,37 @@ size_t FMIValidateModelStructure(const FMIModelDescription* modelDescription) {
         nProblems++;
         printf("The number of model varialbes with causality=\"output\" (%zu) must match the number of outputs"
             " in the model structure (%zu).\n", nOutputs, modelDescription->nContinuousStates);
+    }
+
+    return nProblems;
+}
+
+/* Declarations */
+void set_input_string(const char* in);
+void end_lexical_scan(void);
+
+void yyerror(const FMIModelVariable* variable, const char* s) {
+    printf("\"%s\" (line %d) is not a valid variable name for variableNamingConvention=\"structured\".\n", variable->name, variable->line);
+}
+
+size_t FMIValidateVariableNames(const FMIModelDescription* modelDescription) {
+
+    size_t nProblems = 0;
+
+    if (modelDescription->variableNamingConvention == FMIStructured) {
+
+        for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+
+            const FMIModelVariable* variable = &modelDescription->modelVariables[i];
+
+            set_input_string(variable->name);
+            
+            if (yyparse(variable)) {
+                nProblems++;
+            }
+            
+            end_lexical_scan();
+        }
     }
 
     return nProblems;

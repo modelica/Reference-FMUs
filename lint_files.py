@@ -69,6 +69,9 @@ for root, dirs, files in os.walk(top, topdown=True):
         if not file.lower().endswith(('.h', '.c', '.md', '.html', '.csv', '.txt', '.xml')):
             continue
 
+        if file.lower().endswith(('.tab.c', '.yy.c')):
+            continue  # generated files
+
         filename = os.path.join(root, file)
 
         print(filename)

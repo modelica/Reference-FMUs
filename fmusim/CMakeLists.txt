@@ -65,6 +65,9 @@ set(sources
   miniunzip.c
   ${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c
   ${ZLIB_SRC_DIR}/contrib/minizip/unzip.c
+  ../src/structured_variable_name.yy.c
+  ../include/structured_variable_name.tab.h
+  ../src/structured_variable_name.tab.c
 )
 
 if (WIN32)
@@ -82,7 +85,11 @@ target_include_directories(fmusim PRIVATE
   ${CVODE_DIR}/include
 )
 
-add_compile_definitions(LIBXML_STATIC)
+if (WIN32)
+    target_compile_definitions(fmusim PRIVATE YY_NO_UNISTD_H LIBXML_STATIC)
+else ()
+    target_compile_definitions(fmusim PRIVATE LIBXML_STATIC)
+endif ()
 
 if (WIN32)
     set(libraries
