@@ -31,7 +31,7 @@ jobs:
         conda-channels: conda-forge
     - run: conda --version
     - run: which python
-    - run: python -m pip install fmpy=0.3.18 pytest scipy
+    - run: python -m pip install fmpy==0.3.18 pytest scipy
     - run: python ThirdParty/build_cvode.py
     - run: python ThirdParty/build_libxml2.py
     - run: python ThirdParty/build_zlib.py
@@ -50,7 +50,7 @@ jobs:
     - uses: s-weigand/setup-conda@v1.1.1
       with:
         conda-channels: conda-forge
-    - run: python -m pip install fmpy=0.3.18 pytest scipy python-kaleido markdown2 plotly
+    - run: python -m pip install fmpy==0.3.18 pytest scipy python-kaleido markdown2 plotly
     - uses: actions/checkout@v3
     - uses: actions/download-artifact@v3
       with:
