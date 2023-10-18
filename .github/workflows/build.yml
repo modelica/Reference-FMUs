@@ -50,7 +50,7 @@ jobs:
     - uses: s-weigand/setup-conda@v1.1.1
       with:
         conda-channels: conda-forge
-    - run: python -m pip install fmpy==0.3.18 pytest scipy python-kaleido markdown2 plotly
+    - run: python -m pip install fmpy==0.3.18 pytest scipy kaleido markdown2 plotly
     - uses: actions/checkout@v3
     - uses: actions/download-artifact@v3
       with:
