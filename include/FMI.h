@@ -105,6 +105,8 @@ typedef void FMILogMessage(FMIInstance *instance, FMIStatus status, const char *
 
 typedef void FMILogErrorMessage(const char* message, va_list args);
 
+extern FMILogErrorMessage* logErrorMessage;
+
 struct FMIInstance_ {
 
     FMI1Functions *fmi1Functions;
@@ -143,6 +145,8 @@ struct FMIInstance_ {
     FMIInterfaceType interfaceType;
 
 };
+
+FMI_STATIC void FMIPrintToStdErr(const char* message, va_list args);
 
 FMI_STATIC void FMILogError(const char* message, ...);
 

@@ -183,7 +183,7 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
         const FMIModelVariable* variable = &modelDescription->modelVariables[i];
         if (variable->type != FMIRealType && variable->type != FMIDiscreteRealType && variable->variability == FMIContinuous) {
-            printf("Variable \"%s\" is not of type Real but has variability = continuous.\n", variable->name);
+            FMILogError("Variable \"%s\" is not of type Real but has variability = continuous.\n", variable->name);
             nProblems++;
         }
     }
@@ -409,7 +409,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
             char* literal = (char*)variable->derivative;
             variable->derivative = FMIModelVariableForIndexLiteral(modelDescription, literal);
             if (!variable->derivative) {
-                printf("Failed to resolve attribute derivative=\"%s\" for model variable \"%s\".", literal, variable->name);
+                FMILogError("Failed to resolve attribute derivative=\"%s\" for model variable \"%s\".", literal, variable->name);
                 nProblems++;
             }
             free(literal);
@@ -420,7 +420,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
         if (variable->type != FMIRealType && variable->type != FMIDiscreteRealType && variable->variability == FMIContinuous) {
-            printf("Variable \"%s\" is not of type Real but has variability = continuous.\n", variable->name);
+            FMILogError("Variable \"%s\" is not of type Real but has variability = continuous.\n", variable->name);
             nProblems++;
         }
     }
@@ -655,7 +655,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
                 const FMIValueReference vr = atoi(valueReference);
                 dimension->variable = FMIModelVariableForValueReference(modelDescription, vr);
             } else {
-                printf("Dimension must have start or valueReference.\n");
+                FMILogError("Dimension must have start or valueReference.\n");
                 return NULL;
             }
 
@@ -682,7 +682,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
         
         if (variable->type != FMIFloat32Type && variable->type != FMIFloat64Type && variable->variability == FMIContinuous) {
-            printf("Variable \"%s\" is not of type Float{32|64} but has variability = continuous.\n", variable->name);
+            FMILogError("Variable \"%s\" is not of type Float{32|64} but has variability = continuous.\n", variable->name);
             nProblems++;
         }
     }
@@ -698,7 +698,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             variable->derivative = FMIModelVariableForValueReference(modelDescription, vr);
             if (!variable->derivative) {
                 nProblems++;
-                printf("Failed to resolve attribute derivative=\"%s\" for model variable \"%s\".\n", literal, variable->name);
+                FMILogError("Failed to resolve attribute derivative=\"%s\" for model variable \"%s\".\n", literal, variable->name);
             }
             free(literal);
         }
@@ -717,6 +717,14 @@ TERMINATE:
     // TODO
 
     return modelDescription;
+}
+
+static logSchemaValidationError(void* ctx, const char* msg, ...) {
+    (void)ctx; // unused
+    va_list args;
+    va_start(args, msg);
+    logErrorMessage(msg, args);
+    va_end(args);
 }
 
 FMIModelDescription* FMIReadModelDescription(const char* filename) {
@@ -738,21 +746,21 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
     // xmlDocDump(stdout, doc);
 
     if (!doc) {
-        printf("Invalid XML.\n");
+        FMILogError("Invalid XML.\n");
         goto TERMINATE;
     }
 
     root = xmlDocGetRootElement(doc);
 
     if (root == NULL) {
-        printf("Empty document\n");
+        FMILogError("Empty document\n");
         goto TERMINATE;
     }
 
     version = (char*)xmlGetProp(root, (xmlChar*)"fmiVersion");
 
     if (!version) {
-        printf("Attribute fmiVersion is missing.\n");
+        FMILogError("Attribute fmiVersion is missing.\n");
         goto TERMINATE;
     } else if (!strcmp(version, "1.0")) {
         fmiVersion = FMIVersion1;
@@ -764,7 +772,7 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
         pctxt = xmlSchemaNewMemParserCtxt((char*)fmi3Merged_xsd, fmi3Merged_xsd_len);
         fmiVersion = FMIVersion3;
     } else {
-        printf("Unsupported FMI version: %s.\n", version);
+        FMILogError("Unsupported FMI version: %s.\n", version);
         goto TERMINATE;
     }
 
@@ -780,7 +788,7 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
         goto TERMINATE;
     }
 
-    xmlSchemaSetValidErrors(vctxt, (xmlSchemaValidityErrorFunc)fprintf, (xmlSchemaValidityWarningFunc)fprintf, stderr);
+    xmlSchemaSetValidErrors(vctxt, (xmlSchemaValidityErrorFunc)logSchemaValidationError, NULL, NULL);
 
     if (xmlSchemaValidateDoc(vctxt, doc)) {
         goto TERMINATE;
@@ -1023,7 +1031,7 @@ void set_input_string(const char* in);
 void end_lexical_scan(void);
 
 void yyerror(const FMIModelVariable* variable, const char* s) {
-    printf("\"%s\" (line %d) is not a valid variable name for variableNamingConvention=\"structured\".\n", variable->name, variable->line);
+    FMILogError("\"%s\" (line %d) is not a valid variable name for variableNamingConvention=\"structured\".\n", variable->name, variable->line);
 }
 
 size_t FMIValidateModelDescription(const FMIModelDescription* modelDescription) {
@@ -1054,7 +1062,7 @@ size_t FMIValidateModelDescription(const FMIModelDescription* modelDescription) 
 
         if (!isLegalCombination(variable)) {
             nProblems++;
-            printf("The variable \"%s\" has an illegal combination of causality, variability, and initial.\n", variable->name);
+            FMILogError("The variable \"%s\" has an illegal combination of causality, variability, and initial.\n", variable->name);
         }
     }
 
@@ -1071,7 +1079,7 @@ size_t FMIValidateModelDescription(const FMIModelDescription* modelDescription) 
 
     if (nOutputs != modelDescription->nOutputs) {
         nProblems++;
-        printf("The number of model varialbes with causality=\"output\" (%zu) must match the number of outputs"
+        FMILogError("The number of model varialbes with causality=\"output\" (%zu) must match the number of outputs"
             " in the model structure (%zu).\n", nOutputs, modelDescription->nContinuousStates);
     }
 

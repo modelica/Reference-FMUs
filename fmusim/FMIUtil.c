@@ -149,7 +149,7 @@ FMIStatus FMIParseValues(FMIVersion fmiVersion, FMIVariableType type, const char
     FMIStatus status = FMIOK;
 
     if (!literal) {
-        printf("Value literal must not be NULL.\n");
+        FMILogError("Value literal must not be NULL.\n");
         return FMIError;
     }
 
@@ -230,7 +230,7 @@ FMIStatus FMIParseValues(FMIVersion fmiVersion, FMIVariableType type, const char
             } else if (!strncmp(next, "1", delimiter) || !strncmp(next, "true", delimiter)) {
                 v[*nValues] = fmi3True;
             } else {
-                printf("Values for boolean must be one of 0, false, 1, or true.\n");
+                FMILogError("Values for Boolean must be one of 0, false, 1, or true.\n");
                 status = FMIError;
                 goto TERMINATE;
             }
@@ -256,7 +256,7 @@ FMIStatus FMIParseValues(FMIVersion fmiVersion, FMIVariableType type, const char
         break;
     }
     default:
-        printf("Unsupported value type.");
+        FMILogError("Unsupported value type.");
         status = FMIError;
         goto TERMINATE;
     }
@@ -266,7 +266,7 @@ TERMINATE:
         *nValues = 0;
         free(*values);
         *values = NULL;
-        printf("Failed to parse value literal \"%s\".\n", literal);
+        FMILogError("Failed to parse value literal \"%s\".\n", literal);
     }
 
     return status;

@@ -248,7 +248,7 @@ TERMINATE:
 
     if (status > FMIOK) {
 
-        printf("Failed to create CVode.\n");
+        FMILogError("Failed to create CVode.\n");
 
         FMICVodeFree(solver);
 

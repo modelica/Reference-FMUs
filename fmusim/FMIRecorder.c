@@ -143,7 +143,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 result->sizes = realloc(result->sizes, nValues * sizeof(size_t));
                 
                 if (!result->values || !result->sizes) {
-                    printf("Failed to allocate buffer.\n");
+                    FMILogError("Failed to allocate buffer.\n");
                     goto TERMINATE;
                 }
             }

@@ -244,7 +244,9 @@ int main(int argc, const char* argv[]) {
 
     const char* solver = "euler";
 
+    FMIModelDescription* modelDescription = NULL;
     FMIInstance* S = NULL;
+    FMUStaticInput* input = NULL;
     FMIRecorder* result = NULL;
     const char* unzipdir = NULL;
     FMIStatus status = FMIFatal;
@@ -346,10 +348,9 @@ int main(int argc, const char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    FMIModelDescription* modelDescription = FMIReadModelDescription(modelDescriptionPath);
+    modelDescription = FMIReadModelDescription(modelDescriptionPath);
 
     if (!modelDescription) {
-        printf("Failed to read model description.\n");
         goto TERMINATE;
     }
 
@@ -451,8 +452,6 @@ int main(int argc, const char* argv[]) {
 #else
     snprintf(resourcePath, FMI_PATH_MAX, "%s/resources/", unzipdir);
 #endif
-    
-    FMUStaticInput* input = NULL;
     
     if (inputFile) {
         input = FMIReadInput(modelDescription, inputFile);
@@ -581,6 +580,7 @@ TERMINATE:
 
     if (s_fmiLogFile) {
         fclose(s_fmiLogFile);
+        s_fmiLogFile = NULL;
     }
 
     free(startNames);

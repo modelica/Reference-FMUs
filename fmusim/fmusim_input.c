@@ -42,7 +42,7 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 		const FMIModelVariable* variable = FMIModelVariableForName(modelDescription, col);
 
 		if (!variable) {
-			printf("Variable %s not found.\n", col);
+			FMILogError("Variable %s not found.\n", col);
 			return NULL;
 		}
 
@@ -72,7 +72,7 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 		while (col = CsvReadNextCol(row, handle)) {
 			
 			if (i >= input->nVariables) {
-				printf("The number of columns must be equal to the number of variables.\n");
+				FMILogError("The number of columns must be equal to the number of variables.\n");
 				return NULL;
 			}
 

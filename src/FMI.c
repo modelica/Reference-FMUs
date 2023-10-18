@@ -16,7 +16,11 @@
 #include "FMI.h"
 
 
-static FMILogErrorMessage* logErrorMessage = vprintf;
+void FMIPrintToStdErr(const char* message, va_list args) {
+    vfprintf(stderr, message, args);
+}
+
+FMILogErrorMessage* logErrorMessage = FMIPrintToStdErr;
 
 void FMILogError(const char* message, ...) {
     va_list args;
@@ -28,14 +32,14 @@ void FMILogError(const char* message, ...) {
 FMIStatus FMICalloc(void** memory, size_t count, size_t size) {
 
     if (!memory) {
-        printf("Pointer to memory must not be NULL.");
+        FMILogError("Pointer to memory must not be NULL.");
         return FMIError;
     }
 
     *memory = calloc(count, size);
 
     if (!*memory) {
-        printf("Failed to reallocate memory.");
+        FMILogError("Failed to reallocate memory.");
         return FMIError;
     }
 
@@ -45,14 +49,14 @@ FMIStatus FMICalloc(void** memory, size_t count, size_t size) {
 FMIStatus FMIRealloc(void** memory, size_t size) {
 
     if (!memory) {
-        printf("Pointer to memory must not be NULL.");
+        FMILogError("Pointer to memory must not be NULL.");
         return FMIError;
     }
 
     void* temp = realloc(*memory, size);
 
     if (!temp) {
-        printf("Failed to reallocate memory.");
+        FMILogError("Failed to reallocate memory.");
         return FMIError;
     }
 
@@ -140,15 +144,15 @@ void FMIFreeInstance(FMIInstance *instance) {
         instance->libraryHandle = NULL;
     }
 
-    free(instance->logMessageBuffer);
+    FMIFree(&instance->logMessageBuffer);
 
-    free((void*)instance->name);
+    FMIFree(&instance->name);
 
-    free(instance->fmi1Functions);
-    free(instance->fmi2Functions);
-    free(instance->fmi3Functions);
+    FMIFree(&instance->fmi1Functions);
+    FMIFree(&instance->fmi2Functions);
+    FMIFree(&instance->fmi3Functions);
 
-    free(instance);
+    FMIFree(&instance);
 }
 
 void FMIClearLogMessageBuffer(FMIInstance* instance) {
@@ -174,7 +178,9 @@ void FMIAppendToLogMessageBuffer(FMIInstance* instance, const char* format, ...)
             instance->logMessageBufferSize *= 2;
         }
 
-        instance->logMessageBuffer = realloc(instance->logMessageBuffer, instance->logMessageBufferSize);
+        if (FMIRealloc(&instance->logMessageBuffer, instance->logMessageBufferSize) != FMIOK) {
+            return;
+        }
 
         va_start(args, format);
         instance->logMessageBufferPosition += vsnprintf(&instance->logMessageBuffer[instance->logMessageBufferPosition], instance->logMessageBufferSize - instance->logMessageBufferPosition, format, args);
@@ -285,7 +291,9 @@ void FMIAppendArrayToLogMessageBuffer(FMIInstance* instance, const void* values,
                 instance->logMessageBufferSize *= 2;
             }
 
-            instance->logMessageBuffer = realloc(instance->logMessageBuffer, instance->logMessageBufferSize);
+            if (FMIRealloc(&instance->logMessageBuffer, instance->logMessageBufferSize) != FMIOK) {
+                return;
+            }
 
             continue;
         }
