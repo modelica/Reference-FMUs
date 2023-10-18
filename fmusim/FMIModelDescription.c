@@ -19,6 +19,11 @@
 #include "fmi3schema.h"
 
 
+#include "FMIUtil.h"
+
+
+#define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
+
 static bool getBooleanAttribute(const xmlNodePtr node, const char* name) {
     char* literal = (char*)xmlGetProp(node, (xmlChar*)name);
     bool value = literal && (strcmp(literal, "true") == 0 || strcmp(literal, "1") == 0);
@@ -42,18 +47,18 @@ static FMIVariableNamingConvention getVariableNamingConvention(const xmlNodePtr 
 
 static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 
-    FMIModelDescription* modelDescription = (FMIModelDescription*)calloc(1, sizeof(FMIModelDescription));
+    FMIStatus status = FMIOK;
 
-    if (!modelDescription) {
-        return NULL;
-    }
+    FMIModelDescription* modelDescription = NULL;
 
-    modelDescription->fmiVersion = FMIVersion1;
-    modelDescription->modelName = (char*)xmlGetProp(root, (xmlChar*)"modelName");
-    modelDescription->instantiationToken = (char*)xmlGetProp(root, (xmlChar*)"guid");
-    modelDescription->description = (char*)xmlGetProp(root, (xmlChar*)"description");
-    modelDescription->generationTool = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
-    modelDescription->generationDate = (char*)xmlGetProp(root, (xmlChar*)"generationDateAndTime");
+    CALL(FMICalloc(&modelDescription, 1, sizeof(FMIModelDescription)));
+
+    modelDescription->fmiVersion               = FMIVersion1;
+    modelDescription->modelName                = (char*)xmlGetProp(root, (xmlChar*)"modelName");
+    modelDescription->instantiationToken       = (char*)xmlGetProp(root, (xmlChar*)"guid");
+    modelDescription->description              = (char*)xmlGetProp(root, (xmlChar*)"description");
+    modelDescription->generationTool           = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
+    modelDescription->generationDate           = (char*)xmlGetProp(root, (xmlChar*)"generationDateAndTime");
     modelDescription->variableNamingConvention = getVariableNamingConvention(root);
 
     const char* numberOfContinuousStates = (char*)xmlGetProp(root, (xmlChar*)"numberOfContinuousStates");
@@ -77,10 +82,10 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
     xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/Implementation/CoSimulation_StandAlone", xpathCtx);
     
     if (xpathObj->nodesetval->nodeNr == 1) {
-        modelDescription->coSimulation = (FMICoSimulationInterface*)calloc(1, sizeof(FMICoSimulationInterface));
+        CALL(FMICalloc(&modelDescription->coSimulation, 1, sizeof(FMICoSimulationInterface)));
         modelDescription->coSimulation->modelIdentifier = (char*)xmlGetProp(root, (xmlChar*)"modelIdentifier");
     } else {
-        modelDescription->modelExchange = (FMIModelExchangeInterface*)calloc(1, sizeof(FMIModelExchangeInterface));
+        CALL(FMICalloc(&modelDescription->modelExchange, 1, sizeof(FMIModelExchangeInterface)));
         modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(root, (xmlChar*)"modelIdentifier");
     }
     
@@ -89,7 +94,7 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/DefaultExperiment", xpathCtx);
     
     if (xpathObj->nodesetval->nodeNr == 1) {
-        modelDescription->defaultExperiment = (FMIDefaultExperiment*)calloc(1, sizeof(FMIDefaultExperiment));
+        CALL(FMICalloc(&modelDescription->defaultExperiment, 1, sizeof(FMIDefaultExperiment)));
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
         modelDescription->defaultExperiment->startTime = (char*)xmlGetProp(node, (xmlChar*)"startTime");
         modelDescription->defaultExperiment->stopTime = (char*)xmlGetProp(node, (xmlChar*)"stopTime");
@@ -100,7 +105,8 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelVariables/ScalarVariable/*[self::Real or self::Integer or self::Enumeration or self::Boolean or self::String]", xpathCtx);
 
     modelDescription->nModelVariables = xpathObj->nodesetval->nodeNr;
-    modelDescription->modelVariables = calloc(xpathObj->nodesetval->nodeNr, sizeof(FMIModelVariable));
+
+    CALL(FMICalloc(&modelDescription->modelVariables, xpathObj->nodesetval->nodeNr, sizeof(FMIModelVariable)));
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
@@ -175,9 +181,9 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 
     // check variabilities
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        const FMIModelVariable* variable = &modelDescription->modelVariables[i];
         if (variable->type != FMIRealType && variable->type != FMIDiscreteRealType && variable->variability == FMIContinuous) {
-            printf("Variable \"%s\" is not of type Real but has variability = continuous.\n", variable->name);
+            FMILogError("Variable \"%s\" is not of type Real but has variability = continuous.\n", variable->name);
             nProblems++;
         }
     }
@@ -191,17 +197,24 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
         modelDescription = NULL;
     }
 
-    return modelDescription;
+TERMINATE:
+
+    if (status != FMIOK) {
+        FMIFree(&modelDescription);
+    }
 
     return modelDescription;
 }
 
 static void readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescription* modelDescription, const char* path, size_t* nUnkonwns, FMIUnknown** unknowns) {
 
+    FMIStatus status = FMIOK;
+
     xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)path, xpathCtx);
     
     *nUnkonwns = xpathObj->nodesetval->nodeNr;
-    *unknowns = calloc(*nUnkonwns, sizeof(FMIUnknown));
+
+    CALL(FMICalloc(unknowns, *nUnkonwns, sizeof(FMIUnknown)));
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
@@ -211,18 +224,26 @@ static void readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescription* m
 
         (*unknowns)[i].modelVariable = FMIModelVariableForIndexLiteral(modelDescription, indexLiteral);
 
-        free(indexLiteral);
+        free((void*)indexLiteral);
     }
 
     xmlXPathFreeObject(xpathObj);
+
+TERMINATE:
+
+    // TODO
+    ;
 }
 
 static void readUnknownsFMI3(xmlXPathContextPtr xpathCtx, FMIModelDescription* modelDescription, const char* path, size_t* nUnkonwns, FMIUnknown** unknowns) {
 
+    FMIStatus status = FMIOK;
+
     xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)path, xpathCtx);
 
     *nUnkonwns = xpathObj->nodesetval->nodeNr;
-    *unknowns = calloc(*nUnkonwns, sizeof(FMIUnknown));
+
+    CALL(FMICalloc(unknowns, *nUnkonwns, sizeof(FMIUnknown)));
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
@@ -240,15 +261,20 @@ static void readUnknownsFMI3(xmlXPathContextPtr xpathCtx, FMIModelDescription* m
     }
 
     xmlXPathFreeObject(xpathObj);
+
+TERMINATE:
+
+    // TODO
+    ;
 }
 
 static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
-    FMIModelDescription* modelDescription = (FMIModelDescription*)calloc(1, sizeof(FMIModelDescription));
+    FMIStatus status = FMIOK;
 
-    if (!modelDescription) {
-        return NULL;
-    }
+    FMIModelDescription* modelDescription = NULL;
+    
+    CALL(FMICalloc(&modelDescription, 1, sizeof(FMIModelDescription)));
 
     modelDescription->fmiVersion = FMIVersion2;
     modelDescription->modelName = (char*)xmlGetProp(root, (xmlChar*)"modelName");
@@ -268,14 +294,14 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
     xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/CoSimulation", xpathCtx);
     if (xpathObj->nodesetval->nodeNr == 1) {
-        modelDescription->coSimulation = (FMICoSimulationInterface*)calloc(1, sizeof(FMICoSimulationInterface));
+        CALL(FMICalloc(&modelDescription->coSimulation, 1, sizeof(FMICoSimulationInterface)));
         modelDescription->coSimulation->modelIdentifier = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"modelIdentifier");
     }
     xmlXPathFreeObject(xpathObj);
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelExchange", xpathCtx);
     if (xpathObj->nodesetval->nodeNr == 1) {
-        modelDescription->modelExchange = (FMIModelExchangeInterface*)calloc(1, sizeof(FMIModelExchangeInterface));
+        CALL(FMICalloc(&modelDescription->modelExchange, 1, sizeof(FMIModelExchangeInterface)));
         modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"modelIdentifier");
         modelDescription->modelExchange->providesDirectionalDerivatives = getBooleanAttribute(xpathObj->nodesetval->nodeTab[0], "providesDirectionalDerivative");
     }
@@ -283,7 +309,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/DefaultExperiment", xpathCtx);
     if (xpathObj->nodesetval->nodeNr == 1) {
-        modelDescription->defaultExperiment = (FMIDefaultExperiment*)calloc(1, sizeof(FMIDefaultExperiment));
+        CALL(FMICalloc(&modelDescription->defaultExperiment, 1, sizeof(FMIDefaultExperiment)));
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
         modelDescription->defaultExperiment->startTime = (char*)xmlGetProp(node, (xmlChar*)"startTime");
         modelDescription->defaultExperiment->stopTime = (char*)xmlGetProp(node, (xmlChar*)"stopTime");
@@ -294,7 +320,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelVariables/ScalarVariable/*[self::Real or self::Integer or self::Enumeration or self::Boolean or self::String]", xpathCtx);
 
     modelDescription->nModelVariables = xpathObj->nodesetval->nodeNr;
-    modelDescription->modelVariables = calloc(modelDescription->nModelVariables, sizeof(FMIModelVariable));
+    CALL(FMICalloc(&modelDescription->modelVariables, modelDescription->nModelVariables, sizeof(FMIModelVariable)));
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
@@ -345,7 +371,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
         variable->valueReference = FMIValueReferenceForLiteral(vr);
 
-        free(vr);
+        free((void*)vr);
         
         const char* causality = (char*)xmlGetProp(variableNode, (xmlChar*)"causality");
 
@@ -363,7 +389,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
             variable->causality = FMILocal;
         }
 
-        free(causality);
+        free((void*)causality);
     }
 
     xmlXPathFreeObject(xpathObj);
@@ -383,7 +409,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
             char* literal = (char*)variable->derivative;
             variable->derivative = FMIModelVariableForIndexLiteral(modelDescription, literal);
             if (!variable->derivative) {
-                printf("Failed to resolve attribute derivative=\"%s\" for model variable \"%s\".", literal, variable->name);
+                FMILogError("Failed to resolve attribute derivative=\"%s\" for model variable \"%s\".", literal, variable->name);
                 nProblems++;
             }
             free(literal);
@@ -394,7 +420,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
         if (variable->type != FMIRealType && variable->type != FMIDiscreteRealType && variable->variability == FMIContinuous) {
-            printf("Variable \"%s\" is not of type Real but has variability = continuous.\n", variable->name);
+            FMILogError("Variable \"%s\" is not of type Real but has variability = continuous.\n", variable->name);
             nProblems++;
         }
     }
@@ -406,30 +432,34 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
         modelDescription = NULL;
     }
 
+TERMINATE:
+    
+    // TODO
+    
     return modelDescription;
 }
 
 static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
-    FMIModelDescription* modelDescription = (FMIModelDescription*)calloc(1, sizeof(FMIModelDescription));
+    FMIStatus status = FMIOK;
+    
+    FMIModelDescription* modelDescription = NULL;
 
-    if (!modelDescription) {
-        return NULL;
-    }
+    CALL(FMICalloc(&modelDescription, 1, sizeof(FMIModelDescription)));
 
-    modelDescription->fmiVersion = FMIVersion3;
-    modelDescription->modelName = (char*)xmlGetProp(root, (xmlChar*)"modelName");
-    modelDescription->instantiationToken = (char*)xmlGetProp(root, (xmlChar*)"instantiationToken");
-    modelDescription->description = (char*)xmlGetProp(root, (xmlChar*)"description");
-    modelDescription->generationTool = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
-    modelDescription->generationDate = (char*)xmlGetProp(root, (xmlChar*)"generationDate");
+    modelDescription->fmiVersion               = FMIVersion3;
+    modelDescription->modelName                = (char*)xmlGetProp(root, (xmlChar*)"modelName");
+    modelDescription->instantiationToken       = (char*)xmlGetProp(root, (xmlChar*)"instantiationToken");
+    modelDescription->description              = (char*)xmlGetProp(root, (xmlChar*)"description");
+    modelDescription->generationTool           = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
+    modelDescription->generationDate           = (char*)xmlGetProp(root, (xmlChar*)"generationDate");
     modelDescription->variableNamingConvention = getVariableNamingConvention(root);
 
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(root->doc);
 
     xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/CoSimulation", xpathCtx);
     if (xpathObj->nodesetval->nodeNr == 1) {
-        modelDescription->coSimulation = (FMICoSimulationInterface*)calloc(1, sizeof(FMICoSimulationInterface));
+        CALL(FMICalloc(&modelDescription->coSimulation, 1, sizeof(FMICoSimulationInterface)));
         modelDescription->coSimulation->modelIdentifier = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"modelIdentifier");
     }
     xmlXPathFreeObject(xpathObj);
@@ -437,7 +467,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelExchange", xpathCtx);
     if (xpathObj->nodesetval->nodeNr == 1) {
         xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
-        modelDescription->modelExchange = (FMIModelExchangeInterface*)calloc(1, sizeof(FMIModelExchangeInterface));
+        CALL(FMICalloc(&modelDescription->modelExchange, 1, sizeof(FMIModelExchangeInterface)));
         modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(node, (xmlChar*)"modelIdentifier");
         modelDescription->modelExchange->providesDirectionalDerivatives = getBooleanAttribute(node, "providesDirectionalDerivatives");
     }
@@ -445,11 +475,11 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/DefaultExperiment", xpathCtx);
     if (xpathObj->nodesetval->nodeNr == 1) {
-        modelDescription->defaultExperiment = (FMIDefaultExperiment*)calloc(1, sizeof(FMIDefaultExperiment));
+        CALL(FMICalloc(&modelDescription->defaultExperiment, 1, sizeof(FMIDefaultExperiment)));
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
         modelDescription->defaultExperiment->startTime = (char*)xmlGetProp(node, (xmlChar*)"startTime");
-        modelDescription->defaultExperiment->stopTime = (char*)xmlGetProp(node, (xmlChar*)"stopTime");
-        modelDescription->defaultExperiment->stepSize = (char*)xmlGetProp(node, (xmlChar*)"stepSize");
+        modelDescription->defaultExperiment->stopTime  = (char*)xmlGetProp(node, (xmlChar*)"stopTime");
+        modelDescription->defaultExperiment->stepSize  = (char*)xmlGetProp(node, (xmlChar*)"stepSize");
     }
     xmlXPathFreeObject(xpathObj);
 
@@ -472,7 +502,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         xpathCtx);
 
     modelDescription->nModelVariables = xpathObj->nodesetval->nodeNr;
-    modelDescription->modelVariables = (FMIModelVariable*)calloc(xpathObj->nodesetval->nodeNr, sizeof(FMIModelVariable));
+    CALL(FMICalloc(&modelDescription->modelVariables, xpathObj->nodesetval->nodeNr, sizeof(FMIModelVariable)));
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
@@ -573,7 +603,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
         variable->valueReference = FMIValueReferenceForLiteral(vr);
 
-        free(vr);
+        free((void*)vr);
 
         const char* causality = (char*)xmlGetProp(variableNode, (xmlChar*)"causality");
 
@@ -595,7 +625,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             variable->causality = FMILocal;
         }
 
-        free(causality);
+        free((void*)causality);
 
         variable->derivative = (FMIModelVariable*)xmlGetProp(variableNode, (xmlChar*)"derivative");
 
@@ -625,7 +655,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
                 const FMIValueReference vr = atoi(valueReference);
                 dimension->variable = FMIModelVariableForValueReference(modelDescription, vr);
             } else {
-                printf("Dimension must have start or valueReference.\n");
+                FMILogError("Dimension must have start or valueReference.\n");
                 return NULL;
             }
 
@@ -652,7 +682,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
         
         if (variable->type != FMIFloat32Type && variable->type != FMIFloat64Type && variable->variability == FMIContinuous) {
-            printf("Variable \"%s\" is not of type Float{32|64} but has variability = continuous.\n", variable->name);
+            FMILogError("Variable \"%s\" is not of type Float{32|64} but has variability = continuous.\n", variable->name);
             nProblems++;
         }
     }
@@ -668,7 +698,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             variable->derivative = FMIModelVariableForValueReference(modelDescription, vr);
             if (!variable->derivative) {
                 nProblems++;
-                printf("Failed to resolve attribute derivative=\"%s\" for model variable \"%s\".\n", literal, variable->name);
+                FMILogError("Failed to resolve attribute derivative=\"%s\" for model variable \"%s\".\n", literal, variable->name);
             }
             free(literal);
         }
@@ -682,7 +712,19 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         modelDescription = NULL;
     }
 
+TERMINATE:
+
+    // TODO
+
     return modelDescription;
+}
+
+static logSchemaValidationError(void* ctx, const char* msg, ...) {
+    (void)ctx; // unused
+    va_list args;
+    va_start(args, msg);
+    logErrorMessage(msg, args);
+    va_end(args);
 }
 
 FMIModelDescription* FMIReadModelDescription(const char* filename) {
@@ -704,21 +746,21 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
     // xmlDocDump(stdout, doc);
 
     if (!doc) {
-        printf("Invalid XML.\n");
+        FMILogError("Invalid XML.\n");
         goto TERMINATE;
     }
 
     root = xmlDocGetRootElement(doc);
 
     if (root == NULL) {
-        printf("Empty document\n");
+        FMILogError("Empty document\n");
         goto TERMINATE;
     }
 
     version = (char*)xmlGetProp(root, (xmlChar*)"fmiVersion");
 
     if (!version) {
-        printf("Attribute fmiVersion is missing.\n");
+        FMILogError("Attribute fmiVersion is missing.\n");
         goto TERMINATE;
     } else if (!strcmp(version, "1.0")) {
         fmiVersion = FMIVersion1;
@@ -730,7 +772,7 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
         pctxt = xmlSchemaNewMemParserCtxt((char*)fmi3Merged_xsd, fmi3Merged_xsd_len);
         fmiVersion = FMIVersion3;
     } else {
-        printf("Unsupported FMI version: %s.\n", version);
+        FMILogError("Unsupported FMI version: %s.\n", version);
         goto TERMINATE;
     }
 
@@ -746,7 +788,7 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
         goto TERMINATE;
     }
 
-    xmlSchemaSetValidErrors(vctxt, (xmlSchemaValidityErrorFunc)fprintf, (xmlSchemaValidityWarningFunc)fprintf, stderr);
+    xmlSchemaSetValidErrors(vctxt, (xmlSchemaValidityErrorFunc)logSchemaValidationError, NULL, NULL);
 
     if (xmlSchemaValidateDoc(vctxt, doc)) {
         goto TERMINATE;
@@ -989,7 +1031,7 @@ void set_input_string(const char* in);
 void end_lexical_scan(void);
 
 void yyerror(const FMIModelVariable* variable, const char* s) {
-    printf("\"%s\" (line %d) is not a valid variable name for variableNamingConvention=\"structured\".\n", variable->name, variable->line);
+    FMILogError("\"%s\" (line %d) is not a valid variable name for variableNamingConvention=\"structured\".\n", variable->name, variable->line);
 }
 
 size_t FMIValidateModelDescription(const FMIModelDescription* modelDescription) {
@@ -1020,7 +1062,7 @@ size_t FMIValidateModelDescription(const FMIModelDescription* modelDescription) 
 
         if (!isLegalCombination(variable)) {
             nProblems++;
-            printf("The variable \"%s\" has an illegal combination of causality, variability, and initial.\n", variable->name);
+            FMILogError("The variable \"%s\" has an illegal combination of causality, variability, and initial.\n", variable->name);
         }
     }
 
@@ -1037,7 +1079,7 @@ size_t FMIValidateModelDescription(const FMIModelDescription* modelDescription) 
 
     if (nOutputs != modelDescription->nOutputs) {
         nProblems++;
-        printf("The number of model varialbes with causality=\"output\" (%zu) must match the number of outputs"
+        FMILogError("The number of model varialbes with causality=\"output\" (%zu) must match the number of outputs"
             " in the model structure (%zu).\n", nOutputs, modelDescription->nContinuousStates);
     }
 

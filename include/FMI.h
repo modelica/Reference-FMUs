@@ -13,6 +13,7 @@ extern "C" {
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdarg.h>
 
 #ifndef FMI_MAX_MESSAGE_LENGTH
 #define FMI_MAX_MESSAGE_LENGTH 4096
@@ -103,6 +104,10 @@ typedef void FMILogFunctionCall(FMIInstance *instance, FMIStatus status, const c
 
 typedef void FMILogMessage(FMIInstance *instance, FMIStatus status, const char *category, const char *message);
 
+typedef void FMILogErrorMessage(const char* message, va_list args);
+
+extern FMILogErrorMessage* logErrorMessage;
+
 struct FMIInstance_ {
 
     FMI1Functions *fmi1Functions;
@@ -141,6 +146,16 @@ struct FMIInstance_ {
     FMIInterfaceType interfaceType;
 
 };
+
+FMI_STATIC void FMIPrintToStdErr(const char* message, va_list args);
+
+FMI_STATIC void FMILogError(const char* message, ...);
+
+FMI_STATIC FMIStatus FMICalloc(void** memory, size_t count, size_t size);
+
+FMI_STATIC FMIStatus FMIRealloc(void** memory, size_t size);
+
+FMI_STATIC void FMIFree(void** memory);
 
 FMI_STATIC FMIInstance* FMICreateInstance(const char* instanceName, const char* libraryPath, FMILogMessage* logMessage, FMILogFunctionCall* logFunctionCall);
 

@@ -130,42 +130,6 @@ FMIStatus FMI3SetValues(
     }
  }
 
-FMIStatus FMICalloc(void** memory, size_t count, size_t size) {
-
-    if (!memory) {
-        printf("Pointer to memory must not be NULL.");
-        return FMIError;
-    }
-
-    *memory = calloc(count, size);
-
-    if (!*memory) {
-        printf("Failed to reallocate memory.");
-        return FMIError;
-    }
-
-    return FMIOK;
-}
-
-FMIStatus FMIRealloc(void** memory, size_t size) {
-
-    if (!memory) {
-        printf("Pointer to memory must not be NULL.");
-        return FMIError;
-    }
-
-    void* temp = realloc(*memory, size);
-
-    if (!temp) {
-        printf("Failed to reallocate memory.");
-        return FMIError;
-    }
-
-    *memory = temp;
-
-    return FMIOK;
-}
-
 #define PARSE_VALUES(t, f, ...) \
     while (strlen(next) > 0) { \
         CALL(FMIRealloc(values, sizeof(t)* ((*nValues) + 1))); \
@@ -185,7 +149,7 @@ FMIStatus FMIParseValues(FMIVersion fmiVersion, FMIVariableType type, const char
     FMIStatus status = FMIOK;
 
     if (!literal) {
-        printf("Value literal must not be NULL.\n");
+        FMILogError("Value literal must not be NULL.\n");
         return FMIError;
     }
 
@@ -266,7 +230,7 @@ FMIStatus FMIParseValues(FMIVersion fmiVersion, FMIVariableType type, const char
             } else if (!strncmp(next, "1", delimiter) || !strncmp(next, "true", delimiter)) {
                 v[*nValues] = fmi3True;
             } else {
-                printf("Values for boolean must be one of 0, false, 1, or true.\n");
+                FMILogError("Values for Boolean must be one of 0, false, 1, or true.\n");
                 status = FMIError;
                 goto TERMINATE;
             }
@@ -292,7 +256,7 @@ FMIStatus FMIParseValues(FMIVersion fmiVersion, FMIVariableType type, const char
         break;
     }
     default:
-        printf("Unsupported value type.");
+        FMILogError("Unsupported value type.");
         status = FMIError;
         goto TERMINATE;
     }
@@ -302,7 +266,7 @@ TERMINATE:
         *nValues = 0;
         free(*values);
         *values = NULL;
-        printf("Failed to parse value literal \"%s\".\n", literal);
+        FMILogError("Failed to parse value literal \"%s\".\n", literal);
     }
 
     return status;
@@ -473,6 +437,7 @@ FMIStatus FMIRestoreFMUStateFromFile(FMIInstance* S, const char* filename) {
      file = fopen(filename, "rb");
 
      if (!file) {
+         // TODO: log message
          return FMIError;
      }
 
@@ -482,11 +447,9 @@ FMIStatus FMIRestoreFMUStateFromFile(FMIInstance* S, const char* filename) {
 
      fseek(file, 0L, SEEK_SET);
 
-     char* serializedFMUState = (char*)calloc(serializedFMUStateSize, sizeof(char));
+     char* serializedFMUState = NULL;
 
-     if (!serializedFMUState) {
-         return FMIError;
-     }
+     CALL(FMICalloc(&serializedFMUState, serializedFMUStateSize, sizeof(char)));
 
      fread(serializedFMUState, sizeof(char), serializedFMUStateSize, file);
 
@@ -506,6 +469,7 @@ FMIStatus FMIRestoreFMUStateFromFile(FMIInstance* S, const char* filename) {
          CALL(FMI3FreeFMUState(S, FMUState));
          break;
      default:
+         // TODO: log message
          status = FMIError;
          break;
      }
@@ -541,12 +505,9 @@ FMIStatus FMISaveFMUStateToFile(FMIInstance* S, const char* filename) {
         CALL(FMI3SerializedFMUStateSize(S, FMUState, &serializedFMUStateSize));
     }
 
-    char* serializedFMUState = (char*)calloc(serializedFMUStateSize, sizeof(char));
-
-    if (!serializedFMUState) {
-        status = FMIError;
-        goto TERMINATE;
-    }
+    char* serializedFMUState = NULL; 
+    
+    CALL(FMICalloc(&serializedFMUState, serializedFMUStateSize, sizeof(char)));
 
     if (S->fmiVersion == FMIVersion2) {
         CALL(FMI2SerializeFMUstate(S, FMUState, serializedFMUState, serializedFMUStateSize));

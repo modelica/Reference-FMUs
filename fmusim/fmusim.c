@@ -244,7 +244,9 @@ int main(int argc, const char* argv[]) {
 
     const char* solver = "euler";
 
+    FMIModelDescription* modelDescription = NULL;
     FMIInstance* S = NULL;
+    FMUStaticInput* input = NULL;
     FMIRecorder* result = NULL;
     const char* unzipdir = NULL;
     FMIStatus status = FMIFatal;
@@ -346,10 +348,9 @@ int main(int argc, const char* argv[]) {
         return EXIT_FAILURE;
     }
 
-    FMIModelDescription* modelDescription = FMIReadModelDescription(modelDescriptionPath);
+    modelDescription = FMIReadModelDescription(modelDescriptionPath);
 
     if (!modelDescription) {
-        printf("Failed to read model description.\n");
         goto TERMINATE;
     }
 
@@ -383,7 +384,9 @@ int main(int argc, const char* argv[]) {
 
     }
 
-    FMIModelVariable** startVariables = calloc(nStartValues, sizeof(FMIModelVariable*));
+    FMIModelVariable** startVariables = NULL;
+
+    CALL(FMICalloc(&startVariables, nStartValues, sizeof(FMIModelVariable*)));
 
     for (size_t i = 0; i < nStartValues; i++) {
 
@@ -407,7 +410,9 @@ int main(int argc, const char* argv[]) {
     S = FMICreateInstance("instance1", platformBinaryPath, logMessage, logFMICalls ? logFunctionCall : NULL);
 
     size_t nOutputVariables = 0;
-    FMIModelVariable** outputVariables = (FMIModelVariable**)calloc(modelDescription->nModelVariables, sizeof(FMIModelVariable*));
+    FMIModelVariable** outputVariables = NULL;
+    
+    CALL(FMICalloc(&outputVariables, modelDescription->nModelVariables, sizeof(FMIModelVariable*)));
 
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
@@ -448,11 +453,10 @@ int main(int argc, const char* argv[]) {
     snprintf(resourcePath, FMI_PATH_MAX, "%s/resources/", unzipdir);
 #endif
     
-    FMUStaticInput* input = NULL;
-    
     if (inputFile) {
         input = FMIReadInput(modelDescription, inputFile);
         if (!input) {
+            status = FMIError;
             goto TERMINATE;
         }
     }
@@ -550,6 +554,10 @@ int main(int argc, const char* argv[]) {
 
 TERMINATE:
 
+    if (input) {
+        FMIFreeInput(input);
+    }
+
     if (result) {
         FMIFreeRecorder(result);
     }
@@ -572,6 +580,7 @@ TERMINATE:
 
     if (s_fmiLogFile) {
         fclose(s_fmiLogFile);
+        s_fmiLogFile = NULL;
     }
 
     free(startNames);

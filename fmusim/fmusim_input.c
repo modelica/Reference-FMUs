@@ -26,6 +26,12 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 	CsvHandle handle = CsvOpen(filename);
 
+	if (!handle) {
+		status = FMIError;
+		FMILogError("Failed to read input file %s.\n", filename);
+		goto TERMINATE;
+	}
+
 	// variable names
 	row = CsvReadNextRow(handle);
 
@@ -36,11 +42,11 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 		const FMIModelVariable* variable = FMIModelVariableForName(modelDescription, col);
 
 		if (!variable) {
-			printf("Variable %s not found.\n", col);
+			FMILogError("Variable %s not found.\n", col);
 			return NULL;
 		}
 
-		CALL(FMIRealloc(&input->variables, (input->nVariables + 1) * sizeof(FMIModelVariable*)));
+		CALL(FMIRealloc((void**)&input->variables, (input->nVariables + 1) * sizeof(FMIModelVariable*)));
 		input->variables[input->nVariables] = variable;
 		input->nVariables++;
 	}
@@ -50,7 +56,7 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 		CALL(FMIRealloc(&input->time,    (input->nRows + 1) * sizeof(double)));
 		CALL(FMIRealloc(&input->nValues, (input->nRows + 1) * input->nVariables * sizeof(size_t)));
-		CALL(FMIRealloc(&input->values,  (input->nRows + 1) * input->nVariables * sizeof(void*)));
+		CALL(FMIRealloc((void**)&input->values, (input->nRows + 1) * input->nVariables * sizeof(void*)));
 		
 		memset(&input->values[input->nRows * input->nVariables], 0x0, input->nVariables * sizeof(void*));
 
@@ -66,7 +72,7 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 		while (col = CsvReadNextCol(row, handle)) {
 			
 			if (i >= input->nVariables) {
-				printf("The number of columns must be equal to the number of variables.\n");
+				FMILogError("The number of columns must be equal to the number of variables.\n");
 				return NULL;
 			}
 
@@ -84,13 +90,26 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 TERMINATE:
 
-	// TODO: clean up on error
+	if (status == FMIOK) {
+		return input;
+	}
 
-	return input;
+	FMIFreeInput(input);
+
+	return NULL;
 }
 
 void FMIFreeInput(FMUStaticInput* input) {
-	// TODO
+
+	if (!input) {
+		return;
+	}
+
+	FMIFree(&input->variables);
+	FMIFree(&input->nValues);
+	FMIFree(&input->buffer);
+
+	FMIFree(&input);
 }
 
 static size_t FMISizeOf(FMIVariableType type, FMIVersion fmiVersion) {
@@ -248,13 +267,14 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, doub
 			const size_t requiredBufferSize = nValues * sizeof(fmi3Float64);
 
 			if (input->bufferSize < requiredBufferSize) {
-				CALL(FMIRealloc(&input->buffer, requiredBufferSize));
+				// TODO: allocate in FMIReadInput()
+				CALL(FMIRealloc((void**)&input->buffer, requiredBufferSize));
 				((FMUStaticInput*)input)->bufferSize = requiredBufferSize;
 			}
 
 			if (variable->type == FMIFloat32Type) {
 
-				float* buffer = (double*)input->buffer;
+				float* buffer = (float*)input->buffer;
 
 				const float* values0 = (float*)input->values[row * input->nVariables + i];
 				const float* values1 = (float*)input->values[(row + 1) * input->nVariables + i];

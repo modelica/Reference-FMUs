@@ -9,6 +9,8 @@
 #include "FMI2.h"
 #include "FMI3.h"
 
+#include "FMIUtil.h"
+
 
 #define CALL_CVODE(f) do { flag = f; if (flag < 0) { status = FMIError; goto TERMINATE; } } while (0)
 
@@ -148,9 +150,9 @@ Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
     int flag = CV_SUCCESS;
     FMIStatus status = FMIOK;
 
-    Solver* solver = (Solver*)calloc(1, sizeof(SolverImpl_));
+    Solver* solver = NULL;
 
-    ASSERT_NOT_NULL(solver);
+    CALL_FMI(FMICalloc(&solver, 1, sizeof(SolverImpl_)));
 
     if (tolerance <= 0) {
         tolerance = 1e-4; // default tolerance
@@ -166,10 +168,10 @@ Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
     solver->nx = modelDescription->nContinuousStates;
     solver->nz = modelDescription->nEventIndicators;
 
-    solver->xvr        = (FMIValueReference*)calloc(solver->nx, sizeof(FMIValueReference));
-    solver->dxvr       = (FMIValueReference*)calloc(solver->nx, sizeof(FMIValueReference));
-    solver->pre_x_temp = (double*)calloc(solver->nx, sizeof(double));
-    solver->x_temp     = (double*)calloc(solver->nx, sizeof(double));
+    CALL_FMI(FMICalloc(&solver->xvr, solver->nx, sizeof(FMIValueReference)));
+    CALL_FMI(FMICalloc(&solver->dxvr, solver->nx, sizeof(FMIValueReference)));
+    CALL_FMI(FMICalloc(&solver->pre_x_temp, solver->nx, sizeof(double)));
+    CALL_FMI(FMICalloc(&solver->x_temp, solver->nx, sizeof(double)));
 
     if (S->fmiVersion == FMIVersion1) {
         solver->set_time     = FMI1SetTime;
@@ -246,7 +248,7 @@ TERMINATE:
 
     if (status > FMIOK) {
 
-        printf("Failed to create CVode.\n");
+        FMILogError("Failed to create CVode.\n");
 
         FMICVodeFree(solver);
 
@@ -267,12 +269,12 @@ void FMICVodeFree(Solver* solver) {
     if (solver->A)         SUNMatDestroy(solver->A);
     if (solver->sunctx)    SUNContext_Free(&solver->sunctx);
 
-    free(solver->xvr);
-    free(solver->dxvr);
-    free(solver->pre_x_temp);
-    free(solver->x_temp);
+    FMIFree(&solver->xvr);
+    FMIFree(&solver->dxvr);
+    FMIFree(&solver->pre_x_temp);
+    FMIFree(&solver->x_temp);
 
-    free(solver);
+    FMIFree(&solver);
 }
 
 FMIStatus FMICVodeStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent) {
