@@ -132,7 +132,7 @@ def merge_fmus(version):
                         return ''
 
                 # generate index.html
-                model_description = read_model_description(root / f'dist-{fmpy.system}' / version / filename, validate=False)
+                model_description = read_model_description(root / f'dist-{fmpy.system}' / version / filename)
                 loader = jinja2.FileSystemLoader(searchpath=root)
                 environment = jinja2.Environment(loader=loader, trim_blocks=True)
                 template = environment.get_template('template.html')
