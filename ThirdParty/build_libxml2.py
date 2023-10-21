@@ -6,14 +6,14 @@ from fmpy.util import download_file
 from fmpy import extract
 
 
-archive = download_file('https://github.com/GNOME/libxml2/archive/refs/tags/v2.10.3.zip',
-                        checksum='098b62c128e8a9c766fb1cd93902c939960b7a9263d7612588960e7b672d7064')
+archive = download_file('https://github.com/GNOME/libxml2/archive/refs/tags/v2.11.5.zip',
+                        checksum='711675470075cc85ba450f56aff7424f1ecdef00bc5d1d5dced3ffecd1a9b772')
 
 root = Path(__file__).parent
 
 extract(archive, root)
 
-build_dir = root / 'libxml2-2.10.3' / 'build'
+build_dir = root / 'libxml2-2.11.5' / 'build'
 
 install_prefix = build_dir / 'install'
 
@@ -36,7 +36,8 @@ check_call(
     '-D', 'LIBXML2_WITH_LZMA=OFF',
     '-D', 'LIBXML2_WITH_PYTHON=OFF',
     '-D', 'LIBXML2_WITH_ZLIB=OFF',
-    root / 'libxml2-2.10.3']
+    '-D', 'LIBXML2_WITH_TESTS=OFF',
+    root / 'libxml2-2.11.5']
 )
 
 check_call([
