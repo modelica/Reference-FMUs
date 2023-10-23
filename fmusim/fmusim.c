@@ -303,7 +303,6 @@ int main(int argc, const char* argv[]) {
         } else if (!strcmp(v, "--early-return-allowed")) {
             earlyReturnAllowed = true;
         } else if (!strcmp(v, "--event-mode-used")) {
-            earlyReturnAllowed = true;
             eventModeUsed = true;
         } else if (!strcmp(v, "--record-intermediate-values")) {
             recordIntermediateValues = true;
