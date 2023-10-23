@@ -167,7 +167,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
         ));
 
         if (earlyReturn && !settings->earlyReturnAllowed) {
-            FMILogError("FMU returned early from fmi3DoStep() but early return is not allowed.");
+            FMILogError("The FMU returned early from fmi3DoStep() but early return is not allowed.");
             status = FMIError;
             goto TERMINATE;
         }

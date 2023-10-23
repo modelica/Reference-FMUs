@@ -371,10 +371,10 @@ def test_event_mode_time_events(platform):
         interface_type='cs',
         test_name='test_event_mode_input_events',
         args=[
-            '--event-mode-used',
             '--stop-time', '5',
             '--output-interval', '2.5',
-            '--event-mode-used'
+            '--event-mode-used',
+            '--early-return-allowed'
         ],
         model='Stair.fmu'
     )
