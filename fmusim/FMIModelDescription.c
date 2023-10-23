@@ -719,7 +719,7 @@ TERMINATE:
     return modelDescription;
 }
 
-static logSchemaValidationError(void* ctx, const char* msg, ...) {
+static void logSchemaValidationError(void* ctx, const char* msg, ...) {
     (void)ctx; // unused
     va_list args;
     va_start(args, msg);
