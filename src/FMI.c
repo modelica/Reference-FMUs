@@ -18,6 +18,7 @@
 
 void FMIPrintToStdErr(const char* message, va_list args) {
     vfprintf(stderr, message, args);
+    fputs("\n", stderr);
 }
 
 FMILogErrorMessage* logErrorMessage = FMIPrintToStdErr;
