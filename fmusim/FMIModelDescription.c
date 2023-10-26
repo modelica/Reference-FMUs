@@ -14,6 +14,13 @@
 
 #include "structured_variable_name.tab.h"
 
+// to regenerate run
+//
+// python xsdflatten.py fmi3ModelDescription.xsd > fmi3Merged.xsd
+//
+// and
+//
+// xxd -i xxd -i fmi3Merged.xsd > fmi3schema.h
 #include "fmi1schema.h"
 #include "fmi2schema.h"
 #include "fmi3schema.h"
