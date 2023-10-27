@@ -34,6 +34,9 @@ endif ()
 # hide internal functions
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
+  if (WITH_MEMORY_SANITIZER)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
+  endif()
 endif()
 
 if (${FMI_VERSION} GREATER 2)
