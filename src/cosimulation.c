@@ -104,6 +104,9 @@ ModelInstance *createModelInstance(
 }
 
 void freeModelInstance(ModelInstance *comp) {
+    if (comp->resourceLocation) {
+        free((void *)comp->resourceLocation);
+    }
     free((void *)comp->instanceName);
     free(comp);
 }
