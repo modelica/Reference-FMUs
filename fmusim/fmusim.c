@@ -384,9 +384,11 @@ int main(int argc, const char* argv[]) {
 
     }
 
-    FMIModelVariable** startVariables = NULL;
+    void* startVariablesMemory = NULL;
 
-    CALL(FMICalloc(&startVariables, nStartValues, sizeof(FMIModelVariable*)));
+    CALL(FMICalloc(&startVariablesMemory, nStartValues, sizeof(FMIModelVariable*)));
+
+    FMIModelVariable** startVariables = startVariablesMemory;
 
     for (size_t i = 0; i < nStartValues; i++) {
 
@@ -410,9 +412,12 @@ int main(int argc, const char* argv[]) {
     S = FMICreateInstance("instance1", platformBinaryPath, logMessage, logFMICalls ? logFunctionCall : NULL);
 
     size_t nOutputVariables = 0;
-    FMIModelVariable** outputVariables = NULL;
+
+    void* outputVariablesMemory = NULL;
     
-    CALL(FMICalloc(&outputVariables, modelDescription->nModelVariables, sizeof(FMIModelVariable*)));
+    CALL(FMICalloc(&outputVariablesMemory, modelDescription->nModelVariables, sizeof(FMIModelVariable*)));
+
+    FMIModelVariable** outputVariables = outputVariablesMemory;
 
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 

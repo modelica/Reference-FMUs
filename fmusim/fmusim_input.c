@@ -105,7 +105,7 @@ void FMIFreeInput(FMUStaticInput* input) {
 		return;
 	}
 
-	FMIFree(&input->variables);
+	FMIFree((void**)&input->variables);
 	FMIFree(&input->nValues);
 	FMIFree(&input->buffer);
 
