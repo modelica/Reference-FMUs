@@ -195,8 +195,8 @@ FMIStatus FMIParseValues(FMIVersion fmiVersion, FMIVariableType type, const char
         const size_t len = strlen(literal);
         CALL(FMIRealloc(values, sizeof(fmi3String*) + len + 1));
         fmi3String* v = *values;
-        v[0] = &v[1];
-        strncpy(&v[1], literal, len + 1);
+        v[0] = (fmi3String)&v[1];
+        strncpy((char*)&v[1], literal, len + 1);
         *nValues = 1;
         break;
     }

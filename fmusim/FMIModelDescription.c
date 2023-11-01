@@ -48,7 +48,7 @@ static uint32_t getUInt32Attribute(const xmlNodePtr node, const char* name) {
 static FMIVariableNamingConvention getVariableNamingConvention(const xmlNodePtr node) {
     const char* value = (char*)xmlGetProp(node, (xmlChar*)"variableNamingConvention");
     FMIVariableNamingConvention variableNamingConvention = (value && !strcmp(value, "structured")) ? FMIStructured : FMIFlat;
-    free(value);
+    free((void*)value);
     return variableNamingConvention;
 }
 
@@ -1054,7 +1054,7 @@ size_t FMIValidateModelDescription(const FMIModelDescription* modelDescription) 
 
             set_input_string(variable->name);
 
-            if (yyparse(variable)) {
+            if (yyparse((void*)variable)) {
                 nProblems++;
             }
 

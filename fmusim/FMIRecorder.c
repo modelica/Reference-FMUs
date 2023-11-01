@@ -25,14 +25,14 @@ FMIRecorder* FMICreateRecorder(size_t nVariables, const FMIModelVariable* variab
     result->file = fopen(file, "w");
 
     if (!result->file) {
-        free(result);
-        return NULL;
+        status = FMIError;
+        goto TERMINATE;
     }
 
 TERMINATE:
 
     if (status != FMIOK) {
-        FMIFree(result);
+        FMIFree(&result);
     }
 
     return result;
