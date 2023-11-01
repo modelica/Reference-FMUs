@@ -299,10 +299,7 @@ fmi2Status fmi2Reset(fmi2Component c) {
 }
 
 void fmi2FreeInstance(fmi2Component c) {
-
-    if (S) {
-        freeModelInstance(S);
-    }
+    freeModelInstance((ModelInstance*)S);
 }
 
 // ---------------------------------------------------------------------------

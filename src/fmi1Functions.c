@@ -243,8 +243,7 @@ fmiStatus fmiResetSlave(fmiComponent c) {
 }
 
 void fmiFreeSlaveInstance(fmiComponent c) {
-    ModelInstance *instance = (ModelInstance *)c;
-    freeModelInstance(instance);
+    freeModelInstance((ModelInstance*)c);
 }
 
 fmiStatus fmiSetRealInputDerivatives(fmiComponent c, const fmiValueReference vr[], size_t nvr,
@@ -588,8 +587,7 @@ fmiStatus fmiTerminate(fmiComponent c){
 }
 
 void fmiFreeModelInstance(fmiComponent c) {
-    ModelInstance *instance = (ModelInstance *)c;
-    freeModelInstance(instance);
+    freeModelInstance((ModelInstance*)c);
 }
 
 #endif // Model Exchange 1.0

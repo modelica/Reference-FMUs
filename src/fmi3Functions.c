@@ -374,11 +374,7 @@ fmi3Instance fmi3InstantiateScheduledExecution(
 #endif
 }
 
-
 void fmi3FreeInstance(fmi3Instance instance) {
-
-    if (!instance) return;
-
     freeModelInstance((ModelInstance*)instance);
 }
 
