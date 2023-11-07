@@ -12,9 +12,6 @@
 #define CO_SIMULATION
 #define MODEL_EXCHANGE
 
-#define NX 0
-#define NZ 0
-
 #define GET_FLOAT32
 #define GET_FLOAT64
 #define GET_INT8

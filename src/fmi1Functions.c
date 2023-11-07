@@ -447,16 +447,23 @@ fmiStatus fmiSetContinuousStates(fmiComponent c, const fmiReal x[], size_t nx) {
 
     ModelInstance* instance = (ModelInstance *)c;
 
+#ifdef HAS_CONTINUOUS_STATES
     if (invalidState(instance, "fmiSetContinuousStates", Initialized))
          return fmiError;
 
-    if (invalidNumber(instance, "fmiSetContinuousStates", "nx", nx, NX))
+    if (invalidNumber(instance, "fmiSetContinuousStates", "nx", nx, getNumberOfContinuousStates(instance)))
         return fmiError;
 
     if (nullPointer(instance, "fmiSetContinuousStates", "x[]", x))
          return fmiError;
 
     setContinuousStates(instance, x, nx);
+#else
+    UNUSED(x);
+
+    if (invalidNumber(instance, "fmiSetContinuousStates", "nx", nx, 0))
+        return fmiError;
+#endif
 
     return fmiOK;
 }
@@ -515,16 +522,23 @@ fmiStatus fmiGetContinuousStates(fmiComponent c, fmiReal states[], size_t nx){
 
     ModelInstance* instance = (ModelInstance *)c;
 
+#ifdef HAS_CONTINUOUS_STATES
     if (invalidState(instance, "fmiGetContinuousStates", not_modelError))
         return fmiError;
 
-    if (invalidNumber(instance, "fmiGetContinuousStates", "nx", nx, NX))
+    if (invalidNumber(instance, "fmiGetContinuousStates", "nx", nx, getNumberOfContinuousStates(instance)))
         return fmiError;
 
     if (nullPointer(instance, "fmiGetContinuousStates", "states[]", states))
          return fmiError;
 
     getContinuousStates(instance, states, nx);
+#else
+    UNUSED(states);
+
+    if (invalidNumber(instance, "fmiGetContinuousStates", "nx", nx, 0))
+        return fmiError;
+#endif
 
     return fmiOK;
 }
@@ -533,10 +547,11 @@ fmiStatus fmiGetNominalContinuousStates(fmiComponent c, fmiReal x_nominal[], siz
 
     ModelInstance* instance = (ModelInstance *)c;
 
+#ifdef HAS_CONTINUOUS_STATES
     if (invalidState(instance, "fmiGetNominalContinuousStates", not_modelError))
         return fmiError;
 
-    if (invalidNumber(instance, "fmiGetNominalContinuousStates", "nx", nx, NX))
+    if (invalidNumber(instance, "fmiGetNominalContinuousStates", "nx", nx, getNumberOfContinuousStates(instance)))
         return fmiError;
 
     if (nullPointer(instance, "fmiGetNominalContinuousStates", "x_nominal[]", x_nominal))
@@ -545,6 +560,12 @@ fmiStatus fmiGetNominalContinuousStates(fmiComponent c, fmiReal x_nominal[], siz
     for (size_t i = 0; i < nx; i++) {
         x_nominal[i] = 1;
     }
+#else
+    UNUSED(x_nominal);
+
+    if (invalidNumber(instance, "fmiGetNominalContinuousStates", "nx", nx, 0))
+        return fmiError;
+#endif
 
     return fmiOK;
 }
@@ -553,16 +574,23 @@ fmiStatus fmiGetDerivatives(fmiComponent c, fmiReal derivatives[], size_t nx) {
 
     ModelInstance* instance = (ModelInstance *)c;
 
+#ifdef HAS_CONTINUOUS_STATES
     if (invalidState(instance, "fmiGetDerivatives", not_modelError))
          return fmiError;
 
-    if (invalidNumber(instance, "fmiGetDerivatives", "nx", nx, NX))
+    if (invalidNumber(instance, "fmiGetDerivatives", "nx", nx, getNumberOfContinuousStates(instance)))
         return fmiError;
 
     if (nullPointer(instance, "fmiGetDerivatives", "derivatives[]", derivatives))
          return fmiError;
 
     getDerivatives(instance, derivatives, nx);
+#else
+    UNUSED(derivatives);
+
+    if (invalidNumber(instance, "fmiGetDerivatives", "nx", nx, 0))
+        return fmiError;
+#endif
 
     return fmiOK;
 }
@@ -571,13 +599,20 @@ fmiStatus fmiGetEventIndicators(fmiComponent c, fmiReal eventIndicators[], size_
 
     ModelInstance* instance = (ModelInstance *)c;
 
+#ifdef HAS_EVENT_INDICATORS
     if (invalidState(instance, "fmiGetEventIndicators", not_modelError))
         return fmiError;
 
-    if (invalidNumber(instance, "fmiGetEventIndicators", "ni", ni, NZ))
+    if (invalidNumber(instance, "fmiGetEventIndicators", "ni", ni, getNumberOfEventIndicators(instance)))
         return fmiError;
 
     getEventIndicators(instance, eventIndicators, ni);
+#else
+    UNUSED(eventIndicators);
+
+    if (invalidNumber(instance, "fmiGetEventIndicators", "ni", ni, 0))
+        return fmiError;
+#endif
 
     return fmiOK;
 }

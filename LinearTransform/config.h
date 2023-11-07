@@ -7,10 +7,6 @@
 #define MODEL_IDENTIFIER LinearTransform
 #define INSTANTIATION_TOKEN "{D773325B-AB94-4630-BF85-643EB24FCB78}"
 
-// define model size
-#define NX 0
-#define NZ 0
-
 #define CO_SIMULATION
 #define MODEL_EXCHANGE
 

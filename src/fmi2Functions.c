@@ -807,13 +807,20 @@ fmi2Status fmi2SetContinuousStates(fmi2Component c, const fmi2Real x[], size_t n
 
     ASSERT_STATE(SetContinuousStates);
 
-    if (invalidNumber(S, "fmi2SetContinuousStates", "nx", nx, NX))
+#ifdef HAS_CONTINUOUS_STATES
+    if (invalidNumber(S, "fmi2SetContinuousStates", "nx", nx, getNumberOfContinuousStates(S)))
         return fmi2Error;
 
     if (nullPointer(S, "fmi2SetContinuousStates", "x[]", x))
         return fmi2Error;
 
     setContinuousStates(S, x, nx);
+#else
+    UNUSED(x);
+
+    if (invalidNumber(S, "fmi2SetContinuousStates", "nx", nx, 0))
+        return fmi2Error;
+#endif
 
     return fmi2OK;
 }
@@ -823,13 +830,20 @@ fmi2Status fmi2GetDerivatives(fmi2Component c, fmi2Real derivatives[], size_t nx
 
     ASSERT_STATE(GetDerivatives);
 
-    if (invalidNumber(S, "fmi2GetDerivatives", "nx", nx, NX))
+#ifdef HAS_CONTINUOUS_STATES
+    if (invalidNumber(S, "fmi2GetDerivatives", "nx", nx, getNumberOfContinuousStates(S)))
         return fmi2Error;
 
     if (nullPointer(S, "fmi2GetDerivatives", "derivatives[]", derivatives))
         return fmi2Error;
 
     getDerivatives(S, derivatives, nx);
+#else
+    UNUSED(derivatives);
+
+    if (invalidNumber(S, "fmi2GetDerivatives", "nx", nx, 0))
+        return fmi2Error;
+#endif
 
     return fmi2OK;
 }
@@ -838,17 +852,18 @@ fmi2Status fmi2GetEventIndicators(fmi2Component c, fmi2Real eventIndicators[], s
 
     ASSERT_STATE(GetEventIndicators);
 
-#if NZ > 0
-
-    if (invalidNumber(S, "fmi2GetEventIndicators", "ni", ni, NZ))
+#ifdef HAS_EVENT_INDICATORS
+    if (invalidNumber(S, "fmi2GetEventIndicators", "ni", ni, getNumberOfEventIndicators(S)))
         return fmi2Error;
 
     getEventIndicators(S, eventIndicators, ni);
 #else
-    UNUSED(c);
     UNUSED(eventIndicators);
-    if (ni > 0) return fmi2Error;
+
+    if (invalidNumber(S, "fmi2GetEventIndicators", "ni", ni, 0))
+        return fmi2Error;
 #endif
+
     return fmi2OK;
 }
 
@@ -856,13 +871,20 @@ fmi2Status fmi2GetContinuousStates(fmi2Component c, fmi2Real states[], size_t nx
 
     ASSERT_STATE(GetContinuousStates);
 
-    if (invalidNumber(S, "fmi2GetContinuousStates", "nx", nx, NX))
+#ifdef HAS_CONTINUOUS_STATES
+    if (invalidNumber(S, "fmi2GetContinuousStates", "nx", nx, getNumberOfContinuousStates(S)))
         return fmi2Error;
 
     if (nullPointer(S, "fmi2GetContinuousStates", "states[]", states))
         return fmi2Error;
 
     getContinuousStates(S, states, nx);
+#else
+    UNUSED(states);
+
+    if (invalidNumber(S, "fmi2GetContinuousStates", "nx", nx, 0))
+        return fmi2Error;
+#endif
 
     return fmi2OK;
 }
@@ -871,7 +893,8 @@ fmi2Status fmi2GetNominalsOfContinuousStates(fmi2Component c, fmi2Real x_nominal
 
     ASSERT_STATE(GetNominalsOfContinuousStates);
 
-    if (invalidNumber(S, "fmi2GetNominalContinuousStates", "nx", nx, NX))
+#ifdef HAS_CONTINUOUS_STATES
+    if (invalidNumber(S, "fmi2GetNominalContinuousStates", "nx", nx, getNumberOfContinuousStates(S)))
         return fmi2Error;
 
     if (nullPointer(S, "fmi2GetNominalContinuousStates", "x_nominal[]", x_nominal))
@@ -879,6 +902,12 @@ fmi2Status fmi2GetNominalsOfContinuousStates(fmi2Component c, fmi2Real x_nominal
 
     for (size_t i = 0; i < nx; i++)
         x_nominal[i] = 1;
+#else
+    UNUSED(x_nominal);
+
+    if (invalidNumber(S, "fmi2GetNominalContinuousStates", "nx", nx, 0))
+        return fmi2Error;
+#endif
 
     return fmi2OK;
 }

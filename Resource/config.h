@@ -8,10 +8,6 @@
 #define CO_SIMULATION
 #define MODEL_EXCHANGE
 
-// define model size
-#define NX 0
-#define NZ 0
-
 #define GET_INT32
 
 #define FIXED_SOLVER_STEP 1

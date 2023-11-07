@@ -140,17 +140,21 @@ typedef struct {
 
     ModelData modelData;
 
-#if NZ > 0
-    // event indicators
-    double z[NZ];
-#endif
-
     // internal solver steps
     uint64_t nSteps;
 
     // Co-Simulation
     bool earlyReturnAllowed;
     bool eventModeUsed;
+
+    // solver
+    size_t nz;
+    double* z;
+    double* prez;
+
+    size_t nx;
+    double* x;
+    double* dx;
 
 } ModelInstance;
 
@@ -165,6 +169,8 @@ ModelInstance *createModelInstance(
     InterfaceType interfaceType);
 
 void freeModelInstance(ModelInstance *comp);
+
+void exitInitializationMode(ModelInstance* comp);
 
 void reset(ModelInstance* comp);
 
@@ -208,6 +214,8 @@ Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int
 
 Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime);
 
+size_t getNumberOfEventIndicators(ModelInstance* comp);
+size_t getNumberOfContinuousStates(ModelInstance* comp);
 void getContinuousStates(ModelInstance *comp, double x[], size_t nx);
 void setContinuousStates(ModelInstance *comp, const double x[], size_t nx);
 void getDerivatives(ModelInstance *comp, double dx[], size_t nx);

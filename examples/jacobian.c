@@ -4,6 +4,7 @@
 
 #include "util.h"
 
+#define NX 2
 
 int main(int argc, char* argv[]) {
 
@@ -12,9 +13,8 @@ int main(int argc, char* argv[]) {
     size_t i, j;
     fmi3Float64 time = 0;
 
-    size_t nx = NX;
-    fmi3ValueReference vr_x[]  = { vr_x0, vr_x1 };
-    fmi3ValueReference vr_dx[] = { vr_der_x0, vr_der_x1 };
+    fmi3ValueReference vr_x[NX]  = { vr_x0, vr_x1 };
+    fmi3ValueReference vr_dx[NX] = { vr_der_x0, vr_der_x1 };
 
     // variables:
     fmi3Float64 x[NX];
@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
 
     CALL(FMI3EnterContinuousTimeMode(S));
 
-    CALL(FMI3GetContinuousStates(S, x, nx));
+    CALL(FMI3GetContinuousStates(S, x, NX));
 
     // tag::JacobianVariables[]
     // from the XML file:
@@ -54,14 +54,14 @@ int main(int argc, char* argv[]) {
 
     // set time, states and inputs
     CALL(FMI3SetTime(S, time));
-    CALL(FMI3SetContinuousStates(S, x, nx));
+    CALL(FMI3SetContinuousStates(S, x, NX));
     // fmi3Set{VariableType}(s, ...)
 
     // if required at this step, compute the Jacobian as a dense matrix
-    for (i = 0; i < nx; i++) {
+    for (i = 0; i < NX; i++) {
         // construct the Jacobian matrix column wise
-        CALL(FMI3GetDirectionalDerivative(S, vr_dx, nx, &vr_x[i], 1, &dk, 1, c, nx));
-        for (j = 0; j < nx; j++) {
+        CALL(FMI3GetDirectionalDerivative(S, vr_dx, NX, &vr_x[i], 1, &dk, 1, c, NX));
+        for (j = 0; j < NX; j++) {
             J[j][i] = c[j];
         }
     }
@@ -73,9 +73,9 @@ int main(int argc, char* argv[]) {
     assert(J[1][1] == -3);
 
     // tag::GetJacobianAdjoint[]
-    for (i = 0; i < nx; i++) {
+    for (i = 0; i < NX; i++) {
         // construct the Jacobian matrix column wise
-        CALL(FMI3GetAdjointDerivative(S, &vr_dx[i], 1, vr_x, nx, &dk, 1, &J[i][0], nx));
+        CALL(FMI3GetAdjointDerivative(S, &vr_dx[i], 1, vr_x, NX, &dk, 1, &J[i][0], NX));
     }
     // end::GetJacobianAdjoint[]
 
