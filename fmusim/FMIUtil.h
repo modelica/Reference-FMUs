@@ -9,6 +9,12 @@ FMIStatus FMIGetNumberOfVariableValues(
     const FMIModelVariable* variable, 
     size_t* nValues);
 
+FMIStatus FMIGetNumberOfUnkownValues(
+    FMIInstance* instance,
+    size_t nUnknowns,
+    const FMIUnknown unknowns[],
+    size_t* nValues);
+
 FMIStatus FMI1SetValues(
     FMIInstance* instance,
     FMIVariableType type,
