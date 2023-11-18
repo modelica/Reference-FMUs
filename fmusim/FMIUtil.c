@@ -33,6 +33,11 @@
                 extent = dimension->start;
             }
 
+            if (extent == 0) {
+                *nValues = 0;
+                goto TERMINATE;
+            }
+
             *nValues *= extent;
         }
 
@@ -41,6 +46,31 @@
 TERMINATE:
     return status;
 }
+
+FMIStatus FMIGetNumberOfUnkownValues(
+    FMIInstance* instance,
+    size_t nUnknowns,
+    const FMIUnknown unknowns[],
+    size_t* nValues) {
+
+     FMIStatus status = FMIOK;
+
+     *nValues = 0;
+
+     for (size_t i = 0; i < nUnknowns; i++) {
+
+         FMIUnknown* unknown = &unknowns[i];
+
+         size_t n;
+
+         CALL(FMIGetNumberOfVariableValues(instance, unknown->modelVariable, &n));
+
+         *nValues += n;
+     }
+
+ TERMINATE:
+     return status;
+ }
 
 FMIStatus FMI1SetValues(
      FMIInstance* instance,
