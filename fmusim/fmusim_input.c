@@ -58,7 +58,9 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 		CALL(FMIRealloc(&input->nValues, (input->nRows + 1) * input->nVariables * sizeof(size_t)));
 		CALL(FMIRealloc((void**)&input->values, (input->nRows + 1) * input->nVariables * sizeof(void*)));
 		
-		memset(&input->values[input->nRows * input->nVariables], 0x0, input->nVariables * sizeof(void*));
+		const size_t index = input->nRows * input->nVariables;
+		memset(&input->nValues[index], 0x0, input->nVariables * sizeof(size_t));
+		memset(&input->values [index], 0x0, input->nVariables * sizeof(void*));
 
 		char* eptr;
 
@@ -261,6 +263,8 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, doub
 
 		const size_t nValues = input->nValues[j];
 		const void* values   = input->values[j];
+
+		if (nValues == 0) continue;
 
 		if (continuous && variable->variability == FMIContinuous) {
 			
