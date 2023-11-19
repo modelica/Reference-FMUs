@@ -23,7 +23,7 @@ FMIStatus simulateFMI1ME(
     fmi1Boolean timeEvent  = fmi1False;
     fmi1Boolean stepEvent  = fmi1False;
 
-    fmi1Boolean statesChanged = fmi1False;
+    fmi1Boolean resetSolver;
 
     Solver* solver = NULL;
 
@@ -125,7 +125,7 @@ FMIStatus simulateFMI1ME(
                 ));
             }
 
-            statesChanged = fmi1False;
+            resetSolver = fmi1False;
 
             // event iteration
             do {
@@ -135,7 +135,7 @@ FMIStatus simulateFMI1ME(
                     goto TERMINATE;
                 }
 
-                statesChanged |= eventInfo.stateValuesChanged;
+                resetSolver |= eventInfo.stateValuesChanged;
 
             } while (!eventInfo.iterationConverged);
 
@@ -143,7 +143,9 @@ FMIStatus simulateFMI1ME(
                 eventInfo.nextEventTime = INFINITY;
             }
 
-            settings->solverReset(solver, time);
+            if (resetSolver) {
+                settings->solverReset(solver, time);
+            }
         }
 
     }

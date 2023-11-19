@@ -39,8 +39,7 @@ FMIStatus simulateFMI3ME(
     fmi3Float64 nextCommunicationPoint;
     fmi3Float64 nextInputEventTime;
 
-    fmi3Boolean nominalsChanged = fmi3False;
-    fmi3Boolean statesChanged = fmi3False;
+    fmi3Boolean resetSolver;
 
     Solver* solver = NULL;
 
@@ -72,9 +71,6 @@ FMIStatus simulateFMI3ME(
         CALL(FMI3ExitInitializationMode(S));
 
         // intial event iteration
-        nominalsChanged = fmi3False;
-        statesChanged = fmi3False;
-
         do {
 
             CALL(FMI3UpdateDiscreteStates(S,
@@ -88,9 +84,6 @@ FMIStatus simulateFMI3ME(
             if (terminateSimulation) {
                 goto TERMINATE;
             }
-
-            nominalsChanged |= nominalsOfContinuousStatesChanged;
-            statesChanged |= valuesOfContinuousStatesChanged;
 
         } while (discreteStatesNeedUpdate);
 
@@ -166,8 +159,7 @@ FMIStatus simulateFMI3ME(
                 ));
             }
 
-            nominalsChanged = fmi3False;
-            statesChanged = fmi3False;
+            resetSolver = fmi3False;
 
             do {
 
@@ -183,8 +175,7 @@ FMIStatus simulateFMI3ME(
                     goto TERMINATE;
                 }
 
-                nominalsChanged |= nominalsOfContinuousStatesChanged;
-                statesChanged |= valuesOfContinuousStatesChanged;
+                resetSolver |= nominalsOfContinuousStatesChanged || valuesOfContinuousStatesChanged;
 
             } while (discreteStatesNeedUpdate);
 
@@ -194,7 +185,9 @@ FMIStatus simulateFMI3ME(
 
             CALL(FMI3EnterContinuousTimeMode(S));
 
-            settings->solverReset(solver, time);
+            if (resetSolver) {
+                settings->solverReset(solver, time);
+            }
         }
 
     }

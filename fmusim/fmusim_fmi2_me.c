@@ -26,8 +26,7 @@ FMIStatus simulateFMI2ME(
     fmi2Boolean timeEvent  = fmi2False;
     fmi2Boolean stepEvent  = fmi2False;
 
-    fmi2Boolean nominalsChanged = fmi2False;
-    fmi2Boolean statesChanged = fmi2False;
+    fmi2Boolean resetSolver;
 
     Solver* solver = NULL;
 
@@ -74,10 +73,6 @@ FMIStatus simulateFMI2ME(
         CALL(FMI2EnterInitializationMode(S));
         CALL(FMI2ExitInitializationMode(S));
 
-        // intial event iteration
-        nominalsChanged = fmi2False;
-        statesChanged = fmi2False;
-
         do {
 
             CALL(FMI2NewDiscreteStates(S, &eventInfo));
@@ -85,9 +80,6 @@ FMIStatus simulateFMI2ME(
             if (eventInfo.terminateSimulation) {
                 goto TERMINATE;
             }
-
-            nominalsChanged |= eventInfo.nominalsOfContinuousStatesChanged;
-            statesChanged |= eventInfo.valuesOfContinuousStatesChanged;
 
         } while (eventInfo.newDiscreteStatesNeeded);
 
@@ -164,8 +156,7 @@ FMIStatus simulateFMI2ME(
                 ));
             }
 
-            nominalsChanged = fmi2False;
-            statesChanged = fmi2False;
+            resetSolver = fmi2False;
 
             // event iteration
             do {
@@ -175,8 +166,7 @@ FMIStatus simulateFMI2ME(
                     goto TERMINATE;
                 }
 
-                nominalsChanged |= eventInfo.nominalsOfContinuousStatesChanged;
-                statesChanged |= eventInfo.valuesOfContinuousStatesChanged;
+                resetSolver |= eventInfo.nominalsOfContinuousStatesChanged || eventInfo.valuesOfContinuousStatesChanged;
 
             } while (eventInfo.newDiscreteStatesNeeded);
 
@@ -187,7 +177,9 @@ FMIStatus simulateFMI2ME(
             // enter Continuous-Time Mode
             CALL(FMI2EnterContinuousTimeMode(S));
 
-            settings->solverReset(solver, time);
+            if (resetSolver) {
+                settings->solverReset(solver, time);
+            }
         }
 
     }
