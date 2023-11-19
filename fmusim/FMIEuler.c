@@ -7,7 +7,7 @@
 #define CALL(f) do { status = f; if (status > FMISolverOK) goto TERMINATE; } while (0)
 
 
-struct SolverImpl {
+struct FMISolverImpl {
 
     double time;
     size_t nx;
@@ -28,11 +28,11 @@ struct SolverImpl {
 
 } SolverImpl_;
 
-Solver* FMIEulerCreate(const FMISolverParameters* solverFunctions) {
+FMISolver* FMIEulerCreate(const FMISolverParameters* solverFunctions) {
 
     FMISolverStatus status = FMISolverOK;
 
-    Solver* solver = calloc(1, sizeof(SolverImpl_));
+    FMISolver* solver = calloc(1, sizeof(SolverImpl_));
 
     if (!solver) {
         // TODO: log error
@@ -72,7 +72,7 @@ TERMINATE:
     return solver;
 }
 
-void FMIEulerFree(Solver* solver) {
+void FMIEulerFree(FMISolver* solver) {
 
     if (!solver) {
         return;
@@ -86,7 +86,7 @@ void FMIEulerFree(Solver* solver) {
     free(solver);
 }
 
-FMISolverStatus FMIEulerStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent) {
+FMISolverStatus FMIEulerStep(FMISolver* solver, double nextTime, double* timeReached, bool* stateEvent) {
 
     FMISolverStatus status = FMISolverOK;
 
@@ -129,7 +129,7 @@ TERMINATE:
     return status;
 }
 
-FMISolverStatus FMIEulerReset(Solver* solver, double time) {
+FMISolverStatus FMIEulerReset(FMISolver* solver, double time) {
 
     FMISolverStatus status = FMISolverOK;
 

@@ -13,7 +13,7 @@
 #define ASSERT_NOT_NULL(f) do { if (!f) { status = FMISolverError; goto TERMINATE; } } while (0)
 
 
-struct SolverImpl {
+struct FMISolverImpl {
 
     size_t nx;
     size_t nz;
@@ -42,7 +42,7 @@ struct SolverImpl {
 // Right-hand-side function
 static int f(realtype t, N_Vector x, N_Vector ydot, void* user_data) {
 
-    Solver* solver = (Solver*)user_data;
+    FMISolver* solver = (FMISolver*)user_data;
 
     FMISolverStatus status = FMISolverOK;
 
@@ -62,7 +62,7 @@ TERMINATE:
 // Root function
 static int g(realtype t, N_Vector x, realtype* gout, void* user_data) {
 
-    Solver* solver = (Solver*)user_data;
+    FMISolver* solver = (FMISolver*)user_data;
 
     FMISolverStatus status = FMISolverOK;
 
@@ -80,12 +80,12 @@ TERMINATE:
     return status > FMISolverOK ? CV_ERR_FAILURE : CV_SUCCESS;
 }
 
-Solver* FMICVodeCreate(const FMISolverParameters* solverFunctions) {
+FMISolver* FMICVodeCreate(const FMISolverParameters* solverFunctions) {
 
     int flag = CV_SUCCESS;
     FMISolverStatus status = FMISolverOK;
 
-    Solver* solver = calloc(1, sizeof(SolverImpl_));
+    FMISolver* solver = calloc(1, sizeof(SolverImpl_));
 
     if (!solver) {
         solverFunctions->logError("Failed to allocate memory for solver.");
@@ -171,7 +171,7 @@ TERMINATE:
     return solver;
 }
 
-void FMICVodeFree(Solver* solver) {
+void FMICVodeFree(FMISolver* solver) {
 
     if (!solver) return;
 
@@ -185,7 +185,7 @@ void FMICVodeFree(Solver* solver) {
     free(solver);
 }
 
-FMISolverStatus FMICVodeStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent) {
+FMISolverStatus FMICVodeStep(FMISolver* solver, double nextTime, double* timeReached, bool* stateEvent) {
 
     if (!solver) {
         return FMISolverError;
@@ -214,7 +214,7 @@ TERMINATE:
     return status;
 }
 
-FMISolverStatus FMICVodeReset(Solver* solver, double time) {
+FMISolverStatus FMICVodeReset(FMISolver* solver, double time) {
 
     FMISolverStatus status = FMISolverOK;
 

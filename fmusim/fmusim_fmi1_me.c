@@ -25,7 +25,7 @@ FMIStatus simulateFMI1ME(
 
     fmi1Boolean resetSolver;
 
-    Solver* solver = NULL;
+    FMISolver* solver = NULL;
 
     size_t nSteps = 0;
     fmi1Real nextRegularPoint;

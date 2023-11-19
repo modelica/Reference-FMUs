@@ -41,7 +41,7 @@ FMIStatus simulateFMI3ME(
 
     fmi3Boolean resetSolver;
 
-    Solver* solver = NULL;
+    FMISolver* solver = NULL;
 
     CALL(FMI3InstantiateModelExchange(S,
         modelDescription->instantiationToken,  // instantiationToken

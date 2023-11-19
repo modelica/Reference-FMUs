@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-typedef struct SolverImpl Solver;
+typedef struct FMISolverImpl FMISolver;
 
 typedef enum {
     FMISolverOK,
@@ -38,9 +38,9 @@ typedef struct {
 
 } FMISolverParameters;
 
-typedef Solver* (*SolverCreate)(const FMISolverParameters* solverFunctions);
+typedef FMISolver* (*SolverCreate)(const FMISolverParameters* solverFunctions);
 
-typedef void (*SolverFree)(Solver* solver);
+typedef void (*SolverFree)(FMISolver* solver);
 
 typedef FMISolverStatus (*SolverStep)(void* solver, double nextTime, double* timeReached, bool* stateEvent);
 

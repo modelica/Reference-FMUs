@@ -3,10 +3,10 @@
 #include "FMISolver.h"
 
 
-Solver* FMICVodeCreate(const FMISolverParameters* solverFunctions);
+FMISolver* FMICVodeCreate(const FMISolverParameters* solverFunctions);
 
-void FMICVodeFree(Solver* solver);
+void FMICVodeFree(FMISolver* solver);
 
-FMISolverStatus FMICVodeStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent);
+FMISolverStatus FMICVodeStep(FMISolver* solver, double nextTime, double* timeReached, bool* stateEvent);
 
-FMISolverStatus FMICVodeReset(Solver* solver, double time);
+FMISolverStatus FMICVodeReset(FMISolver* solver, double time);
