@@ -41,7 +41,7 @@ FMIStatus simulateFMI3ME(
 
     fmi3Boolean resetSolver;
 
-    Solver* solver = NULL;
+    FMISolver* solver = NULL;
 
     CALL(FMI3InstantiateModelExchange(S,
         modelDescription->instantiationToken,  // instantiationToken
@@ -94,7 +94,25 @@ FMIStatus simulateFMI3ME(
         CALL(FMI3EnterContinuousTimeMode(S));
     }
 
-    solver = settings->solverCreate(S, modelDescription, input, settings->tolerance, time);
+    FMISolverParameters solverFunctions = {
+        .modelInstance = S,
+        .input = input,
+        .startTime = time,
+        .tolerance = settings->tolerance,
+        .setTime = (FMISolverSetTime)FMI3SetTime,
+        .applyInput = (FMISolverApplyInput)FMIApplyInput,
+        .getContinuousStates = (FMISolverGetContinuousStates)FMI3GetContinuousStates,
+        .setContinuousStates = (FMISolverSetContinuousStates)FMI3SetContinuousStates,
+        .getNominalsOfContinuousStates = (FMISolverGetNominalsOfContinuousStates)FMI3GetNominalsOfContinuousStates,
+        .getContinuousStateDerivatives = (FMISolverGetContinuousStateDerivatives)FMI3GetContinuousStateDerivatives,
+        .getEventIndicators = (FMISolverGetEventIndicators)FMI3GetEventIndicators,
+        .logError = (FMISolverLogError)FMILogError
+    };
+
+    CALL(FMIGetNumberOfUnkownValues(S, modelDescription->nContinuousStates, modelDescription->derivatives, &solverFunctions.nx));
+    CALL(FMIGetNumberOfUnkownValues(S, modelDescription->nEventIndicators, modelDescription->eventIndicators, &solverFunctions.nz));
+
+    solver = settings->solverCreate(&solverFunctions);
     
     if (!solver) {
         status = FMIError;

@@ -1,15 +1,47 @@
 #pragma once
 
-#include "FMIModelDescription.h"
-#include "fmusim_input.h"
+#include <stddef.h>
+#include <stdbool.h>
 
+typedef struct FMISolverImpl FMISolver;
 
-typedef struct SolverImpl Solver;
+typedef enum {
+    FMISolverOK,
+    FMISolverError
+} FMISolverStatus;
 
-typedef Solver* (*SolverCreate)(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double tolerance, double startTime);
+typedef int  (*FMISolverSetTime)(void* modelInstance, double time);
+typedef int  (*FMISolverApplyInput)(void* modelInstance, const void* input, double time, bool discrete, bool continuous, bool afterEvent);
+typedef int  (*FMISolverGetContinuousStates)(void* modelInstance, double x[], size_t nx);
+typedef int  (*FMISolverSetContinuousStates)(void* modelInstance, const double x[], size_t nx);
+typedef int  (*FMISolverGetNominalsOfContinuousStates)(void* modelInstance, double nominals[], size_t nx);
+typedef int  (*FMISolverGetContinuousStateDerivatives)(void* modelInstance, double dx[], size_t nx);
+typedef int  (*FMISolverGetEventIndicators)(void* modelInstance, double z[], size_t nz);
+typedef void (*FMISolverLogError)(const char* message);
 
-typedef void (*SolverFree)(Solver* solver);
+typedef struct {
 
-typedef FMIStatus (*SolverStep)(void* solver, double nextTime, double* timeReached, bool* stateEvent);
+    void* modelInstance;
+    const void* input;
+    double startTime;
+    double tolerance;
+    size_t nx;
+    size_t nz;
+    FMISolverSetTime setTime;
+    FMISolverApplyInput applyInput;
+    FMISolverGetContinuousStates getContinuousStates;
+    FMISolverSetContinuousStates setContinuousStates;
+    FMISolverGetNominalsOfContinuousStates getNominalsOfContinuousStates;
+    FMISolverGetContinuousStateDerivatives getContinuousStateDerivatives;
+    FMISolverGetEventIndicators getEventIndicators;
+    FMISolverLogError logError;
 
-typedef FMIStatus (*SolverReset)(void* solver, double time);
+} FMISolverParameters;
+
+typedef FMISolver* (*SolverCreate)(const FMISolverParameters* solverFunctions);
+
+typedef void (*SolverFree)(FMISolver* solver);
+
+typedef FMISolverStatus (*SolverStep)(void* solver, double nextTime, double* timeReached, bool* stateEvent);
+
+typedef FMISolverStatus (*SolverReset)(void* solver, double time);

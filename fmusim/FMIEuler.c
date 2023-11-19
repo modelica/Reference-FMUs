@@ -1,19 +1,14 @@
-#include "FMI1.h"
-#include "FMI2.h"
-#include "FMI3.h"
-
-#include "FMIUtil.h"
+#include <stdlib.h>
 
 #include "FMIEuler.h"
 
 
-#define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
+
+#define CALL(f) do { status = f; if (status > FMISolverOK) goto TERMINATE; } while (0)
 
 
-typedef struct SolverImpl Solver;
+struct FMISolverImpl {
 
-struct SolverImpl {
-    FMIInstance* S;
     double time;
     size_t nx;
     double* x;
@@ -21,106 +16,99 @@ struct SolverImpl {
     size_t nz;
     double* z;
     double* prez;
-    FMIStatus(*get_x)(FMIInstance* instance, double x[], size_t nx);
-    FMIStatus(*set_x)(FMIInstance* instance, const double x[], size_t nx);
-    FMIStatus(*get_dx)(FMIInstance* instance, double dx[], size_t nx);
-    FMIStatus(*get_z)(FMIInstance* instance, double z[], size_t nz);
+
+    void* S;
+    FMISolverSetTime setTime;
+    FMISolverApplyInput applyInput;
+    FMISolverGetContinuousStates getContinuousStates;
+    FMISolverSetContinuousStates setContinuousStates;
+    FMISolverGetContinuousStateDerivatives getContinuousStateDerivatives;
+    FMISolverGetEventIndicators getEventIndicators;
+    FMISolverLogError logError;
+
 } SolverImpl_;
 
-Solver* FMIEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double tolerance, double startTime) {
+FMISolver* FMIEulerCreate(const FMISolverParameters* solverFunctions) {
 
-    (void)tolerance; // unused
+    FMISolverStatus status = FMISolverOK;
 
-    FMIStatus status = FMIOK;
+    FMISolver* solver = calloc(1, sizeof(SolverImpl_));
 
-    Solver* solver = NULL; 
-    
-    CALL(FMICalloc(&solver, 1, sizeof(SolverImpl_)));
-    
-    solver->S = S;
-    solver->time = startTime;
-
-    solver->nx = modelDescription->nContinuousStates;
-    CALL(FMICalloc(&solver->x, solver->nx, sizeof(double)));
-    CALL(FMICalloc(&solver->dx, solver->nx, sizeof(double)));
-
-    solver->nz   = modelDescription->nEventIndicators;
-    CALL(FMICalloc(&solver->z, solver->nx, sizeof(double)));
-    CALL(FMICalloc(&solver->prez, solver->nx, sizeof(double)));
-
-    if (S->fmiVersion == FMIVersion1) {
-        solver->get_x  = FMI1GetContinuousStates;
-        solver->set_x  = FMI1SetContinuousStates;
-        solver->get_dx = FMI1GetDerivatives;
-        solver->get_z  = FMI1GetEventIndicators;
-    } else if (S->fmiVersion == FMIVersion2) {
-        solver->get_x  = FMI2GetContinuousStates;
-        solver->set_x  = FMI2SetContinuousStates;
-        solver->get_dx = FMI2GetDerivatives;
-        solver->get_z  = FMI2GetEventIndicators;
-    } else if (S->fmiVersion == FMIVersion3) {
-        solver->get_x  = FMI3GetContinuousStates;
-        solver->set_x  = FMI3SetContinuousStates;
-        solver->get_dx = FMI3GetContinuousStateDerivatives;
-        solver->get_z  = FMI3GetEventIndicators;
-    } else {
+    if (!solver) {
+        // TODO: log error
         return NULL;
     }
 
+    solver->S = solverFunctions->modelInstance;
+    solver->time = solverFunctions->startTime;
+
+    solver->nx = solverFunctions->nx;
+    solver->nz = solverFunctions->nz;
+
+    solver->setTime                       = solverFunctions->setTime;
+    solver->applyInput                    = solverFunctions->applyInput;
+    solver->getContinuousStates           = solverFunctions->getContinuousStates;
+    solver->setContinuousStates           = solverFunctions->setContinuousStates;
+    solver->getContinuousStateDerivatives = solverFunctions->getContinuousStateDerivatives;
+    solver->getEventIndicators            = solverFunctions->getEventIndicators;
+    solver->logError                      = solverFunctions->logError;
+
+    if (solver->nx > 0) {
+        solver->x  = calloc(solver->nx, sizeof(double));
+        solver->dx = calloc(solver->nx, sizeof(double));
+    }
+
     if (solver->nz > 0) {
-        solver->get_z(solver->S, solver->prez, solver->nz);
+        solver->z    = calloc(solver->nz, sizeof(double));
+        solver->prez = calloc(solver->nz, sizeof(double));
     }
 
 TERMINATE:
 
-    if (status != FMIOK) {
+    if (status != FMISolverOK) {
         FMIEulerFree(solver);
     }
 
     return solver;
 }
 
-void FMIEulerFree(Solver* solver) {
+void FMIEulerFree(FMISolver* solver) {
 
     if (!solver) {
         return;
     }
 
-    FMIFree(&solver->x);
-    FMIFree(&solver->dx);
-    FMIFree(&solver->z);
-    FMIFree(&solver->prez);
+    if (solver->x)    free(solver->x);
+    if (solver->dx)   free(solver->dx);
+    if (solver->z)    free(solver->z);
+    if (solver->prez) free(solver->prez);
 
-    FMIFree(&solver);
+    free(solver);
 }
 
-FMIStatus FMIEulerStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent) {
+FMISolverStatus FMIEulerStep(FMISolver* solver, double nextTime, double* timeReached, bool* stateEvent) {
 
-    if (!solver) {
-        return FMIError;
-    }
-
-    FMIStatus status = FMIOK;
+    FMISolverStatus status = FMISolverOK;
 
     const double dt = nextTime - solver->time;
 
     if (solver->nx > 0) {
 
-        CALL(solver->get_x(solver->S, solver->x, solver->nx));
-        CALL(solver->get_dx(solver->S, solver->dx, solver->nx));
+        CALL(solver->setContinuousStates(solver->S, solver->x, solver->nx));
+        CALL(solver->getContinuousStateDerivatives(solver->S, solver->dx, solver->nx));
 
         for (size_t i = 0; i < solver->nx; i++) {
             solver->x[i] += dt * solver->dx[i];
         }
 
-        CALL(solver->set_x(solver->S, solver->x, solver->nx));
+        CALL(solver->setContinuousStates(solver->S, solver->x, solver->nx));
     }
 
     *stateEvent = false;
 
     if (solver->nz > 0) {
 
-        CALL(solver->get_z(solver->S, solver->z, solver->nz));
+        CALL(solver->getEventIndicators(solver->S, solver->z, solver->nz));
 
         for (size_t i = 0; i < solver->nz; i++) {
 
@@ -141,11 +129,14 @@ TERMINATE:
     return status;
 }
 
-FMIStatus FMIEulerReset(Solver* solver, double time) {
-    
-    if (!solver) {
-        return FMIError;
+FMISolverStatus FMIEulerReset(FMISolver* solver, double time) {
+
+    FMISolverStatus status = FMISolverOK;
+
+    if (solver->nz > 0) {
+        CALL(solver->getEventIndicators(solver->S, solver->prez, solver->nz));
     }
 
-    return solver->get_z(solver->S, solver->prez, solver->nz);
+TERMINATE:
+    return status;
 }

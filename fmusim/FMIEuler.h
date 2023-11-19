@@ -3,10 +3,10 @@
 #include "FMISolver.h"
 
 
-Solver* FMIEulerCreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double tolerance, double startTime);
+FMISolver* FMIEulerCreate(const FMISolverParameters* solverFunctions);
 
-void FMIEulerFree(Solver* solver);
+void FMIEulerFree(FMISolver* solver);
 
-FMIStatus FMIEulerStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent);
+FMISolverStatus FMIEulerStep(FMISolver* solver, double nextTime, double* timeReached, bool* stateEvent);
 
-FMIStatus FMIEulerReset(Solver* solver, double time);
+FMISolverStatus FMIEulerReset(FMISolver* solver, double time);

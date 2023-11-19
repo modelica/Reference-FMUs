@@ -25,7 +25,7 @@ FMIStatus simulateFMI1ME(
 
     fmi1Boolean resetSolver;
 
-    Solver* solver = NULL;
+    FMISolver* solver = NULL;
 
     size_t nSteps = 0;
     fmi1Real nextRegularPoint;
@@ -63,7 +63,24 @@ FMIStatus simulateFMI1ME(
         eventInfo.nextEventTime = INFINITY;
     }
 
-    solver = settings->solverCreate(S, modelDescription, input, settings->tolerance, time);
+    const FMISolverParameters solverFunctions = {
+        .modelInstance = S,
+        .input = input,
+        .startTime = time,
+        .tolerance = settings->tolerance,
+        .nx = modelDescription->nContinuousStates,
+        .nz = modelDescription->nEventIndicators,
+        .setTime = (FMISolverSetTime)FMI1SetTime,
+        .applyInput = (FMISolverApplyInput)FMIApplyInput,
+        .getContinuousStates = (FMISolverGetContinuousStates)FMI1GetContinuousStates,
+        .setContinuousStates = (FMISolverSetContinuousStates)FMI1SetContinuousStates,
+        .getNominalsOfContinuousStates = (FMISolverGetNominalsOfContinuousStates)FMI1GetNominalContinuousStates,
+        .getContinuousStateDerivatives = (FMISolverGetContinuousStateDerivatives)FMI1GetDerivatives,
+        .getEventIndicators = (FMISolverGetEventIndicators)FMI1GetEventIndicators,
+        .logError = (FMISolverLogError)FMILogError
+    };
+
+    solver = settings->solverCreate(&solverFunctions);
 
     if (!solver) {
         status = FMIError;

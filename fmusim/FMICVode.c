@@ -5,34 +5,19 @@
 
 #include "FMICVode.h"
 
-#include "FMI1.h"
-#include "FMI2.h"
-#include "FMI3.h"
 
-#include "FMIUtil.h"
+#define CALL_CVODE(f) do { flag = f; if (flag < 0) { status = FMISolverError; goto TERMINATE; } } while (0)
 
+#define CALL_MODEL(f) do { status = f; if (status > FMISolverOK) goto TERMINATE; } while (0)
 
-#define CALL_CVODE(f) do { flag = f; if (flag < 0) { status = FMIError; goto TERMINATE; } } while (0)
-
-#define CALL_FMI(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
-
-#define ASSERT_NOT_NULL(f) do { if (!f) { status = FMIError; goto TERMINATE; } } while (0)
-
-#define CALL(f) do { if (f > FMIOK) return -1; } while (0)
+#define ASSERT_NOT_NULL(f) do { if (!f) { status = FMISolverError; goto TERMINATE; } } while (0)
 
 
-typedef struct SolverImpl Solver;
+struct FMISolverImpl {
 
-struct SolverImpl {
-    FMIInstance* S;
-    const FMIModelDescription* modelDescription;
-    const FMUStaticInput* input;
     size_t nx;
     size_t nz;
-    FMIValueReference* xvr;
-    FMIValueReference* dxvr;
-    double* pre_x_temp;
-    double* x_temp;
+
     SUNContext sunctx;
     N_Vector x;
     realtype reltol;
@@ -40,201 +25,127 @@ struct SolverImpl {
     SUNMatrix A;
     SUNLinearSolver LS;
     void* cvode_mem;
-    FMIStatus (*set_time)    (FMIInstance* instance, double time);
-    FMIStatus (*get_x)       (FMIInstance* instance, double x[], size_t nx);
-    FMIStatus (*set_x)       (FMIInstance* instance, const double x[], size_t nx);
-    FMIStatus (*get_nominals)(FMIInstance* instance, double x[], size_t nx);
-    FMIStatus (*get_dx)      (FMIInstance* instance, double dx[], size_t nx);
-    FMIStatus (*get_z)       (FMIInstance* instance, double z[], size_t nz);
+
+    void* S;
+    const void* input;
+    FMISolverSetTime setTime;
+    FMISolverApplyInput applyInput;
+    FMISolverGetContinuousStates getContinuousStates;
+    FMISolverSetContinuousStates setContinuousStates;
+    FMISolverGetNominalsOfContinuousStates getNominalsOfContinuousStates;
+    FMISolverGetContinuousStateDerivatives getContinuousStateDerivatives;
+    FMISolverGetEventIndicators getEventIndicators;
+    FMISolverLogError logError;
+
 } SolverImpl_;
 
 // Right-hand-side function
 static int f(realtype t, N_Vector x, N_Vector ydot, void* user_data) {
 
-    Solver* solver = (Solver*)user_data;
+    FMISolver* solver = (FMISolver*)user_data;
 
-    FMIStatus status = FMIOK;
+    FMISolverStatus status = FMISolverOK;
 
-    CALL_FMI(solver->set_time(solver->S, t));
+    CALL_MODEL(solver->setTime(solver->S, t));
 
     if (solver->nx == 0) {
         NV_DATA_S(ydot)[0] = 0.0;
     } else {
-        CALL_FMI(solver->set_x(solver->S, NV_DATA_S(x), NV_LENGTH_S(x)));
-        CALL_FMI(solver->get_dx(solver->S, NV_DATA_S(ydot), NV_LENGTH_S(ydot)));
+        CALL_MODEL(solver->setContinuousStates(solver->S, NV_DATA_S(x), NV_LENGTH_S(x)));
+        CALL_MODEL(solver->getContinuousStateDerivatives(solver->S, NV_DATA_S(ydot), NV_LENGTH_S(ydot)));
     }
 
 TERMINATE:
-    return status > FMIOK ? CV_ERR_FAILURE : CV_SUCCESS;
+    return status > FMISolverOK ? CV_ERR_FAILURE : CV_SUCCESS;
 }
 
 // Root function
 static int g(realtype t, N_Vector x, realtype* gout, void* user_data) {
 
-    Solver* solver = (Solver*)user_data;
+    FMISolver* solver = (FMISolver*)user_data;
 
-    FMIStatus status = FMIOK;
+    FMISolverStatus status = FMISolverOK;
 
-    CALL_FMI(solver->set_time(solver->S, t));
+    CALL_MODEL(solver->setTime(solver->S, t));
 
-    CALL_FMI(FMIApplyInput(solver->S, solver->input, t, false, true, false));
+    CALL_MODEL(solver->applyInput(solver->S, solver->input, t, false, true, false));
 
     if (solver->nx > 0) {
-        CALL_FMI(solver->set_x(solver->S, NV_DATA_S(x), NV_LENGTH_S(x)));
+        CALL_MODEL(solver->setContinuousStates(solver->S, NV_DATA_S(x), NV_LENGTH_S(x)));
     }
     
-    CALL_FMI(solver->get_z(solver->S, gout, solver->nz));
+    CALL_MODEL(solver->getEventIndicators(solver->S, gout, solver->nz));
 
 TERMINATE:
-    return status > FMIOK ? CV_ERR_FAILURE : CV_SUCCESS;
+    return status > FMISolverOK ? CV_ERR_FAILURE : CV_SUCCESS;
 }
 
-// Jacobian function
-static int Jac(realtype t, N_Vector y, N_Vector fy, SUNMatrix J, void* user_data, N_Vector tmp1, N_Vector tmp2, N_Vector tmp3) {
-    
-    Solver* s = (Solver*)user_data;
-
-    FMIInstance* S = s->S;
-
-    // set the index as a the value for the continuous states
-    for (size_t i = 0; i < s->nx; i++) {
-        s->x_temp[i] = i;
-    }
-
-    // remember the original values of the continuous states and set indices
-    if (S->fmiVersion == FMIVersion2) {
-        CALL(FMI2GetContinuousStates(s->S, s->pre_x_temp, s->nx));
-        CALL(FMI2SetContinuousStates(s->S, s->x_temp, s->nx));
-    } else {
-        CALL(FMI3GetContinuousStates(s->S, s->pre_x_temp, s->nx));
-        CALL(FMI3SetContinuousStates(s->S, s->x_temp, s->nx));
-    }
-
-    // collect value references of the continuous states and derivatives
-    for (size_t i = 0; i < s->nx; i++) {
-        const FMIModelVariable* derivative = s->modelDescription->derivatives[i].modelVariable;
-        const FMIModelVariable* state = derivative->derivative;
-        double value;
-        if (S->fmiVersion == FMIVersion2) {
-            CALL(FMI2GetReal(s->S, &state->valueReference, 1, &value));
-        } else {
-            CALL(FMI3GetFloat64(s->S, &state->valueReference, 1, &value, 1));
-        }
-        const size_t j = (size_t)value;
-        s->xvr[j] = state->valueReference;
-        s->dxvr[j] = derivative->valueReference;
-    }
-
-    const double dvKnown = 1;
-
-    realtype** cols = SM_COLS_D(J);
-
-    // set the original values of the continuous states and construct the Jacobian columnwise
-    if (S->fmiVersion == FMIVersion2) {
-        CALL(FMI2SetContinuousStates(s->S, s->pre_x_temp, s->nx));
-        for (size_t i = 0; i < s->nx; i++) {
-            CALL(FMI2GetDirectionalDerivative(S, s->dxvr, s->nx, &s->xvr[i], 1, &dvKnown, cols[i]));
-        }
-    } else {
-        CALL(FMI3SetContinuousStates(s->S, s->pre_x_temp, s->nx));
-        for (size_t i = 0; i < s->nx; i++) {
-            CALL(FMI3GetDirectionalDerivative(S, s->dxvr, s->nx, &s->xvr[i], 1, &dvKnown, 1, cols[i], s->nx));
-        }
-    }
-
-    return 0;
-}
-
-Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescription, const FMUStaticInput* input, double tolerance, double startTime) {
+FMISolver* FMICVodeCreate(const FMISolverParameters* solverFunctions) {
 
     int flag = CV_SUCCESS;
-    FMIStatus status = FMIOK;
+    FMISolverStatus status = FMISolverOK;
 
-    Solver* solver = NULL;
+    FMISolver* solver = calloc(1, sizeof(SolverImpl_));
 
-    CALL_FMI(FMICalloc(&solver, 1, sizeof(SolverImpl_)));
-
-    if (tolerance <= 0) {
-        tolerance = 1e-4; // default tolerance
-    }
-
-    solver->modelDescription = modelDescription;
-
-    solver->reltol = tolerance;
-
-    solver->S = S;
-    solver->input = input;
-    
-    solver->nx = modelDescription->nContinuousStates;
-    solver->nz = modelDescription->nEventIndicators;
-
-    CALL_FMI(FMICalloc(&solver->xvr, solver->nx, sizeof(FMIValueReference)));
-    CALL_FMI(FMICalloc(&solver->dxvr, solver->nx, sizeof(FMIValueReference)));
-    CALL_FMI(FMICalloc(&solver->pre_x_temp, solver->nx, sizeof(double)));
-    CALL_FMI(FMICalloc(&solver->x_temp, solver->nx, sizeof(double)));
-
-    if (S->fmiVersion == FMIVersion1) {
-        solver->set_time     = FMI1SetTime;
-        solver->get_x        = FMI1GetContinuousStates;
-        solver->set_x        = FMI1SetContinuousStates;
-        solver->get_dx       = FMI1GetDerivatives;
-        solver->get_nominals = FMI1GetNominalContinuousStates;
-        solver->get_z        = FMI1GetEventIndicators;
-    } else if (S->fmiVersion == FMIVersion2) {
-        solver->set_time     = FMI2SetTime;
-        solver->get_x        = FMI2GetContinuousStates;
-        solver->set_x        = FMI2SetContinuousStates;
-        solver->get_dx       = FMI2GetDerivatives;
-        solver->get_nominals = FMI2GetNominalsOfContinuousStates;
-        solver->get_z        = FMI2GetEventIndicators;
-    } else if (S->fmiVersion == FMIVersion3) {
-        solver->set_time     = FMI3SetTime;
-        solver->get_x        = FMI3GetContinuousStates;
-        solver->set_x        = FMI3SetContinuousStates;
-        solver->get_dx       = FMI3GetContinuousStateDerivatives;
-        solver->get_nominals = FMI3GetNominalsOfContinuousStates;
-        solver->get_z        = FMI3GetEventIndicators;
-    } else {
+    if (!solver) {
+        solverFunctions->logError("Failed to allocate memory for solver.");
         return NULL;
     }
 
+    if (solverFunctions->tolerance <= 0) {
+        solver->reltol = 1e-4; // default tolerance
+    } else {
+        solver->reltol = solverFunctions->tolerance;
+    }
+
+    solver->S     = solverFunctions->modelInstance;
+    solver->input = solverFunctions->input;
+    
+    solver->nx = solverFunctions->nx;
+    solver->nz = solverFunctions->nz;
+
+    solver->setTime                       = solverFunctions->setTime;
+    solver->applyInput                    = solverFunctions->applyInput;
+    solver->getContinuousStates           = solverFunctions->getContinuousStates;
+    solver->setContinuousStates           = solverFunctions->setContinuousStates;
+    solver->getNominalsOfContinuousStates = solverFunctions->getNominalsOfContinuousStates;
+    solver->getContinuousStateDerivatives = solverFunctions->getContinuousStateDerivatives;
+    solver->getEventIndicators            = solverFunctions->getEventIndicators;
+    solver->logError                      = solverFunctions->logError;
+
     CALL_CVODE(SUNContext_Create(NULL, &solver->sunctx));
-
-    // insert a dummy state if nx == 0
-    solver->x = N_VNew_Serial(solver->nx > 0 ? solver->nx : 1, solver->sunctx);
-    ASSERT_NOT_NULL(solver->x);
-
-    if (solver->nx > 0) {
-        CALL_FMI(solver->get_x(solver->S, NV_DATA_S(solver->x), solver->nx));
-    } else {
-        NV_DATA_S(solver->x)[0] = 1.0;
-    }
-
-    solver->abstol = N_VNew_Serial(NV_LENGTH_S(solver->x), solver->sunctx);
-    ASSERT_NOT_NULL(solver->abstol);
-
-    if (solver->nx > 0) {
-        CALL_FMI(solver->get_nominals(solver->S, NV_DATA_S(solver->abstol), solver->nx));
-    } else {
-        NV_DATA_S(solver->abstol)[0] = 1;
-    }
-
-    for (size_t i = 0; i < NV_LENGTH_S(solver->x); i++) {
-        NV_DATA_S(solver->abstol)[i] *= tolerance;
-    }
 
     solver->cvode_mem = CVodeCreate(CV_BDF, solver->sunctx);
     ASSERT_NOT_NULL(solver->cvode_mem);
 
     CALL_CVODE(CVodeSetUserData(solver->cvode_mem, solver));
 
-    CALL_CVODE(CVodeInit(solver->cvode_mem, f, startTime, solver->x));
+    // insert a dummy state if nx == 0
+    solver->x = N_VNew_Serial(solver->nx > 0 ? solver->nx : 1, solver->sunctx);
+    ASSERT_NOT_NULL(solver->x);
 
-    CALL_CVODE(CVodeSVtolerances(solver->cvode_mem, tolerance, solver->abstol));
-
-    if (solver->nz > 0) {
-        CALL_CVODE(CVodeRootInit(solver->cvode_mem, (int)solver->nz, g));
+    if (solver->nx > 0) {
+        CALL_MODEL(solver->getContinuousStates(solver->S, NV_DATA_S(solver->x), solver->nx));
+    } else {
+        NV_Ith_S(solver->x, 0) = 1;
     }
+
+    solver->abstol = N_VNew_Serial(NV_LENGTH_S(solver->x), solver->sunctx);
+    ASSERT_NOT_NULL(solver->abstol);
+
+    if (solver->nx > 0) {
+        CALL_MODEL(solver->getNominalsOfContinuousStates(solver->S, NV_DATA_S(solver->abstol), solver->nx));
+    } else {
+        NV_Ith_S(solver->abstol, 0) = 1;
+    }
+
+    for (size_t i = 0; i < NV_LENGTH_S(solver->x); i++) {
+        NV_Ith_S(solver->abstol, i) *= solver->reltol;
+    }
+
+    CALL_CVODE(CVodeInit(solver->cvode_mem, f, solverFunctions->startTime, solver->x));
+
+    CALL_CVODE(CVodeSVtolerances(solver->cvode_mem, solver->reltol, solver->abstol));
 
     solver->A = SUNDenseMatrix(NV_LENGTH_S(solver->x), NV_LENGTH_S(solver->x), solver->sunctx);
     ASSERT_NOT_NULL(solver->A);
@@ -244,15 +155,13 @@ Solver* FMICVodeCreate(FMIInstance* S, const FMIModelDescription* modelDescripti
 
     CALL_CVODE(CVodeSetLinearSolver(solver->cvode_mem, solver->LS, solver->A));
 
-    //if (modelDescription->modelExchange->providesDirectionalDerivatives) {
-    //    CALL_CVODE(CVodeSetJacFn(solver->cvode_mem, Jac));
-    //}
+    CALL_CVODE(CVodeRootInit(solver->cvode_mem, (int)solver->nz, g));
 
 TERMINATE:
 
-    if (status > FMIOK) {
+    if (status > FMISolverOK) {
 
-        FMILogError("Failed to create CVode.\n");
+        solver->logError("Failed to create CVode.\n");
 
         FMICVodeFree(solver);
 
@@ -262,7 +171,7 @@ TERMINATE:
     return solver;
 }
 
-void FMICVodeFree(Solver* solver) {
+void FMICVodeFree(FMISolver* solver) {
 
     if (!solver) return;
 
@@ -273,25 +182,20 @@ void FMICVodeFree(Solver* solver) {
     if (solver->A)         SUNMatDestroy(solver->A);
     if (solver->sunctx)    SUNContext_Free(&solver->sunctx);
 
-    FMIFree(&solver->xvr);
-    FMIFree(&solver->dxvr);
-    FMIFree(&solver->pre_x_temp);
-    FMIFree(&solver->x_temp);
-
-    FMIFree(&solver);
+    free(solver);
 }
 
-FMIStatus FMICVodeStep(Solver* solver, double nextTime, double* timeReached, bool* stateEvent) {
+FMISolverStatus FMICVodeStep(FMISolver* solver, double nextTime, double* timeReached, bool* stateEvent) {
 
     if (!solver) {
-        return FMIError;
+        return FMISolverError;
     }
 
     int flag = CV_SUCCESS;
-    FMIStatus status = FMIOK;
+    FMISolverStatus status = FMISolverOK;
 
     if (solver->nx > 0) {
-        CALL_FMI(solver->get_x(solver->S, NV_DATA_S(solver->x), NV_LENGTH_S(solver->x)));
+        CALL_MODEL(solver->getContinuousStates(solver->S, NV_DATA_S(solver->x), NV_LENGTH_S(solver->x)));
     }
 
     flag = CVode(solver->cvode_mem, nextTime, solver->x, timeReached, CV_NORMAL);
@@ -299,35 +203,35 @@ FMIStatus FMICVodeStep(Solver* solver, double nextTime, double* timeReached, boo
     *stateEvent = flag == CV_ROOT_RETURN;
 
     if (solver->nx > 0) {
-        CALL_FMI(solver->set_x(solver->S, NV_DATA_S(solver->x), NV_LENGTH_S(solver->x)));
+        CALL_MODEL(solver->setContinuousStates(solver->S, NV_DATA_S(solver->x), NV_LENGTH_S(solver->x)));
     }
 
     if (flag < 0) {
-        status = FMIError;
+        status = FMISolverError;
     }
 
 TERMINATE:
     return status;
 }
 
-FMIStatus FMICVodeReset(Solver* solver, double time) {
+FMISolverStatus FMICVodeReset(FMISolver* solver, double time) {
 
-    FMIStatus status = FMIOK;
+    FMISolverStatus status = FMISolverOK;
 
     int flag = CV_SUCCESS;
 
     if (!solver) {
-        return FMIError;
+        return FMISolverError;
     }
 
     if (solver->nx > 0) {
 
-        CALL_FMI(solver->get_x(solver->S, NV_DATA_S(solver->x), NV_LENGTH_S(solver->x)));
-        
-        CALL_FMI(solver->get_nominals(solver->S, NV_DATA_S(solver->abstol), solver->nx));
+        CALL_MODEL(solver->getContinuousStates(solver->S, NV_DATA_S(solver->x), NV_LENGTH_S(solver->x)));
+
+        CALL_MODEL(solver->getNominalsOfContinuousStates(solver->S, NV_DATA_S(solver->abstol), solver->nx));
 
         for (size_t i = 0; i < NV_LENGTH_S(solver->x); i++) {
-            NV_DATA_S(solver->abstol)[i] *= solver->reltol;
+            NV_Ith_S(solver->abstol, i) *= solver->reltol;
         }
     }
 
