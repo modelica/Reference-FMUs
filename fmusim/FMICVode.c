@@ -161,7 +161,7 @@ TERMINATE:
 
     if (status > FMISolverOK) {
 
-        FMILogError("Failed to create CVode.\n");
+        solver->logError("Failed to create CVode.\n");
 
         FMICVodeFree(solver);
 
