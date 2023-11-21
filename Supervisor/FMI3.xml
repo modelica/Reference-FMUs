@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  fmiVersion="3.0-beta.3"
+  modelName="Supervisor"
+  description="Represents the supervisor."
+  instantiationToken="{64202d14-799a-4379-9fb3-79354aec17b2}">
+
+  <ModelExchange
+    modelIdentifier="Supervisor"
+    canGetAndSetFMUState="true"
+    canSerializeFMUState="true"/>
+
+  <CoSimulation
+    modelIdentifier="Supervisor"
+    canGetAndSetFMUState="true"
+    canSerializeFMUState="true"
+    canHandleVariableCommunicationStepSize="true"
+    providesIntermediateUpdate="true"
+    canReturnEarlyAfterIntermediateUpdate="true"
+    fixedInternalStepSize="1e-2"
+    hasEventMode="true"/>
+
+  <LogCategories>
+    <Category name="logEvents" description="Log events"/>
+    <Category name="logStatusError" description="Log error messages"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="10" stepSize="1e-2"/>
+
+  <ModelVariables>
+    <Float64 name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time"/>
+    <Clock name="s" valueReference="1" causality="output" intervalVariability="triggered"/>
+    <Float64 name="x" valueReference="2" causality="input" variability="continuous" initial="exact" start="0"/>
+    <Float64 name="as" valueReference="3" causality="output" variability="discrete" initial="exact" start="1" clocks="1"/>
+  </ModelVariables>
+
+  <ModelStructure>
+    <Output valueReference="1"/>
+    <Output valueReference="3"/>
+  </ModelStructure>
+
+</fmiModelDescription>
