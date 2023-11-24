@@ -54,8 +54,8 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 	// data
 	while (row = CsvReadNextRow(handle)) {
 
-		CALL(FMIRealloc(&input->time,    (input->nRows + 1) * sizeof(double)));
-		CALL(FMIRealloc(&input->nValues, (input->nRows + 1) * input->nVariables * sizeof(size_t)));
+		CALL(FMIRealloc((void**)&input->time,    (input->nRows + 1) * sizeof(double)));
+		CALL(FMIRealloc((void**)&input->nValues, (input->nRows + 1) * input->nVariables * sizeof(size_t)));
 		CALL(FMIRealloc((void**)&input->values, (input->nRows + 1) * input->nVariables * sizeof(void*)));
 		
 		const size_t index = input->nRows * input->nVariables;

@@ -423,13 +423,7 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
     // if values were set and no fmi3GetXXX triggered update before,
     // ensure calculated values are updated now
     if (S->isDirtyValues) {
-
-        status = (fmi3Status)calculateValues(S);
-
-        if (status > fmi3Warning) {
-            return status;
-        }
-
+        CALL(calculateValues(S));
         S->isDirtyValues = false;
     }
 
