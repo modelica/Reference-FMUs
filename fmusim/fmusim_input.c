@@ -108,10 +108,10 @@ void FMIFreeInput(FMUStaticInput* input) {
 	}
 
 	FMIFree((void**)&input->variables);
-	FMIFree(&input->nValues);
-	FMIFree(&input->buffer);
+	FMIFree((void**)&input->nValues);
+	FMIFree((void**)&input->buffer);
 
-	FMIFree(&input);
+	FMIFree((void**)&input);
 }
 
 static size_t FMISizeOf(FMIVariableType type, FMIVersion fmiVersion) {

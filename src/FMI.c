@@ -145,15 +145,15 @@ void FMIFreeInstance(FMIInstance *instance) {
         instance->libraryHandle = NULL;
     }
 
-    FMIFree(&instance->logMessageBuffer);
+    FMIFree((void**)&instance->logMessageBuffer);
 
-    FMIFree(&instance->name);
+    FMIFree((void**)&instance->name);
 
-    FMIFree(&instance->fmi1Functions);
-    FMIFree(&instance->fmi2Functions);
-    FMIFree(&instance->fmi3Functions);
+    FMIFree((void**)&instance->fmi1Functions);
+    FMIFree((void**)&instance->fmi2Functions);
+    FMIFree((void**)&instance->fmi3Functions);
 
-    FMIFree(&instance);
+    FMIFree((void**)&instance);
 }
 
 void FMIClearLogMessageBuffer(FMIInstance* instance) {
@@ -179,7 +179,7 @@ void FMIAppendToLogMessageBuffer(FMIInstance* instance, const char* format, ...)
             instance->logMessageBufferSize *= 2;
         }
 
-        if (FMIRealloc(&instance->logMessageBuffer, instance->logMessageBufferSize) != FMIOK) {
+        if (FMIRealloc((void**)&instance->logMessageBuffer, instance->logMessageBufferSize) != FMIOK) {
             return;
         }
 
@@ -292,7 +292,7 @@ void FMIAppendArrayToLogMessageBuffer(FMIInstance* instance, const void* values,
                 instance->logMessageBufferSize *= 2;
             }
 
-            if (FMIRealloc(&instance->logMessageBuffer, instance->logMessageBufferSize) != FMIOK) {
+            if (FMIRealloc((void**)&instance->logMessageBuffer, instance->logMessageBufferSize) != FMIOK) {
                 return;
             }
 

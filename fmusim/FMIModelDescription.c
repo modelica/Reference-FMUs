@@ -207,7 +207,7 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 TERMINATE:
 
     if (status != FMIOK) {
-        FMIFree(&modelDescription);
+        FMIFree((void**)&modelDescription);
     }
 
     return modelDescription;
