@@ -47,8 +47,8 @@ def build_fmus(fmi_version, fmi_type=None):
         '..'
     ]
 
-    subprocess.call(['cmake'] + cmake_options, cwd=build_dir)
-    subprocess.call(['cmake', '--build', '.', '--target', 'install', '--config', 'Release'], cwd=build_dir)
+    subprocess.check_call(['cmake'] + cmake_options, cwd=build_dir)
+    subprocess.check_call(['cmake', '--build', '.', '--target', 'install', '--config', 'Release'], cwd=build_dir)
 
     fmus_dir = parent_dir / 'fmus' / f'{fmi_version}.0'
 
