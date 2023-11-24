@@ -259,7 +259,7 @@ fmi3Status fmi3SetDebugLogging(fmi3Instance instance,
     CALL(setDebugLogging(S, loggingOn, nCategories, categories));
 
 TERMINATE:
-    return status;
+    return (fmi3Status)status;
 }
 
 fmi3Instance fmi3InstantiateModelExchange(
@@ -413,7 +413,7 @@ fmi3Status fmi3EnterInitializationMode(fmi3Instance instance,
     S->state = InitializationMode;
 
 TERMINATE:
-    return status;
+    return (fmi3Status)status;
 }
 
 fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
@@ -1445,7 +1445,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
     *lastSuccessfulTime = S->time;
 
 TERMINATE:
-    return status;
+    return (fmi3Status)status;
 }
 
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
