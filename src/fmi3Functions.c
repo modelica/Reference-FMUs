@@ -1181,7 +1181,7 @@ fmi3Status fmi3SetContinuousStates(fmi3Instance instance,
 
     ASSERT_NOT_NULL(continuousStates);
 
-    return setContinuousStates(S, continuousStates, nContinuousStates);
+    CALL(setContinuousStates(S, continuousStates, nContinuousStates));
 #else
     UNUSED(continuousStates);
     UNUSED(nContinuousStates);
@@ -1206,7 +1206,7 @@ fmi3Status fmi3GetContinuousStateDerivatives(fmi3Instance instance,
     if (nullPointer(S, "fmi3GetContinuousStateDerivatives", "derivatives[]", derivatives))
         return fmi3Error;
 
-    return getDerivatives(S, derivatives, nContinuousStates);
+    CALL(getDerivatives(S, derivatives, nContinuousStates));
 #else
     UNUSED(derivatives);
     UNUSED(nContinuousStates);
@@ -1256,7 +1256,7 @@ fmi3Status fmi3GetContinuousStates(fmi3Instance instance,
     if (nullPointer(S, "fmi3GetContinuousStates", "continuousStates[]", continuousStates))
         return fmi3Error;
 
-    return getContinuousStates(S, continuousStates, nContinuousStates);
+    CALL(getContinuousStates(S, continuousStates, nContinuousStates));
 #else
     UNUSED(continuousStates);
     UNUSED(nContinuousStates);
