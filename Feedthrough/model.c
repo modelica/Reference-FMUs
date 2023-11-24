@@ -686,9 +686,10 @@ Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], co
     return OK;
 }
 
-void eventUpdate(ModelInstance *comp) {
+Status eventUpdate(ModelInstance *comp) {
     comp->valuesOfContinuousStatesChanged   = false;
     comp->nominalsOfContinuousStatesChanged = false;
     comp->terminateSimulation               = false;
     comp->nextEventTimeDefined              = false;
+    return OK;
 }

@@ -454,7 +454,7 @@ fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {
 
     ASSERT_STATE(GetFMUstate);
 
-    *FMUstate = getFMUState(S);
+    getFMUState(S, FMUstate);
 
     return fmi2OK;
 }

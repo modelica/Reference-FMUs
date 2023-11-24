@@ -138,9 +138,12 @@ Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[]
     }
 }
 
-void eventUpdate(ModelInstance *comp) {
+Status eventUpdate(ModelInstance *comp) {
+
     comp->valuesOfContinuousStatesChanged   = false;
     comp->nominalsOfContinuousStatesChanged = false;
     comp->terminateSimulation               = false;
     comp->nextEventTimeDefined              = false;
+
+    return OK;
 }

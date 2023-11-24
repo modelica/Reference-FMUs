@@ -67,18 +67,21 @@ size_t getNumberOfContinuousStates(ModelInstance* comp) {
     return 1;
 }
 
-void getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
+Status getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
     UNUSED(nx);
     x[0] = M(x);
+    return OK;
 }
 
-void setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
+Status setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
     UNUSED(nx);
     M(x) = x[0];
+    return OK;
 }
 
-void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
+Status getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
     UNUSED(nx);
     calculateValues(comp);
     dx[0] = M(der_x);
+    return OK;
 }

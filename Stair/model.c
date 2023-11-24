@@ -46,9 +46,9 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t
     }
 }
 
-void eventUpdate(ModelInstance *comp) {
+Status eventUpdate(ModelInstance *comp) {
 
-    double epsilon = (1.0 + fabs(comp->time)) * DBL_EPSILON;
+    const double epsilon = (1.0 + fabs(comp->time)) * DBL_EPSILON;
 
     if (comp->nextEventTimeDefined && comp->time + epsilon >= comp->nextEventTime) {
         M(counter)++;
@@ -59,4 +59,6 @@ void eventUpdate(ModelInstance *comp) {
     comp->nominalsOfContinuousStatesChanged = false;
     comp->terminateSimulation               = M(counter) >= 10;
     comp->nextEventTimeDefined              = true;
+
+    return OK;
 }

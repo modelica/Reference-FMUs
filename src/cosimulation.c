@@ -15,6 +15,8 @@
 #define strdup _strdup
 #endif
 
+#define CALL(f) do { const Status status = f; if (status != OK) return status; } while (false)
+
 
 ModelInstance *createModelInstance(
     loggerType cbLogger,
@@ -122,34 +124,57 @@ void freeModelInstance(ModelInstance *comp) {
     free(comp);
 }
 
-void exitInitializationMode(ModelInstance* comp) {
+static Status s_reallocate(ModelInstance* comp, void** memory, size_t size) {
 
-#if !defined(HAS_EVENT_INDICATORS) && !defined(HAS_CONTINUOUS_STATES)
-    UNUSED(comp);
-#endif
+    if (size == 0) {
+        if (*memory) {
+            free(*memory);
+        }
+        *memory = NULL;
+        return OK;
+    }
+
+    void* temp = realloc(*memory, size);
+
+    if (!temp) {
+        logError(comp, "Failed to allocate memory.");
+        return Error;
+    }
+
+    *memory = temp;
+
+    return OK;
+}
+
+Status configurate(ModelInstance* comp) {
+
+    (void)comp;
 
 #ifdef HAS_EVENT_INDICATORS
     comp->nz = getNumberOfEventIndicators(comp);
 
     if (comp->nz > 0) {
-        comp->prez = calloc(comp->nz, sizeof(double));
-        comp->z    = calloc(comp->nz, sizeof(double));
+        CALL(s_reallocate(comp, (void**)& comp->prez, comp->nz * sizeof(double)));
+        CALL(s_reallocate(comp, (void**)&comp->z, comp->nz * sizeof(double)));
     }
 
-    getEventIndicators(comp, comp->prez, comp->nz);
+    CALL(getEventIndicators(comp, comp->prez, comp->nz));
 #endif
 
 #ifdef HAS_CONTINUOUS_STATES
     comp->nx = getNumberOfContinuousStates(comp);
 
     if (comp->nx > 0) {
-        comp->x  = calloc(comp->nx, sizeof(double));
-        comp->dx = calloc(comp->nx, sizeof(double));
+        CALL(s_reallocate(comp, (void**)&comp->x, comp->nx * sizeof(double)));
+        CALL(s_reallocate(comp, (void**)&comp->dx, comp->nx * sizeof(double)));
     }
 #endif
+
+    return OK;
 }
 
-void reset(ModelInstance* comp) {
+Status reset(ModelInstance* comp) {
+
     comp->state = Instantiated;
     comp->startTime = 0.0;
     comp->time = 0.0;
@@ -157,6 +182,8 @@ void reset(ModelInstance* comp) {
     comp->status = OK;
     setStartValues(comp);
     comp->isDirtyValues = true;
+
+    return OK;
 }
 
 bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected) {
@@ -509,18 +536,16 @@ Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueRe
 }
 #endif
 
-void* getFMUState(ModelInstance* comp) {
+Status getFMUState(ModelInstance* comp, void** FMUState) {
 
-    ModelInstance* fmuState = (ModelInstance*)calloc(1, sizeof(ModelInstance));
+    CALL(s_reallocate(comp, FMUState, sizeof(ModelInstance)));
 
-    if (fmuState) {
-        memcpy(fmuState, comp, sizeof(ModelInstance));
-    }
+    memcpy(*FMUState, comp, sizeof(ModelInstance));
 
-    return fmuState;
+    return OK;
 }
 
-void setFMUState(ModelInstance* comp, void* FMUState) {
+Status setFMUState(ModelInstance* comp, void* FMUState) {
 
     ModelInstance* s = (ModelInstance*)FMUState;
 
@@ -542,22 +567,24 @@ void setFMUState(ModelInstance* comp, void* FMUState) {
         memcpy(comp->z, s->z, s->nz * sizeof(double));
     }
     comp->nSteps = s->nSteps;
+
+    return OK;
 }
 
-void doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
+Status doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
 
 #ifdef HAS_CONTINUOUS_STATES
     if (comp->nx > 0) {
 
-        getContinuousStates(comp, comp->x, comp->nx);
-        getDerivatives(comp, comp->dx, comp->nx);
+        CALL(getContinuousStates(comp, comp->x, comp->nx));
+        CALL(getDerivatives(comp, comp->dx, comp->nx));
 
         // forward Euler step
         for (size_t i = 0; i < comp->nx; i++) {
             comp->x[i] += FIXED_SOLVER_STEP * comp->dx[i];
         }
 
-        setContinuousStates(comp, comp->x, comp->nx);
+        CALL(setContinuousStates(comp, comp->x, comp->nx));
     }
 #endif
 
@@ -571,7 +598,7 @@ void doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
 #ifdef HAS_EVENT_INDICATORS
     if (comp->nz > 0) {
 
-        getEventIndicators(comp, comp->z, comp->nz);
+        CALL(getEventIndicators(comp, comp->z, comp->nz));
 
         // check for zero-crossings
         for (size_t i = 0; i < comp->nz; i++) {
@@ -605,4 +632,6 @@ void doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
             &earlyReturnRequested,      // earlyReturnRequested
             &earlyReturnTime);          // earlyReturnTime
     }
+
+    return OK;
 }
