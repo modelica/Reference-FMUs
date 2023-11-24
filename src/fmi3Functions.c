@@ -223,7 +223,7 @@ do { \
 
 #define ASSERT_STATE(F) \
 Status status = OK; \
-if (!instance) return Error; \
+if (!instance) return fmi3Error; \
 ModelInstance *S = (ModelInstance *)instance; \
 if (!allowedState(S, MASK_fmi3##F, #F)) CALL(Error);
 
