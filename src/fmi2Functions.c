@@ -26,7 +26,7 @@
 do { \
     if (!p) { \
         logError(S, "Argument %s must not be NULL.", xstr(p)); \
-        S->state = modelError; \
+        S->state = Terminated; \
         return (fmi2Status)Error; \
     } \
 } while (0)
@@ -109,17 +109,17 @@ do { \
 #define MASK_fmi2GetTypesPlatform        (StartAndEnd | Instantiated | InitializationMode \
 | EventMode | ContinuousTimeMode \
 | StepComplete | StepInProgress | StepFailed | StepCanceled \
-| Terminated | modelError)
+| Terminated)
 #define MASK_fmi2GetVersion              MASK_fmi2GetTypesPlatform
 #define MASK_fmi2SetDebugLogging         (Instantiated | InitializationMode \
 | EventMode | ContinuousTimeMode \
 | StepComplete | StepInProgress | StepFailed | StepCanceled \
-| Terminated | modelError)
+| Terminated)
 #define MASK_fmi2Instantiate             (StartAndEnd)
 #define MASK_fmi2FreeInstance            (Instantiated | InitializationMode \
 | EventMode | ContinuousTimeMode \
 | StepComplete | StepFailed | StepCanceled \
-| Terminated | modelError)
+| Terminated)
 #define MASK_fmi2SetupExperiment         Instantiated
 #define MASK_fmi2EnterInitializationMode Instantiated
 #define MASK_fmi2ExitInitializationMode  InitializationMode
@@ -129,7 +129,7 @@ do { \
 #define MASK_fmi2GetReal                 (InitializationMode \
 | EventMode | ContinuousTimeMode \
 | StepComplete | StepFailed | StepCanceled \
-| Terminated | modelError)
+| Terminated)
 #define MASK_fmi2GetInteger              MASK_fmi2GetReal
 #define MASK_fmi2GetBoolean              MASK_fmi2GetReal
 #define MASK_fmi2GetString               MASK_fmi2GetReal
@@ -150,7 +150,7 @@ do { \
 #define MASK_fmi2GetDirectionalDerivative (InitializationMode \
 | EventMode | ContinuousTimeMode \
 | StepComplete | StepFailed | StepCanceled \
-| Terminated | modelError)
+| Terminated)
 
 // ---------------------------------------------------------------------------
 // Function calls allowed state masks for Model-exchange
@@ -163,13 +163,13 @@ do { \
 #define MASK_fmi2SetContinuousStates     ContinuousTimeMode
 #define MASK_fmi2GetEventIndicators      (InitializationMode \
 | EventMode | ContinuousTimeMode \
-| Terminated | modelError)
+| Terminated)
 #define MASK_fmi2GetContinuousStates     MASK_fmi2GetEventIndicators
 #define MASK_fmi2GetDerivatives          (EventMode | ContinuousTimeMode \
-| Terminated | modelError)
+| Terminated)
 #define MASK_fmi2GetNominalsOfContinuousStates ( Instantiated \
 | EventMode | ContinuousTimeMode \
-| Terminated | modelError)
+| Terminated)
 
 // ---------------------------------------------------------------------------
 // Function calls allowed state masks for Co-simulation
@@ -626,14 +626,14 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
 
     if (communicationStepSize <= 0) {
         logError(S, "Communication step size must be > 0 but was %g.", communicationStepSize);
-        S->state = modelError;
+        S->state = Terminated;
         return fmi2Error;
     }
 
     if (currentCommunicationPoint + communicationStepSize > S->stopTime + EPSILON) {
         logError(S, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
             currentCommunicationPoint, communicationStepSize, S->stopTime);
-        S->state = modelError;
+        S->state = Terminated;
         return fmi2Error;
     }
 

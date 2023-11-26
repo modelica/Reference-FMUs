@@ -189,7 +189,7 @@ Status reset(ModelInstance* comp) {
 bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected) {
 
     if (actual != expected) {
-        comp->state = modelError;
+        comp->state = Terminated;
         logError(comp, "%s: Invalid argument %s = %d. Expected %d.", f, arg, actual, expected);
         return true;
     }
@@ -221,7 +221,7 @@ bool invalidState(ModelInstance *comp, const char *f, int statesExpected) {
 bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void *p) {
 
     if (!p) {
-        comp->state = modelError;
+        comp->state = Terminated;
         logError(comp, "%s: Invalid argument %s = NULL.", f, arg);
         return true;
     }

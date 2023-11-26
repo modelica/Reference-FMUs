@@ -41,8 +41,6 @@ typedef enum {
     StepCanceled       = 1<<8,
 
     Terminated         = 1<<9,
-    modelError         = 1<<10,
-    modelFatal         = 1<<11,
 } ModelState;
 
 #else
@@ -60,8 +58,6 @@ typedef enum {
     ReconfigurationMode    = 1 << 9,
     IntermediateUpdateMode = 1 << 10,
     Terminated             = 1 << 11,
-    modelError             = 1 << 12,
-    modelFatal             = 1 << 13,
 } ModelState;
 
 #endif
