@@ -120,7 +120,7 @@ Status getOutputDerivative(ModelInstance *comp, ValueReference valueReference, i
     }
 }
 
-void eventUpdate(ModelInstance *comp) {
+Status eventUpdate(ModelInstance *comp) {
 
     if (M(h) <= 0 && M(v) < 0) {
 
@@ -141,37 +141,55 @@ void eventUpdate(ModelInstance *comp) {
     comp->nominalsOfContinuousStatesChanged = false;
     comp->terminateSimulation  = false;
     comp->nextEventTimeDefined = false;
+
+    return OK;
 }
 
 size_t getNumberOfEventIndicators(ModelInstance* comp) {
+
     UNUSED(comp);
+
     return 1;
 }
 
 size_t getNumberOfContinuousStates(ModelInstance* comp) {
+
     UNUSED(comp);
+
     return 2;
 }
 
-void getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
+Status getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
+
     UNUSED(nx);
+
     x[0] = M(h);
     x[1] = M(v);
+
+    return OK;
 }
 
-void setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
+Status setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
+
     UNUSED(nx);
+
     M(h) = x[0];
     M(v) = x[1];
+
+    return OK;
 }
 
-void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
+Status getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
+
     UNUSED(nx);
+
     dx[0] = M(v);
     dx[1] = M(g);
+
+    return OK;
 }
 
-void getEventIndicators(ModelInstance *comp, double z[], size_t nz) {
+Status getEventIndicators(ModelInstance *comp, double z[], size_t nz) {
 
     UNUSED(nz);
 
@@ -181,4 +199,6 @@ void getEventIndicators(ModelInstance *comp, double z[], size_t nz) {
     } else {
         z[0] = M(h);
     }
+
+    return OK;
 }

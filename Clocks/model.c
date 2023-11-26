@@ -153,8 +153,9 @@ Status calculateValues(ModelInstance *comp) {
     return OK;
 }
 
-void eventUpdate(ModelInstance *comp) {
+Status eventUpdate(ModelInstance *comp) {
     UNUSED(comp);
+    return OK;
 }
 
 Status activateClock(ModelInstance* comp, ValueReference vr) {

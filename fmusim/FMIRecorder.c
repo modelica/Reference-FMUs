@@ -32,7 +32,7 @@ FMIRecorder* FMICreateRecorder(size_t nVariables, const FMIModelVariable* variab
 TERMINATE:
 
     if (status != FMIOK) {
-        FMIFree(&result);
+        FMIFree((void**)&result);
     }
 
     return result;

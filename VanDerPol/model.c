@@ -79,24 +79,27 @@ size_t getNumberOfContinuousStates(ModelInstance* comp) {
     return 2;
 }
 
-void getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
+Status getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
     UNUSED(nx);
     x[0] = M(x0);
     x[1] = M(x1);
+    return OK;
 }
 
-void setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
+Status setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
     UNUSED(nx);
     M(x0) = x[0];
     M(x1) = x[1];
     calculateValues(comp);
+    return OK;
 }
 
-void getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
+Status getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
     UNUSED(nx);
     calculateValues(comp);
     dx[0] = M(der_x0);
     dx[1] = M(der_x1);
+    return OK;
 }
 
 Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative) {
@@ -116,9 +119,12 @@ Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueRe
     return OK;
 }
 
-void eventUpdate(ModelInstance *comp) {
+Status eventUpdate(ModelInstance *comp) {
+
     comp->valuesOfContinuousStatesChanged   = false;
     comp->nominalsOfContinuousStatesChanged = false;
     comp->terminateSimulation               = false;
     comp->nextEventTimeDefined              = false;
+
+    return OK;
 }

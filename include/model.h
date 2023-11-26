@@ -170,9 +170,9 @@ ModelInstance *createModelInstance(
 
 void freeModelInstance(ModelInstance *comp);
 
-void exitInitializationMode(ModelInstance* comp);
+Status configurate(ModelInstance* comp);
 
-void reset(ModelInstance* comp);
+Status reset(ModelInstance* comp);
 
 void setStartValues(ModelInstance* comp);
 
@@ -216,14 +216,13 @@ Status activateModelPartition(ModelInstance* comp, ValueReference vr, double act
 
 size_t getNumberOfEventIndicators(ModelInstance* comp);
 size_t getNumberOfContinuousStates(ModelInstance* comp);
-void getContinuousStates(ModelInstance *comp, double x[], size_t nx);
-void setContinuousStates(ModelInstance *comp, const double x[], size_t nx);
-void getDerivatives(ModelInstance *comp, double dx[], size_t nx);
+Status getContinuousStates(ModelInstance *comp, double x[], size_t nx);
+Status setContinuousStates(ModelInstance *comp, const double x[], size_t nx);
+Status getDerivatives(ModelInstance *comp, double dx[], size_t nx);
 Status getOutputDerivative(ModelInstance *comp, ValueReference valueReference, int order, double *value);
 Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative);
-void getEventIndicators(ModelInstance *comp, double z[], size_t nz);
-void eventUpdate(ModelInstance *comp);
-//void updateEventTime(ModelInstance *comp);
+Status getEventIndicators(ModelInstance *comp, double z[], size_t nz);
+Status eventUpdate(ModelInstance *comp);
 
 bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected);
 bool invalidState(ModelInstance *comp, const char *f, int statesExpected);
@@ -233,8 +232,8 @@ Status setDebugLogging(ModelInstance *comp, bool loggingOn, size_t nCategories, 
 void logEvent(ModelInstance *comp, const char *message, ...);
 void logError(ModelInstance *comp, const char *message, ...);
 
-void* getFMUState(ModelInstance* comp);
-void setFMUState(ModelInstance* comp, void* FMUState);
+Status getFMUState(ModelInstance* comp, void** FMUState);
+Status setFMUState(ModelInstance* comp, void* FMUState);
 
 // shorthand to access the variables
 #define M(v) (comp->modelData.v)
