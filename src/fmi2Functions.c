@@ -165,13 +165,6 @@ do { \
 #define MASK_fmi2GetBooleanStatus        MASK_fmi2GetStatus
 #define MASK_fmi2GetStringStatus         MASK_fmi2GetStatus
 
-//// shorthand to access the  instance
-//#define S ((ModelInstance *)c)
-
-//#define BEGIN_FUNCTION(S) \
-//    if (!allowedState(c, MASK_fmi2##S, #S)) \
-//        return fmi2Error;
-
 #define BEGIN_FUNCTION(F) \
 Status status = OK; \
 if (!c) return fmi2Error; \
