@@ -50,7 +50,7 @@ jobs:
     - run: python ThirdParty/build_libxml2.py --arch ${{ matrix.arch }}
     - run: python ThirdParty/build_zlib.py --arch ${{ matrix.arch }}
     - run: python build.py --arch ${{ matrix.arch }}
-    - run: pytest tests
+    - run: pytest tests --arch ${{ matrix.arch }}
     - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.name }}

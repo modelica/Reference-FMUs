@@ -2,6 +2,9 @@ import os
 import platform
 import subprocess
 from pathlib import Path
+
+import pytest
+
 from fmpy import simulate_fmu
 from fmpy.validation import validate_fmu
 
@@ -35,7 +38,10 @@ def validate(build_dir, model, fmi_types, simulate):
             simulate_fmu(fmu_filename, fmi_type=fmi_type)
 
 
-def test_fmi1_me():
+def test_fmi1_me(arch):
+
+    if arch not in {'x86', 'x86_64'}:
+        pytest.skip(f"{arch} not supported")
 
     build_dir = root / 'fmi1_me'
 
@@ -48,7 +54,10 @@ def test_fmi1_me():
         run_example(build_dir / 'temp' / f'{model}_me')
 
 
-def test_fmi1_cs():
+def test_fmi1_cs(arch):
+
+    if arch not in {'x86', 'x86_64'}:
+        pytest.skip(f"{arch} not supported")
 
     build_dir = root / 'fmi1_cs'
 
@@ -61,7 +70,10 @@ def test_fmi1_cs():
         run_example(build_dir / 'temp' / f'{model}_cs')
 
 
-def test_fmi2():
+def test_fmi2(arch):
+
+    if arch not in {'x86', 'x86_64'}:
+        pytest.skip(f"{arch} not supported")
 
     build_dir = root / 'fmi2'
 
