@@ -6,7 +6,7 @@ from fmpy import extract
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--build-for-aarch64', type=bool)
+parser.add_argument('--arch', default='x86_64')
 (args, _) = parser.parse_known_args()
 
 archive = download_file('https://github.com/GNOME/libxml2/archive/refs/tags/v2.11.5.zip',
@@ -31,7 +31,7 @@ if os.name == 'nt':
         '-D', 'CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded'
     ]
 
-if args.build_for_arm:
+if args.arch == 'aarch64':
     cmake_args += ['-D', f'CMAKE_TOOLCHAIN_FILE={toolchain_file}']
 
 check_call(

@@ -14,7 +14,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--cmake-generator', default='Visual Studio 17 2022' if os.name == 'nt' else 'Unix Makefiles')
 parser.add_argument('--cmake-architecture', default='x64' if os.name == 'nt' else None)
-parser.add_argument('--build-for-aarch64', type=bool)
+parser.add_argument('--arch', default='x86_64')
 
 args, _ = parser.parse_known_args()
 
@@ -43,7 +43,7 @@ def build_fmus(fmi_version, fmi_type=None):
     if fmi_type is not None:
         cmake_args += ['-D', f'FMI_TYPE={fmi_type.upper()}']
 
-    if args.build_for_arm:
+    if args.arch == 'aarch64':
         cmake_args += ['-D', f'CMAKE_TOOLCHAIN_FILE={ toolchain_file }']
 
     cmake_args += [

@@ -6,7 +6,7 @@ import tarfile
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--build-for-aarch64', type=bool)
+parser.add_argument('--arch', default='x86_64')
 args, _ = parser.parse_known_args()
 
 archive = download_file('https://github.com/LLNL/sundials/releases/download/v6.4.1/cvode-6.4.1.tar.gz',
@@ -33,7 +33,7 @@ if os.name == 'nt':
         '-D', 'CMAKE_C_FLAGS_RELEASE=/MT /O2 /Ob2 /DNDEBUG'
     ]
 
-if args.build_for_arm:
+if args.arch == 'aarch64':
     cmake_args += ['-D', f'CMAKE_TOOLCHAIN_FILE={toolchain_file}']
 
 check_call(
