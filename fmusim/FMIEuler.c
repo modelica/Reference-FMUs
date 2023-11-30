@@ -26,13 +26,13 @@ struct FMISolverImpl {
     FMISolverGetEventIndicators getEventIndicators;
     FMISolverLogError logError;
 
-} SolverImpl_;
+} SolverImpl_Euler;
 
 FMISolver* FMIEulerCreate(const FMISolverParameters* solverFunctions) {
 
     FMISolverStatus status = FMISolverOK;
 
-    FMISolver* solver = calloc(1, sizeof(SolverImpl_));
+    FMISolver* solver = calloc(1, sizeof(SolverImpl_Euler));
 
     if (!solver) {
         // TODO: log error

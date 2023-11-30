@@ -17,6 +17,8 @@ build_dir = root / 'cvode-6.4.1' / 'build'
 
 install_prefix = build_dir / 'install'
 
+toolchain_file = root.parent / 'aarch64-toolchain.cmake'
+
 args = []
 
 if os.name == 'nt':
@@ -31,6 +33,7 @@ check_call(
     ['cmake'] +
     args +
     ['-B', build_dir,
+    '-D', f'CMAKE_TOOLCHAIN_FILE={ toolchain_file }',
     '-D', f'BUILD_SHARED_LIBS=OFF',
     '-D', f'BUILD_TESTING=OFF',
     '-D', f'EXAMPLES_INSTALL=OFF',

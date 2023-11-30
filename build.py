@@ -13,9 +13,11 @@ parent_dir = Path(__file__).parent
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--cmake-generator', default='Visual Studio 17 2022' if os.name == 'nt' else 'Unix Makefiles')
-parser.add_argument('--cmake-architecture', default='x64' if os.name == 'nt' else None, )
+parser.add_argument('--cmake-architecture', default='x64' if os.name == 'nt' else None)
 
 args, _ = parser.parse_known_args()
+
+toolchain_file = parent_dir / 'aarch64-toolchain.cmake'
 
 
 def build_fmus(fmi_version, fmi_type=None):
@@ -41,6 +43,7 @@ def build_fmus(fmi_version, fmi_type=None):
         cmake_options += ['-D', f'FMI_TYPE={fmi_type.upper()}']
 
     cmake_options += [
+        '-D', f'CMAKE_TOOLCHAIN_FILE={ toolchain_file }',
         '-D', f'FMI_VERSION={fmi_version}',
         '-D', f'CMAKE_INSTALL_PREFIX={install_dir}',
         '-D', f'WITH_FMUSIM=ON',
@@ -77,7 +80,7 @@ def build_fmus(fmi_version, fmi_type=None):
 
 if __name__ == '__main__':
 
-    build_fmus(fmi_version=1, fmi_type='me')
-    build_fmus(fmi_version=1, fmi_type='cs')
-    build_fmus(fmi_version=2)
+    #build_fmus(fmi_version=1, fmi_type='me')
+    #build_fmus(fmi_version=1, fmi_type='cs')
+    #build_fmus(fmi_version=2)
     build_fmus(fmi_version=3)

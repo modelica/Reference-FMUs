@@ -18,6 +18,8 @@ build_dir = root / 'zlib-1.3' / 'build'
 
 install_prefix = build_dir / 'install'
 
+toolchain_file = root.parent / 'aarch64-toolchain.cmake'
+
 args = []
 
 if os.name == 'nt':
@@ -33,6 +35,7 @@ check_call(
     ['cmake'] +
     args +
     ['-B', build_dir,
+    '-D', f'CMAKE_TOOLCHAIN_FILE={ toolchain_file }',
     '-D', f'CMAKE_INSTALL_PREFIX={ install_prefix }',
     root / 'zlib-1.3']
 )

@@ -17,6 +17,8 @@ build_dir = root / 'libxml2-2.11.5' / 'build'
 
 install_prefix = build_dir / 'install'
 
+toolchain_file = root.parent / 'aarch64-toolchain.cmake'
+
 args = []
 
 if os.name == 'nt':
@@ -30,6 +32,7 @@ check_call(
     ['cmake'] +
     args +
     ['-B', build_dir,
+    '-D', f'CMAKE_TOOLCHAIN_FILE={ toolchain_file }',
     '-D', f'CMAKE_INSTALL_PREFIX={ install_prefix }',
     '-D', 'BUILD_SHARED_LIBS=OFF',
     '-D', 'LIBXML2_WITH_ICONV=OFF',
