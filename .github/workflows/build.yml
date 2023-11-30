@@ -69,16 +69,20 @@ jobs:
     - uses: actions/download-artifact@v3
       with:
         name: x86_64-windows
-        path: dist-windows
+        path: dist-x86_64-windows
     - uses: actions/download-artifact@v3
       with:
         name: x86_64-linux
-        path: dist-linux
+        path: dist-x86_64-linux
+    - uses: actions/download-artifact@v3
+      with:
+        name: aarch64-linux
+        path: dist-aarch64-linux
     - uses: actions/download-artifact@v3
       with:
         name: x86_64-darwin
-        path: dist-darwin
-    - run: chmod +x dist-linux/fmusim-linux/fmusim
+        path: dist-x86_64-darwin
+    - run: chmod +x dist-x86_64-linux/fmusim-linux/fmusim
 
     - run: git status --porcelain --untracked=no
     - run: git tag --contains
