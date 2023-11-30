@@ -1,4 +1,5 @@
 import os
+import platform
 import subprocess
 from pathlib import Path
 from fmpy import simulate_fmu
@@ -6,6 +7,19 @@ from fmpy.validation import validate_fmu
 
 
 root = Path(__file__).parent.parent
+
+
+def run_example(name):
+    example_args = [name]
+
+    if platform.system() == 'Linux':
+
+        result = subprocess.check_output(['file', name])
+
+        if b'aarch64' in result:
+            example_args = ['qemu-aarch64', '-L', '/usr/aarch64-linux-gnu'] + example_args
+
+    subprocess.check_call(example_args, cwd=name.parent)
 
 
 def validate(build_dir, model, fmi_types, simulate):
@@ -31,7 +45,7 @@ def test_fmi1_me():
         validate(build_dir, model=model, fmi_types=['ModelExchange'], simulate=False)
 
     for model in models:
-        subprocess.check_call(build_dir / 'temp' / f'{model}_me', cwd=os.path.join(build_dir, 'temp'))
+        run_example(build_dir / 'temp' / f'{model}_me')
 
 
 def test_fmi1_cs():
@@ -44,7 +58,7 @@ def test_fmi1_cs():
         validate(build_dir, model=model, fmi_types=['CoSimulation'], simulate=False)
 
     for model in models:
-        subprocess.check_call(build_dir / 'temp' / f'{model}_cs', cwd=os.path.join(build_dir, 'temp'))
+        run_example(build_dir / 'temp' / f'{model}_cs')
 
 
 def test_fmi2():
@@ -58,7 +72,7 @@ def test_fmi2():
 
     for model in models:
         for interface_type in ['cs', 'me']:
-            subprocess.check_call(build_dir / 'temp' / f'{model}_{interface_type}', cwd=os.path.join(build_dir, 'temp'))
+            run_example(build_dir / 'temp' / f'{model}_{interface_type}')
 
 
 def test_fmi3():
@@ -72,6 +86,6 @@ def test_fmi3():
 
     for model in models:
         for interface_type in ['cs', 'me']:
-            subprocess.check_call(build_dir / 'temp' / f'{model}_{interface_type}', cwd=os.path.join(build_dir, 'temp'))
+            run_example(build_dir / 'temp' / f'{model}_{interface_type}')
 
     assert not validate_fmu(build_dir / 'install' / 'Clocks.fmu')
