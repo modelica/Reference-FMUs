@@ -36,7 +36,7 @@ def call_fmusim(fmi_version: int, interface_type: str, test_name: str, args: Ite
 
     if platform.system() == 'Linux':
         result = subprocess.check_output(['file', install / 'fmusim'])
-        if 'aarch64' in result:
+        if b'aarch64' in result:
             fmusim_args = ['qemu-aarch64', '-L', '/usr/aarch64-linux-gnu'] + fmusim_args
 
     check_call(fmusim_args, cwd=work)
