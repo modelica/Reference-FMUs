@@ -81,7 +81,7 @@ def set_tool_version(filename, git_executable='git'):
 
 def merge_fmus(version):
 
-    for dirpath, dirnames, filenames in os.walk(root / 'dist-windows' / version):
+    for dirpath, dirnames, filenames in os.walk(root / 'dist-x86_64-windows' / version):
 
         for filename in filenames:
 
@@ -92,7 +92,7 @@ def merge_fmus(version):
 
             tempdir = Path(mkdtemp())
 
-            for platform in ['windows', 'linux', 'darwin']:
+            for platform in ['x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin']:
 
                 platform_fmu = root / f'dist-{platform}' / version / filename
 
@@ -112,7 +112,7 @@ def merge_fmus(version):
 
                 params += parameters[model_name]
 
-                command = [str(fmusim)] + params + ['--output-file', str(output_filename), str(root / f'dist-{fmpy.system}' / version / filename)]
+                command = [str(fmusim)] + params + ['--output-file', str(output_filename), str(root / f'dist-{fmpy.platform_tuple}' / version / filename)]
 
                 print(' '.join(command))
 
@@ -170,7 +170,7 @@ results_dir = root / 'dist-merged' / 'results'
 os.makedirs(results_dir, exist_ok=True)
 
 # copy fmusim
-for system in ['windows', 'linux', 'darwin']:
+for system in ['x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin']:
     shutil.copytree(src=root / f'dist-{system}' / f'fmusim-{system}', dst=root / 'dist-merged' / f'fmusim-{system}')
 
 # copy license and readme
