@@ -41,7 +41,7 @@
 #else
 
 #if defined(__aarch64__) || defined(_M_ARM64)
-#define ARCH "x86_64"
+#define ARCH "aarch64"
 #elif defined(__x86_64__) || defined(_M_X64)
 #define ARCH "x86_64"
 #elif defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
