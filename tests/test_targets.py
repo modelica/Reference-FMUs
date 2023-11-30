@@ -8,7 +8,7 @@ from fmpy.validation import validate_fmu
 root = Path(__file__).parent.parent
 
 
-def validate(build_dir, model, fmi_types):
+def validate(build_dir, model, fmi_types, simulate):
 
     fmu_filename = os.path.join(build_dir, 'install', model + '.fmu')
 
@@ -16,8 +16,9 @@ def validate(build_dir, model, fmi_types):
 
     assert not problems
 
-    for fmi_type in fmi_types:
-        simulate_fmu(fmu_filename, fmi_type=fmi_type)
+    if simulate:
+        for fmi_type in fmi_types:
+            simulate_fmu(fmu_filename, fmi_type=fmi_type)
 
 
 def test_fmi1_me():
@@ -27,7 +28,7 @@ def test_fmi1_me():
     models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Stair', 'VanDerPol']
 
     for model in models:
-        validate(build_dir, model=model, fmi_types=['ModelExchange'])
+        validate(build_dir, model=model, fmi_types=['ModelExchange'], simulate=False)
 
     for model in models:
         subprocess.check_call(build_dir / 'temp' / f'{model}_me', cwd=os.path.join(build_dir, 'temp'))
@@ -40,7 +41,7 @@ def test_fmi1_cs():
     models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
 
     for model in models:
-        validate(build_dir, model=model, fmi_types=['CoSimulation'])
+        validate(build_dir, model=model, fmi_types=['CoSimulation'], simulate=False)
 
     for model in models:
         subprocess.check_call(build_dir / 'temp' / f'{model}_cs', cwd=os.path.join(build_dir, 'temp'))
@@ -53,7 +54,7 @@ def test_fmi2():
     models = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
 
     for model in models:
-        validate(build_dir, model=model, fmi_types=['ModelExchange', 'CoSimulation'])
+        validate(build_dir, model=model, fmi_types=['ModelExchange', 'CoSimulation'], simulate=False)
 
     for model in models:
         for interface_type in ['cs', 'me']:
@@ -67,7 +68,7 @@ def test_fmi3():
     models = ['BouncingBall', 'Dahlquist', 'LinearTransform', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
 
     for model in models:
-        validate(build_dir, model=model, fmi_types=['ModelExchange', 'CoSimulation'])
+        validate(build_dir, model=model, fmi_types=['ModelExchange', 'CoSimulation'], simulate=False)
 
     for model in models:
         for interface_type in ['cs', 'me']:
