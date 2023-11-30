@@ -92,7 +92,12 @@ def merge_fmus(version):
 
             tempdir = Path(mkdtemp())
 
-            for platform in ['x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin']:
+            platforms = ['x86_64-windows', 'x86_64-linux', 'x86_64-darwin']
+
+            if version == '3.0':
+                platforms.append('aarch64-linux')
+
+            for platform in platforms:
 
                 platform_fmu = root / f'dist-{platform}' / version / filename
 
