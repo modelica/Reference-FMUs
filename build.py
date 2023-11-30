@@ -83,7 +83,7 @@ def build_fmus(fmi_version, fmi_type=None):
 
 if __name__ == '__main__':
 
-    #build_fmus(fmi_version=1, fmi_type='me')
-    #build_fmus(fmi_version=1, fmi_type='cs')
-    #build_fmus(fmi_version=2)
+    build_fmus(fmi_version=1, fmi_type='me')
+    build_fmus(fmi_version=1, fmi_type='cs')
+    build_fmus(fmi_version=2)
     build_fmus(fmi_version=3)
