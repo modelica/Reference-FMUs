@@ -19,7 +19,7 @@ dist_merged = root / 'dist-merged'
 
 os.makedirs(dist_merged, exist_ok=True)
 
-fmusim = root / f'dist-{fmpy.system}' / f'fmusim-{fmpy.system}' / 'fmusim'
+fmusim = root / f'dist-{fmpy.platform_tuple}' / f'fmusim-{fmpy.platform_tuple}' / 'fmusim'
 
 parameters = {
     'BouncingBall': [
