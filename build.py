@@ -14,6 +14,7 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument('--cmake-generator', default='Visual Studio 17 2022' if os.name == 'nt' else 'Unix Makefiles')
 parser.add_argument('--cmake-architecture', default='x64' if os.name == 'nt' else None)
+parser.add_argument('--build-for-aarch64', type=bool)
 
 args, _ = parser.parse_known_args()
 
@@ -32,25 +33,27 @@ def build_fmus(fmi_version, fmi_type=None):
 
     os.makedirs(build_dir)
 
-    cmake_options = ['-G', args.cmake_generator]
+    cmake_args = ['-G', args.cmake_generator]
 
     if args.cmake_architecture is not None:
-        cmake_options += ['-A', args.cmake_architecture]
+        cmake_args += ['-A', args.cmake_architecture]
 
     install_dir = build_dir / 'install'
 
     if fmi_type is not None:
-        cmake_options += ['-D', f'FMI_TYPE={fmi_type.upper()}']
+        cmake_args += ['-D', f'FMI_TYPE={fmi_type.upper()}']
 
-    cmake_options += [
-        '-D', f'CMAKE_TOOLCHAIN_FILE={ toolchain_file }',
+    if args.build_for_arm:
+        cmake_args += ['-D', f'CMAKE_TOOLCHAIN_FILE={ toolchain_file }']
+
+    cmake_args += [
         '-D', f'FMI_VERSION={fmi_version}',
         '-D', f'CMAKE_INSTALL_PREFIX={install_dir}',
         '-D', f'WITH_FMUSIM=ON',
         '..'
     ]
 
-    subprocess.check_call(['cmake'] + cmake_options, cwd=build_dir)
+    subprocess.check_call(['cmake'] + cmake_args, cwd=build_dir)
     subprocess.check_call(['cmake', '--build', '.', '--target', 'install', '--config', 'Release'], cwd=build_dir)
 
     fmus_dir = parent_dir / 'fmus' / f'{fmi_version}.0'
