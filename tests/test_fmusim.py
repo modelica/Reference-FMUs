@@ -1,4 +1,6 @@
 import os
+import platform
+import subprocess
 from itertools import product
 from pathlib import Path
 from subprocess import check_call
@@ -30,14 +32,14 @@ def call_fmusim(fmi_version: int, interface_type: str, test_name: str, args: Ite
     if output_file.exists():
         os.remove(output_file)
 
-    check_call([
-        install / 'fmusim',
-        '--interface-type', interface_type,
-        '--output-file', output_file] +
-        args +
-        [install / model],
-        cwd=work
-    )
+    fmusim_args = [install / 'fmusim', '--interface-type', interface_type, '--output-file', output_file] + args + [install / model]
+
+    if platform.system() == 'Linux':
+        result = subprocess.check_output(['file', install / 'fmusim'])
+        if 'aarch64' in result:
+            fmusim_args = ['qemu-aarch64', '-L', '/usr/aarch64-linux-gnu'] + fmusim_args
+
+    check_call(fmusim_args, cwd=work)
 
     return read_csv(output_file)
 
