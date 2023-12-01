@@ -106,7 +106,7 @@ def merge_fmus(version):
 
             if model_name in parameters:
 
-                output_filename = root / f'dist-{fmpy.system}' / version / f'{model_name}_ref.csv'
+                output_filename = root / f'dist-{fmpy.platform_tuple}' / version / f'{model_name}_ref.csv'
                 os.makedirs(tempdir / 'documentation', exist_ok=True)
                 plot_filename = tempdir / 'documentation' / 'result.svg'
 
@@ -137,7 +137,7 @@ def merge_fmus(version):
                         return ''
 
                 # generate index.html
-                model_description = read_model_description(root / f'dist-{fmpy.system}' / version / filename)
+                model_description = read_model_description(root / f'dist-{fmpy.platform_tuple}' / version / filename)
                 loader = jinja2.FileSystemLoader(searchpath=root)
                 environment = jinja2.Environment(loader=loader, trim_blocks=True)
                 template = environment.get_template('template.html')
