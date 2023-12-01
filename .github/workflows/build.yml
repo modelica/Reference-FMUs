@@ -82,7 +82,7 @@ jobs:
       with:
         name: x86_64-darwin
         path: dist-x86_64-darwin
-    - run: chmod +x dist-x86_64-linux/fmusim-linux/fmusim
+    - run: chmod +x dist-x86_64-linux/fmusim-x86_64-linux/fmusim
 
     - run: git status --porcelain --untracked=no
     - run: git tag --contains
