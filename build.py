@@ -66,7 +66,7 @@ def build_fmus(fmi_version, fmi_type=None):
 
     os.makedirs(fmus_dir)
 
-    fmusim_dir = parent_dir / 'fmus' / f'fmusim-{fmpy.platform_tuple}'
+    fmusim_dir = parent_dir / 'fmus' / f'fmusim-{args.arch}-{fmpy.system}'
 
     if fmusim_dir.exists():
         shutil.rmtree(fmusim_dir)
