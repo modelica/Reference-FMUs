@@ -201,26 +201,26 @@ static void logFunctionCall(FMIInstance *instance, FMIStatus status, const char 
         return;
     }
 
-    fprintf(logFile, message);
+    fputs(message, logFile);
 
     switch (status) {
     case FMIOK:
-        fprintf(logFile, " -> OK\n");
+        fputs(" -> OK\n", logFile);
         break;
     case FMIWarning:
-        fprintf(logFile, " -> Warning\n");
+        fputs(" -> Warning\n", logFile);
         break;
     case FMIDiscard:
-        fprintf(logFile, " -> Discard\n");
+        fputs(" -> Discard\n", logFile);
         break;
     case FMIError:
-        fprintf(logFile, " -> Error\n");
+        fputs(" -> Error\n", logFile);
         break;
     case FMIFatal:
-        fprintf(logFile, " -> Fatal\n");
+        fputs(" -> Fatal\n", logFile);
         break;
     case FMIPending:
-        fprintf(logFile, " -> Pending\n");
+        fputs(" -> Pending\n", logFile);
         break;
     default:
         fprintf(logFile, " -> Unknown status (%d)\n", status);

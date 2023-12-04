@@ -42,6 +42,6 @@ typedef FMISolver* (*SolverCreate)(const FMISolverParameters* solverFunctions);
 
 typedef void (*SolverFree)(FMISolver* solver);
 
-typedef FMISolverStatus (*SolverStep)(void* solver, double nextTime, double* timeReached, bool* stateEvent);
+typedef FMISolverStatus (*SolverStep)(FMISolver* solver, double nextTime, double* timeReached, bool* stateEvent);
 
-typedef FMISolverStatus (*SolverReset)(void* solver, double time);
+typedef FMISolverStatus (*SolverReset)(FMISolver* solver, double time);

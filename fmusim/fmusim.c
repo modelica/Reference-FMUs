@@ -443,7 +443,7 @@ int main(int argc, const char* argv[]) {
         outputFile = "result.csv";
     }
 
-    result = FMICreateRecorder(nOutputVariables, outputVariables, outputFile);
+    result = FMICreateRecorder(nOutputVariables, (const FMIModelVariable**)outputVariables, outputFile);
 
     if (!result) {
         printf("Failed to open result file %s for writing.\n", outputFile);
@@ -498,7 +498,7 @@ int main(int argc, const char* argv[]) {
 
     settings.tolerance                = tolerance;
     settings.nStartValues             = nStartValues;
-    settings.startVariables           = startVariables;
+    settings.startVariables           = (const FMIModelVariable**)startVariables;
     settings.startValues              = startValues;
     settings.startTime                = startTime;
     settings.outputInterval           = outputInterval;

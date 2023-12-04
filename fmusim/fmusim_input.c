@@ -17,7 +17,7 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 	FMUStaticInput* input = NULL;
 
-	CALL(FMICalloc(&input, 1, sizeof(FMUStaticInput)));
+	CALL(FMICalloc((void**)&input, 1, sizeof(FMUStaticInput)));
 	
 	input->fmiVersion = modelDescription->fmiVersion;
 

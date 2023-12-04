@@ -18,7 +18,7 @@ FMIRecorder* FMICreateRecorder(size_t nVariables, const FMIModelVariable* variab
 
     FMIRecorder* result = NULL;
     
-    CALL(FMICalloc(&result, 1, sizeof(FMIRecorder)));
+    CALL(FMICalloc((void**)&result, 1, sizeof(FMIRecorder)));
 
     result->nVariables = nVariables;
     result->variables = variables;
@@ -285,7 +285,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
             } else if (type == FMIBinaryType) {
 
                 size_t* sizes = (size_t*)result->sizes;
-                fmi3Binary* values = (fmi3String*)result->values;
+                fmi3Binary* values = (fmi3Binary*)result->values;
 
                 CALL(FMI3GetBinary(instance, vr, 1, sizes, values, nValues));
 
