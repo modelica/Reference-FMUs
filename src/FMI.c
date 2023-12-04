@@ -159,7 +159,7 @@ void FMIFreeInstance(FMIInstance *instance) {
 void FMIClearLogMessageBuffer(FMIInstance* instance) {
 
     instance->logMessageBufferPosition = 0;
-    
+
     if (instance->logMessageBufferSize > 0) {
         instance->logMessageBuffer[0] = '\0';
     }
