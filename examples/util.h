@@ -40,13 +40,33 @@
 
 #else
 
-#if defined(_WIN32)
-#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "\\binaries\\x86_64-windows\\" xstr(MODEL_IDENTIFIER) ".dll"
-#elif defined(__APPLE__)
-#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/x86_64-darwin/" xstr(MODEL_IDENTIFIER) ".dylib"
+#if defined(__aarch64__) || defined(_M_ARM64)
+#define ARCH "aarch64"
+#elif defined(__x86_64__) || defined(_M_X64)
+#define ARCH "x86_64"
+#elif defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
+#define ARCH "x86"
 #else
-#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/x86_64-linux/" xstr(MODEL_IDENTIFIER) ".so"
+#error "Unknown architecture"
 #endif
+
+#if defined(_WIN32)
+#define SYS "windows"
+#define SEP "\\"
+#define EXT ".dll"
+#elif defined(__APPLE__)
+#define SYS "darwin"
+#define SEP "/"
+#define EXT ".dylib"
+#elif defined(__linux__)
+#define SYS "linux"
+#define SEP "/"
+#define EXT ".so"
+#else
+#error "Unknown platform"
+#endif
+
+#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) SEP "binaries" SEP ARCH "-" SYS SEP xstr(MODEL_IDENTIFIER) EXT
 
 #endif
 

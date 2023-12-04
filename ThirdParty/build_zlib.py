@@ -2,9 +2,12 @@ import os
 import tarfile
 from pathlib import Path
 from subprocess import check_call
-
 from fmpy.util import download_file
+import argparse
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--arch', default='x86_64')
+args, _ = parser.parse_known_args()
 
 archive = download_file('https://www.zlib.net/fossils/zlib-1.3.tar.gz',
                         checksum='ff0ba4c292013dbc27530b3a81e1f9a813cd39de01ca5e0f8bf355702efa593e')
@@ -18,10 +21,12 @@ build_dir = root / 'zlib-1.3' / 'build'
 
 install_prefix = build_dir / 'install'
 
-args = []
+toolchain_file = root.parent / 'aarch64-toolchain.cmake'
+
+cmake_args = []
 
 if os.name == 'nt':
-    args = [
+    cmake_args = [
         '-G', 'Visual Studio 17 2022',
         '-A', 'x64',
         # '-D', 'CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded'
@@ -29,9 +34,12 @@ if os.name == 'nt':
         '-D', 'CMAKE_C_FLAGS_RELEASE=/MT /O2 /Ob2 /DNDEBUG'
     ]
 
+if args.arch == 'aarch64':
+    cmake_args += ['-D', f'CMAKE_TOOLCHAIN_FILE={ toolchain_file }']
+
 check_call(
     ['cmake'] +
-    args +
+    cmake_args +
     ['-B', build_dir,
     '-D', f'CMAKE_INSTALL_PREFIX={ install_prefix }',
     root / 'zlib-1.3']

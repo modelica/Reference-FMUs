@@ -46,7 +46,9 @@ if (${FMI_VERSION} GREATER 2)
     set(FMI_PLATFORM linux)
   endif ()
 
-  if ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+  if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
+    set (FMI_PLATFORM aarch64-${FMI_PLATFORM})
+  elseif ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
     set (FMI_PLATFORM x86_64-${FMI_PLATFORM})
   else ()
     set (FMI_PLATFORM x86-${FMI_PLATFORM})
@@ -70,7 +72,7 @@ else ()
 
 endif ()
 
-MESSAGE("FMI_PLATFORM: " ${FMI_PLATFORM})
+message("FMI_PLATFORM: " ${FMI_PLATFORM})
 
 if (${FMI_VERSION} LESS 3)
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/all.c" "#define FMI_VERSION ${FMI_VERSION}

@@ -1,9 +1,13 @@
 import os
 from pathlib import Path
 from subprocess import check_call
-
 from fmpy.util import download_file
 import tarfile
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--arch', default='x86_64')
+args, _ = parser.parse_known_args()
 
 archive = download_file('https://github.com/LLNL/sundials/releases/download/v6.4.1/cvode-6.4.1.tar.gz',
                         checksum='0a614e7d7d525d9ec88d5a30c887786d7c3681bd123bb6679fb9a4ec5f4609fe')
@@ -17,19 +21,24 @@ build_dir = root / 'cvode-6.4.1' / 'build'
 
 install_prefix = build_dir / 'install'
 
-args = []
+toolchain_file = root.parent / 'aarch64-toolchain.cmake'
+
+cmake_args = []
 
 if os.name == 'nt':
-    args = [
+    cmake_args = [
         '-G', 'Visual Studio 17 2022',
         '-A', 'x64',
         '-D', 'CMAKE_C_FLAGS_DEBUG=/MT /Zi /Ob0 /Od /RTC1',
         '-D', 'CMAKE_C_FLAGS_RELEASE=/MT /O2 /Ob2 /DNDEBUG'
     ]
 
+if args.arch == 'aarch64':
+    cmake_args += ['-D', f'CMAKE_TOOLCHAIN_FILE={toolchain_file}']
+
 check_call(
     ['cmake'] +
-    args +
+    cmake_args +
     ['-B', build_dir,
     '-D', f'BUILD_SHARED_LIBS=OFF',
     '-D', f'BUILD_TESTING=OFF',

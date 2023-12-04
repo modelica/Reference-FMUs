@@ -19,7 +19,7 @@ dist_merged = root / 'dist-merged'
 
 os.makedirs(dist_merged, exist_ok=True)
 
-fmusim = root / f'dist-{fmpy.system}' / f'fmusim-{fmpy.system}' / 'fmusim'
+fmusim = root / f'dist-{fmpy.platform_tuple}' / f'fmusim-{fmpy.platform_tuple}' / 'fmusim'
 
 parameters = {
     'BouncingBall': [
@@ -81,7 +81,7 @@ def set_tool_version(filename, git_executable='git'):
 
 def merge_fmus(version):
 
-    for dirpath, dirnames, filenames in os.walk(root / 'dist-windows' / version):
+    for dirpath, dirnames, filenames in os.walk(root / 'dist-x86_64-windows' / version):
 
         for filename in filenames:
 
@@ -92,7 +92,12 @@ def merge_fmus(version):
 
             tempdir = Path(mkdtemp())
 
-            for platform in ['windows', 'linux', 'darwin']:
+            platforms = ['x86_64-windows', 'x86_64-linux', 'x86_64-darwin']
+
+            if version == '3.0':
+                platforms.append('aarch64-linux')
+
+            for platform in platforms:
 
                 platform_fmu = root / f'dist-{platform}' / version / filename
 
@@ -101,7 +106,7 @@ def merge_fmus(version):
 
             if model_name in parameters:
 
-                output_filename = root / f'dist-{fmpy.system}' / version / f'{model_name}_ref.csv'
+                output_filename = root / f'dist-{fmpy.platform_tuple}' / version / f'{model_name}_ref.csv'
                 os.makedirs(tempdir / 'documentation', exist_ok=True)
                 plot_filename = tempdir / 'documentation' / 'result.svg'
 
@@ -112,7 +117,7 @@ def merge_fmus(version):
 
                 params += parameters[model_name]
 
-                command = [str(fmusim)] + params + ['--output-file', str(output_filename), str(root / f'dist-{fmpy.system}' / version / filename)]
+                command = [str(fmusim)] + params + ['--output-file', str(output_filename), str(root / f'dist-{fmpy.platform_tuple}' / version / filename)]
 
                 print(' '.join(command))
 
@@ -132,7 +137,7 @@ def merge_fmus(version):
                         return ''
 
                 # generate index.html
-                model_description = read_model_description(root / f'dist-{fmpy.system}' / version / filename)
+                model_description = read_model_description(root / f'dist-{fmpy.platform_tuple}' / version / filename)
                 loader = jinja2.FileSystemLoader(searchpath=root)
                 environment = jinja2.Environment(loader=loader, trim_blocks=True)
                 template = environment.get_template('template.html')
@@ -170,7 +175,7 @@ results_dir = root / 'dist-merged' / 'results'
 os.makedirs(results_dir, exist_ok=True)
 
 # copy fmusim
-for system in ['windows', 'linux', 'darwin']:
+for system in ['x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin']:
     shutil.copytree(src=root / f'dist-{system}' / f'fmusim-{system}', dst=root / 'dist-merged' / f'fmusim-{system}')
 
 # copy license and readme
