@@ -25,7 +25,7 @@ def run_example(name):
     subprocess.check_call(example_args, cwd=name.parent)
 
 
-def validate(build_dir, model, fmi_types, simulate):
+def validate(build_dir, model, fmi_types, simulate=True):
 
     fmu_filename = os.path.join(build_dir, 'install', model + '.fmu')
 
@@ -48,7 +48,7 @@ def test_fmi1_me(arch):
     models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Stair', 'VanDerPol']
 
     for model in models:
-        validate(build_dir, model=model, fmi_types=['ModelExchange'], simulate=False)
+        validate(build_dir, model=model, fmi_types=['ModelExchange'])
 
     for model in models:
         run_example(build_dir / 'temp' / f'{model}_me')
@@ -64,7 +64,7 @@ def test_fmi1_cs(arch):
     models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
 
     for model in models:
-        validate(build_dir, model=model, fmi_types=['CoSimulation'], simulate=False)
+        validate(build_dir, model=model, fmi_types=['CoSimulation'])
 
     for model in models:
         run_example(build_dir / 'temp' / f'{model}_cs')
@@ -80,21 +80,21 @@ def test_fmi2(arch):
     models = ['BouncingBall', 'Dahlquist', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
 
     for model in models:
-        validate(build_dir, model=model, fmi_types=['ModelExchange', 'CoSimulation'], simulate=False)
+        validate(build_dir, model=model, fmi_types=['ModelExchange', 'CoSimulation'])
 
     for model in models:
         for interface_type in ['cs', 'me']:
             run_example(build_dir / 'temp' / f'{model}_{interface_type}')
 
 
-def test_fmi3():
+def test_fmi3(arch):
 
     build_dir = root / 'fmi3'
 
     models = ['BouncingBall', 'Dahlquist', 'LinearTransform', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
 
     for model in models:
-        validate(build_dir, model=model, fmi_types=['ModelExchange', 'CoSimulation'], simulate=False)
+        validate(build_dir, model=model, fmi_types=['ModelExchange', 'CoSimulation'], simulate=arch in {'x86', 'x86_64'})
 
     for model in models:
         for interface_type in ['cs', 'me']:
