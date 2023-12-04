@@ -382,26 +382,19 @@ FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *modelIdentifie
     const char *system   = "darwin";
     const char sep       = '/';
     const char *ext      = ".dylib";
-#elif defined(__linux__)
+#else
     const char *platform = "linux";
     const char *system   = "linux";
     const char sep       = '/';
     const char *ext      = ".so";
-#else
-#error "Unknown platform"
 #endif
 
-#if defined(__aarch64__) || defined(_M_ARM64)
-    const char* bits = "64";
-    const char* arch = "aarch64";
-#elif defined(__x86_64__) || defined(_M_X64)
+#if defined(_WIN64) || defined(__x86_64__)
     const char *bits = "64";
     const char *arch = "x86_64";
-#elif defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
+#else
     const char *bits = "32";
     const char *arch = "x86";
-#else
-#error "Unknown architecture"
 #endif
     const char* bin = "binaries";
     char optSep[2] = "";
@@ -410,10 +403,10 @@ FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *modelIdentifie
     if (unzipdir[strlen(unzipdir) - 1] != sep) {
         optSep[0] = sep;
     }
-
     if (fmiVersion == 3) {
         rc = snprintf(platformBinaryPath, size, "%s%s%s%c%s-%s%c%s%s", unzipdir, optSep, bin, sep, arch, system, sep, modelIdentifier, ext);
-    } else {
+    }
+    else {
         rc = snprintf(platformBinaryPath, size, "%s%s%s%c%s%s%c%s%s", unzipdir, optSep, bin, sep, platform, bits, sep, modelIdentifier, ext);
     }
 

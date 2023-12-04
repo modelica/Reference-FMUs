@@ -328,8 +328,6 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    printf("tempdir\n");
-
     unzipdir = FMICreateTemporaryDirectory();
     
     if (!unzipdir) {
@@ -340,8 +338,6 @@ int main(int argc, const char* argv[]) {
     
     char platformBinaryPath[FMI_PATH_MAX] = "";
 
-    printf("FMIExtractArchive\n");
-
     if (FMIExtractArchive(fmuPath, unzipdir)) {
         return EXIT_FAILURE;
     }
@@ -351,8 +347,6 @@ int main(int argc, const char* argv[]) {
     if (!FMIPathAppend(modelDescriptionPath, "modelDescription.xml")) {
         return EXIT_FAILURE;
     }
-
-    printf("FMIReadModelDescription\n");
 
     modelDescription = FMIReadModelDescription(modelDescriptionPath);
 
@@ -414,8 +408,6 @@ int main(int argc, const char* argv[]) {
     }
 
     FMIPlatformBinaryPath(unzipdir, modelIdentifier, modelDescription->fmiVersion, platformBinaryPath, FMI_PATH_MAX);
-
-    printf("platformBinaryPath: %s\n", platformBinaryPath);
 
     S = FMICreateInstance("instance1", platformBinaryPath, logMessage, logFMICalls ? logFunctionCall : NULL);
 
