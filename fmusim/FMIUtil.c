@@ -479,7 +479,7 @@ FMIStatus FMIRestoreFMUStateFromFile(FMIInstance* S, const char* filename) {
 
      char* serializedFMUState = NULL;
 
-     CALL(FMICalloc(&serializedFMUState, serializedFMUStateSize, sizeof(char)));
+     CALL(FMICalloc((void**)&serializedFMUState, serializedFMUStateSize, sizeof(char)));
 
      fread(serializedFMUState, sizeof(char), serializedFMUStateSize, file);
 
@@ -537,7 +537,7 @@ FMIStatus FMISaveFMUStateToFile(FMIInstance* S, const char* filename) {
 
     char* serializedFMUState = NULL; 
     
-    CALL(FMICalloc(&serializedFMUState, serializedFMUStateSize, sizeof(char)));
+    CALL(FMICalloc((void**)&serializedFMUState, serializedFMUStateSize, sizeof(char)));
 
     if (S->fmiVersion == FMIVersion2) {
         CALL(FMI2SerializeFMUstate(S, FMUState, serializedFMUState, serializedFMUStateSize));
