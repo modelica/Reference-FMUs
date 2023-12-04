@@ -59,7 +59,7 @@ FMIStatus FMIGetNumberOfUnkownValues(
 
      for (size_t i = 0; i < nUnknowns; i++) {
 
-         FMIUnknown* unknown = &unknowns[i];
+         const FMIUnknown* unknown = &unknowns[i];
 
          size_t n;
 
