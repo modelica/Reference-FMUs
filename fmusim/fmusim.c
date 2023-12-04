@@ -443,7 +443,7 @@ int main(int argc, const char* argv[]) {
         outputFile = "result.csv";
     }
 
-    result = FMICreateRecorder(nOutputVariables, outputVariables, outputFile);
+    result = FMICreateRecorder(nOutputVariables, (const FMIModelVariable**)outputVariables, outputFile);
 
     if (!result) {
         printf("Failed to open result file %s for writing.\n", outputFile);
