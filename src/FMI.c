@@ -100,12 +100,7 @@ FMIInstance *FMICreateInstance(const char *instanceName, const char *libraryPath
     // TODO: log error
 
 # else
-
-    printf(libraryPath);
-
     void *libraryHandle = dlopen(libraryPath, RTLD_LAZY);
-
-    printf("loaded");
 # endif
 
     if (!libraryHandle) {
