@@ -107,7 +107,7 @@ def test_cs_reconfiguration():
 
     build_dir = root / 'fmi3' / 'temp'
 
-    subprocess.check_call(build_dir / 'cs_reconfiguration', cwd=build_dir)
+    run_example(build_dir / 'cs_reconfiguration')
 
     with open(build_dir / 'cs_reconfiguration_out.csv') as f:
         file = f.read()
