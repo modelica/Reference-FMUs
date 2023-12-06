@@ -82,7 +82,7 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
             values[(*index)++] = comp->time;
             return OK;
         case vr_A:
-            ASSERT_NVALUES(M(n) * M(n));
+            ASSERT_NVALUES((size_t)(M(n) * M(n)));
             for (size_t i = 0; i < M(n); i++) {
                 for (size_t j = 0; j < M(n); j++) {
                     values[(*index)++] = M(A)[i][j];
@@ -90,7 +90,7 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
             }
             return OK;
         case vr_B:
-            ASSERT_NVALUES(M(m) * M(n));
+            ASSERT_NVALUES((size_t)(M(m) * M(n)));
             for (size_t i = 0; i < M(m); i++) {
                 for (size_t j = 0; j < M(n); j++) {
                     values[(*index)++] = M(B)[i][j];
@@ -98,7 +98,7 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
             }
             return OK;
         case vr_C:
-            ASSERT_NVALUES(M(r) * M(n));
+            ASSERT_NVALUES((size_t)(M(r) * M(n)));
             for (size_t i = 0; i < M(r); i++) {
                 for (size_t j = 0; j < M(n); j++) {
                     values[(*index)++] = M(C)[i][j];
@@ -106,7 +106,7 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
             }
             return OK;
         case vr_D:
-            ASSERT_NVALUES(M(r) * M(m));
+            ASSERT_NVALUES((size_t)(M(r) * M(m)));
             for (size_t i = 0; i < M(r); i++) {
                 for (size_t j = 0; j < M(m); j++) {
                     values[(*index)++] = M(D)[i][j];
@@ -114,31 +114,31 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
             }
             return OK;
         case vr_x0:
-            ASSERT_NVALUES(M(n));
+            ASSERT_NVALUES((size_t)M(n));
             for (size_t i = 0; i < M(n); i++) {
                 values[(*index)++] = M(x0)[i];
             }
             return OK;
         case vr_u:
-            ASSERT_NVALUES(M(m));
+            ASSERT_NVALUES((size_t)M(m));
             for (size_t i = 0; i < M(m); i++) {
                 values[(*index)++] = M(u)[i];
             }
             return OK;
         case vr_y:
-            ASSERT_NVALUES(M(r));
+            ASSERT_NVALUES((size_t)M(r));
             for (size_t i = 0; i < M(r); i++) {
                 values[(*index)++] = M(y)[i];
             }
             return OK;
         case vr_x:
-            ASSERT_NVALUES(M(n));
+            ASSERT_NVALUES((size_t)M(n));
             for (size_t i = 0; i < M(n); i++) {
                 values[(*index)++] = M(x)[i];
             }
             return OK;
         case vr_der_x:
-            ASSERT_NVALUES(M(n));
+            ASSERT_NVALUES((size_t)M(n));
             for (size_t i = 0; i < M(n); i++) {
                 values[(*index)++] = M(der_x)[i];
             }
@@ -153,7 +153,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
 
     switch (vr) {
     case vr_A:
-        ASSERT_NVALUES(M(n) * M(n));
+        ASSERT_NVALUES((size_t)(M(n) * M(n)));
         for (size_t i = 0; i < M(n); i++) {
             for (size_t j = 0; j < M(n); j++) {
                 M(A)[i][j] = values[(*index)++];
@@ -161,7 +161,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
         }
         break;
     case vr_B:
-        ASSERT_NVALUES(M(n) * M(m));
+        ASSERT_NVALUES((size_t)(M(n) * M(m)));
         for (size_t i = 0; i < M(n); i++) {
             for (size_t j = 0; j < M(m); j++) {
                 M(B)[i][j] = values[(*index)++];
@@ -169,7 +169,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
         }
         break;
     case vr_C:
-        ASSERT_NVALUES(M(r) * M(n));
+        ASSERT_NVALUES((size_t)(M(r) * M(n)));
         for (size_t i = 0; i < M(r); i++) {
             for (size_t j = 0; j < M(n); j++) {
                 M(C)[i][j] = values[(*index)++];
@@ -177,7 +177,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
         }
         break;
     case vr_D:
-        ASSERT_NVALUES(M(r) * M(m));
+        ASSERT_NVALUES((size_t)(M(r) * M(m)));
         for (size_t i = 0; i < M(r); i++) {
             for (size_t j = 0; j < M(m); j++) {
                 M(D)[i][j] = values[(*index)++];
@@ -185,13 +185,13 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
         }
         break;
     case vr_x0:
-        ASSERT_NVALUES(M(n));
+        ASSERT_NVALUES((size_t)M(n));
         for (size_t i = 0; i < M(n); i++) {
             M(x0)[i] = values[(*index)++];
         }
         break;
     case vr_u:
-        ASSERT_NVALUES(M(m));
+        ASSERT_NVALUES((size_t)M(m));
         for (size_t i = 0; i < M(m); i++) {
             M(u)[i] = values[(*index)++];
         }
@@ -279,7 +279,7 @@ Status eventUpdate(ModelInstance *comp) {
 }
 
 size_t getNumberOfContinuousStates(ModelInstance* comp) {
-    return M(n);
+    return (size_t)M(n);
 }
 
 Status getContinuousStates(ModelInstance* comp, double x[], size_t nx) {
