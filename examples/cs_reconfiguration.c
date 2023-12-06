@@ -36,11 +36,11 @@ int main(int argc, char* argv[]) {
     ));
 
     CALL(FMI3EnterConfigurationMode(S));
-    
+
     vr[0] = vr_m; p[0] = 2; // number of inputs
     vr[1] = vr_n; p[1] = 0; // number of states
     vr[2] = vr_r; p[2] = 2; // number of outputs
-     
+
     CALL(FMI3SetUInt64(S, vr, 3, &p, 3));
 
     CALL(FMI3ExitConfigurationMode(S));
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
 
         vr[0] = vr_u;
         CALL(FMI3SetFloat64(S, vr, 1, u, step < 5 ? 2 : 3));
-        
+
         CALL(FMI3DoStep(S,
             time,                 // currentCommunicationPoint
             stepSize,             // communicationStepSize
