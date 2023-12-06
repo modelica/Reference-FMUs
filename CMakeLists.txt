@@ -90,7 +90,7 @@ if (${FMI_VERSION} GREATER 1 OR "${FMI_TYPE}" STREQUAL "CS")
 endif ()
 
 if (${FMI_VERSION} GREATER 2)
-  set (MODEL_NAMES ${MODEL_NAMES} LinearTransform Clocks)
+  set (MODEL_NAMES ${MODEL_NAMES} StateSpace Clocks)
 endif ()
 
 foreach (MODEL_NAME ${MODEL_NAMES})

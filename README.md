@@ -5,9 +5,9 @@ A set of hand-coded FMUs for development, testing and debugging of the [Function
 - [BouncingBall](BouncingBall) - a bouncing ball model with state events
 - [Dahlquist](Dahlquist) - Dahlquist test equation
 - [Feedthrough](Feedthrough) - all variable types
-- [LinearTransform](LinearTransform) - arrays and structural parameters
 - [Resource](Resource) - load data from a file
 - [Stair](Stair) - a counter with time events
+- [StateSpace](StateSpace) - arrays and structural parameters
 - [VanDerPol](VanDerPol) - Van der Pol test equation
 
 Use the [fmusim](fmusim) executable to simulate an FMU:
@@ -96,7 +96,7 @@ To build the `fmusim` executable, run the `ThirdParty/build_*.py` Python scripts
 
 ## License and attribution
 
-Copyright &copy; 2022, Modelica Association Project "FMI".
+Copyright &copy; 2023, Modelica Association Project "FMI".
 All rights reserved.
 The code is released under the [2-Clause BSD License](LICENSE.txt).
 

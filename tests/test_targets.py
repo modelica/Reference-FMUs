@@ -91,7 +91,7 @@ def test_fmi3(arch):
 
     build_dir = root / 'fmi3'
 
-    models = ['BouncingBall', 'Dahlquist', 'LinearTransform', 'Resource', 'Stair', 'VanDerPol', 'Feedthrough']
+    models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'StateSpace', 'VanDerPol']
 
     for model in models:
         validate(build_dir, model=model, fmi_types=['ModelExchange', 'CoSimulation'], simulate=arch in {'x86', 'x86_64'})
@@ -101,3 +101,27 @@ def test_fmi3(arch):
             run_example(build_dir / 'temp' / f'{model}_{interface_type}')
 
     assert not validate_fmu(build_dir / 'install' / 'Clocks.fmu')
+
+
+def test_cs_reconfiguration():
+
+    build_dir = root / 'fmi3' / 'temp'
+
+    run_example(build_dir / 'cs_reconfiguration')
+
+    with open(build_dir / 'cs_reconfiguration_out.csv') as f:
+        file = f.read()
+
+    assert file == '''time,y
+0,0 1
+0.1,0.1 1.1
+0.2,0.2 1.2
+0.3,0.3 1.3
+0.4,0.4 1.4
+0.5,0.5 1.5
+0.6,0.6 1.6 2.6
+0.7,0.7 1.7 2.7
+0.8,0.8 1.8 2.8
+0.9,0.9 1.9 2.9
+1,1 2 3
+'''

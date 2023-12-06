@@ -1,4 +1,6 @@
 from datetime import datetime
+from glob import glob
+
 import pytz
 import shutil
 import subprocess
@@ -31,7 +33,7 @@ parameters = {
     'Feedthrough': [
         '--output-interval', '1',
     ],
-    'LinearTransform': [
+    'StateSpace': [
         '--output-interval', '1',
     ],
     'Resource': [
@@ -153,6 +155,8 @@ def merge_fmus(version):
                 )
                 with open(html_file, 'w') as f:
                     f.write(html)
+                for svg_file in glob(f'{str(root / model_name)}/*.svg'):
+                    shutil.copy(svg_file, tempdir / 'documentation')
 
                 # set tool version
                 set_tool_version(tempdir / 'modelDescription.xml')

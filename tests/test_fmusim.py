@@ -8,6 +8,8 @@ from typing import Iterable
 
 import numpy as np
 import pytest
+
+from fmpy import read_model_description
 from fmpy.util import read_csv
 
 
@@ -126,20 +128,22 @@ def test_start_value_arrays(work_dir, interface_type):
         interface_type=interface_type,
         test_name='test_start_value_arrays',
         args=[
-            '--start-value', 'u', '2 3',
+            '--start-value', 'u', '1 2 3',
+            '--start-value', 'C', '0 0 0 0 0 0 0 0 0',
+            '--start-value', 'D', '1 0 0 0 1 0 0 0 1',
             '--log-fmi-calls',
             '--stop-time', '1',
             '--output-interval', '1',
         ],
-        model='LinearTransform.fmu'
+        model='StateSpace.fmu'
     )
 
     with open(work_dir / 'test_start_value_arrays_fmi3_cs.csv') as f:
         file = f.read()
 
     assert file == '''"time","y"
-0,2 3
-1,2 3
+0,1 2 3
+1,1 2 3
 '''
 
 
@@ -177,31 +181,59 @@ def test_input_file(fmi_version, interface_type, arch):
     assert result['Int32_output'][-1] == 2
 
 
-def test_array_input(work_dir):
+def test_arrays(work_dir):
 
     call_fmusim(
         fmi_version=3,
         interface_type='cs',
         test_name='test_array_input',
         args=[
-            '--input-file', resources / 'LinearTransform_in.csv',
+            '--input-file', resources / 'StateSpace_in.csv',
             '--output-interval', '1',
             '--stop-time', '2',
-            '--start-value', 'm', '3',
-            '--start-value', 'n', '3',
-            '--start-value', 'A', '0 0 1 0 1 0 1 0 0',
+            '--start-value', 'm', '2',
+            '--start-value', 'n', '0',
+            '--start-value', 'r', '2',
+            '--start-value', 'D', '1 0 0 1',
             '--log-fmi-calls'
         ],
-        model='LinearTransform.fmu'
+        model='StateSpace.fmu'
     )
 
     with open(work_dir / 'test_array_input_fmi3_cs.csv') as f:
         file = f.read()
 
     assert file == '''"time","y"
-0,3 2 1
-1,3 2 1
-2,6 5 4
+0,1 2
+1,1 2
+2,3 4
+'''
+
+
+def test_collapsed_array(work_dir):
+
+    call_fmusim(
+        fmi_version=3,
+        interface_type='cs',
+        test_name='test_collapsed_array',
+        args=[
+            '--input-file', resources / 'StateSpace_collapsed_in.csv',
+            '--output-interval', '1',
+            '--stop-time', '2',
+            '--start-value', 'm', '0',
+            '--start-value', 'r', '0',
+            '--log-fmi-calls',
+        ],
+        model='StateSpace.fmu'
+    )
+
+    with open(work_dir / 'test_collapsed_array_fmi3_cs.csv') as f:
+        file = f.read()
+
+    assert file == '''"time","y"
+0,
+1,
+2,
 '''
 
 

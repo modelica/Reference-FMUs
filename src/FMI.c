@@ -54,14 +54,24 @@ FMIStatus FMIRealloc(void** memory, size_t size) {
         return FMIError;
     }
 
-    void* temp = realloc(*memory, size);
+    if (size == 0) {
 
-    if (!temp) {
-        FMILogError("Failed to reallocate memory.");
-        return FMIError;
+        if (*memory) {
+            free(*memory);
+            *memory = NULL;
+        }
+
+    } else {
+
+        void* temp = realloc(*memory, size);
+
+        if (!temp) {
+            FMILogError("Failed to reallocate memory.");
+            return FMIError;
+        }
+
+        *memory = temp;
     }
-
-    *memory = temp;
 
     return FMIOK;
 }
