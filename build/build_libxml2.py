@@ -41,7 +41,7 @@ if args.platform in {'x86-windows', 'x86_64-windows'}:
 
 elif args.platform == 'aarch64-linux':
 
-    toolchain_file = root.parent / 'aarch64-linux-toolchain.cmake'
+    toolchain_file = root / 'aarch64-linux-toolchain.cmake'
     cmake_args += ['-D', f'CMAKE_TOOLCHAIN_FILE={toolchain_file}']
 
 check_call(
