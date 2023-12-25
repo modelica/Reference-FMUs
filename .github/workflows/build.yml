@@ -57,7 +57,7 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.name }}
-        path: fmus
+        path: build/fmus
         if-no-files-found: error
 
   merge-fmus:
