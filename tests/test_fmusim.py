@@ -24,10 +24,12 @@ os.makedirs(work, exist_ok=True)
 
 def call_fmusim(fmi_version: int, interface_type: str, test_name: str, args: Iterable[str], model: str = 'BouncingBall.fmu'):
 
+    _platform = 'x86-windows'
+
     if fmi_version == 1:
-        install = root / f'fmi{fmi_version}_{interface_type}' / 'install'
+        install = root / 'build' / f'fmi{fmi_version}-{interface_type}-{_platform}' / 'install'
     else:
-        install = root / f'fmi{fmi_version}' / 'install'
+        install = root / 'build' / f'fmi{fmi_version}-{_platform}' / 'install'
 
     output_file = work / f'{test_name}_fmi{fmi_version}_{interface_type}.csv'
 
