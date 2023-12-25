@@ -1,12 +1,16 @@
-import os
 from pathlib import Path
 from subprocess import check_call
 from fmpy.util import download_file
 import tarfile
 import argparse
 
+
 parser = argparse.ArgumentParser()
-parser.add_argument('--arch', default='x86_64')
+parser.add_argument(
+    'platform',
+    choices={'x86-windows', 'x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin'},
+    help="Platform to build for, e.g. x86_64-windows"
+)
 args, _ = parser.parse_known_args()
 
 archive = download_file('https://github.com/LLNL/sundials/releases/download/v6.4.1/cvode-6.4.1.tar.gz',
@@ -17,23 +21,29 @@ root = Path(__file__).parent
 with tarfile.open(archive) as file:
     file.extractall(root)
 
-build_dir = root / 'cvode-6.4.1' / 'build'
+build_dir = root / f'cvode-{args.platform}' / 'build'
 
-install_prefix = build_dir / 'install'
-
-toolchain_file = root.parent / 'aarch64-toolchain.cmake'
+install_prefix = root / f'cvode-{args.platform}' / 'install'
 
 cmake_args = []
 
-if os.name == 'nt':
+if args.platform in {'x86-windows', 'x86_64-windows'}:
+
     cmake_args = [
         '-G', 'Visual Studio 17 2022',
-        '-A', 'x64',
+        '-D', 'CMAKE_C_FLAGS_RELEASE=/MT /O2 /Ob2 /DNDEBUG',
         '-D', 'CMAKE_C_FLAGS_DEBUG=/MT /Zi /Ob0 /Od /RTC1',
-        '-D', 'CMAKE_C_FLAGS_RELEASE=/MT /O2 /Ob2 /DNDEBUG'
+        '-A'
     ]
 
-if args.arch == 'aarch64':
+    if args.platform == 'x86_64-windows':
+        cmake_args.append('x64')
+    elif args.platform == 'x86-windows':
+        cmake_args.append('Win32')
+
+elif args.platform == 'aarch64-linux':
+
+    toolchain_file = root.parent / 'aarch64-linux-toolchain.cmake'
     cmake_args += ['-D', f'CMAKE_TOOLCHAIN_FILE={toolchain_file}']
 
 check_call(
@@ -53,5 +63,3 @@ check_call([
     '--config', 'Release',
     '--target', 'install'
 ])
-
-os.remove(archive)

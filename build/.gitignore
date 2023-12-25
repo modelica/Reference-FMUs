@@ -1,0 +1,8 @@
+*.tar.gz
+cvode-*/
+libxml2-*/
+zlib-*/
+fmi1-*/
+fmi2-*/
+fmi3-*/
+fmus/
