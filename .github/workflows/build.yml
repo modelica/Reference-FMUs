@@ -71,6 +71,10 @@ jobs:
     - uses: actions/checkout@v3
     - uses: actions/download-artifact@v3
       with:
+        name: x86-windows
+        path: dist-x86-windows
+    - uses: actions/download-artifact@v3
+      with:
         name: x86_64-windows
         path: dist-x86_64-windows
     - uses: actions/download-artifact@v3
