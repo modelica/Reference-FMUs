@@ -91,7 +91,7 @@ jobs:
     - run: git tag --contains
     - run: git rev-parse --short HEAD
 
-    - run: python3 merge_binaries.py
+    - run: python3 build/merge_binaries.py
 
     - run: git status --porcelain --untracked=no
     - run: git tag --contains
