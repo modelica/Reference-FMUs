@@ -54,6 +54,7 @@ total_problems = 0
 
 top = os.path.abspath(__file__)
 top = os.path.dirname(top)
+top = os.path.dirname(top)
 
 print("Linting files in %s" % top)
 

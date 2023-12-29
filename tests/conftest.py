@@ -2,11 +2,11 @@ from pathlib import Path
 
 import pytest
 
+import fmpy
+
 
 def pytest_addoption(parser):
-    parser.addoption('--cmake-generator')
-    parser.addoption('--cmake-architecture')
-    parser.addoption('--arch', default='x86_64')
+    parser.addoption('--platform', default=None)
 
 
 @pytest.fixture(scope='session')
@@ -15,5 +15,15 @@ def work_dir():
 
 
 @pytest.fixture(scope='session')
-def arch(request):
-    yield request.config.getoption('--arch')
+def platform(request):
+    platform = request.config.getoption('--platform')
+    if platform is None:
+        platform = fmpy.platform_tuple
+    yield platform
+
+
+@pytest.fixture(scope='session')
+def arch(platform):
+    architecture, _ = platform.split('-')
+    yield architecture
+

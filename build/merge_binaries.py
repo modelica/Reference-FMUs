@@ -15,7 +15,7 @@ import jinja2
 import markdown2
 from fmpy import read_csv, plot_result, read_model_description
 
-root = Path(__file__).parent
+root = Path(__file__).parent.parent
 
 dist_merged = root / 'dist-merged'
 
@@ -94,7 +94,7 @@ def merge_fmus(version):
 
             tempdir = Path(mkdtemp())
 
-            platforms = ['x86_64-windows', 'x86_64-linux', 'x86_64-darwin']
+            platforms = ['x86-windows', 'x86_64-windows', 'x86_64-linux', 'x86_64-darwin']
 
             if version == '3.0':
                 platforms.append('aarch64-linux')
@@ -179,7 +179,7 @@ results_dir = root / 'dist-merged' / 'results'
 os.makedirs(results_dir, exist_ok=True)
 
 # copy fmusim
-for system in ['x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin']:
+for system in ['x86-windows', 'x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin']:
     shutil.copytree(src=root / f'dist-{system}' / f'fmusim-{system}', dst=root / 'dist-merged' / f'fmusim-{system}')
 
 # copy license and readme

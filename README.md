@@ -92,7 +92,7 @@ The FMUs will be in the `dist` folder inside the selected build folder.
 
 ## Building fmusim
 
-To build the `fmusim` executable, run the `ThirdParty/build_*.py` Python scripts and enable `WITH_FMUSIM` before generating the CMake project.
+To build the `fmusim` executable, run the `build/build_*.py <platform>` Python scripts (where `<platform>` is the platform to build for, e.g. `x86_64-windows`) and enable `WITH_FMUSIM` before generating the CMake project.
 
 ## License and attribution
 

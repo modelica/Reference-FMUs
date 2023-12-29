@@ -30,8 +30,11 @@
 #if FMI_VERSION == 1 || FMI_VERSION == 2
 
 #if defined(_WIN32)
-
+#if defined(__x86_64__) || defined(_M_X64)
 #define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "\\binaries\\win64\\" xstr(MODEL_IDENTIFIER) ".dll"
+#else
+#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "\\binaries\\win32\\" xstr(MODEL_IDENTIFIER) ".dll"
+#endif
 #elif defined(__APPLE__)
 #define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/darwin64/" xstr(MODEL_IDENTIFIER) ".dylib"
 #else

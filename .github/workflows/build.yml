@@ -13,12 +13,15 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v3
-    - run: python3 lint_files.py
+    - run: python3 build/lint_files.py
 
   build:
     strategy:
       matrix:
         include:
+          - name: x86-windows
+            image: windows-2022
+            arch: x86
           - name: x86_64-windows
             image: windows-2022
             arch: x86_64
@@ -44,17 +47,17 @@ jobs:
     - run: conda --version
     - run: which python
     - run: python -m pip install fmpy==0.3.18 pytest scipy
-    - if: matrix.arch == 'aarch64'
+    - if: matrix.name == 'aarch64-linux'
       run: sudo apt install gcc-aarch64-linux-gnu qemu-user
-    - run: python ThirdParty/build_cvode.py --arch ${{ matrix.arch }}
-    - run: python ThirdParty/build_libxml2.py --arch ${{ matrix.arch }}
-    - run: python ThirdParty/build_zlib.py --arch ${{ matrix.arch }}
-    - run: python build.py --arch ${{ matrix.arch }}
-    - run: pytest tests --arch ${{ matrix.arch }}
+    - run: python build/build_cvode.py ${{ matrix.name }}
+    - run: python build/build_libxml2.py ${{ matrix.name }}
+    - run: python build/build_zlib.py ${{ matrix.name }}
+    - run: python build/build.py ${{ matrix.name }}
+    - run: pytest tests --platform ${{ matrix.name }}
     - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.name }}
-        path: fmus
+        path: build/fmus
         if-no-files-found: error
 
   merge-fmus:
@@ -66,6 +69,10 @@ jobs:
         conda-channels: conda-forge
     - run: python -m pip install fmpy==0.3.18 pytest scipy kaleido markdown2 plotly
     - uses: actions/checkout@v3
+    - uses: actions/download-artifact@v3
+      with:
+        name: x86-windows
+        path: dist-x86-windows
     - uses: actions/download-artifact@v3
       with:
         name: x86_64-windows
@@ -88,7 +95,7 @@ jobs:
     - run: git tag --contains
     - run: git rev-parse --short HEAD
 
-    - run: python3 merge_binaries.py
+    - run: python3 build/merge_binaries.py
 
     - run: git status --porcelain --untracked=no
     - run: git tag --contains
