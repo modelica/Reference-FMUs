@@ -12,7 +12,7 @@ parent_dir = Path(__file__).parent
 parser = argparse.ArgumentParser()
 parser.add_argument(
     'platform',
-    choices={'x86-windows', 'x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin'},
+    choices={'x86-windows', 'x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin', 'aarch64-darwin'},
     help="Platform to build for, e.g. x86_64-windows"
 )
 parser.add_argument('--cmake-generator')
@@ -90,7 +90,7 @@ def build_fmus(fmi_version, fmi_type=None):
 
 if __name__ == '__main__':
 
-    if args.platform in {'x86_64-linux', 'x86-windows', 'x86_64-windows', 'x86_64-darwin'}:
+    if args.platform in {'x86_64-linux', 'x86-windows', 'x86_64-windows', 'x86_64-darwin', 'aarch64-darwin'}:
         build_fmus(fmi_version=1, fmi_type='me')
         build_fmus(fmi_version=1, fmi_type='cs')
         build_fmus(fmi_version=2)

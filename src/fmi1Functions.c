@@ -131,7 +131,7 @@ static fmiStatus terminate(char* fname, fmiComponent c) {
 // FMI functions: class methods not depending of a specific model instance
 // ---------------------------------------------------------------------------
 
-const char* fmiGetVersion() {
+const char* fmiGetVersion(void) {
     return fmiVersion;
 }
 
@@ -387,7 +387,7 @@ fmiStatus fmiGetStringStatus(fmiComponent c, const fmiStatusKind s, fmiString*  
 // FMI functions: only for Model Exchange 1.0
 // ---------------------------------------------------------------------------
 
-const char* fmiGetModelTypesPlatform() {
+const char* fmiGetModelTypesPlatform(void) {
     return fmiModelTypesPlatform;
 }
 

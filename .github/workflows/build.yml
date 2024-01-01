@@ -34,6 +34,9 @@ jobs:
           - name: x86_64-darwin
             image: macos-11
             arch: x86_64
+          - name: aarch64-darwin
+            image: macos-11
+            arch: aarch64
     runs-on: ${{ matrix.image }}
     needs: lint-files
     steps:
@@ -89,6 +92,10 @@ jobs:
       with:
         name: x86_64-darwin
         path: dist-x86_64-darwin
+    - uses: actions/download-artifact@v3
+      with:
+        name: aarch64-darwin
+        path: dist-aarch64-darwin
     - run: chmod +x dist-x86_64-linux/fmusim-x86_64-linux/fmusim
 
     - run: git status --porcelain --untracked=no
