@@ -46,12 +46,15 @@ if (${FMI_VERSION} GREATER 2)
     set(FMI_PLATFORM linux)
   endif ()
 
-  if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "aarch64")
+
+  if ("${CMAKE_HOST_SYSTEM_PROCESSOR}" MATCHES "arm64.*|ARM64.*|aarch64.*|AARCH64.*")
     set (FMI_PLATFORM aarch64-${FMI_PLATFORM})
-  elseif ("${CMAKE_SIZEOF_VOID_P}" STREQUAL "8")
+  elseif ("${CMAKE_HOST_SYSTEM_PROCESSOR}" MATCHES "amd64.*|AMD64.*|x86_64.*|X86_64.*")
     set (FMI_PLATFORM x86_64-${FMI_PLATFORM})
-  else ()
+  elseif ("${CMAKE_HOST_SYSTEM_PROCESSOR}" MATCHES "i386.*|I386.*|x86.*|X86.*|amd64.*|AMD64.*")
     set (FMI_PLATFORM x86-${FMI_PLATFORM})
+  else ()
+    message(FATAL_ERROR "Unsupported host processor: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
   endif ()
 
 else ()
