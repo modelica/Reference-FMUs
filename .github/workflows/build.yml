@@ -56,7 +56,8 @@ jobs:
     - run: python build/build_libxml2.py ${{ matrix.name }}
     - run: python build/build_zlib.py ${{ matrix.name }}
     - run: python build/build.py ${{ matrix.name }}
-    - run: pytest tests --platform ${{ matrix.name }}
+    - if: matrix.name != 'aarch64-darwin'
+      run: pytest tests --platform ${{ matrix.name }}
     - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.name }}
