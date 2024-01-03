@@ -12,7 +12,7 @@ parent_dir = Path(__file__).parent
 parser = argparse.ArgumentParser()
 parser.add_argument(
     'platform',
-    choices={'x86-windows', 'x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin'},
+    choices={'x86-windows', 'x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin', 'aarch64-darwin'},
     help="Platform to build for, e.g. x86_64-windows"
 )
 parser.add_argument('--cmake-generator')
@@ -46,6 +46,14 @@ def build_fmus(fmi_version, fmi_type=None):
 
         toolchain_file = parent_dir / 'aarch64-linux-toolchain.cmake'
         cmake_args += ['-D', f'CMAKE_TOOLCHAIN_FILE={ toolchain_file }']
+
+    elif args.platform == 'x86_64-darwin':
+
+        cmake_args += ['-D', 'CMAKE_OSX_ARCHITECTURES=x86_64']
+
+    elif args.platform == 'aarch64-darwin':
+
+        cmake_args += ['-D', 'CMAKE_OSX_ARCHITECTURES=arm64']
 
     install_dir = build_dir / 'install'
 
