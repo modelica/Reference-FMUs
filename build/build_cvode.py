@@ -27,7 +27,10 @@ install_prefix = root / f'cvode-{args.platform}' / 'install'
 
 cmake_args = []
 
-if args.platform in {'x86-windows', 'x86_64-windows'}:
+fmi_platform = args.platform
+fmi_architecture, fmi_system = fmi_platform.split('-')
+
+if fmi_system == 'windows':
 
     cmake_args = [
         '-G', 'Visual Studio 17 2022',
@@ -36,21 +39,21 @@ if args.platform in {'x86-windows', 'x86_64-windows'}:
         '-A'
     ]
 
-    if args.platform == 'x86_64-windows':
+    if fmi_architecture == 'x86_64':
         cmake_args.append('x64')
-    elif args.platform == 'x86-windows':
+    elif fmi_architecture == 'x86':
         cmake_args.append('Win32')
 
-elif args.platform == 'aarch64-linux':
+elif fmi_platform == 'aarch64-linux':
 
     toolchain_file = root / 'aarch64-linux-toolchain.cmake'
     cmake_args += ['-D', f'CMAKE_TOOLCHAIN_FILE={toolchain_file}']
 
-elif args.platform == 'x86_64-darwin':
+elif fmi_platform == 'x86_64-darwin':
 
     cmake_args += ['-D', 'CMAKE_OSX_ARCHITECTURES=x86_64']
 
-elif args.platform == 'aarch64-darwin':
+elif fmi_platform == 'aarch64-darwin':
 
     cmake_args += ['-D', 'CMAKE_OSX_ARCHITECTURES=arm64']
 
