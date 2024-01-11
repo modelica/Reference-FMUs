@@ -38,9 +38,9 @@ if fmi_system == 'windows':
     ]
 
     if fmi_architecture == 'x86':
-        cmake_args.append('x64')
-    elif fmi_architecture == 'x86_64':
         cmake_args.append('Win32')
+    elif fmi_architecture == 'x86_64':
+        cmake_args.append('x64')
 
 elif fmi_platform == 'aarch64-linux':
 
