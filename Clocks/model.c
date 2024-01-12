@@ -80,14 +80,16 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
     }
 }
 
- /**************************************
- ModelPartition 3 does the following:
-   - increments the clock tick counters
-   - burns some CPU cycles by calculating some nonsense
-   - sets an output variable that is supposed to find its way into ModelPartition 2
-   - triggers outClock, if the number of totalInTicks is a multiple of 5
- **************************************/
- static void activateModelPartition3(ModelInstance *comp, double time) {
+/**************************************
+ModelPartition 3 does the following:
+  - increments the clock tick counters
+  - burns some CPU cycles by calculating some nonsense
+  - sets an output variable that is supposed to find its way into ModelPartition 2
+  - triggers outClock, if the number of totalInTicks is a multiple of 5
+**************************************/
+static void activateModelPartition3(ModelInstance *comp, double time) {
+
+    UNUSED(time);
 
     if (comp->lockPreemtion) {
         comp->lockPreemtion();
@@ -114,22 +116,7 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
     // set output clocks
     M(outClock) = ((M(outClock) == false) && (M(totalInClockTicks) % 5 == 0));
     if (M(outClock)) {
-
-        bool earlyReturnRequested;
-        double earlyReturnTime;
-
-        if (M(outClock)) {
-            comp->intermediateUpdate(
-                comp,   // fmu instance
-                time,   // intermediateUpdateTime
-                false,  // intermediateVariableSetAllowed
-                false,  // intermediateVariableGetAllowed
-                true,   // intermediateStepFinished
-                false,  // canReturnEarly
-                &earlyReturnRequested,
-                &earlyReturnTime
-            );
-        }
+        comp->clockUpdate(comp->componentEnvironment);
     }
 }
 
