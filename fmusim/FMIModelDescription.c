@@ -467,13 +467,15 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
     xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/CoSimulation", xpathCtx);
     if (xpathObj->nodesetval->nodeNr == 1) {
         CALL(FMICalloc((void**)&modelDescription->coSimulation, 1, sizeof(FMICoSimulationInterface)));
-        modelDescription->coSimulation->modelIdentifier = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"modelIdentifier");
+        const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
+        modelDescription->coSimulation->modelIdentifier = (char*)xmlGetProp(node, (xmlChar*)"modelIdentifier");
+        modelDescription->coSimulation->hasEventMode = getBooleanAttribute(node, "hasEventMode");
     }
     xmlXPathFreeObject(xpathObj);
 
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelExchange", xpathCtx);
     if (xpathObj->nodesetval->nodeNr == 1) {
-        xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
+        const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
         CALL(FMICalloc((void**)&modelDescription->modelExchange, 1, sizeof(FMIModelExchangeInterface)));
         modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(node, (xmlChar*)"modelIdentifier");
         modelDescription->modelExchange->providesDirectionalDerivatives = getBooleanAttribute(node, "providesDirectionalDerivatives");

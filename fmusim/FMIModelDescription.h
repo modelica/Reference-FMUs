@@ -82,6 +82,7 @@ typedef struct {
 typedef struct {
 
     const char* modelIdentifier;
+    bool hasEventMode;
 
 } FMICoSimulationInterface;
 

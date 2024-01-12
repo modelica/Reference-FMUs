@@ -142,7 +142,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
 
         nextInputEventTime = FMINextInputEvent(input, time);
 
-        inputEvent = nextCommunicationPoint > nextInputEventTime;
+        inputEvent = nextCommunicationPoint >= nextInputEventTime;
 
         if (inputEvent) {
             nextCommunicationPoint = nextInputEventTime;
@@ -150,11 +150,11 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
 
         stepSize = nextCommunicationPoint - time;
 
-        if (settings->eventModeUsed) {
-            CALL(FMIApplyInput(S, input, time, false, true, false));
-        } else {
-            CALL(FMIApplyInput(S, input, time, true, true, true));
-        }
+        CALL(FMIApplyInput(S, input, time,
+            !settings->eventModeUsed,  // discrete
+            true,                      // continuous
+            !settings->eventModeUsed   // afterEvent
+        ));
 
         CALL(FMI3DoStep(S, 
             time,                  // currentCommunicationPoint
@@ -167,6 +167,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
         ));
 
         if (earlyReturn && !settings->earlyReturnAllowed) {
+            FMILogError("The FMU returned early from fmi3DoStep() but early return is not allowed.");
             status = FMIError;
             goto TERMINATE;
         }
