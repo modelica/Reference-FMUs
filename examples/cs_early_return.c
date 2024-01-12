@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
         // record variables
         CALL(recordVariables(S, outputFile));
 
-        if (terminateSimulation || time >= stopTime) {
+        if (terminateSimulation || time + stepSize > stopTime) {
             break;
         }
 

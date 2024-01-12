@@ -108,6 +108,14 @@ def test_fmi3(arch, platform):
     assert not validate_fmu(build_dir / 'install' / 'Clocks.fmu')
 
 
+def test_cs_early_return(platform):
+    run_example(root / 'build' / f'fmi3-{platform}' / 'temp' / 'cs_early_return')
+
+
+def test_cs_event_mode(platform):
+    run_example(root / 'build' / f'fmi3-{platform}' / 'temp' / 'cs_event_mode')
+
+
 def test_cs_reconfiguration(platform):
 
     build_dir = root / 'build' / f'fmi3-{platform}' / 'temp'

@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
 
         CALL(recordVariables(S, outputFile));
 
-        if (terminateSimulation || time >= stopTime) {
+        if (terminateSimulation || time + stepSize > stopTime) {
             break;
         }
 
