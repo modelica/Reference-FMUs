@@ -34,6 +34,9 @@ jobs:
           - name: x86_64-darwin
             image: macos-11
             arch: x86_64
+          - name: aarch64-darwin
+            image: macos-11
+            arch: aarch64
     runs-on: ${{ matrix.image }}
     needs: lint-files
     steps:
@@ -48,12 +51,15 @@ jobs:
     - run: which python
     - run: python -m pip install fmpy==0.3.18 pytest scipy
     - if: matrix.name == 'aarch64-linux'
-      run: sudo apt install gcc-aarch64-linux-gnu qemu-user
+      run: |
+        sudo apt-get update
+        sudo apt-get install gcc-aarch64-linux-gnu qemu-user
     - run: python build/build_cvode.py ${{ matrix.name }}
     - run: python build/build_libxml2.py ${{ matrix.name }}
     - run: python build/build_zlib.py ${{ matrix.name }}
     - run: python build/build.py ${{ matrix.name }}
-    - run: pytest tests --platform ${{ matrix.name }}
+    - if: matrix.name != 'aarch64-darwin'
+      run: pytest tests --platform ${{ matrix.name }}
     - uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.name }}
@@ -89,6 +95,10 @@ jobs:
       with:
         name: x86_64-darwin
         path: dist-x86_64-darwin
+    - uses: actions/download-artifact@v3
+      with:
+        name: aarch64-darwin
+        path: dist-aarch64-darwin
     - run: chmod +x dist-x86_64-linux/fmusim-x86_64-linux/fmusim
 
     - run: git status --porcelain --untracked=no
