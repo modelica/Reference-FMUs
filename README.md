@@ -43,6 +43,45 @@ Example:
 
 You can download the pre-built Reference FMUs and fmusim executables from [releases](https://github.com/modelica/Reference-FMUs/releases).
 
+## CSV file structure
+
+`fmusim` uses CSV (comma separated values) files with the following structure as input and output format.
+
+- The file must be UTF-8 encoded.
+- The first line contains the names of the columns.
+- Each column name must match a variable name of the respective FMU.
+- Names that contain commas (`,`) must be surrounded by double quotes (`"`).
+- The first column is the independent variable.
+- The values of the first column must be monotonically increasing.
+- Every line is terminated by a newline character (`\n`).
+- Every column is separated by a comma (`,`).
+- Every line must have the same number of columns.
+- The values must be stored in the same format as the start values of the respective variables in the `modelDescription.xml`.
+- `String` and `Binary` variables can only be scalars or arrays with only one element.
+- String values must be surrounded by double quotes (`"`).
+
+Example:
+
+```xml
+<ModelVariables>
+    <Float64 name="time" causality="independent"/>
+    <Float64 name="Float64 array">
+        <Dimension valueReference="2"/>
+    </Float64>
+    <Boolean name="Boolean array">
+        <Dimension valueReference="4"/>
+    </Boolean>
+    <Binary name="Binary scalar"/>
+</ModelVariables>
+```
+
+```
+time,"Float64 array","Boolean array","Binary scalar"
+0,1e-2 -1,0 false 1 true,666f6f
+0.1,0.02 -2,1 false 0 true,aa6f6f
+0.5,0.03 -3,1 true 0 false,66bb6f
+```
+
 ## Repository structure
 
 `<model>`
