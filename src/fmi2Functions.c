@@ -268,6 +268,8 @@ fmi2Status fmi2ExitInitializationMode(fmi2Component c) {
 
     S->state = S->type == ModelExchange ? EventMode : StepComplete;
 
+    CALL(configurate(S));
+
     END_FUNCTION();
 }
 

@@ -227,6 +227,8 @@ fmiStatus fmiInitializeSlave(fmiComponent c, fmiReal tStart, fmiBoolean StopTime
     instance->stopTime = StopTimeDefined ? tStop : INFINITY;
     instance->time = tStart;
 
+    configurate(instance);
+
     return init(c);
 }
 

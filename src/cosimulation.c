@@ -154,7 +154,7 @@ Status configurate(ModelInstance* comp) {
     comp->nz = getNumberOfEventIndicators(comp);
 
     if (comp->nz > 0) {
-        CALL(s_reallocate(comp, (void**)& comp->prez, comp->nz * sizeof(double)));
+        CALL(s_reallocate(comp, (void**)&comp->prez, comp->nz * sizeof(double)));
         CALL(s_reallocate(comp, (void**)&comp->z, comp->nz * sizeof(double)));
     }
 
