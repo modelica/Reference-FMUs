@@ -42,7 +42,7 @@
     <Category name="logStatusError" description="Log error messages"/>
   </LogCategories>
 
-  <DefaultExperiment stopTime="2"/>
+  <DefaultExperiment stopTime="2" stepSize="0.2"/>
 
   <ModelVariables>
     <ScalarVariable name="time" valueReference="0" causality="independent" variability="continuous">

@@ -1319,17 +1319,20 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
 
     BEGIN_FUNCTION(DoStep);
 
+    if (fabs(currentCommunicationPoint - S->time) > EPSILON) {
+        logError(S, "Expected currentCommunicationPoint = %.16g but was %.16g.", S->time, currentCommunicationPoint);
+        CALL(Error);
+    }
+
     if (communicationStepSize <= 0) {
-        logError(S, "fmi3DoStep: communication step size must be > 0 but was %g.", communicationStepSize);
-        S->state = Terminated;
-        return fmi3Error;
+        logError(S, "Communication step size must be > 0 but was %g.", communicationStepSize);
+        CALL(Error);
     }
 
     if (currentCommunicationPoint + communicationStepSize > S->stopTime + EPSILON) {
         logError(S, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
             currentCommunicationPoint, communicationStepSize, S->stopTime);
-        S->state = Terminated;
-        return fmi3Error;
+        CALL(Error);
     }
 
     const fmi3Float64 nextCommunicationPoint = currentCommunicationPoint + communicationStepSize + EPSILON;
