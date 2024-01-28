@@ -624,6 +624,11 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
 
     BEGIN_FUNCTION(DoStep);
 
+    if (fabs(currentCommunicationPoint - S->time) > EPSILON) {
+        logError(S, "Expected currentCommunicationPoint = %.16g but was %.16g.", S->time, currentCommunicationPoint);
+        CALL(Error);
+    }
+
     if (communicationStepSize <= 0) {
         logError(S, "Communication step size must be > 0 but was %g.", communicationStepSize);
         CALL(Error);

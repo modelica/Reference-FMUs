@@ -302,6 +302,12 @@ fmiStatus fmiDoStep(fmiComponent c, fmiReal currentCommunicationPoint, fmiReal c
 
     ModelInstance* instance = (ModelInstance *)c;
 
+    if (fabs(currentCommunicationPoint - instance->time) > EPSILON) {
+        logError(instance, "Expected currentCommunicationPoint = %.16g but was %.16g.", instance->time, currentCommunicationPoint);
+        instance->state = modelError;
+        return fmiError;
+    }
+
     if (currentCommunicationPoint + communicationStepSize > instance->stopTime + EPSILON) {
         logError(instance, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
             currentCommunicationPoint, communicationStepSize, instance->stopTime);
