@@ -201,6 +201,9 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t
     case vr_result2:
         values[(*index)++] = M(result2);
         return OK;
+    case vr_input2:
+        values[(*index)++] = M(input2);
+        return OK;
     case vr_output3:
         values[(*index)++] = M(output3);
         return OK;
