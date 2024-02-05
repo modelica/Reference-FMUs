@@ -242,6 +242,7 @@ fmi2Status fmi2SetupExperiment(fmi2Component c, fmi2Boolean toleranceDefined, fm
     S->startTime = startTime;
     S->stopTime = stopTimeDefined ? stopTime : INFINITY;
     S->time = startTime;
+    S->nextCommunicationPoint = startTime;
 
     END_FUNCTION();
 }
@@ -624,6 +625,13 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
 
     BEGIN_FUNCTION(DoStep);
 
+    if (fabs(currentCommunicationPoint - S->nextCommunicationPoint) > EPSILON) {
+        logError(S, "Expected currentCommunicationPoint = %.16g but was %.16g.",
+            S->nextCommunicationPoint, currentCommunicationPoint);
+        S->state = Terminated;
+        CALL(Error);
+    }
+
     if (communicationStepSize <= 0) {
         logError(S, "Communication step size must be > 0 but was %g.", communicationStepSize);
         CALL(Error);
@@ -653,6 +661,8 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
         }
 #endif
     }
+
+    S->nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
 
     END_FUNCTION();
 }
