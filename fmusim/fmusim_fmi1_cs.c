@@ -55,9 +55,9 @@ FMIStatus simulateFMI1CS(
             if (terminated) {
 
                 fmi1Real lastSuccessfulTime;
+
                 CALL(FMI1GetRealStatus(S, fmi1LastSuccessfulTime, &lastSuccessfulTime));
 
-                S->time = lastSuccessfulTime;
                 CALL(FMISample(S, time, result));
 
                 break;

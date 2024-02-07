@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
 
         CALL(FMI3GetClock(S, outClockVRs, 1, outClockValues));
 
-        CALL(recordVariables(S, outputFile));
+        CALL(recordVariables(S, time, outputFile));
 
         time++;
     }

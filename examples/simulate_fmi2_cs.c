@@ -16,29 +16,25 @@ int main(int argc, char* argv[]) {
         fmi2False            // loggingOn
     ));
 
-    // set start values
     CALL(applyStartValues(S));
 
-    // initialize the FMU
     CALL(FMI2SetupExperiment(S, fmi2False, 0.0, startTime, fmi2True, stopTime));
     CALL(FMI2EnterInitializationMode(S));
     CALL(FMI2ExitInitializationMode(S));
 
     for (uint64_t step = 0;; step++) {
 
-        CALL(recordVariables(S, outputFile));
-
-        // calculate the current time
         const fmi2Real time = step * h;
 
-        CALL(applyContinuousInputs(S, false));
-        CALL(applyDiscreteInputs(S));
+        CALL(recordVariables(S, time, outputFile));
+
+        CALL(applyContinuousInputs(S, time, false));
+        CALL(applyDiscreteInputs(S, time));
 
         if (time >= stopTime) {
             break;
         }
 
-        // call instance s1 and check status
         const FMIStatus doStepStatus = FMI2DoStep(S, time, h, fmi2True);
 
         if (doStepStatus == fmi2Discard) {
@@ -51,8 +47,7 @@ int main(int argc, char* argv[]) {
                 fmi2Real lastSuccessfulTime;
                 CALL(FMI2GetRealStatus(S, fmi2LastSuccessfulTime, &lastSuccessfulTime));
 
-                S->time = lastSuccessfulTime;
-                CALL(recordVariables(S, outputFile));
+                CALL(recordVariables(S, lastSuccessfulTime, outputFile));
 
                 break;
             }

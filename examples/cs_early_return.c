@@ -37,11 +37,11 @@ int main(int argc, char* argv[]) {
     while (true) {
 
         // apply continuous and discrete inputs
-        CALL(applyContinuousInputs(S, true));
-        CALL(applyDiscreteInputs(S));
+        CALL(applyContinuousInputs(S, time, true));
+        CALL(applyDiscreteInputs(S, time));
 
         // record variables
-        CALL(recordVariables(S, outputFile));
+        CALL(recordVariables(S, time, outputFile));
 
         if (terminateSimulation || time + stepSize > stopTime) {
             break;

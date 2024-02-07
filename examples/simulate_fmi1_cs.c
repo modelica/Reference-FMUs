@@ -20,27 +20,23 @@ int main(int argc, char* argv[]) {
         fmi1False                        // loggingOn
     ));
 
-    // set start values
     CALL(applyStartValues(S));
 
-    // initialize the FMU
     CALL(FMI1InitializeSlave(S, startTime, fmi1True, stopTime));
 
     for (uint64_t step = 0;; step++) {
 
-        CALL(recordVariables(S, outputFile));
-
-        // calculate the current time
         const fmi1Real time = step * h;
 
-        CALL(applyContinuousInputs(S, false));
-        CALL(applyDiscreteInputs(S));
+        CALL(recordVariables(S, time, outputFile));
+
+        CALL(applyContinuousInputs(S, time, false));
+        CALL(applyDiscreteInputs(S, time));
 
         if (time >= stopTime) {
             break;
         }
 
-        // call instance s1 and check status
         const FMIStatus doStepStatus = FMI1DoStep(S, time, h, fmi1True);
 
         if (doStepStatus == fmi1Discard) {
@@ -53,8 +49,7 @@ int main(int argc, char* argv[]) {
                 fmi1Real lastSuccessfulTime;
                 CALL(FMI1GetRealStatus(S, fmi1LastSuccessfulTime, &lastSuccessfulTime));
 
-                S->time = lastSuccessfulTime;
-                CALL(recordVariables(S, outputFile));
+                CALL(recordVariables(S, lastSuccessfulTime, outputFile));
 
                 break;
             }

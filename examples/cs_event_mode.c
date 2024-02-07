@@ -36,8 +36,8 @@ int main(int argc, char* argv[]) {
     CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, time, fmi3True, stopTime));
 
     // apply continuous and discrete inputs
-    CALL(applyContinuousInputs(S, true));
-    CALL(applyDiscreteInputs(S));
+    CALL(applyContinuousInputs(S, time, true));
+    CALL(applyDiscreteInputs(S, time));
 
     CALL(FMI3ExitInitializationMode(S));
 
@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
 
     while (true) {
 
-        CALL(recordVariables(S, outputFile));
+        CALL(recordVariables(S, time, outputFile));
 
         if (terminateSimulation || time + stepSize > stopTime) {
             break;
@@ -83,14 +83,14 @@ int main(int argc, char* argv[]) {
         if (eventEncountered) {
 
             // record variables before event update
-            CALL(recordVariables(S, outputFile));
+            CALL(recordVariables(S, time, outputFile));
 
             // enter Event Mode
             CALL(FMI3EnterEventMode(S));
 
             // apply continuous and discrete inputs
-            CALL(applyContinuousInputs(S, true));
-            CALL(applyDiscreteInputs(S));
+            CALL(applyContinuousInputs(S, time, true));
+            CALL(applyDiscreteInputs(S, time));
 
             // update discrete states
             do {

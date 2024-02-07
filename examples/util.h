@@ -166,11 +166,11 @@ double nextInputEventTime(double time);
 
 FMIStatus applyStartValues(FMIInstance *S);
 
-FMIStatus applyContinuousInputs(FMIInstance *S, bool afterEvent);
+FMIStatus applyContinuousInputs(FMIInstance *S, double time, bool afterEvent);
 
-FMIStatus applyDiscreteInputs(FMIInstance *S);
+FMIStatus applyDiscreteInputs(FMIInstance *S, double time);
 
-FMIStatus recordVariables(FMIInstance *S, FILE *outputFile);
+FMIStatus recordVariables(FMIInstance *S, double time, FILE *outputFile);
 
 static void logMessage(FMIInstance *instance, FMIStatus status, const char *category, const char *message) {
 
@@ -312,9 +312,9 @@ double nextInputEventTime(double time) { return INFINITY; }
 
 FMIStatus applyStartValues(FMIInstance *S) { return FMIOK; }
 
-FMIStatus applyContinuousInputs(FMIInstance *S, bool afterEvent) { return FMIOK; }
+FMIStatus applyContinuousInputs(FMIInstance *S, double time, bool afterEvent) { return FMIOK; }
 
-FMIStatus applyDiscreteInputs(FMIInstance *S) { return FMIOK; }
+FMIStatus applyDiscreteInputs(FMIInstance *S, double time) { return FMIOK; }
 
 #endif
 

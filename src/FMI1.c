@@ -485,9 +485,6 @@ fail:
 }
 
 FMIStatus FMI1InitializeSlave(FMIInstance *instance, fmi1Real tStart, fmi1Boolean stopTimeDefined, fmi1Real tStop) {
-
-    instance->time = tStart;
-
     CALL_ARGS(InitializeSlave, "tStart=%.16g, stopTimeDefined=%d, tStop=%.16g", tStart, stopTimeDefined, tStop);
 }
 
@@ -529,8 +526,6 @@ FMIStatus FMI1CancelStep(FMIInstance *instance) {
 FMIStatus FMI1DoStep(FMIInstance *instance, fmi1Real currentCommunicationPoint, fmi1Real communicationStepSize, fmi1Boolean newStep) {
 
     currentInstance = instance;
-
-    instance->time = currentCommunicationPoint + communicationStepSize;
 
     CALL_ARGS(DoStep, "currentCommunicationPoint=%.16g, communicationStepSize=%.16g, newStep=%d",
         currentCommunicationPoint, communicationStepSize, newStep);

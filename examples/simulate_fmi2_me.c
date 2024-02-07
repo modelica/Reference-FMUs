@@ -52,8 +52,8 @@ int main(int argc, char* argv[]) {
     // determine continuous and discrete states
     CALL(FMI2EnterInitializationMode(S));
 
-    CALL(applyContinuousInputs(S, false));
-    CALL(applyDiscreteInputs(S));
+    CALL(applyContinuousInputs(S, time, false));
+    CALL(applyDiscreteInputs(S, time));
 
     CALL(FMI2ExitInitializationMode(S));
 
@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
 
     // retrieve solution at t=Tstart, for example, for outputs
 
-    CALL(recordVariables(S, outputFile));
+    CALL(recordVariables(S, time, outputFile));
 
     uint64_t step = 0;
 
@@ -103,8 +103,8 @@ int main(int argc, char* argv[]) {
             CALL(FMI2EnterEventMode(S));
 
             if (inputEvent) {
-                CALL(applyContinuousInputs(S, true));
-                CALL(applyDiscreteInputs(S));
+                CALL(applyContinuousInputs(S, time, true));
+                CALL(applyDiscreteInputs(S, time));
             }
 
             fmi2Boolean nominalsChanged = fmi2False;
@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
             CALL(FMI2EnterContinuousTimeMode(S));
 
             // retrieve solution at simulation (re)start
-            CALL(recordVariables(S, outputFile));
+            CALL(recordVariables(S, time, outputFile));
 
 #if NX > 0
             if (statesChanged) {
@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
         CALL(FMI2SetTime(S, time));
 
         // apply continuous inputs
-        CALL(applyContinuousInputs(S, false));
+        CALL(applyContinuousInputs(S, time, false));
 
 #if NX > 0
         // set states at t = time and perform one step
@@ -208,7 +208,7 @@ int main(int argc, char* argv[]) {
         }
 
         // get continuous output
-        CALL(recordVariables(S, outputFile));
+        CALL(recordVariables(S, time, outputFile));
     }
 
 TERMINATE:
