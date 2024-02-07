@@ -226,6 +226,8 @@ fmiStatus fmiInitializeSlave(fmiComponent c, fmiReal tStart, fmiBoolean StopTime
     instance->startTime = tStart;
     instance->stopTime = StopTimeDefined ? tStop : INFINITY;
     instance->time = tStart;
+    instance->time = tStart;
+    instance->nextCommunicationPoint = tStart;
 
     configurate(instance);
 
@@ -302,6 +304,13 @@ fmiStatus fmiDoStep(fmiComponent c, fmiReal currentCommunicationPoint, fmiReal c
 
     ModelInstance* instance = (ModelInstance *)c;
 
+    if (fabs(currentCommunicationPoint - instance->nextCommunicationPoint) > EPSILON) {
+        logError(instance, "Expected currentCommunicationPoint = %.16g but was %.16g.",
+            instance->nextCommunicationPoint, currentCommunicationPoint);
+        instance->state = modelError;
+        return fmiError;
+    }
+
     if (currentCommunicationPoint + communicationStepSize > instance->stopTime + EPSILON) {
         logError(instance, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
             currentCommunicationPoint, communicationStepSize, instance->stopTime);
@@ -326,6 +335,8 @@ fmiStatus fmiDoStep(fmiComponent c, fmiReal currentCommunicationPoint, fmiReal c
         }
 #endif
     }
+
+    instance->nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
 
     return fmiOK;
 }

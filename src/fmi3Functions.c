@@ -402,6 +402,7 @@ fmi3Status fmi3EnterInitializationMode(fmi3Instance instance,
     S->startTime = startTime;
     S->stopTime = stopTimeDefined ? stopTime : INFINITY;
     S->time = startTime;
+    S->nextCommunicationPoint = startTime;
     S->state = InitializationMode;
 
     END_FUNCTION();
@@ -1319,8 +1320,15 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
 
     BEGIN_FUNCTION(DoStep);
 
+    if (fabs(currentCommunicationPoint - S->nextCommunicationPoint) > EPSILON) {
+        logError(S, "Expected currentCommunicationPoint = %.16g but was %.16g.",
+            S->nextCommunicationPoint, currentCommunicationPoint);
+        S->state = Terminated;
+        return fmi3Error;
+    }
+
     if (communicationStepSize <= 0) {
-        logError(S, "fmi3DoStep: communication step size must be > 0 but was %g.", communicationStepSize);
+        logError(S, "Communication step size must be > 0 but was %g.", communicationStepSize);
         S->state = Terminated;
         return fmi3Error;
     }
@@ -1334,7 +1342,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
 
     const fmi3Float64 nextCommunicationPoint = currentCommunicationPoint + communicationStepSize + EPSILON;
 
-    fmi3Boolean nextCommunicationPointReached;
+    bool nextCommunicationPointReached;
 
     *eventHandlingNeeded = fmi3False;
     *terminateSimulation = fmi3False;
@@ -1342,6 +1350,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
     while (true) {
 
         const fmi3Float64 nextSolverStepTime = S->time + FIXED_SOLVER_STEP;
+
         nextCommunicationPointReached = nextSolverStepTime > nextCommunicationPoint;
 
         if (nextCommunicationPointReached || (*eventHandlingNeeded && S->earlyReturnAllowed)) {
@@ -1379,6 +1388,12 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
     }
 
     *earlyReturn = !nextCommunicationPointReached;
+
+    if (nextCommunicationPointReached) {
+        S->nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
+    } else {
+        S->nextCommunicationPoint = S->time;
+    }
 
     *lastSuccessfulTime = S->time;
 

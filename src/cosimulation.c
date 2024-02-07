@@ -552,8 +552,25 @@ Status setFMUState(ModelInstance* comp, void* FMUState) {
     comp->startTime = s->startTime;
     comp->stopTime = s->stopTime;
     comp->time = s->time;
+    // instanceName
+    // type
+    // resourceLocation
+
     comp->status = s->status;
+
+    // logger
+    // intermediateUpdate
+    // clockUpdate
+
+    // lockPreemtion
+    // unlockPreemtion
+
+    // logEvents
+    // logErrors
+
+    // componentEnvironment
     comp->state = s->state;
+
     comp->newDiscreteStatesNeeded = s->newDiscreteStatesNeeded;
     comp->terminateSimulation = s->terminateSimulation;
     comp->nominalsOfContinuousStatesChanged = s->nominalsOfContinuousStatesChanged;
@@ -561,11 +578,26 @@ Status setFMUState(ModelInstance* comp, void* FMUState) {
     comp->nextEventTimeDefined = s->nextEventTimeDefined;
     comp->nextEventTime = s->nextEventTime;
     comp->clocksTicked = s->clocksTicked;
+
     comp->isDirtyValues = s->isDirtyValues;
+
     comp->modelData = s->modelData;
-    if (comp->nz) {
+
+    comp->nSteps = s->nSteps;
+
+    comp->earlyReturnAllowed = s->earlyReturnAllowed;
+    comp->eventModeUsed = s->eventModeUsed;
+    comp->nextCommunicationPoint = s->nextCommunicationPoint;
+
+    if (comp->nx > 0) {
+        memcpy(comp->x, s->x, s->nx * sizeof(double));
+        memcpy(comp->dx, s->dx, s->nx * sizeof(double));
+    }
+
+    if (comp->nz > 0) {
         memcpy(comp->z, s->z, s->nz * sizeof(double));
     }
+
     comp->nSteps = s->nSteps;
 
     return OK;

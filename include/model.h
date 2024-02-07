@@ -142,6 +142,7 @@ typedef struct {
     // Co-Simulation
     bool earlyReturnAllowed;
     bool eventModeUsed;
+    double nextCommunicationPoint;
 
     // solver
     size_t nz;
