@@ -60,8 +60,8 @@ int main(int argc, char* argv[]) {
     // determine continuous and discrete states
     CALL(FMI3EnterInitializationMode(S, fmi3False, 0.0, time, fmi3True, stopTime));
 
-    CALL(applyContinuousInputs(S, false));
-    CALL(applyDiscreteInputs(S));
+    CALL(applyContinuousInputs(S, time, false));
+    CALL(applyDiscreteInputs(S, time));
 
     CALL(FMI3ExitInitializationMode(S));
 
@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
     // retrieve solution at t=Tstart, for example, for outputs
     // S->fmi3SetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
 
-    CALL(recordVariables(S, outputFile));
+    CALL(recordVariables(S, time, outputFile));
 
     uint64_t step = 0;
 
@@ -116,8 +116,8 @@ int main(int argc, char* argv[]) {
             CALL(FMI3EnterEventMode(S));
 
             if (inputEvent) {
-                CALL(applyContinuousInputs(S, true));
-                CALL(applyDiscreteInputs(S));
+                CALL(applyContinuousInputs(S, time, true));
+                CALL(applyDiscreteInputs(S, time));
             }
 
             nominalsOfContinuousStatesChanged = fmi3False;
@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
             CALL(FMI3EnterContinuousTimeMode(S));
 
             // retrieve solution at simulation (re)start
-            CALL(recordVariables(S, outputFile));
+            CALL(recordVariables(S, time, outputFile));
 
 #if NX > 0
             if (valuesOfContinuousStatesChanged) {
@@ -179,7 +179,7 @@ int main(int argc, char* argv[]) {
         CALL(FMI3SetTime(S, time));
 
         // apply continuous inputs
-        CALL(applyContinuousInputs(S, false));
+        CALL(applyContinuousInputs(S, time, false));
 
 #if NX > 0
         // set states at t = time and perform one step
@@ -222,7 +222,7 @@ int main(int argc, char* argv[]) {
         CALL(FMI3CompletedIntegratorStep(S, fmi3True, &stepEvent, &terminateSimulation));
 
         // get continuous output
-        CALL(recordVariables(S, outputFile));
+        CALL(recordVariables(S, time, outputFile));
     }
 
 TERMINATE:

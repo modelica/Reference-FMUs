@@ -14,7 +14,7 @@ FILE *createOutputFile(const char *filename) {
     return file;
 }
 
-FMIStatus recordVariables(FMIInstance *S, FILE *outputFile) {
+FMIStatus recordVariables(FMIInstance *S, double time, FILE *outputFile) {
 
     const fmi3ValueReference vr_r_ = vr_r;
 
@@ -34,7 +34,7 @@ FMIStatus recordVariables(FMIInstance *S, FILE *outputFile) {
 
     if (status > FMIWarning) return status;
 
-    fprintf(outputFile, "%g,", S->time);
+    fprintf(outputFile, "%g,", time);
 
     for (size_t i = 0; i < r; i++) {
         fprintf(outputFile, i == 0 ? "%g" : " %g", y[i]);

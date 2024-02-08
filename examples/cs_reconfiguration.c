@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
 
     for (size_t step = 0; step <= 10; step++) {
 
-        CALL(recordVariables(S, outputFile));
+        CALL(recordVariables(S, time, outputFile));
 
         if (step == 5) {
             CALL(FMI3EnterConfigurationMode(S));

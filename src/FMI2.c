@@ -264,9 +264,6 @@ FMIStatus FMI2SetupExperiment(FMIInstance *instance,
     fmi2Real startTime,
     fmi2Boolean stopTimeDefined,
     fmi2Real stopTime) {
-
-    instance->time = startTime;
-
     CALL_ARGS(SetupExperiment, "toleranceDefined=%d, tolerance=%.16g, startTime=%.16g, stopTimeDefined=%d, stopTime=%.16g", toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime);
 }
 
@@ -433,7 +430,6 @@ FMIStatus FMI2CompletedIntegratorStep(FMIInstance *instance,
 
 /* Providing independent variables and re-initialization of caching */
 FMIStatus FMI2SetTime(FMIInstance* instance, fmi2Real time) {
-    instance->time = time;
     CALL_ARGS(SetTime, "time=%.16g", time);
 }
 
@@ -536,9 +532,6 @@ FMIStatus FMI2DoStep(FMIInstance *instance,
     fmi2Real      currentCommunicationPoint,
     fmi2Real      communicationStepSize,
     fmi2Boolean   noSetFMUStatePriorToCurrentPoint) {
-
-    instance->time = currentCommunicationPoint + communicationStepSize;
-
     CALL_ARGS(DoStep, "currentCommunicationPoint=%.16g, communicationStepSize=%.16g, noSetFMUStatePriorToCurrentPoint=%d",
         currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint);
 }

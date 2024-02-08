@@ -22,8 +22,6 @@ void intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
 
     FMIInstance *S = (FMIInstance *)instanceEnvironment;
 
-    S->time = intermediateUpdateTime;
-
     *earlyReturnRequested = fmi3False;
     *earlyReturnTime = 0;
 
@@ -32,7 +30,7 @@ void intermediateUpdate(fmi3InstanceEnvironment instanceEnvironment,
 
         // Get the output variables at time == intermediateUpdateTime
         // fmi3Get{VariableType}();
-        status = recordVariables(S, outputFile);
+        status = recordVariables(S, intermediateUpdateTime, outputFile);
 
         // If integration step in FMU solver is finished
         if (intermediateStepFinished) {

@@ -125,8 +125,6 @@ struct FMIInstance_ {
     FMILogMessage      *logMessage;
     FMILogFunctionCall *logFunctionCall;
 
-    double time;
-
     char* logMessageBuffer;
     size_t logMessageBufferSize;
     size_t logMessageBufferPosition;

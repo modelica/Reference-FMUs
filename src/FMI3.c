@@ -466,8 +466,6 @@ FMIStatus FMI3EnterInitializationMode(FMIInstance *instance,
 
     instance->state = FMIInitializationModeState;
 
-    instance->time = startTime;
-
     CALL_ARGS(EnterInitializationMode,
         "toleranceDefined=%d, tolerance=%.16g, startTime=%.16g, stopTimeDefined=%d, stopTime=%.16g",
         toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime);
@@ -1037,7 +1035,6 @@ FMIStatus FMI3CompletedIntegratorStep(FMIInstance *instance,
 
 /* Providing independent variables and re-initialization of caching */
 FMIStatus FMI3SetTime(FMIInstance *instance, fmi3Float64 time) {
-    instance->time = time;
     CALL_ARGS(SetTime, "time=%.16g", time);
 }
 
@@ -1177,8 +1174,6 @@ FMIStatus FMI3DoStep(FMIInstance *instance,
             currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint, *eventEncountered, *terminate, *earlyReturn, *lastSuccessfulTime);
         instance->logFunctionCall(instance, status, instance->logMessageBuffer);
     }
-
-    instance->time = *lastSuccessfulTime;
 
     return status;
 }
