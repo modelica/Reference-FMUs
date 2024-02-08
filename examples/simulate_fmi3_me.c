@@ -95,9 +95,7 @@ int main(int argc, char* argv[]) {
     CALL(FMI3GetNominalsOfContinuousStates(S, x_nominal, NX));
 #endif
 
-    // retrieve solution at t=Tstart, for example, for outputs
-    // S->fmi3SetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
-
+    // retrieve solution at time=start, for example, for outputs
     CALL(recordVariables(S, time, outputFile));
 
     uint64_t step = 0;
@@ -125,8 +123,8 @@ int main(int argc, char* argv[]) {
 
             // event iteration
             do {
-                // set inputs at super dense time point
-                // S->fmi3SetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
+
+                // set inputs at super dense time point with fmi3Set{VariableType}()
 
                 fmi3Boolean nominalsChanged = fmi3False;
                 fmi3Boolean statesChanged   = fmi3False;
@@ -134,8 +132,7 @@ int main(int argc, char* argv[]) {
                 // update discrete states
                 CALL(FMI3UpdateDiscreteStates(S, &discreteStatesNeedUpdate, &terminateSimulation, &nominalsChanged, &statesChanged, &nextEventTimeDefined, &nextEventTime));
 
-                // get output at super dense time point
-                // S->fmi3GetFloat*/Int*/UInt*/Boolean/String/Binary(m, ...)
+                // get output at super dense time point with fmi3Get{VariableType}()
 
                 nominalsOfContinuousStatesChanged |= nominalsChanged;
                 valuesOfContinuousStatesChanged   |= statesChanged;
