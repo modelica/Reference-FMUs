@@ -390,9 +390,10 @@ Status setFloat32(ModelInstance* comp, ValueReference vr, const float values[], 
         case vr_Float32_discrete_input:
 #if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
+                comp->state != Instantiated &&
                 comp->state != InitializationMode &&
                 comp->state != EventMode) {
-                logError(comp, "Variable Float32_discrete_input can only be set in initialization mode or event mode.");
+                logError(comp, "Variable Float32_discrete_input can only be set in after instantiation, in Initialization Mode, and in Event Mode.");
                 return Error;
             }
 #endif
