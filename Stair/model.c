@@ -46,6 +46,31 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t
     }
 }
 
+Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], size_t nValues, size_t* index) {
+
+    ASSERT_NVALUES(1);
+
+    switch (vr) {
+    case vr_counter:
+#if FMI_VERSION == 1
+        if (comp->state != Instantiated) {
+            logError(comp, "Variable \"counter\" can only be set after instantiation.");
+            return Error;
+        }
+#else
+        if (comp->state != Instantiated && comp->state != InitializationMode) {
+            logError(comp, "Variable \"counter\" can only be set in Instantiated and Intialization Mode.");
+            return Error;
+        }
+#endif
+        M(counter) = values[(*index)++];
+        return OK;
+    default:
+        logError(comp, "Set Int32 is not allowed for value reference %u.", vr);
+        return Error;
+    }
+}
+
 Status eventUpdate(ModelInstance *comp) {
 
     const double epsilon = (1.0 + fabs(comp->time)) * DBL_EPSILON;

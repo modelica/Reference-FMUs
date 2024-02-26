@@ -9,6 +9,8 @@
 #define MODEL_EXCHANGE
 
 #define GET_INT32
+#define SET_INT32
+
 #define EVENT_UPDATE
 
 #define FIXED_SOLVER_STEP 0.2
