@@ -52,7 +52,12 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], 
 
     switch (vr) {
     case vr_counter:
-#if FMI_VERSION > 1
+#if FMI_VERSION == 1
+        if (comp->state != Instantiated) {
+            logError(comp, "Variable \"counter\" can only be set after instantiation.");
+            return Error;
+        }
+#else
         if (comp->state != Instantiated && comp->state != InitializationMode) {
             logError(comp, "Variable \"counter\" can only be set in Instantiated and Intialization Mode.");
             return Error;
