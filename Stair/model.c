@@ -46,6 +46,24 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t
     }
 }
 
+Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], size_t nValues, size_t* index) {
+
+    ASSERT_NVALUES(1);
+
+    switch (vr) {
+    case vr_counter:
+        if (comp->state != Instantiated && comp->state != InitializationMode) {
+            logError(comp, "Variable \"counter\" can only be set in Instantiated and Intialization Mode.");
+            return Error;
+        }
+        M(counter) = values[(*index)++];
+        return OK;
+    default:
+        logError(comp, "Set Int32 is not allowed for value reference %u.", vr);
+        return Error;
+    }
+}
+
 Status eventUpdate(ModelInstance *comp) {
 
     const double epsilon = (1.0 + fabs(comp->time)) * DBL_EPSILON;
