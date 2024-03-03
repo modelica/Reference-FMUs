@@ -76,6 +76,7 @@ typedef struct {
 
     const char* modelIdentifier;
     bool providesDirectionalDerivatives;
+    bool needsCompletedIntegratorStep;
 
 } FMIModelExchangeInterface;
 

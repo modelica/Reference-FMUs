@@ -17,6 +17,8 @@ FMIStatus simulateFMI3ME(
     const FMUStaticInput * input,
     const FMISimulationSettings * settings) {
 
+    const bool needsCompletedIntegratorStep = modelDescription->modelExchange->needsCompletedIntegratorStep;
+
     FMIStatus status = FMIOK;
 
     fmi3Float64 time;
@@ -157,10 +159,13 @@ FMIStatus simulateFMI3ME(
             nSteps++;
         }
 
-        CALL(FMI3CompletedIntegratorStep(S, fmi3True, &stepEvent, &terminateSimulation));
+        if (needsCompletedIntegratorStep) {
 
-        if (terminateSimulation) {
-            goto TERMINATE;
+            CALL(FMI3CompletedIntegratorStep(S, fmi3True, &stepEvent, &terminateSimulation));
+
+            if (terminateSimulation) {
+                goto TERMINATE;
+            }
         }
 
         if (inputEvent || timeEvent || stateEvent || stepEvent) {

@@ -309,8 +309,10 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelExchange", xpathCtx);
     if (xpathObj->nodesetval->nodeNr == 1) {
         CALL(FMICalloc((void**)&modelDescription->modelExchange, 1, sizeof(FMIModelExchangeInterface)));
-        modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"modelIdentifier");
-        modelDescription->modelExchange->providesDirectionalDerivatives = getBooleanAttribute(xpathObj->nodesetval->nodeTab[0], "providesDirectionalDerivative");
+        const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
+        modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(node, (xmlChar*)"modelIdentifier");
+        modelDescription->modelExchange->providesDirectionalDerivatives = getBooleanAttribute(node, "providesDirectionalDerivative");
+        modelDescription->modelExchange->needsCompletedIntegratorStep = !getBooleanAttribute(node, "completedIntegratorStepNotNeeded");
     }
     xmlXPathFreeObject(xpathObj);
 
@@ -479,6 +481,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         CALL(FMICalloc((void**)&modelDescription->modelExchange, 1, sizeof(FMIModelExchangeInterface)));
         modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(node, (xmlChar*)"modelIdentifier");
         modelDescription->modelExchange->providesDirectionalDerivatives = getBooleanAttribute(node, "providesDirectionalDerivatives");
+        modelDescription->modelExchange->needsCompletedIntegratorStep = getBooleanAttribute(node, "needsCompletedIntegratorStep");
     }
     xmlXPathFreeObject(xpathObj);
 
