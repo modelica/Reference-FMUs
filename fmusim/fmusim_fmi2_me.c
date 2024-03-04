@@ -17,6 +17,8 @@ FMIStatus simulateFMI2ME(
     const FMUStaticInput * input,
     const FMISimulationSettings* settings) {
 
+    const bool needsCompletedIntegratorStep = modelDescription->modelExchange->needsCompletedIntegratorStep;
+
     FMIStatus status = FMIOK;
 
     fmi2Real time;
@@ -152,10 +154,13 @@ FMIStatus simulateFMI2ME(
             nSteps++;
         }
 
-        CALL(FMI2CompletedIntegratorStep(S, fmi2True, &stepEvent, &eventInfo.terminateSimulation));
+        if (needsCompletedIntegratorStep) {
 
-        if (eventInfo.terminateSimulation) {
-            goto TERMINATE;
+            CALL(FMI2CompletedIntegratorStep(S, fmi2True, &stepEvent, &eventInfo.terminateSimulation));
+            
+            if (eventInfo.terminateSimulation) {
+                goto TERMINATE;
+            }
         }
 
         if (inputEvent || timeEvent || stateEvent || stepEvent) {
