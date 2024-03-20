@@ -99,7 +99,7 @@ void eventUpdate(ModelInstance *comp) {
     comp->terminateSimulation  = false;
     comp->nextEventTimeDefined = false;
 
-    // State transition
+    // State transition is executed here because this fmu does not declare providesEvaluateDiscreteStates.
     logEvent(comp, "Controller clock state transition.");
     M(pre_ur) = M(ur);
     M(ur) = M(ur) + M(as);
