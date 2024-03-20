@@ -15,6 +15,7 @@ Status calculateValues(ModelInstance *comp) {
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
     UNUSED(nValues);
+    calculateValues(comp);
     switch (vr) {
         case vr_x:
             values[(*index)++] = M(x);
