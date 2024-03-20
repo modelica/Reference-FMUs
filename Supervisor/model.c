@@ -60,7 +60,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
 Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
 
     // Do state event detection.
-    // It's important that getClock is invoked before getFloat64,
+    // We assume that getClock is invoked before getFloat64,
     //  so the variable M(as) can take on the value corresponding to the event.
     // This is ok because as is part of the clocked partition of clock s,
     //  and therefore should not be queried when clock s is inactive.
