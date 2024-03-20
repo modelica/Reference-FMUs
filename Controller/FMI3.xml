@@ -33,7 +33,7 @@
     <Clock name="r" valueReference="1" causality="input" intervalVariability="constant" intervalDecimal="0.1"/>
     <Float64 name="x" valueReference="2" causality="input" variability="continuous" initial="exact" start="0"/>
     <Float64 name="ur" valueReference="3" causality="output" variability="discrete" initial="exact" start="0" clocks="1"/>
-    <Float64 name="as" valueReference="5" causality="input" variability="continuous" initial="exact" start="0"/>
+    <Float64 name="as" valueReference="5" causality="input" variability="discrete" initial="exact" start="0" clocks="6"/>
     <Clock name="s" valueReference="6" causality="input" intervalVariability="triggered"/>
   </ModelVariables>
 
