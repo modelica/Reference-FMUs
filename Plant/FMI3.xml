@@ -31,7 +31,7 @@
     <Float64 name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time"/>
     <Float64 name="x" valueReference="1" causality="output" variability="continuous" initial="exact" start="0"/>
     <Float64 name="der(x)" valueReference="2" causality="local" variability="continuous" initial="calculated" derivative="1" description="Derivative of x"/>
-    <Float64 name="u_r" valueReference="3" causality="input" variability="continuous" initial="exact" start="0"/>
+    <Float64 name="u_r" valueReference="3" causality="input" variability="discrete" initial="exact" start="0"/>
   </ModelVariables>
 
   <ModelStructure>
