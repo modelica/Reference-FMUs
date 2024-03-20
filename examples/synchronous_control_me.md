@@ -1,5 +1,7 @@
 # Synchronous Clock Example Scenario
 
+***NOTE: The orchestration code shown [here](synchronous_control_me.c) is not an official FMI recommendation regarding how these FMUs should be orchestrated. It represents one possible way, for the purposes of testing the FMU and highlighting how the different clocks are used.***
+
 This example consists of a [Controller](../Controller), a [Plant](../Plant), and a [Supervisor](../Supervisor) FMU.
 It uses model exchange in FMI3.0.
 The Controller fmu declares an input periodic clock,
