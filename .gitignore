@@ -18,3 +18,6 @@ dist-linux/
 dist-windows/
 dist-merged/
 tests/work/
+.vs/
+.vscode/
+
