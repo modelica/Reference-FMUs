@@ -12,7 +12,7 @@ jobs:
   lint-files:
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - run: python3 build/lint_files.py
 
   build:
@@ -40,16 +40,16 @@ jobs:
     runs-on: ${{ matrix.image }}
     needs: lint-files
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-    - uses: s-weigand/setup-conda@v1.1.1
+    - uses: s-weigand/setup-conda@v1
       with:
         conda-channels: conda-forge
     - run: conda --version
     - run: which python
-    - run: python -m pip install fmpy==0.3.18 pytest scipy
+    - run: python -m pip install fmpy==0.3.20 pytest scipy
     - if: matrix.name == 'aarch64-linux'
       run: |
         sudo apt-get update
@@ -60,7 +60,7 @@ jobs:
     - run: python build/build.py ${{ matrix.name }}
     - if: matrix.name != 'aarch64-darwin'
       run: pytest tests --platform ${{ matrix.name }}
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.name }}
         path: build/fmus
@@ -70,32 +70,32 @@ jobs:
     runs-on: ubuntu-20.04
     needs: [build]
     steps:
-    - uses: s-weigand/setup-conda@v1.1.1
+    - uses: s-weigand/setup-conda@v1
       with:
         conda-channels: conda-forge
-    - run: python -m pip install fmpy==0.3.18 pytest scipy kaleido markdown2 plotly
-    - uses: actions/checkout@v3
-    - uses: actions/download-artifact@v3
+    - run: python -m pip install fmpy==0.3.20 pytest scipy kaleido markdown2 plotly pytz
+    - uses: actions/checkout@v4
+    - uses: actions/download-artifact@v4
       with:
         name: x86-windows
         path: dist-x86-windows
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: x86_64-windows
         path: dist-x86_64-windows
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: x86_64-linux
         path: dist-x86_64-linux
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: aarch64-linux
         path: dist-aarch64-linux
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: x86_64-darwin
         path: dist-x86_64-darwin
-    - uses: actions/download-artifact@v3
+    - uses: actions/download-artifact@v4
       with:
         name: aarch64-darwin
         path: dist-aarch64-darwin
@@ -111,7 +111,7 @@ jobs:
     - run: git tag --contains
     - run: git rev-parse --short HEAD
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: Reference-FMUs
         path: dist-merged
