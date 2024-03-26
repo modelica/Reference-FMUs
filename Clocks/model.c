@@ -22,7 +22,7 @@ ModelPartition 1 does the following:
 **************************************/
 static void activateModelPartition1(ModelInstance* comp, double time) {
 
-    /* Note: model partition of highest priority 
+    /* Note: model partition of highest priority
         -> no interruption by other model partitions possible
         -> no lock preemption needed
     */
