@@ -6,10 +6,10 @@
 /*
 
 time        0 1 2 3 4 5 6 7 8 9
-inClock1    + + + + + + + + + +   t % 4 == 0
-inClock2    + +             + +   t % 8 == 0 || (t - 1) % 8 == 0
-inClock3            +             countdown depends on inClock1
-outClock    ? ? ? ? ? ? ? ? ? ?   totalInTicks % 5 == 0 (triggered by all inClocks)
+inClock1    + + + + + + + + + +   input,  triggered by the simulation algorithm every second
+inClock2    + +             + +   input,  triggered by the simulation algorithm at 0, 1, 8 and 9
+inClock3            +             input,  triggered by inClock1
+outClock    ? ? ? ? ? ? ? ? ? ?   output, triggered by all inClocks (if totalInTicks % 5 == 0)
 time        0 1 2 3 4 5 6 7 8 9
 
 */
@@ -22,9 +22,10 @@ ModelPartition 1 does the following:
 **************************************/
 static void activateModelPartition1(ModelInstance* comp, double time) {
 
-    if (comp->lockPreemtion) {
-        comp->lockPreemtion();
-    }
+    /* Note: model partition of highest priority
+        -> no interruption by other model partitions possible
+        -> no lock preemption needed
+    */
 
     // increment the counters
     M(inClock1Ticks)++;
@@ -38,10 +39,6 @@ static void activateModelPartition1(ModelInstance* comp, double time) {
 
     M(outClock) = ((M(outClock) == false) && (M(totalInClockTicks) % 5 == 0));
 
-    if (comp->unlockPreemtion) {
-        comp->unlockPreemtion();
-    }
-
     if (M(inClock3_qualifier) == 2 || M(outClock)) {
         comp->clockUpdate(comp->componentEnvironment);
     }
@@ -50,29 +47,29 @@ static void activateModelPartition1(ModelInstance* comp, double time) {
 /**************************************
 ModelPartition 2 does the following:
   - increments the clock tick counters
-  - gets an input value (from ModelPartition3)
+  - gets an input value
   - triggers outClock, if the number of totalInTicks is a multiple of 5
 **************************************/
 static void activateModelPartition2(ModelInstance* comp, double time) {
 
     UNUSED(time);
 
-    if (comp->lockPreemtion) {
-        comp->lockPreemtion();
+    if (comp->lockPreemption) {
+        comp->lockPreemption();
     }
 
     // increment the counters
     M(inClock2Ticks)++;
     M(totalInClockTicks)++;
 
-    M(result2) += M(input2);  // add the output from mp3
-    M(input2) = 0;    // then reset the value
+    M(result2) += M(input2);
+    M(input2) = 0;
 
     // set output clocks
     M(outClock) = ((M(outClock) == false) && (M(totalInClockTicks) % 5 == 0));
 
-    if (comp->unlockPreemtion) {
-        comp->unlockPreemtion();
+    if (comp->unlockPreemption) {
+        comp->unlockPreemption();
     }
 
     if (M(outClock)) {
@@ -91,16 +88,8 @@ static void activateModelPartition3(ModelInstance *comp, double time) {
 
     UNUSED(time);
 
-    if (comp->lockPreemtion) {
-        comp->lockPreemtion();
-    }
-
     // increment the counters
     M(inClock3Ticks)++;
-
-    if (comp->unlockPreemtion) {
-        comp->unlockPreemtion();
-    }
 
     // This partition is supposed to consume a bit of time on a low prio ...
     unsigned long sum = 0;
@@ -109,12 +98,19 @@ static void activateModelPartition3(ModelInstance *comp, double time) {
     }
     (void)sum; // use variable to avoid compiler warnings
 
-    // ... end of burning CPU cycles
-    M(output3) = 1000;   // this is suposed to find its way into mp2
-    M(totalInClockTicks)++;
+    M(output3) = 1000;
 
-    // set output clocks
+    if (comp->lockPreemption) {
+        comp->lockPreemption();
+    }
+
+    M(totalInClockTicks)++;
     M(outClock) = ((M(outClock) == false) && (M(totalInClockTicks) % 5 == 0));
+
+    if (comp->unlockPreemption) {
+        comp->unlockPreemption();
+    }
+
     if (M(outClock)) {
         comp->clockUpdate(comp->componentEnvironment);
     }

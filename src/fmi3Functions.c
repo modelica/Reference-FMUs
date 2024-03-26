@@ -375,8 +375,8 @@ fmi3Instance fmi3InstantiateScheduledExecution(
     if (instance) {
         instance->state = Instantiated;
         instance->clockUpdate = clockUpdate;
-        instance->lockPreemtion = lockPreemption;
-        instance->unlockPreemtion = unlockPreemption;
+        instance->lockPreemption = lockPreemption;
+        instance->unlockPreemption = unlockPreemption;
     }
 
     return instance;
