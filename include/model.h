@@ -114,8 +114,8 @@ typedef struct {
     intermediateUpdateType intermediateUpdate;
     clockUpdateType clockUpdate;
 
-    lockPreemptionType lockPreemtion;
-    unlockPreemptionType unlockPreemtion;
+    lockPreemptionType lockPreemption;
+    unlockPreemptionType unlockPreemption;
 
     bool logEvents;
     bool logErrors;

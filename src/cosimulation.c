@@ -69,8 +69,8 @@ ModelInstance *createModelInstance(
         comp->componentEnvironment = componentEnvironment;
         comp->logger               = cbLogger;
         comp->intermediateUpdate   = intermediateUpdate;
-        comp->lockPreemtion        = NULL;
-        comp->unlockPreemtion      = NULL;
+        comp->lockPreemption        = NULL;
+        comp->unlockPreemption      = NULL;
         comp->instanceName         = strdup(instanceName);
         comp->resourceLocation     = resourceLocation ? strdup(resourceLocation) : NULL;
         comp->status               = OK;
@@ -562,8 +562,8 @@ Status setFMUState(ModelInstance* comp, void* FMUState) {
     // intermediateUpdate
     // clockUpdate
 
-    // lockPreemtion
-    // unlockPreemtion
+    // lockPreemption
+    // unlockPreemption
 
     // logEvents
     // logErrors
