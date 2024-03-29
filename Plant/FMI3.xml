@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription
-  fmiVersion="3.0-beta.3"
+  fmiVersion="3.0"
   modelName="Plant"
   description="Represents the plant."
   instantiationToken="{6e81b08d-97be-4de1-957f-8358a4e83184}">

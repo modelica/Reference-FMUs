@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription
-  fmiVersion="3.0-beta.3"
+  fmiVersion="3.0"
   version="1.0"
   modelName="Controller"
   description="This FMU represents the controller"
@@ -38,6 +38,6 @@
   </ModelVariables>
 
   <ModelStructure>
-    <Output valueReference="3" dependencies="5"/>
+    <Output valueReference="3" dependencies="5 1"/>
   </ModelStructure>
 </fmiModelDescription>

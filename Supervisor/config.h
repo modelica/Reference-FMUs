@@ -22,15 +22,17 @@
 #define FIXED_SOLVER_STEP 1e-2
 
 typedef enum {
-    vr_s = 1,   // Clock s
-    vr_x,       // Sample from Plant
-    vr_as       // Output that is fed to the Controller
+    vr_s = 1,       // Clock s
+    vr_x,           // Sample from Plant
+    vr_as,          // Output that is fed to the Controller
+    vr_as_previous  // Previous value for as
 } ValueReference;
 
 typedef struct {
     bool s;    // Clock
     double x;  // Sample
-    double as; // Output that is fed to the Controller
+    double as; // Output and ClockedState that is fed to the Controller
+    double as_previous; // Previous value for as
     bool clock_s_ticking; // Keeps track of whether clock s is ticking during event mode.
     double z; // Event indicator
     double pz; // Previous Event Indicator

@@ -6,6 +6,7 @@ void setStartValues(ModelInstance *comp) {
     M(s) = false;       // Clock
     M(x) = 0.0;         // Sample
     M(as) = 1.0;        // Discrete state/output
+    M(as_previous) = 1.0;
     M(clock_s_ticking) = false; // State Event
     M(z) = 0.0;
     M(pz) = 0.0; 
@@ -27,17 +28,21 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
                 // We need this here because when clock s is ticking, we need to output the next state already
                 //   (because the clocked partition depends on that value),
                 //   without executing the state transition.
-                // Therefore we compute the next state "M(as) * -1.0" and output it.
+                // Therefore we compute the next state "M(as_previous) * -1.0" and output it.
                 // The actual execution of the state transition happens in the eventUpdate function below.
                 // See definition of clocked partition in 2.2.8.3. Model Partitions and Clocked Variables.
-                values[(*index)++] = M(as) * -1.0;
+                values[(*index)++] = M(as_previous) * -1.0;
             }
             else {
-                values[(*index)++] = M(as);
+                values[(*index)++] = M(as_previous);
             }
             return OK;
         case vr_x:
             values[(*index)++] = M(x);
+            return OK;
+        case vr_as_previous:
+            values[(*index)++] = M(as_previous);
+            return OK;
         default:
             logError(comp, "Unexpected value reference: %d.", vr);
             return Error;
@@ -95,7 +100,8 @@ void eventUpdate(ModelInstance* comp) {
 
     if (M(clock_s_ticking)) {
         // Execute state transition
-        M(as) = M(as) * -1.0;
+        M(as_previous) = M(as);
+        M(as) = M(as_previous) * -1.0;
         M(clock_s_ticking) = false;
 
         // The following has to be done in order to ensure that,

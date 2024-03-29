@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fmiBuildDescription fmiVersion="3.0-alpha.2">
+<fmiBuildDescription fmiVersion="3.0">
 
-  <BuildConfiguration modelIdentifier="Stair">
+  <BuildConfiguration modelIdentifier="Supervisor">
     <SourceFileSet language="C99">
       <SourceFile name="fmi3Functions.c"/>
       <SourceFile name="model.c"/>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fmiModelDescription
-  fmiVersion="3.0-beta.3"
+  fmiVersion="3.0"
   modelName="Supervisor"
   description="Represents the supervisor."
   instantiationToken="{64202d14-799a-4379-9fb3-79354aec17b2}">
@@ -31,12 +31,14 @@
     <Float64 name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time"/>
     <Clock name="s" valueReference="1" causality="output" intervalVariability="triggered"/>
     <Float64 name="x" valueReference="2" causality="input" variability="continuous" initial="exact" start="0"/>
-    <Float64 name="as" valueReference="3" causality="output" variability="discrete" initial="exact" start="1" clocks="1"/>
+    <Float64 name="as" valueReference="3" causality="output" variability="discrete" initial="exact" start="1" clocks="1" previous="4"/>
+    <Float64 name="as_previous" valueReference="4" causality="local" variability="discrete" initial="exact" start="1" clocks="1"/>
   </ModelVariables>
 
   <ModelStructure>
-    <Output valueReference="1"/>
-    <Output valueReference="3"/>
+    <Output valueReference="1" dependencies="2"/>
+    <Output valueReference="3" dependencies="1"/>
+    <ClockedState valueReference="3" />
   </ModelStructure>
 
 </fmiModelDescription>
