@@ -228,46 +228,46 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, doub
 		goto TERMINATE;
 	}
 
-	size_t row = 0;
-
-	for (size_t i = 1; i < input->nRows; i++) {
-
-		const double t = input->time[i];
-
-		if (t >= time) {
-			break;
-		}
-
-		row = i;
-	}
-
-	if (afterEvent) {
-
-		while (row < input->nRows - 2) {
-
-			if (input->time[row + 1] > time) {
-				break;
-			}
-
-			row++;
-		}
-	}
-
 	for (size_t i = 0; i < input->nVariables; i++) {
 
 		const FMIModelVariable* variable = input->variables[i];
 		const FMIVariableType   type     = variable->type;
 		const FMIValueReference vr       = variable->valueReference;
 
-		const size_t j = row * input->nVariables + i;
-
-		const size_t nValues = input->nValues[j];
-		const void* values   = input->values[j];
-
-		if (nValues == 0) continue;
-
 		if (continuous && variable->variability == FMIContinuous) {
-			
+
+			size_t row = 0;
+
+			for (size_t i = 1; i < input->nRows; i++) {
+
+				const double t = input->time[i];
+
+				if (t >= time) {
+					break;
+				}
+
+				row = i;
+			}
+
+			if (afterEvent) {
+
+				while (row < input->nRows - 2) {
+
+					if (input->time[row + 1] > time) {
+						break;
+					}
+
+					row++;
+				}
+			}
+
+			const size_t j = row * input->nVariables + i;
+
+			const size_t nValues = input->nValues[j];
+			const void* values = input->values[j];
+
+			if (nValues == 0) continue;
+
 			const size_t requiredBufferSize = nValues * sizeof(fmi3Float64);
 
 			if (input->bufferSize < requiredBufferSize) {
@@ -333,6 +333,38 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, doub
 			}
 
 		} else if (discrete && (variable->variability == FMIDiscrete || variable->variability == FMITunable)) {
+
+			size_t row = 0;
+
+			for (size_t i = 1; i < input->nRows; i++) {
+
+				const double t = input->time[i];
+
+				if (t >= time) {
+					break;
+				}
+
+				row = i;
+			}
+
+			if (afterEvent) {
+
+				while (row < input->nRows - 1) {
+
+					if (input->time[row + 1] > time) {
+						break;
+					}
+
+					row++;
+				}
+			}
+
+			const size_t j = row * input->nVariables + i;
+
+			const size_t nValues = input->nValues[j];
+			const void* values = input->values[j];
+
+			if (nValues == 0) continue;
 
 			if (instance->fmiVersion == FMIVersion1) {
 				CALL(FMI1SetValues(instance, type, &vr, 1, values));
