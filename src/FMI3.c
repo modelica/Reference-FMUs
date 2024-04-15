@@ -1160,18 +1160,18 @@ FMIStatus FMI3DoStep(FMIInstance *instance,
     fmi3Float64 currentCommunicationPoint,
     fmi3Float64 communicationStepSize,
     fmi3Boolean noSetFMUStatePriorToCurrentPoint,
-    fmi3Boolean* eventEncountered,
-    fmi3Boolean* terminate,
+    fmi3Boolean* eventHandlingNeeded,
+    fmi3Boolean* terminateSimulation,
     fmi3Boolean* earlyReturn,
     fmi3Float64* lastSuccessfulTime) {
 
-    const FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3DoStep(instance->component, currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint, eventEncountered, terminate, earlyReturn, lastSuccessfulTime);
+    const FMIStatus status = (FMIStatus)instance->fmi3Functions->fmi3DoStep(instance->component, currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint, eventHandlingNeeded, terminateSimulation, earlyReturn, lastSuccessfulTime);
 
     if (instance->logFunctionCall) {
         FMIClearLogMessageBuffer(instance);
         FMIAppendToLogMessageBuffer(instance,
-            "fmi3DoStep(currentCommunicationPoint=%.16g, communicationStepSize=%.16g, noSetFMUStatePriorToCurrentPoint=%d, eventEncountered=%d, terminate=%d, earlyReturn=%d, lastSuccessfulTime=%.16g)",
-            currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint, *eventEncountered, *terminate, *earlyReturn, *lastSuccessfulTime);
+            "fmi3DoStep(currentCommunicationPoint=%.16g, communicationStepSize=%.16g, noSetFMUStatePriorToCurrentPoint=%d, eventHandlingNeeded=%d, terminateSimulation=%d, earlyReturn=%d, lastSuccessfulTime=%.16g)",
+            currentCommunicationPoint, communicationStepSize, noSetFMUStatePriorToCurrentPoint, *eventHandlingNeeded, *terminateSimulation, *earlyReturn, *lastSuccessfulTime);
         instance->logFunctionCall(instance, status, instance->logMessageBuffer);
     }
 
