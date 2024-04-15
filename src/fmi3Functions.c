@@ -1346,6 +1346,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
 
     *eventHandlingNeeded = fmi3False;
     *terminateSimulation = fmi3False;
+    *earlyReturn         = fmi3False;
 
     while (true) {
 
@@ -1385,17 +1386,21 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
             }
         }
 #endif
+
+        if (S->terminateSimulation) {
+            break;
+        }
     }
 
-    *earlyReturn = !nextCommunicationPointReached;
+    *terminateSimulation = S->terminateSimulation;
+    *earlyReturn         = S->earlyReturnAllowed && !nextCommunicationPointReached;
+    *lastSuccessfulTime  = S->time;
 
     if (nextCommunicationPointReached) {
         S->nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
     } else {
         S->nextCommunicationPoint = S->time;
     }
-
-    *lastSuccessfulTime = S->time;
 
     END_FUNCTION();
 }

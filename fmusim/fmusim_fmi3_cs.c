@@ -126,11 +126,11 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
         }
     }
 
+    CALL(FMISample(S, time, recorder));
+
     size_t nSteps = 0;
 
     for (;;) {
-
-        CALL(FMISample(S, time, recorder));
 
         if (time >= settings->stopTime) {
             break;
@@ -161,7 +161,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
             stepSize,              // communicationStepSize
             fmi3True,              // noSetFMUStatePriorToCurrentPoint
             &eventEncountered,     // eventEncountered
-            &terminateSimulation,  // terminate
+            &terminateSimulation,  // terminateSimulation
             &earlyReturn,          // earlyReturn
             &lastSuccessfulTime    // lastSuccessfulTime
         ));
@@ -170,10 +170,6 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
             FMILogError("The FMU returned early from fmi3DoStep() but early return is not allowed.");
             status = FMIError;
             goto TERMINATE;
-        }
-
-        if (terminateSimulation) {
-            break;
         }
 
         if (earlyReturn && lastSuccessfulTime < nextCommunicationPoint) {
@@ -186,9 +182,13 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
             nSteps++;
         }
 
-        if (settings->eventModeUsed && (inputEvent || eventEncountered)) {
+        CALL(FMISample(S, time, recorder));
 
-            CALL(FMISample(S, time, recorder));
+        if (terminateSimulation) {
+            goto TERMINATE;
+        }
+
+        if (settings->eventModeUsed && (inputEvent || eventEncountered)) {
 
             CALL(FMI3EnterEventMode(S));
 
@@ -211,7 +211,8 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
                     &nextEventTime));
 
                 if (terminateSimulation) {
-                    break;
+                    CALL(FMISample(S, time, recorder));
+                    goto TERMINATE;
                 }
 
             } while (discreteStatesNeedUpdate);
@@ -221,6 +222,8 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
             }
 
             CALL(FMI3EnterStepMode(S));
+
+            CALL(FMISample(S, time, recorder));
         }
     }
 
