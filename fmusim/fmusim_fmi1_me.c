@@ -149,6 +149,7 @@ FMIStatus simulateFMI1ME(
                 CALL(FMI1EventUpdate(S, fmi1True, &eventInfo));
 
                 if (eventInfo.terminateSimulation) {
+                    CALL(FMISample(S, time, result));
                     goto TERMINATE;
                 }
 

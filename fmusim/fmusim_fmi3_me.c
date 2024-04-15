@@ -195,6 +195,7 @@ FMIStatus simulateFMI3ME(
                     &nextEventTime));
                 
                 if (terminateSimulation) {
+                    CALL(FMISample(S, time, result));
                     goto TERMINATE;
                 }
 
