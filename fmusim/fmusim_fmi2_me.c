@@ -185,6 +185,7 @@ FMIStatus simulateFMI2ME(
                 CALL(FMI2NewDiscreteStates(S, &eventInfo));
 
                 if (eventInfo.terminateSimulation) {
+                    CALL(FMISample(S, time, result));
                     goto TERMINATE;
                 }
 
