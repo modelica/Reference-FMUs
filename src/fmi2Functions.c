@@ -660,6 +660,11 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
             CALL(eventUpdate(S));
         }
 #endif
+
+        if (S->terminateSimulation) {
+            status = Discard;
+            goto TERMINATE;
+        }
     }
 
     S->nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
