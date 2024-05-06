@@ -63,7 +63,13 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], 
             return Error;
         }
 #endif
+        if (values[*index] >= 10) {
+            logError(comp, "The maximum value for variable \"counter\" is 10.");
+            return Error;
+        }
+
         M(counter) = values[(*index)++];
+
         return OK;
     default:
         logError(comp, "Set Int32 is not allowed for value reference %u.", vr);
@@ -72,6 +78,11 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], 
 }
 
 Status eventUpdate(ModelInstance *comp) {
+
+    if (M(counter) >= 10) {
+        logError(comp, "Variable \"counter\" cannot be incremented for values >= 10.");
+        return Error;
+    }
 
     const double epsilon = (1.0 + fabs(comp->time)) * DBL_EPSILON;
 

@@ -29,7 +29,7 @@
 
   <ModelVariables>
     <Float64 name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time"/>
-    <Int32 name="counter" valueReference="1" description="counts the seconds" causality="output" variability="discrete" initial="exact" start="1"/>
+    <Int32 name="counter" valueReference="1" description="counts the seconds" causality="output" variability="discrete" initial="exact" start="1" max="10"/>
   </ModelVariables>
 
   <ModelStructure>
