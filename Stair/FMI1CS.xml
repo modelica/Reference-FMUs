@@ -16,7 +16,7 @@
       <Real/>
     </ScalarVariable>
     <ScalarVariable name="counter" valueReference="1" description="counts the seconds" causality="output" variability="discrete">
-      <Integer start="1" fixed="true"/>
+      <Integer start="1" fixed="true" max="10"/>
     </ScalarVariable>
   </ModelVariables>
 
