@@ -211,15 +211,6 @@ TERMINATE:
 
 int main(int argc, const char* argv[]) {
 
-    if (argc < 2) {
-        printf("Missing argument [FMU].\n\n");
-        printUsage();
-        return EXIT_FAILURE;
-    } else if (argc == 2 && !strcmp(argv[1], "--help")) {
-        printUsage();
-        return EXIT_SUCCESS;
-    }
-
     bool logFMICalls = false;
 
     FMIInterfaceType interfaceType = -1;
@@ -255,6 +246,17 @@ int main(int argc, const char* argv[]) {
     bool recordIntermediateValues = false;
     double tolerance = 0;
 
+    if (argc < 2) {
+        printf("Missing argument [FMU].\n\n");
+        printUsage();
+        status = FMIError;
+        goto TERMINATE;
+    } else if (argc == 2 && !strcmp(argv[1], "--help")) {
+        printUsage();
+        status = FMIError;
+        goto TERMINATE;
+    }
+
     for (int i = 1; i < argc - 1; i++) {
 
         const char* v = argv[i];
@@ -269,7 +271,8 @@ int main(int argc, const char* argv[]) {
             } else {
                 printf(PROGNAME ": unrecognized interface type '%s'\n", argv[i + 1]);
                 printf("Try '" PROGNAME " --help' for more information.\n");
-                return EXIT_FAILURE;
+                status = FMIError;
+                goto TERMINATE;
             }
             i++;
         } else if (!strcmp(v, "--start-value")) {
@@ -313,7 +316,8 @@ int main(int argc, const char* argv[]) {
         } else {
             printf(PROGNAME ": unrecognized option '%s'\n", v);
             printf("Try '" PROGNAME " --help' for more information.\n");
-            return EXIT_FAILURE;
+            status = FMIError;
+            goto TERMINATE;
         }
     }
 
@@ -330,7 +334,8 @@ int main(int argc, const char* argv[]) {
     unzipdir = FMICreateTemporaryDirectory();
     
     if (!unzipdir) {
-        return EXIT_FAILURE;
+        status = FMIError;
+        goto TERMINATE;
     }
 
     char modelDescriptionPath[FMI_PATH_MAX] = "";
@@ -338,18 +343,21 @@ int main(int argc, const char* argv[]) {
     char platformBinaryPath[FMI_PATH_MAX] = "";
 
     if (FMIExtractArchive(fmuPath, unzipdir)) {
-        return EXIT_FAILURE;
+        status = FMIError;
+        goto TERMINATE;
     }
 
     strcpy(modelDescriptionPath, unzipdir);
 
     if (!FMIPathAppend(modelDescriptionPath, "modelDescription.xml")) {
-        return EXIT_FAILURE;
+        status = FMIError;
+        goto TERMINATE;
     }
 
     modelDescription = FMIReadModelDescription(modelDescriptionPath);
 
     if (!modelDescription) {
+        status = FMIError;
         goto TERMINATE;
     }
 
@@ -365,7 +373,8 @@ int main(int argc, const char* argv[]) {
             modelIdentifier = modelDescription->modelExchange->modelIdentifier;
         } else  {
             printf("No supported interface type found.\n");
-            return EXIT_FAILURE;
+            status = FMIError;
+            goto TERMINATE;
         }
 
     } else {
@@ -378,7 +387,8 @@ int main(int argc, const char* argv[]) {
             modelIdentifier = modelDescription->coSimulation->modelIdentifier;
         } else {
             printf("Selected interface type is not supported by the FMU.\n");
-            return EXIT_FAILURE;
+            status = FMIError;
+            goto TERMINATE;
         }
 
     }
@@ -402,7 +412,8 @@ int main(int argc, const char* argv[]) {
 
         if (!startVariables[i]) {
             printf("Variable %s does not exist.\n", name);
-            return 1;
+            status = FMIError;
+            goto TERMINATE;
         }
     }
 
@@ -411,8 +422,8 @@ int main(int argc, const char* argv[]) {
     S = FMICreateInstance("instance1", platformBinaryPath, logMessage, logFMICalls ? logFunctionCall : NULL);
 
     if (!S) {
-        status = FMIError;
         printf("Failed to create FMU instance.\n");
+        status = FMIError;
         goto TERMINATE;
     }
 
@@ -452,6 +463,7 @@ int main(int argc, const char* argv[]) {
 
     if (!result) {
         printf("Failed to open result file %s for writing.\n", outputFile);
+        status = FMIError;
         goto TERMINATE;
     }
 
@@ -526,7 +538,8 @@ int main(int argc, const char* argv[]) {
         settings.solverReset  = FMICVodeReset;
     } else {
         printf("Unknown solver: %s.", solver);
-        return FMIError;
+        status = FMIError;
+        goto TERMINATE;
     }
 
     if (modelDescription->fmiVersion == FMIVersion1) {
@@ -597,5 +610,5 @@ TERMINATE:
     free(startValues);
     free(outputVariableNames);
 
-    return status;
+    return (int)status;
 }
