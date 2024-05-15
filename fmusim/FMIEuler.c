@@ -94,7 +94,7 @@ FMISolverStatus FMIEulerStep(FMISolver* solver, double nextTime, double* timeRea
 
     if (solver->nx > 0) {
 
-        CALL(solver->setContinuousStates(solver->S, solver->x, solver->nx));
+        CALL(solver->getContinuousStates(solver->S, solver->x, solver->nx));
         CALL(solver->getContinuousStateDerivatives(solver->S, solver->dx, solver->nx));
 
         for (size_t i = 0; i < solver->nx; i++) {
