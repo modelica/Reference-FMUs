@@ -419,13 +419,15 @@ int main(int argc, const char* argv[]) {
 
     FMIPlatformBinaryPath(unzipdir, modelIdentifier, modelDescription->fmiVersion, platformBinaryPath, FMI_PATH_MAX);
 
-    S = FMICreateInstance("instance1", platformBinaryPath, logMessage, logFMICalls ? logFunctionCall : NULL);
+    S = FMICreateInstance("instance1", logMessage, logFMICalls ? logFunctionCall : NULL);
 
     if (!S) {
         printf("Failed to create FMU instance.\n");
         status = FMIError;
         goto TERMINATE;
     }
+
+    CALL(FMILoadPlatformBinary(S, platformBinaryPath));
 
     size_t nOutputVariables = 0;
 

@@ -155,7 +155,9 @@ FMI_STATIC FMIStatus FMIRealloc(void** memory, size_t size);
 
 FMI_STATIC void FMIFree(void** memory);
 
-FMI_STATIC FMIInstance* FMICreateInstance(const char* instanceName, const char* libraryPath, FMILogMessage* logMessage, FMILogFunctionCall* logFunctionCall);
+FMI_STATIC FMIInstance* FMICreateInstance(const char* instanceName, FMILogMessage* logMessage, FMILogFunctionCall* logFunctionCall);
+
+FMI_STATIC FMIStatus FMILoadPlatformBinary(FMIInstance* instance, const char* libraryPath);
 
 FMI_STATIC void FMIFreeInstance(FMIInstance *instance);
 

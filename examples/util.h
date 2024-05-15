@@ -251,14 +251,14 @@ static FMIStatus setUp() {
     }
 #endif
 
-    S = FMICreateInstance("instance1", PLATFORM_BINARY, logMessage, logFunctionCall);
+    S = FMICreateInstance("instance1", logMessage, logFunctionCall);
 
     if (!S) {
-        printf("Failed to load shared library %s.\n", PLATFORM_BINARY);
+        printf("Failed to create FMU instance.\n");
         return FMIError;
     }
 
-    return FMIOK;
+    return FMILoadPlatformBinary(S, PLATFORM_BINARY);
 }
 
 static FMIStatus tearDown() {
