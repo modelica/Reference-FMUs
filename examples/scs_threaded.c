@@ -150,12 +150,14 @@ int main(int argc, char* argv[]) {
 
     //InstanceEnvironment env;
 
-    S = FMICreateInstance("instance1", PLATFORM_BINARY, logMessage, logFunctionCall);
+    S = FMICreateInstance("instance1", logMessage, logFunctionCall);
 
     if (!S) {
         status = fmi3Error;
         goto TERMINATE;
     }
+
+    CALL(FMILoadPlatformBinary(S, PLATFORM_BINARY));
 
     // Instantiate the FMU
     CALL(FMI3InstantiateScheduledExecution(S,

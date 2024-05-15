@@ -84,38 +84,7 @@ void FMIFree(void** memory) {
     }
 }
 
-FMIInstance *FMICreateInstance(const char *instanceName, const char *libraryPath, FMILogMessage *logMessage, FMILogFunctionCall *logFunctionCall) {
-
-# ifdef _WIN32
-    TCHAR Buffer[1024];
-    GetCurrentDirectory(1024, Buffer);
-
-    WCHAR dllDirectory[MAX_PATH];
-
-    // convert path to unicode
-    mbstowcs(dllDirectory, libraryPath, MAX_PATH);
-
-    // add the binaries directory temporarily to the DLL path to allow discovery of dependencies
-    DLL_DIRECTORY_COOKIE dllDirectoryCookie = AddDllDirectory(dllDirectory);
-
-    // TODO: log getLastSystemError()
-
-    HMODULE libraryHandle = LoadLibraryExA(libraryPath, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
-
-    // remove the binaries directory from the DLL path
-    if (dllDirectoryCookie) {
-        RemoveDllDirectory(dllDirectoryCookie);
-    }
-
-    // TODO: log error
-
-# else
-    void *libraryHandle = dlopen(libraryPath, RTLD_LAZY);
-# endif
-
-    if (!libraryHandle) {
-        return NULL;
-    }
+FMIInstance *FMICreateInstance(const char *instanceName, FMILogMessage *logMessage, FMILogFunctionCall *logFunctionCall) {
 
     FMIInstance* instance = (FMIInstance*)calloc(1, sizeof(FMIInstance));
 
@@ -123,7 +92,7 @@ FMIInstance *FMICreateInstance(const char *instanceName, const char *libraryPath
         return NULL;
     }
 
-    instance->libraryHandle = libraryHandle;
+    instance->libraryHandle = NULL;
 
     instance->logMessage = logMessage;
     instance->logFunctionCall = logFunctionCall;
@@ -137,6 +106,49 @@ FMIInstance *FMICreateInstance(const char *instanceName, const char *libraryPath
     instance->status = FMIOK;
 
     return instance;
+}
+
+FMIStatus FMILoadPlatformBinary(FMIInstance* instance, const char* libraryPath) {
+
+# ifdef _WIN32
+    WCHAR dllDirectory[MAX_PATH];
+
+    // convert path to unicode
+    mbstowcs(dllDirectory, libraryPath, MAX_PATH);
+
+    // replace forward slashes with backslashes
+    for (size_t i = 0; i < wcslen(dllDirectory); i++) {
+        if (dllDirectory[i] == L'/') {
+            dllDirectory[i] = L'\\';
+        }
+    }
+
+    wchar_t* last = wcsrchr(dllDirectory, L'\\');
+
+    // remove the file spec
+    if (last) {
+        *last = L'\0';
+    }
+
+    // add the binaries directory temporarily to the DLL path to allow discovery of dependencies
+    DLL_DIRECTORY_COOKIE dllDirectoryCookie = AddDllDirectory(dllDirectory);
+
+    instance->libraryHandle = LoadLibraryExA(libraryPath, NULL, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+
+    // remove the binaries directory from the DLL path
+    if (dllDirectoryCookie) {
+        RemoveDllDirectory(dllDirectoryCookie);
+    }
+# else
+    instance->libraryHandle = dlopen(libraryPath, RTLD_LAZY);
+# endif
+
+    if (!instance->libraryHandle) {
+        FMILogError("Failed to load shared library %s.", libraryPath);
+        return FMIError;
+    }
+
+    return FMIOK;
 }
 
 void FMIFreeInstance(FMIInstance *instance) {
