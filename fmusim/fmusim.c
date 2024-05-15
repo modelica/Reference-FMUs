@@ -410,6 +410,12 @@ int main(int argc, const char* argv[]) {
 
     S = FMICreateInstance("instance1", platformBinaryPath, logMessage, logFMICalls ? logFunctionCall : NULL);
 
+    if (!S) {
+        status = FMIError;
+        printf("Failed to create FMU instance.\n");
+        goto TERMINATE;
+    }
+
     size_t nOutputVariables = 0;
 
     void* outputVariablesMemory = NULL;
