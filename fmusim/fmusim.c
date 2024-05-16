@@ -36,6 +36,7 @@
 #define FMI_PATH_MAX 4096
 
 #define PROGNAME "fmusim"
+#define FMUSIM_VERSION "0.0."
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
@@ -253,6 +254,10 @@ int main(int argc, const char* argv[]) {
         goto TERMINATE;
     } else if (argc == 2 && !strcmp(argv[1], "--help")) {
         printUsage();
+        status = FMIError;
+        goto TERMINATE;
+    } else if (argc == 2 && !strcmp(argv[1], "--version")) {
+        printf("fmusim version 0.0.30 (" FMI_PLATFORM " " FMI_PLATFORM_TUPLE ")\n");
         status = FMIError;
         goto TERMINATE;
     }
