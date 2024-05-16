@@ -28,49 +28,9 @@
 #define str(s) #s
 
 #if FMI_VERSION == 1 || FMI_VERSION == 2
-
-#if defined(_WIN32)
-#if defined(__x86_64__) || defined(_M_X64)
-#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "\\binaries\\win64\\" xstr(MODEL_IDENTIFIER) ".dll"
+#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) FMI_FILE_SEPARATOR "binaries" FMI_FILE_SEPARATOR FMI_PLATFORM FMI_FILE_SEPARATOR xstr(MODEL_IDENTIFIER) FMI_SHARED_LIBRARY_EXTENSION
 #else
-#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "\\binaries\\win32\\" xstr(MODEL_IDENTIFIER) ".dll"
-#endif
-#elif defined(__APPLE__)
-#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/darwin64/" xstr(MODEL_IDENTIFIER) ".dylib"
-#else
-#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) "/binaries/linux64/" xstr(MODEL_IDENTIFIER) ".so"
-#endif
-
-#else
-
-#if defined(__aarch64__) || defined(_M_ARM64)
-#define ARCH "aarch64"
-#elif defined(__x86_64__) || defined(_M_X64)
-#define ARCH "x86_64"
-#elif defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
-#define ARCH "x86"
-#else
-#error "Unknown architecture"
-#endif
-
-#if defined(_WIN32)
-#define SYS "windows"
-#define SEP "\\"
-#define EXT ".dll"
-#elif defined(__APPLE__)
-#define SYS "darwin"
-#define SEP "/"
-#define EXT ".dylib"
-#elif defined(__linux__)
-#define SYS "linux"
-#define SEP "/"
-#define EXT ".so"
-#else
-#error "Unknown platform"
-#endif
-
-#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) SEP "binaries" SEP ARCH "-" SYS SEP xstr(MODEL_IDENTIFIER) EXT
-
+#define PLATFORM_BINARY  xstr(MODEL_IDENTIFIER) FMI_FILE_SEPARATOR "binaries" FMI_FILE_SEPARATOR FMI_PLATFORM_TUPLE FMI_FILE_SEPARATOR xstr(MODEL_IDENTIFIER) FMI_SHARED_LIBRARY_EXTENSION
 #endif
 
 #ifndef min

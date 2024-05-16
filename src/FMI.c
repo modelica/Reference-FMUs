@@ -393,51 +393,19 @@ FMIStatus FMIPathToURI(const char *path, char *uri, const size_t uriLength) {
 
 FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *modelIdentifier, FMIVersion fmiVersion, char *platformBinaryPath, size_t size) {
 
-#if defined(_WIN32)
-    const char *platform = "win";
-    const char *system   = "windows";
-    const char sep       = '\\';
-    const char *ext      = ".dll";
-#elif defined(__APPLE__)
-    const char *platform = "darwin";
-    const char *system   = "darwin";
-    const char sep       = '/';
-    const char *ext      = ".dylib";
-#elif defined(__linux__)
-    const char *platform = "linux";
-    const char *system   = "linux";
-    const char sep       = '/';
-    const char *ext      = ".so";
-#else
-#error "Unknown platform"
-#endif
+    char* separator = ""; // optional separator after the unzipdir
+    
+    const char last = unzipdir[strlen(unzipdir) - 1];
 
-#if defined(__aarch64__) || defined(_M_ARM64)
-    const char* bits = "64";
-    const char* arch = "aarch64";
-#elif defined(__x86_64__) || defined(_M_X64)
-    const char *bits = "64";
-    const char *arch = "x86_64";
-#elif defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
-    const char *bits = "32";
-    const char *arch = "x86";
-#else
-#error "Unknown architecture"
-#endif
-    const char* bin = "binaries";
-    char optSep[2] = "";
-    int rc;
-
-    if (unzipdir[strlen(unzipdir) - 1] != sep) {
-        optSep[0] = sep;
+    if (last != '/' && last != '\\') {
+        separator = FMI_FILE_SEPARATOR;
     }
 
-    if (fmiVersion == 3) {
-        rc = snprintf(platformBinaryPath, size, "%s%s%s%c%s-%s%c%s%s", unzipdir, optSep, bin, sep, arch, system, sep, modelIdentifier, ext);
-    } else {
-        rc = snprintf(platformBinaryPath, size, "%s%s%s%c%s%s%c%s%s", unzipdir, optSep, bin, sep, platform, bits, sep, modelIdentifier, ext);
-    }
+    const char* platform = fmiVersion < FMIVersion3 ? FMI_PLATFORM : FMI_PLATFORM_TUPLE;
 
+    const int rc = snprintf(platformBinaryPath, size, "%s%sbinaries" FMI_FILE_SEPARATOR "%s" FMI_FILE_SEPARATOR "%s" FMI_SHARED_LIBRARY_EXTENSION,
+        unzipdir, separator, platform, modelIdentifier);
+    
     if (rc >= size) {
         return FMIError;
     }

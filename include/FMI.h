@@ -23,6 +23,42 @@ extern "C" {
 #define FMI_STATIC
 #endif
 
+#if defined(_WIN32)
+#define FMI_SYSTEM "windows"
+#define FMI_PLATFORM_SYSTEM "win"
+#define FMI_FILE_SEPARATOR "\\"
+#define FMI_SHARED_LIBRARY_EXTENSION ".dll"
+#elif defined(__APPLE__)
+#define FMI_SYSTEM "darwin"
+#define FMI_PLATFORM_SYSTEM "darwin"
+#define FMI_FILE_SEPARATOR "/"
+#define FMI_SHARED_LIBRARY_EXTENSION ".dylib"
+#elif defined(__linux__)
+#define FMI_SYSTEM "linux"
+#define FMI_PLATFORM_SYSTEM "linux"
+#define FMI_FILE_SEPARATOR "/"
+#define FMI_SHARED_LIBRARY_EXTENSION ".so"
+#else
+#error "Unknown system"
+#endif
+
+#if defined(__aarch64__) || defined(_M_ARM64)
+#define FMI_ARCHITECTURE "aarch64"
+#define FMI_PLATFORM_BITS "64"
+#elif defined(__x86_64__) || defined(_M_X64)
+#define FMI_ARCHITECTURE "x86_64"
+#define FMI_PLATFORM_BITS "64"
+#elif defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
+#define FMI_ARCHITECTURE "x86";
+#define FMI_PLATFORM_BITS "32"
+#else
+#error "Unknown architecture"
+#endif
+
+#define FMI_PLATFORM FMI_PLATFORM_SYSTEM FMI_PLATFORM_BITS
+#define FMI_PLATFORM_TUPLE FMI_ARCHITECTURE "-" FMI_SYSTEM
+
+
 typedef enum {
     FMIOK,
     FMIWarning,
