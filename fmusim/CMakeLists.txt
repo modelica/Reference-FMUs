@@ -10,7 +10,7 @@ else ()
     set(FMI_PLATFORM "${FMI_ARCHITECTURE}-linux")
 endif ()
 
-set(FMUSIM_VERSION "" CACHE STRING "(development build)")
+set(FMUSIM_VERSION "" CACHE STRING "")
 
 set(CVODE_DIR    ${CMAKE_SOURCE_DIR}/build/cvode-${FMI_PLATFORM}/install/)
 set(LIBXML2_DIR  ${CMAKE_SOURCE_DIR}/build/libxml2-${FMI_PLATFORM}/install/)

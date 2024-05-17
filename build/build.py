@@ -24,23 +24,25 @@ parser.add_argument(
 args, _ = parser.parse_known_args()
 
 
-def get_version(git_executable='git'):
+def get_version():
+    try:
+        cwd = os.path.dirname(__file__)
 
-    cwd = os.path.dirname(__file__)
+        changed_files = subprocess.check_output(['git', 'status', '--porcelain', '--untracked=no'],
+                                                cwd=cwd).decode('ascii').strip()
 
-    changed_files = subprocess.check_output([git_executable, 'status', '--porcelain', '--untracked=no'],
-                                            cwd=cwd).decode('ascii').strip()
+        if changed_files:
+            return None
 
-    if changed_files:
+        version = subprocess.check_output(['git', 'tag', '--contains'], cwd=cwd).decode('ascii').strip()
+
+        if not version:
+            version = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], cwd=cwd).decode(
+                'ascii').strip()
+
+        return version
+    except:
         return None
-
-    version = subprocess.check_output([git_executable, 'tag', '--contains'], cwd=cwd).decode('ascii').strip()
-
-    if not version:
-        version = subprocess.check_output([git_executable, 'rev-parse', '--short', 'HEAD'], cwd=cwd).decode(
-            'ascii').strip()
-
-    return version
 
 
 def build_fmus(fmi_version, fmi_type=None):
@@ -59,8 +61,10 @@ def build_fmus(fmi_version, fmi_type=None):
 
     version = get_version()
 
-    if version:
-        cmake_args += ['-D', f'FMUSIM_VERSION="{version}"']
+    if not version:
+        version = 'development build'
+
+    cmake_args += ['-D', f'FMUSIM_VERSION="{version}"']
 
     fmi_platform = args.platform
     fmi_architecture, fmi_system = fmi_platform.split('-')
