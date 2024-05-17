@@ -49,7 +49,7 @@ extern "C" {
 #define FMI_ARCHITECTURE "x86_64"
 #define FMI_PLATFORM_BITS "64"
 #elif defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
-#define FMI_ARCHITECTURE "x86";
+#define FMI_ARCHITECTURE "x86"
 #define FMI_PLATFORM_BITS "32"
 #else
 #error "Unknown architecture"
