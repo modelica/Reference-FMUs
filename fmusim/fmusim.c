@@ -36,7 +36,7 @@
 #define FMI_PATH_MAX 4096
 
 #define PROGNAME "fmusim"
-#define FMUSIM_VERSION "0.0."
+
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
@@ -102,10 +102,11 @@ static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char*
 
 void printUsage() {
     printf(
-        "Usage: " PROGNAME " [OPTION]... [FMU]\n"
+        "Usage: " PROGNAME " [OPTION]... [FMU]\n\n"
         "Simulate a Functional Mock-up Unit and write the output to result.csv.\n"
         "\n"
         "  --help                           display this help and exit\n"
+        "  --version                        display the program version\n"
         "  --interface-type [me|cs]         the interface type to use\n"
         "  --tolerance [TOLERANCE]          relative tolerance\n"
         "  --start-time [VALUE]             start time\n"
@@ -254,11 +255,13 @@ int main(int argc, const char* argv[]) {
         goto TERMINATE;
     } else if (argc == 2 && !strcmp(argv[1], "--help")) {
         printUsage();
-        status = FMIError;
         goto TERMINATE;
     } else if (argc == 2 && !strcmp(argv[1], "--version")) {
-        printf("fmusim version 0.0.30 (" FMI_PLATFORM " " FMI_PLATFORM_TUPLE ")\n");
-        status = FMIError;
+        printf(PROGNAME " "
+#ifdef FMUSIM_VERSION
+            FMUSIM_VERSION
+#endif
+            " (" FMI_PLATFORM_TUPLE ")\n");
         goto TERMINATE;
     }
 

@@ -24,6 +24,25 @@ parser.add_argument(
 args, _ = parser.parse_known_args()
 
 
+def get_version(git_executable='git'):
+
+    cwd = os.path.dirname(__file__)
+
+    changed_files = subprocess.check_output([git_executable, 'status', '--porcelain', '--untracked=no'],
+                                            cwd=cwd).decode('ascii').strip()
+
+    if changed_files:
+        return None
+
+    version = subprocess.check_output([git_executable, 'tag', '--contains'], cwd=cwd).decode('ascii').strip()
+
+    if not version:
+        version = subprocess.check_output([git_executable, 'rev-parse', '--short', 'HEAD'], cwd=cwd).decode(
+            'ascii').strip()
+
+    return version
+
+
 def build_fmus(fmi_version, fmi_type=None):
 
     if fmi_type is not None:
@@ -37,6 +56,11 @@ def build_fmus(fmi_version, fmi_type=None):
     os.makedirs(build_dir)
 
     cmake_args = []
+
+    version = get_version()
+
+    if version:
+        cmake_args += ['-D', f'FMUSIM_VERSION="{version}"']
 
     fmi_platform = args.platform
     fmi_architecture, fmi_system = fmi_platform.split('-')
