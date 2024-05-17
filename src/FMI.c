@@ -394,7 +394,7 @@ FMIStatus FMIPathToURI(const char *path, char *uri, const size_t uriLength) {
 FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *modelIdentifier, FMIVersion fmiVersion, char *platformBinaryPath, size_t size) {
 
     char* separator = ""; // optional separator after the unzipdir
-    
+
     const char last = unzipdir[strlen(unzipdir) - 1];
 
     if (last != '/' && last != '\\') {
@@ -405,7 +405,7 @@ FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *modelIdentifie
 
     const int rc = snprintf(platformBinaryPath, size, "%s%sbinaries" FMI_FILE_SEPARATOR "%s" FMI_FILE_SEPARATOR "%s" FMI_SHARED_LIBRARY_EXTENSION,
         unzipdir, separator, platform, modelIdentifier);
-    
+
     if (rc >= size) {
         return FMIError;
     }
