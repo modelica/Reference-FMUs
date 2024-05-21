@@ -19,6 +19,12 @@ set(PROJECT_SOURCES
         MainWindow.ui
         ../src/FMI.c
         ../include/FMI.h
+        ../fmusim/FMIZip.c
+        ../fmusim/FMIZip.h
+        ../fmusim/miniunzip.c
+        ../build/zlib-1.3/contrib/minizip/unzip.c
+        ../build/zlib-1.3/contrib/minizip/ioapi.c
+        ../build/zlib-1.3/contrib/minizip/iowin32.c
         ../fmusim/FMIModelDescription.c
         ../fmusim/FMIModelDescription.h
         ../src/structured_variable_name.tab.c
@@ -35,6 +41,8 @@ target_include_directories(fmusim-gui PRIVATE
     ../include
     ../fmusim
     ../build/libxml2-msvc2019-2-install/include/libxml2
+    ../build/zlib-1.3-msvc2019-install/zlib/include
+    ../build/zlib-1.3/contrib/minizip
 )
 
 target_compile_definitions(fmusim-gui PRIVATE
@@ -43,6 +51,7 @@ target_compile_definitions(fmusim-gui PRIVATE
 
 target_link_libraries(fmusim-gui PRIVATE
     "E:/Development/Reference-FMUs/build/libxml2-msvc2019-2-install/lib/libxml2.lib"
+    "E:/Development/Reference-FMUs/build/zlib-1.3-msvc2019-install/zlib/lib/zlib.lib"
     #../build/libxml2-msvc2019-2-install/lib/libxml2s.lib
     #E:/Development/Reference-FMUs/build/libxml2-x86_64-windows/install/lib/libxml2s.lib
 )

@@ -46,7 +46,7 @@ const char* FMICreateTemporaryDirectory() {
 
 int FMIPathAppend(char* path, const char* more) {
 #ifdef _WIN32
-    return PathAppendA(path, "modelDescription.xml");
+    return PathAppendA(path, more);
 #else
     sprintf(path, "%s/%s", path, more);
     return 1;
