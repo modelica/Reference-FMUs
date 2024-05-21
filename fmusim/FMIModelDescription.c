@@ -34,21 +34,21 @@
 static bool getBooleanAttribute(const xmlNodePtr node, const char* name) {
     char* literal = (char*)xmlGetProp(node, (xmlChar*)name);
     bool value = literal && (strcmp(literal, "true") == 0 || strcmp(literal, "1") == 0);
-    free(literal);
+    xmlFree(literal);
     return value;
 }
 
 static uint32_t getUInt32Attribute(const xmlNodePtr node, const char* name) {
     char* literal = (char*)xmlGetProp(node, (xmlChar*)name);
     uint32_t value = strtoul(literal, NULL, 0);
-    free(literal);
+    xmlFree(literal);
     return value;
 }
 
 static FMIVariableNamingConvention getVariableNamingConvention(const xmlNodePtr node) {
-    const char* value = (char*)xmlGetProp(node, (xmlChar*)"variableNamingConvention");
+    char* value = (char*)xmlGetProp(node, (xmlChar*)"variableNamingConvention");
     FMIVariableNamingConvention variableNamingConvention = (value && !strcmp(value, "structured")) ? FMIStructured : FMIFlat;
-    free((void*)value);
+    xmlFree(value);
     return variableNamingConvention;
 }
 
@@ -547,7 +547,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             variable->variability = FMIContinuous;
         }
 
-        free((void*)variability);
+        xmlFree((void*)variability);
 
         if (!strcmp(name, "Float32")) {
             switch (variable->variability) {
@@ -615,7 +615,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
         variable->valueReference = FMIValueReferenceForLiteral(vr);
 
-        free((void*)vr);
+        xmlFree((void*)vr);
 
         const char* causality = (char*)xmlGetProp(variableNode, (xmlChar*)"causality");
 
@@ -637,7 +637,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             variable->causality = FMILocal;
         }
 
-        free((void*)causality);
+        xmlFree((void*)causality);
 
         variable->derivative = (FMIModelVariable*)xmlGetProp(variableNode, (xmlChar*)"derivative");
 
@@ -712,7 +712,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
                 nProblems++;
                 FMILogError("Failed to resolve attribute derivative=\"%s\" for model variable \"%s\".\n", literal, variable->name);
             }
-            free(literal);
+            xmlFree(literal);
         }
 
     }
@@ -841,34 +841,34 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
         return;
     }
 
-    free((void*)modelDescription->modelName);
-    free((void*)modelDescription->instantiationToken);
-    free((void*)modelDescription->description);
-    free((void*)modelDescription->generationTool);
-    free((void*)modelDescription->generationDate);
+    xmlFree((void*)modelDescription->modelName);
+    xmlFree((void*)modelDescription->instantiationToken);
+    xmlFree((void*)modelDescription->description);
+    xmlFree((void*)modelDescription->generationTool);
+    xmlFree((void*)modelDescription->generationDate);
 
     if (modelDescription->modelExchange) {
-        free((void*)modelDescription->modelExchange->modelIdentifier);
+        xmlFree((void*)modelDescription->modelExchange->modelIdentifier);
         free(modelDescription->modelExchange);
     }
 
     if (modelDescription->coSimulation) {
-        free((void*)modelDescription->coSimulation->modelIdentifier);
+        xmlFree((void*)modelDescription->coSimulation->modelIdentifier);
         free(modelDescription->coSimulation);
     }
 
     if (modelDescription->defaultExperiment) {
-        free((void*)modelDescription->defaultExperiment->startTime);
-        free((void*)modelDescription->defaultExperiment->stopTime);
-        free((void*)modelDescription->defaultExperiment->stepSize);
+        xmlFree((void*)modelDescription->defaultExperiment->startTime);
+        xmlFree((void*)modelDescription->defaultExperiment->stopTime);
+        xmlFree((void*)modelDescription->defaultExperiment->stepSize);
         free(modelDescription->defaultExperiment);
     }
 
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
-        free((void*)variable->name);
-        free((void*)variable->start);
-        free((void*)variable->description);
+        xmlFree((void*)variable->name);
+        xmlFree((void*)variable->start);
+        xmlFree((void*)variable->description);
     }
 
     free(modelDescription->modelVariables);
