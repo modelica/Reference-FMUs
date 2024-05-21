@@ -10,6 +10,8 @@ else ()
     set(FMI_PLATFORM "${FMI_ARCHITECTURE}-linux")
 endif ()
 
+set(FMUSIM_VERSION "" CACHE STRING "")
+
 set(CVODE_DIR    ${CMAKE_SOURCE_DIR}/build/cvode-${FMI_PLATFORM}/install/)
 set(LIBXML2_DIR  ${CMAKE_SOURCE_DIR}/build/libxml2-${FMI_PLATFORM}/install/)
 set(ZLIB_DIR     ${CMAKE_SOURCE_DIR}/build/zlib-${FMI_PLATFORM}/install/)
@@ -94,9 +96,9 @@ target_include_directories(fmusim PRIVATE
 )
 
 if (WIN32)
-    target_compile_definitions(fmusim PRIVATE YY_NO_UNISTD_H LIBXML_STATIC)
+    target_compile_definitions(fmusim PRIVATE FMUSIM_VERSION=${FMUSIM_VERSION} YY_NO_UNISTD_H LIBXML_STATIC)
 else ()
-    target_compile_definitions(fmusim PRIVATE LIBXML_STATIC)
+    target_compile_definitions(fmusim PRIVATE FMUSIM_VERSION=${FMUSIM_VERSION} LIBXML_STATIC)
 endif ()
 
 if (WIN32)
