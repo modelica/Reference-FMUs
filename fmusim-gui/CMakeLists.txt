@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(fmusim-gui VERSION 0.1 LANGUAGES CXX)
+project(fmusim-gui VERSION 0.1 LANGUAGES C CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
@@ -17,6 +17,12 @@ set(PROJECT_SOURCES
         MainWindow.cpp
         MainWindow.h
         MainWindow.ui
+        ../src/FMI.c
+        ../include/FMI.h
+        ../fmusim/FMIModelDescription.c
+        ../fmusim/FMIModelDescription.h
+        ../src/structured_variable_name.tab.c
+        ../src/structured_variable_name.yy.c
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -24,6 +30,23 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
     )
+
+target_include_directories(fmusim-gui PRIVATE
+    ../include
+    ../fmusim
+    ../build/libxml2-msvc2019-2-install/include/libxml2
+)
+
+target_compile_definitions(fmusim-gui PRIVATE
+    YY_NO_UNISTD_H
+)
+
+target_link_libraries(fmusim-gui PRIVATE
+    "E:/Development/Reference-FMUs/build/libxml2-msvc2019-2-install/lib/libxml2.lib"
+    #../build/libxml2-msvc2019-2-install/lib/libxml2s.lib
+    #E:/Development/Reference-FMUs/build/libxml2-x86_64-windows/install/lib/libxml2s.lib
+)
+
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET fmusim-gui APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
 #                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
