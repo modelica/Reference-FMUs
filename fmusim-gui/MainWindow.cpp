@@ -68,7 +68,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     const QString doc = QDir::cleanPath(this->unzipdir + QDir::separator() + "documentation" + QDir::separator() + "index.html");
 
-    ui->widget->load(QUrl::fromLocalFile(doc));
+    // ui->widget->load(QUrl::fromLocalFile(doc));
+    ui->widget->load(QUrl::fromLocalFile("E:\\Development\\Reference-FMUs\\fmusim-gui\\plot.html"));
+
 }
 
 MainWindow::~MainWindow()
