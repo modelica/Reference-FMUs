@@ -18,6 +18,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
 
+    // hide the dock's title bar
+    ui->dockWidget->setTitleBarWidget(new QWidget());
+
     const char* unzipdir = FMICreateTemporaryDirectory();
 
     this->unzipdir = unzipdir;
@@ -97,6 +100,11 @@ MainWindow::~MainWindow()
         FMIRemoveDirectory(cstr);
     }
 }
+
+void MainWindow::loadFMU(const QString &filename) {
+
+}
+
 
 void MainWindow::openFileInDefaultApplication(const QModelIndex &index) {
     const QString path = filesModel.filePath(index);

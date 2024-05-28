@@ -21,6 +21,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+    void loadFMU(const QString &filename);
 
 private:
     Ui::MainWindow *ui;

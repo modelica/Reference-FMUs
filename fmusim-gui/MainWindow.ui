@@ -10,6 +10,52 @@
     <height>661</height>
    </rect>
   </property>
+  <property name="palette">
+   <palette>
+    <active>
+     <colorrole role="Window">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </active>
+    <inactive>
+     <colorrole role="Window">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </inactive>
+    <disabled>
+     <colorrole role="Base">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
+       </color>
+      </brush>
+     </colorrole>
+     <colorrole role="Window">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>255</red>
+        <green>255</green>
+        <blue>255</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </disabled>
+   </palette>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
@@ -229,13 +275,29 @@
    </widget>
    <addaction name="menu_File"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusbar">
+   <property name="styleSheet">
+    <string notr="true">QStatusBar {
+	border-top: 1px solid palette(midlight);
+}
+
+QStatusBar::item {
+	border: none;
+}
+</string>
+   </property>
+  </widget>
   <widget class="QDockWidget" name="dockWidget">
+   <property name="styleSheet">
+    <string notr="true">QDockWidget &gt; QWidget {
+	border-right: 1px solid palette(midlight);
+}</string>
+   </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QVBoxLayout" name="verticalLayout">
+    <layout class="QGridLayout" name="gridLayout_8">
      <property name="leftMargin">
       <number>0</number>
      </property>
@@ -243,13 +305,16 @@
       <number>0</number>
      </property>
      <property name="rightMargin">
-      <number>0</number>
+      <number>1</number>
      </property>
      <property name="bottomMargin">
       <number>0</number>
      </property>
-     <item>
+     <item row="0" column="0">
       <widget class="QTreeView" name="treeView">
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
        <property name="rootIsDecorated">
         <bool>false</bool>
        </property>
@@ -267,8 +332,8 @@
    </property>
    <property name="iconSize">
     <size>
-     <width>24</width>
-     <height>24</height>
+     <width>28</width>
+     <height>28</height>
     </size>
    </property>
    <property name="floatable">
@@ -280,6 +345,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="loadFMUAction"/>
+   <addaction name="separator"/>
    <addaction name="showSettingsAction"/>
    <addaction name="showFilesAction"/>
    <addaction name="showDocumentationAction"/>
@@ -336,6 +403,14 @@
    </property>
    <property name="text">
     <string>Show Plot</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="loadFMUAction">
+   <property name="text">
+    <string>Load FMU</string>
    </property>
    <property name="menuRole">
     <enum>QAction::NoRole</enum>
