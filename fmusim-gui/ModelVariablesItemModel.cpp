@@ -1,5 +1,5 @@
 #include "ModelVariablesItemModel.h"
-
+#include <QIcon>
 
 ModelVariablesItemModel::ModelVariablesItemModel(const FMIModelDescription* modelDescription, QObject *parent)
     : QAbstractItemModel{parent}
@@ -31,9 +31,12 @@ int ModelVariablesItemModel::columnCount(const QModelIndex &parent) const {
 
 QVariant ModelVariablesItemModel::data(const QModelIndex &index, int role) const {
 
-    FMIModelVariable* variable = static_cast<FMIModelVariable*>(index.internalPointer());
+    const FMIModelVariable* variable = static_cast<FMIModelVariable*>(index.internalPointer());
 
     switch (role) {
+    case Qt::DecorationRole:
+        if (index.column() == 0) return QIcon(":/icons/light/float_variable.svg");
+        break;
     case Qt::DisplayRole:
         switch (index.column()) {
         case 0:
@@ -44,8 +47,10 @@ QVariant ModelVariablesItemModel::data(const QModelIndex &index, int role) const
             return "?";
         }
     default:
-        return QVariant();
+        break;
     }
+
+    return QVariant();
 }
 
 

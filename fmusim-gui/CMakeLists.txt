@@ -37,6 +37,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_SOURCES}
         ModelVariablesItemModel.h
         ModelVariablesItemModel.cpp
+        icons/icons.qrc
     )
 
 target_include_directories(fmusim-gui PRIVATE
