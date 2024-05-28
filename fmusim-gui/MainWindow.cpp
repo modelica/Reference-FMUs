@@ -1,10 +1,10 @@
 #include "MainWindow.h"
 #include "./ui_MainWindow.h"
 #include <QStringListModel>
+#include <QDesktopServices>
 #include "ModelVariablesItemModel.h"
 
 extern "C" {
-#include "FMIModelDescription.h"
 #include "FMIZip.h"
 }
 
@@ -18,16 +18,16 @@ MainWindow::MainWindow(QWidget *parent)
 
     const char* unzipdir = FMICreateTemporaryDirectory();
 
-    char modelDescriptionPath[FMI_PATH_MAX] = "";
+    this->unzipdir = unzipdir;
 
-    //char platformBinaryPath[FMI_PATH_MAX] = "";
+    char modelDescriptionPath[FMI_PATH_MAX] = "";
 
     int status = FMIExtractArchive("C:\\Users\\tsr2\\Downloads\\Reference-FMUs-0.0.31\\3.0\\BouncingBall.fmu", unzipdir);
 
     FMIPathAppend(modelDescriptionPath, unzipdir);
     FMIPathAppend(modelDescriptionPath, "modelDescription.xml");
 
-    FMIModelDescription* modelDescription = FMIReadModelDescription(modelDescriptionPath); //"C:\\Users\\tsr2\\Downloads\\Reference-FMUs-0.0.31\\3.0\\BouncingBall\\modelDescription.xml");
+    modelDescription = FMIReadModelDescription(modelDescriptionPath); //"C:\\Users\\tsr2\\Downloads\\Reference-FMUs-0.0.31\\3.0\\BouncingBall\\modelDescription.xml");
 
     switch (modelDescription->fmiVersion) {
     case FMIVersion1:
@@ -54,13 +54,36 @@ MainWindow::MainWindow(QWidget *parent)
     ui->treeView->setColumnWidth(0, ModelVariablesItemModel::NAME_COLUMN_DEFAULT_WIDTH);
     ui->treeView->setColumnWidth(1, ModelVariablesItemModel::START_COLUMN_DEFAULT_WIDTH);
 
-    if (unzipdir) {
-        FMIRemoveDirectory(unzipdir);
-    }
+    filesModel.setRootPath(this->unzipdir);
+
+    auto rootIndex = filesModel.index(this->unzipdir);
+
+    ui->filesTreeView->setModel(&filesModel);
+    ui->filesTreeView->setRootIndex(rootIndex);
+    ui->filesTreeView->setColumnWidth(0, 200);
+
+    //ui->filesTreeView->resizeColumnToContents(0);
+    //ui->filesTreeView->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    connect(ui->filesTreeView, &QAbstractItemView::doubleClicked, this, &MainWindow::openFileInDefaultApplication);
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
-    // TODO: FMIFreeModelDescription(modelDescription);
+
+    if (modelDescription) {
+        FMIFreeModelDescription(modelDescription);
+    }
+
+    if (!unzipdir.isEmpty()) {
+        QByteArray bytes = unzipdir.toLocal8Bit();
+        const char *cstr = bytes.data();
+        FMIRemoveDirectory(cstr);
+    }
 }
+
+void MainWindow::openFileInDefaultApplication(const QModelIndex &index) {
+    const QString path = filesModel.filePath(index);
+    QDesktopServices::openUrl(QUrl(path));
+}
+

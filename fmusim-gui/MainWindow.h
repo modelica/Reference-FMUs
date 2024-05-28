@@ -2,12 +2,17 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QFileSystemModel>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
 }
 QT_END_NAMESPACE
+
+extern "C" {
+#include "FMIModelDescription.h"
+}
 
 class MainWindow : public QMainWindow
 {
@@ -19,5 +24,12 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    QFileSystemModel filesModel;
+    FMIModelDescription* modelDescription;
+    QString unzipdir;
+
+private slots:
+    void openFileInDefaultApplication(const QModelIndex &index);
+
 };
 #endif // MAINWINDOW_H
