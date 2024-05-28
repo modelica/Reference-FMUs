@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/buttons">
+        <file>buttons/book.svg</file>
+        <file>buttons/file-earmark-zip.svg</file>
+        <file>buttons/gear.svg</file>
+        <file>buttons/graph.svg</file>
+    </qresource>
+</RCC>

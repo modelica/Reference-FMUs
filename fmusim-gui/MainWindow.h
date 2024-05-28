@@ -28,6 +28,8 @@ private:
     FMIModelDescription* modelDescription;
     QString unzipdir;
 
+    void setCurrentPage(QWidget *page);
+
 private slots:
     void openFileInDefaultApplication(const QModelIndex &index);
 

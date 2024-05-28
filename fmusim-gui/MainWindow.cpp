@@ -14,6 +14,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+    QIcon::setThemeName("light");
+
     ui->setupUi(this);
 
     const char* unzipdir = FMICreateTemporaryDirectory();
@@ -67,10 +69,18 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->filesTreeView, &QAbstractItemView::doubleClicked, this, &MainWindow::openFileInDefaultApplication);
 
     const QString doc = QDir::cleanPath(this->unzipdir + QDir::separator() + "documentation" + QDir::separator() + "index.html");
+    ui->documentationWebEngineView->load(QUrl::fromLocalFile(doc));
 
-    // ui->widget->load(QUrl::fromLocalFile(doc));
-    ui->widget->load(QUrl::fromLocalFile("E:\\Development\\Reference-FMUs\\fmusim-gui\\plot.html"));
+    ui->plotWebEngineView->load(QUrl::fromLocalFile("E:\\Development\\Reference-FMUs\\fmusim-gui\\plot.html"));
 
+    connect(ui->showSettingsAction,      &QAction::triggered, this, [this]() { setCurrentPage(ui->settingsPage);     });
+    connect(ui->showFilesAction,         &QAction::triggered, this, [this]() { setCurrentPage(ui->filesPage);        });
+    connect(ui->showDocumentationAction, &QAction::triggered, this, [this]() { setCurrentPage(ui->documenationPage); });
+    connect(ui->showPlotAction,          &QAction::triggered, this, [this]() { setCurrentPage(ui->plotPage);         });
+}
+
+void MainWindow::setCurrentPage(QWidget *page) {
+    ui->stackedWidget->setCurrentWidget(page);
 }
 
 MainWindow::~MainWindow()

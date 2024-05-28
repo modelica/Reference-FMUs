@@ -40,6 +40,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ModelVariablesItemModel.cpp
         icons/icons.qrc
         plot.html
+        buttons.qrc
     )
 
 target_include_directories(fmusim-gui PRIVATE
