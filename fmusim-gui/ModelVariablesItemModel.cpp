@@ -26,7 +26,7 @@ int ModelVariablesItemModel::rowCount(const QModelIndex &parent) const {
 }
 
 int ModelVariablesItemModel::columnCount(const QModelIndex &parent) const {
-    return 2;
+    return NUMBER_OF_COLUMNS;
 }
 
 QVariant ModelVariablesItemModel::data(const QModelIndex &index, int role) const {
@@ -35,16 +35,21 @@ QVariant ModelVariablesItemModel::data(const QModelIndex &index, int role) const
 
     switch (role) {
     case Qt::DecorationRole:
-        if (index.column() == 0) return QIcon(":/icons/light/float_variable.svg");
-        break;
+        switch (index.column()) {
+        case NAME_COLUMN_INDEX: return QIcon(":/icons/light/float_variable.svg");
+        default: break;
+        }
     case Qt::DisplayRole:
         switch (index.column()) {
-        case 0:
-            return variable->name;
-        case 1:
-            return variable->description;
-        default:
-            return "?";
+        case NAME_COLUMN_INDEX: return variable->name;
+        case START_COLUMN_INDEX: return variable->start;
+        case DESCRIPTION_COLUMN_INDEX: return variable->description;
+        default: break;
+        }
+    case Qt::TextAlignmentRole:
+        switch (index.column()) {
+        case START_COLUMN_INDEX: return int(Qt::AlignRight | Qt::AlignVCenter);
+        default: break;
         }
     default:
         break;
@@ -56,7 +61,9 @@ QVariant ModelVariablesItemModel::data(const QModelIndex &index, int role) const
 
 QVariant ModelVariablesItemModel::headerData(int section, Qt::Orientation orientation, int role) const {
 
-    const char* columnNames[] = {"Name", "Description"};
+    Q_ASSERT(section < NUMBER_OF_COLUMNS);
+
+    const char* columnNames[] = {"Name", "Start", "Description"};
 
     switch (role) {
     case Qt::DisplayRole:

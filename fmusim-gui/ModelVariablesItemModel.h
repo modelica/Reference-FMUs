@@ -10,6 +10,15 @@ extern "C" {
 class ModelVariablesItemModel : public QAbstractItemModel
 {
 public:
+    const static int NUMBER_OF_COLUMNS = 3;
+
+    const static int NAME_COLUMN_INDEX = 0;
+    const static int START_COLUMN_INDEX = 1;
+    const static int DESCRIPTION_COLUMN_INDEX = 2;
+
+    const static int NAME_COLUMN_DEFAULT_WIDTH = 200;
+    const static int START_COLUMN_DEFAULT_WIDTH = 70;
+
     explicit ModelVariablesItemModel(const FMIModelDescription* modelDescription, QObject *parent = nullptr);
 
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;

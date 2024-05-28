@@ -49,17 +49,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     ModelVariablesItemModel* model = new ModelVariablesItemModel(modelDescription, this);
 
-    // QStringListModel *model = new QStringListModel();
-    // QStringList list;
-
-    // for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
-    //     list << modelDescription->modelVariables[i].name;
-    // }
-
-    // model->setStringList(list);
-
     ui->treeView->setModel(model);
 
+    ui->treeView->setColumnWidth(0, ModelVariablesItemModel::NAME_COLUMN_DEFAULT_WIDTH);
+    ui->treeView->setColumnWidth(1, ModelVariablesItemModel::START_COLUMN_DEFAULT_WIDTH);
 
     if (unzipdir) {
         FMIRemoveDirectory(unzipdir);
