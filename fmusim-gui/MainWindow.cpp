@@ -58,7 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // model->setStringList(list);
 
-    ui->listView->setModel(model);
+    ui->treeView->setModel(model);
 
 
     if (unzipdir) {

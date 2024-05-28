@@ -1,5 +1,6 @@
 #include "ModelVariablesItemModel.h"
 
+
 ModelVariablesItemModel::ModelVariablesItemModel(const FMIModelDescription* modelDescription, QObject *parent)
     : QAbstractItemModel{parent}
 {
@@ -16,11 +17,16 @@ QModelIndex ModelVariablesItemModel::parent(const QModelIndex &child) const {
 }
 
 int ModelVariablesItemModel::rowCount(const QModelIndex &parent) const {
-    return (int)modelDescription->nModelVariables;
+
+    if (!parent.isValid()) {
+        return (int)modelDescription->nModelVariables;
+    } else {
+        return 0;
+    }
 }
 
 int ModelVariablesItemModel::columnCount(const QModelIndex &parent) const {
-    return 1;
+    return 2;
 }
 
 QVariant ModelVariablesItemModel::data(const QModelIndex &index, int role) const {
@@ -29,8 +35,28 @@ QVariant ModelVariablesItemModel::data(const QModelIndex &index, int role) const
 
     switch (role) {
     case Qt::DisplayRole:
-        return variable->name;
+        switch (index.column()) {
+        case 0:
+            return variable->name;
+        case 1:
+            return variable->description;
+        default:
+            return "?";
+        }
     default:
         return QVariant();
     }
+}
+
+
+QVariant ModelVariablesItemModel::headerData(int section, Qt::Orientation orientation, int role) const {
+
+    const char* columnNames[] = {"Name", "Description"};
+
+    switch (role) {
+    case Qt::DisplayRole:
+        return columnNames[section];
+    }
+
+    return QVariant();
 }
