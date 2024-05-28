@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS WebEngineWidgets)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -53,6 +54,7 @@ target_compile_definitions(fmusim-gui PRIVATE
 )
 
 target_link_libraries(fmusim-gui PRIVATE
+    Qt6::WebEngineWidgets
     "E:/Development/Reference-FMUs/build/libxml2-msvc2019-2-install/lib/libxml2.lib"
     "E:/Development/Reference-FMUs/build/zlib-1.3-msvc2019-install/zlib/lib/zlib.lib"
     #../build/libxml2-msvc2019-2-install/lib/libxml2s.lib

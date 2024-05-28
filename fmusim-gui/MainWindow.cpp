@@ -65,6 +65,10 @@ MainWindow::MainWindow(QWidget *parent)
     //ui->filesTreeView->resizeColumnToContents(0);
     //ui->filesTreeView->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     connect(ui->filesTreeView, &QAbstractItemView::doubleClicked, this, &MainWindow::openFileInDefaultApplication);
+
+    const QString doc = QDir::cleanPath(this->unzipdir + QDir::separator() + "documentation" + QDir::separator() + "index.html");
+
+    ui->widget->load(QUrl::fromLocalFile(doc));
 }
 
 MainWindow::~MainWindow()
