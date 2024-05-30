@@ -107,11 +107,11 @@ QVariant ModelVariablesItemModel::data(const QModelIndex &index, int role) const
             }
         case VARIABITLITY_COLUMN_INDEX:
             switch(variable->variability) {
-                case FMIConstant: return "Constant";
-                case FMIFixed: return "Fixed";
-                case FMITunable: return "Tunable";
-                case FMIDiscrete: return "Discrete";
-                case FMIContinuous: return "Continuous";
+                case FMIConstant: return "constant";
+                case FMIFixed: return "fixed";
+                case FMITunable: return "tunable";
+                case FMIDiscrete: return "discrete";
+                case FMIContinuous: return "continuous";
             }
         case START_COLUMN_INDEX:
             return variable->start;
