@@ -38,6 +38,7 @@ private:
     void setCurrentPage(QWidget *page);
 
 private slots:
+    void openUnzipDirectory();
     void openFileInDefaultApplication(const QModelIndex &index);
 
 };

@@ -271,6 +271,9 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="separator"/>
+    <addaction name="openUnzipDirectoryAction"/>
+    <addaction name="separator"/>
     <addaction name="closeAction"/>
    </widget>
    <addaction name="menu_File"/>
@@ -438,6 +441,14 @@ QStatusBar::item {
    </property>
    <property name="toolTip">
     <string>Simulate</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="openUnzipDirectoryAction">
+   <property name="text">
+    <string>Open &amp;Unzip Directory</string>
    </property>
    <property name="menuRole">
     <enum>QAction::NoRole</enum>

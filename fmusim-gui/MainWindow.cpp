@@ -39,6 +39,8 @@ MainWindow::MainWindow(QWidget *parent)
     interfaceTypeComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     ui->toolBar->addWidget(interfaceTypeComboBox);
 
+    connect(ui->openUnzipDirectoryAction, &QAction::triggered, this, &MainWindow::openUnzipDirectory);
+
     // hide the dock's title bar
     ui->dockWidget->setTitleBarWidget(new QWidget());
 
@@ -135,6 +137,9 @@ void MainWindow::loadFMU(const QString &filename) {
     setWindowTitle("FMUSim GUI - " + filename);
 }
 
+void MainWindow::openUnzipDirectory() {
+    QDesktopServices::openUrl(QUrl::fromLocalFile(unzipdir));
+}
 
 void MainWindow::openFileInDefaultApplication(const QModelIndex &index) {
     const QString path = filesModel.filePath(index);
