@@ -2,6 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QLineEdit>
+#include <QDoubleValidator>
+#include <QComboBox>
 #include <QFileSystemModel>
 
 QT_BEGIN_NAMESPACE
@@ -25,7 +28,10 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    QLineEdit *stopTimeLineEdit;
+    QDoubleValidator *stopTimeValidator;
     QFileSystemModel filesModel;
+    QComboBox* interfaceTypeComboBox;
     FMIModelDescription* modelDescription = nullptr;
     QString unzipdir;
 

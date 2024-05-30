@@ -5,4 +5,13 @@
         <file>buttons/gear.svg</file>
         <file>buttons/graph.svg</file>
     </qresource>
+    <qresource prefix="/">
+        <file>buttons/book.svg</file>
+        <file>buttons/file-earmark-zip.svg</file>
+        <file>buttons/folder-open.svg</file>
+        <file>buttons/gear.svg</file>
+        <file>buttons/graph.svg</file>
+        <file>buttons/play.svg</file>
+        <file>buttons/stop.svg</file>
+    </qresource>
 </RCC>

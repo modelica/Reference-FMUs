@@ -18,6 +18,27 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
 
+    // add the simulation controls to the toolbar
+    stopTimeLineEdit = new QLineEdit(this);
+    stopTimeLineEdit->setEnabled(false);
+    ui->toolBar->addWidget(stopTimeLineEdit);
+    stopTimeLineEdit->setToolTip("Stop time");
+    stopTimeLineEdit->setFixedWidth(50);
+    stopTimeValidator = new QDoubleValidator(this);
+    stopTimeValidator->setBottom(0);
+    stopTimeLineEdit->setValidator(stopTimeValidator);
+
+    QWidget* spacer = new QWidget(this);
+    spacer->setFixedWidth(10);
+    ui->toolBar->addWidget(spacer);
+
+    interfaceTypeComboBox = new QComboBox(this);
+    interfaceTypeComboBox->setEnabled(false);
+    interfaceTypeComboBox->addItem("Co-Simulation");
+    interfaceTypeComboBox->setToolTip("Interface type");
+    interfaceTypeComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+    ui->toolBar->addWidget(interfaceTypeComboBox);
+
     // hide the dock's title bar
     ui->dockWidget->setTitleBarWidget(new QWidget());
 
@@ -90,8 +111,13 @@ void MainWindow::loadFMU(const QString &filename) {
 
     ui->treeView->setModel(model);
 
-    ui->treeView->setColumnWidth(0, ModelVariablesItemModel::NAME_COLUMN_DEFAULT_WIDTH);
-    ui->treeView->setColumnWidth(1, ModelVariablesItemModel::START_COLUMN_DEFAULT_WIDTH);
+    // ui->treeView->setColumnWidth(0, ModelVariablesItemModel::NAME_COLUMN_DEFAULT_WIDTH);
+    // ui->treeView->setColumnWidth(1, ModelVariablesItemModel::START_COLUMN_DEFAULT_WIDTH);
+    const static int COLUMN_WIDTHS[] = {200, 50, 70, 100, 70, 70, 70, 70, 70, 70, 70, 40, 40};
+
+    for (size_t i = 0; i < ModelVariablesItemModel::NUMBER_OF_COLUMNS - 1; i++) {
+        ui->treeView->setColumnWidth(i, COLUMN_WIDTHS[i]);
+    }
 
     filesModel.setRootPath(this->unzipdir);
 
@@ -99,17 +125,14 @@ void MainWindow::loadFMU(const QString &filename) {
 
     ui->filesTreeView->setModel(&filesModel);
     ui->filesTreeView->setRootIndex(rootIndex);
-
-    const static int COLUMN_WIDTHS[] = {200, 50, 70, 100, 70, 70, 70, 70, 70, 70, 70, 40, 40};
-
-    for (size_t i = 0; i < ModelVariablesItemModel::NUMBER_OF_COLUMNS - 1; i++) {
-        ui->filesTreeView->setColumnWidth(0, COLUMN_WIDTHS[i]);
-    }
+    ui->filesTreeView->setColumnWidth(0, 250);
 
     const QString doc = QDir::cleanPath(this->unzipdir + QDir::separator() + "documentation" + QDir::separator() + "index.html");
     ui->documentationWebEngineView->load(QUrl::fromLocalFile(doc));
 
     ui->plotWebEngineView->load(QUrl::fromLocalFile("E:\\Development\\Reference-FMUs\\fmusim-gui\\plot.html"));
+
+    setWindowTitle("FMUSim GUI - " + filename);
 }
 
 

@@ -57,7 +57,7 @@
    </palette>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>FMUSim GUI</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_7">
@@ -332,8 +332,8 @@ QStatusBar::item {
    </property>
    <property name="iconSize">
     <size>
-     <width>28</width>
-     <height>28</height>
+     <width>29</width>
+     <height>29</height>
     </size>
    </property>
    <property name="floatable">
@@ -351,6 +351,8 @@ QStatusBar::item {
    <addaction name="showFilesAction"/>
    <addaction name="showDocumentationAction"/>
    <addaction name="showPlotAction"/>
+   <addaction name="separator"/>
+   <addaction name="simulateAction"/>
   </widget>
   <action name="closeAction">
    <property name="text">
@@ -409,8 +411,33 @@ QStatusBar::item {
    </property>
   </action>
   <action name="loadFMUAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="buttons.qrc">
+     <normaloff>:/buttons/folder-open.svg</normaloff>:/buttons/folder-open.svg</iconset>
+   </property>
    <property name="text">
     <string>Load FMU</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="simulateAction">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="buttons.qrc">
+     <normaloff>:/buttons/play.svg</normaloff>:/buttons/play.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Simulate</string>
+   </property>
+   <property name="toolTip">
+    <string>Simulate</string>
    </property>
    <property name="menuRole">
     <enum>QAction::NoRole</enum>
