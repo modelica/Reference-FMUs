@@ -33,10 +33,20 @@ int main(int argc, char *argv[])
     // a.setStyle("Windows");
     // a.setStyle("WindowsVista");
 
-    MainWindow w;
+    MainWindow *w = new MainWindow();
+    w->show();
+
+    for (qsizetype i = 1; i < a.arguments().length(); i++) {
+
+        if (i > 1) {
+            w = new MainWindow();
+            w->show();
+        }
+
+        w->loadFMU(a.arguments().at(i));
+    }
 
     // w.setPalette(darkPalette);
 
-    w.show();
     return a.exec();
 }

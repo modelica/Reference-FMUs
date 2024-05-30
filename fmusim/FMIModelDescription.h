@@ -48,10 +48,55 @@ typedef struct FMIDimension FMIDimension;
 
 typedef struct FMIModelVariable FMIModelVariable;
 
+// typedef struct {
+
+//     const char* name;
+//     const char* factor;
+//     const char* offset;
+
+// } FMIDisplayUnit;
+
+typedef struct {
+
+    const char* name;
+    int kg;
+    int m;
+    int s;
+    int A;
+    int K;
+    int mol;
+    int cd;
+    int rad;
+    double factor;
+    double offset;
+    // const char* baseUnit;
+    // size_t nDisplayUnits;
+    // FMIDisplayUnit* displayUnits;
+
+} FMIUnit;
+
+typedef struct {
+
+    FMIVariableType type;
+    const char* name;
+    const char* quantity;
+    FMIUnit* unit;
+    const char* displayUnit;
+    bool relativeQuantity;
+    const char* min;
+    const char* max;
+    const char* nominal;
+    bool unbounded;
+
+} FMITypeDefinition;
+
 struct FMIModelVariable {
     
     FMIVariableType type;
     const char* name;
+    const char* min;
+    const char* max;
+    const char* nominal;
     const char* start;
     const char* description;
     unsigned int valueReference;
@@ -61,6 +106,7 @@ struct FMIModelVariable {
     size_t nDimensions;
     FMIDimension* dimensions;
     FMIModelVariable* derivative;
+    FMITypeDefinition* declaredType;
     unsigned short line;
 
 };
@@ -116,6 +162,12 @@ typedef struct {
 
     FMIDefaultExperiment* defaultExperiment;
 
+    size_t nUnitDefinitions;
+    FMIUnit* unitDefinitions;
+
+    size_t nTypeDefinitions;
+    FMITypeDefinition* typeDefinitions;
+
     size_t nModelVariables;
     FMIModelVariable* modelVariables;
 
@@ -138,6 +190,10 @@ FMIModelDescription* FMIReadModelDescription(const char* filename);
 void FMIFreeModelDescription(FMIModelDescription* modelDescription);
 
 FMIValueReference FMIValueReferenceForLiteral(const char* literal);
+
+FMITypeDefinition* FMITypeDefinitionForName(const FMIModelDescription* modelDescription, const char* name);
+
+FMIUnit* FMIUnitForName(const FMIModelDescription* modelDescription, const char* name);
 
 FMIModelVariable* FMIModelVariableForName(const FMIModelDescription* modelDescription, const char* name);
 

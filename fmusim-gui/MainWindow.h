@@ -26,7 +26,7 @@ public:
 private:
     Ui::MainWindow *ui;
     QFileSystemModel filesModel;
-    FMIModelDescription* modelDescription;
+    FMIModelDescription* modelDescription = nullptr;
     QString unzipdir;
 
     void setCurrentPage(QWidget *page);

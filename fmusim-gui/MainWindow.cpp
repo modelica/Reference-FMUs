@@ -21,18 +21,52 @@ MainWindow::MainWindow(QWidget *parent)
     // hide the dock's title bar
     ui->dockWidget->setTitleBarWidget(new QWidget());
 
+    //ui->filesTreeView->resizeColumnToContents(0);
+    //ui->filesTreeView->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    connect(ui->filesTreeView, &QAbstractItemView::doubleClicked, this, &MainWindow::openFileInDefaultApplication);
+
+    connect(ui->showSettingsAction,      &QAction::triggered, this, [this]() { setCurrentPage(ui->settingsPage);     });
+    connect(ui->showFilesAction,         &QAction::triggered, this, [this]() { setCurrentPage(ui->filesPage);        });
+    connect(ui->showDocumentationAction, &QAction::triggered, this, [this]() { setCurrentPage(ui->documenationPage); });
+    connect(ui->showPlotAction,          &QAction::triggered, this, [this]() { setCurrentPage(ui->plotPage);         });
+}
+
+void MainWindow::setCurrentPage(QWidget *page) {
+    ui->stackedWidget->setCurrentWidget(page);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+
+    if (modelDescription) {
+        FMIFreeModelDescription(modelDescription);
+    }
+
+    if (!unzipdir.isEmpty()) {
+        QByteArray bytes = unzipdir.toLocal8Bit();
+        const char *cstr = bytes.data();
+        FMIRemoveDirectory(cstr);
+    }
+}
+
+void MainWindow::loadFMU(const QString &filename) {
+
     const char* unzipdir = FMICreateTemporaryDirectory();
 
     this->unzipdir = unzipdir;
 
     char modelDescriptionPath[FMI_PATH_MAX] = "";
 
-    int status = FMIExtractArchive("C:\\Users\\tsr2\\Downloads\\Reference-FMUs-0.0.31\\3.0\\BouncingBall.fmu", unzipdir);
+    QByteArray bytes = filename.toLocal8Bit();
+    const char *cstr = bytes.data();
+
+    int status = FMIExtractArchive(cstr, unzipdir);
 
     FMIPathAppend(modelDescriptionPath, unzipdir);
     FMIPathAppend(modelDescriptionPath, "modelDescription.xml");
 
-    modelDescription = FMIReadModelDescription(modelDescriptionPath); //"C:\\Users\\tsr2\\Downloads\\Reference-FMUs-0.0.31\\3.0\\BouncingBall\\modelDescription.xml");
+    modelDescription = FMIReadModelDescription(modelDescriptionPath);
 
     switch (modelDescription->fmiVersion) {
     case FMIVersion1:
@@ -65,44 +99,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->filesTreeView->setModel(&filesModel);
     ui->filesTreeView->setRootIndex(rootIndex);
-    ui->filesTreeView->setColumnWidth(0, 200);
 
-    //ui->filesTreeView->resizeColumnToContents(0);
-    //ui->filesTreeView->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    connect(ui->filesTreeView, &QAbstractItemView::doubleClicked, this, &MainWindow::openFileInDefaultApplication);
+    const static int COLUMN_WIDTHS[] = {200, 50, 70, 100, 70, 70, 70, 70, 70, 70, 70, 40, 40};
+
+    for (size_t i = 0; i < ModelVariablesItemModel::NUMBER_OF_COLUMNS - 1; i++) {
+        ui->filesTreeView->setColumnWidth(0, COLUMN_WIDTHS[i]);
+    }
 
     const QString doc = QDir::cleanPath(this->unzipdir + QDir::separator() + "documentation" + QDir::separator() + "index.html");
     ui->documentationWebEngineView->load(QUrl::fromLocalFile(doc));
 
     ui->plotWebEngineView->load(QUrl::fromLocalFile("E:\\Development\\Reference-FMUs\\fmusim-gui\\plot.html"));
-
-    connect(ui->showSettingsAction,      &QAction::triggered, this, [this]() { setCurrentPage(ui->settingsPage);     });
-    connect(ui->showFilesAction,         &QAction::triggered, this, [this]() { setCurrentPage(ui->filesPage);        });
-    connect(ui->showDocumentationAction, &QAction::triggered, this, [this]() { setCurrentPage(ui->documenationPage); });
-    connect(ui->showPlotAction,          &QAction::triggered, this, [this]() { setCurrentPage(ui->plotPage);         });
-}
-
-void MainWindow::setCurrentPage(QWidget *page) {
-    ui->stackedWidget->setCurrentWidget(page);
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
-
-    if (modelDescription) {
-        FMIFreeModelDescription(modelDescription);
-    }
-
-    if (!unzipdir.isEmpty()) {
-        QByteArray bytes = unzipdir.toLocal8Bit();
-        const char *cstr = bytes.data();
-        FMIRemoveDirectory(cstr);
-    }
-}
-
-void MainWindow::loadFMU(const QString &filename) {
-
 }
 
 
