@@ -35,11 +35,14 @@ private:
     FMIModelDescription* modelDescription = nullptr;
     QString unzipdir;
 
+    static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message);
+
     void setCurrentPage(QWidget *page);
 
 private slots:
     void openUnzipDirectory();
     void openFileInDefaultApplication(const QModelIndex &index);
+    void simulate();
 
 };
 #endif // MAINWINDOW_H

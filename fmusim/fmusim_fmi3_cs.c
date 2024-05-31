@@ -92,7 +92,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
         CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
     }
 
-    CALL(applyStartValues(S, settings));
+    // CALL(applyStartValues(S, settings));
     CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
 
     if (!settings->initialFMUStateFile) {

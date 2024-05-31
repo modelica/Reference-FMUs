@@ -6,6 +6,7 @@
 
 extern "C" {
 #include "FMIZip.h"
+#include "fmusim_fmi3_cs.h"
 }
 
 #define FMI_PATH_MAX 4096
@@ -40,6 +41,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->toolBar->addWidget(interfaceTypeComboBox);
 
     connect(ui->openUnzipDirectoryAction, &QAction::triggered, this, &MainWindow::openUnzipDirectory);
+    connect(ui->simulateAction, &QAction::triggered, this, &MainWindow::simulate);
 
     // hide the dock's title bar
     ui->dockWidget->setTitleBarWidget(new QWidget());
@@ -51,6 +53,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->showSettingsAction,      &QAction::triggered, this, [this]() { setCurrentPage(ui->settingsPage);     });
     connect(ui->showFilesAction,         &QAction::triggered, this, [this]() { setCurrentPage(ui->filesPage);        });
     connect(ui->showDocumentationAction, &QAction::triggered, this, [this]() { setCurrentPage(ui->documenationPage); });
+    connect(ui->showLogAction,           &QAction::triggered, this, [this]() { setCurrentPage(ui->logPage);          });
     connect(ui->showPlotAction,          &QAction::triggered, this, [this]() { setCurrentPage(ui->plotPage);         });
 }
 
@@ -135,6 +138,108 @@ void MainWindow::loadFMU(const QString &filename) {
     ui->plotWebEngineView->load(QUrl::fromLocalFile("E:\\Development\\Reference-FMUs\\fmusim-gui\\plot.html"));
 
     setWindowTitle("FMUSim GUI - " + filename);
+}
+
+static void logMessage(FMIInstance* instance, FMIStatus status, const char* category, const char* message) {
+
+    switch (status) {
+    case FMIOK:
+        printf("[OK] ");
+        break;
+    case FMIWarning:
+        printf("[Warning] ");
+        break;
+    case FMIDiscard:
+        printf("[Discard] ");
+        break;
+    case FMIError:
+        printf("[Error] ");
+        break;
+    case FMIFatal:
+        printf("[Fatal] ");
+        break;
+    case FMIPending:
+        printf("[Pending] ");
+        break;
+    }
+
+    puts(message);
+}
+
+void MainWindow::logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message) {
+
+    MainWindow *window = (MainWindow *)instance->userData;
+
+    QString item(message);
+
+
+    switch (status) {
+    case FMIOK:
+        item += " -> OK";
+        break;
+    case FMIWarning:
+        item += " -> Warning";
+        break;
+    case FMIDiscard:
+        item += " -> Discard";
+        break;
+    case FMIError:
+        item += " -> Error";
+        break;
+    case FMIFatal:
+        item += " -> Fatal";
+        break;
+    case FMIPending:
+        item += " -> Pending";
+        break;
+    default:
+        item += " -> Unknown status";
+        break;
+    }
+
+    window->ui->listWidget->addItem(item);
+}
+
+void MainWindow::simulate() {
+
+
+    FMISimulationSettings settings;
+
+    settings.tolerance                = 0;
+    settings.nStartValues             = 0;
+    settings.startVariables           = NULL;
+    settings.startValues              = NULL;
+    settings.startTime                = 0.0;
+    settings.outputInterval           = 0.1;
+    settings.stopTime                 = 3.0;
+    settings.earlyReturnAllowed       = false;
+    settings.eventModeUsed            = false;
+    settings.recordIntermediateValues = false;
+    settings.initialFMUStateFile      = NULL;
+    settings.finalFMUStateFile        = NULL;
+
+    char platformBinaryPath[FMI_PATH_MAX] = "";
+
+    auto ba = unzipdir.toLocal8Bit();
+
+    FMIPlatformBinaryPath(ba.data(), modelDescription->coSimulation->modelIdentifier, modelDescription->fmiVersion, platformBinaryPath, FMI_PATH_MAX);
+
+    FMIInstance *S = FMICreateInstance("instance1", logMessage, logFunctionCall);
+
+    if (!S) {
+        printf("Failed to create FMU instance.\n");
+        return;
+    }
+
+    S->userData = this;
+
+    FMILoadPlatformBinary(S, platformBinaryPath);
+
+    //FMIRecorder *recorder = FMICreateRecorder(0, NULL, "BouncingBall_out.csv");
+
+    FMIStatus status = simulateFMI3CS(S, modelDescription, NULL, NULL, NULL, &settings);
+
+    ui->plotWebEngineView->page()->runJavaScript("alert('hello!'); Plotly.newPlot('gd', /* JSON object */ { 'data': [{ 'y': [1, 2, 3] }], 'layout': { 'width': 600, 'height': 400} })");
 }
 
 void MainWindow::openUnzipDirectory() {

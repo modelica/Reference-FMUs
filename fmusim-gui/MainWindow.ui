@@ -76,7 +76,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="settingsPage">
        <layout class="QGridLayout" name="gridLayout_3">
@@ -206,6 +206,13 @@
            <enum>QFrame::NoFrame</enum>
           </property>
          </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="logPage">
+       <layout class="QGridLayout" name="gridLayout_2">
+        <item row="0" column="0">
+         <widget class="QListWidget" name="listWidget"/>
         </item>
        </layout>
       </widget>
@@ -353,6 +360,7 @@ QStatusBar::item {
    <addaction name="showSettingsAction"/>
    <addaction name="showFilesAction"/>
    <addaction name="showDocumentationAction"/>
+   <addaction name="showLogAction"/>
    <addaction name="showPlotAction"/>
    <addaction name="separator"/>
    <addaction name="simulateAction"/>
@@ -429,9 +437,6 @@ QStatusBar::item {
    </property>
   </action>
   <action name="simulateAction">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
    <property name="icon">
     <iconset resource="buttons.qrc">
      <normaloff>:/buttons/play.svg</normaloff>:/buttons/play.svg</iconset>
@@ -449,6 +454,14 @@ QStatusBar::item {
   <action name="openUnzipDirectoryAction">
    <property name="text">
     <string>Open &amp;Unzip Directory</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="showLogAction">
+   <property name="text">
+    <string>Show Log</string>
    </property>
    <property name="menuRole">
     <enum>QAction::NoRole</enum>

@@ -41,6 +41,22 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         icons/icons.qrc
         plot.html
         buttons.qrc
+        ../fmusim/fmusim_fmi3_cs.c
+        ../fmusim/fmusim_fmi3_cs.h
+        ../fmusim/fmusim_input.c
+        ../fmusim/fmusim_input.h
+        ../src/FMI1.c
+        ../src/FMI2.c
+        ../include/FMI1.h
+        ../include/FMI2.h
+        ../src/FMI3.c
+        ../include/FMI3.h
+        ../fmusim/FMIUtil.c
+        ../fmusim/FMIUtil.h
+        ../fmusim/csv.c
+        ../fmusim/csv.h
+        ../fmusim/FMIRecorder.c
+        ../fmusim/FMIRecorder.h
     )
 
 target_include_directories(fmusim-gui PRIVATE
