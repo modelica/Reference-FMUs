@@ -55,8 +55,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ../fmusim/FMIUtil.h
         ../fmusim/csv.c
         ../fmusim/csv.h
-        ../fmusim/FMIRecorder.c
+
         ../fmusim/FMIRecorder.h
+        ../fmusim/FMICSVRecorder.c
+        ../fmusim/FMICSVRecorder.h
+
+        ../fmusim/FMIDemoRecorder.c
+        ../fmusim/FMIDemoRecorder.h
     )
 
 target_include_directories(fmusim-gui PRIVATE

@@ -7,6 +7,8 @@
 extern "C" {
 #include "FMIZip.h"
 #include "fmusim_fmi3_cs.h"
+// #include "FMICSVRecorder.h"
+#include "FMIDemoRecorder.h"
 }
 
 #define FMI_PATH_MAX 4096
@@ -210,7 +212,7 @@ void MainWindow::simulate() {
     settings.startVariables           = NULL;
     settings.startValues              = NULL;
     settings.startTime                = 0.0;
-    settings.outputInterval           = 0.1;
+    settings.outputInterval           = 0.01;
     settings.stopTime                 = 3.0;
     settings.earlyReturnAllowed       = false;
     settings.eventModeUsed            = false;
@@ -235,11 +237,41 @@ void MainWindow::simulate() {
 
     FMILoadPlatformBinary(S, platformBinaryPath);
 
+    size_t nOutputVariables = 0;
+
+
+    FMIModelVariable* variables[2];
+    variables[0] = &modelDescription->modelVariables[1];
+    variables[1] = &modelDescription->modelVariables[3];
+
+    // FMIModelVariable** outputVariables = variables;
+
     //FMIRecorder *recorder = FMICreateRecorder(0, NULL, "BouncingBall_out.csv");
+    settings.recorder = FMIDemoRecorderCreate(S);
+    settings.sample = FMIDemoRecorderSample;
 
-    FMIStatus status = simulateFMI3CS(S, modelDescription, NULL, NULL, NULL, &settings);
+    const FMIStatus status = simulateFMI3CS(S, modelDescription, NULL, NULL, &settings);
 
-    ui->plotWebEngineView->page()->runJavaScript("alert('hello!'); Plotly.newPlot('gd', /* JSON object */ { 'data': [{ 'y': [1, 2, 3] }], 'layout': { 'width': 600, 'height': 400} })");
+    size_t nRows;
+    const double* values = FMIDemoRecorderValues(settings.recorder, &nRows);
+
+    QString x;
+    QString y;
+
+    for (size_t i = 0; i < nRows; i++) {
+
+        if (i > 0) {
+            x += ", ";
+            y += ", ";
+        }
+
+        x += QString::number(values[2 * i]);
+        y += QString::number(values[2 * i + 1]);
+    }
+
+    ui->plotWebEngineView->page()->runJavaScript("Plotly.newPlot('gd', { 'data': [{ 'y': [" + y + "] }], 'layout': { 'autosize': true }, 'config': { 'responsive': true } })");
+    // ui->plotWebEngineView->page()->runJavaScript("Plotly.newPlot('gd', { 'data': [{ 'x': [" + x + "], 'y': [" + y + "] }] })");
+    // ui->plotWebEngineView->page()->runJavaScript("Plotly.newPlot('gd', { 'data': [{ 'x': [" + x + "], 'y': [" + y + "] }], 'layout': { 'width': 600, 'height': 400} } })");
 }
 
 void MainWindow::openUnzipDirectory() {
@@ -250,4 +282,3 @@ void MainWindow::openFileInDefaultApplication(const QModelIndex &index) {
     const QString path = filesModel.filePath(index);
     QDesktopServices::openUrl(QUrl(path));
 }
-

@@ -6,25 +6,38 @@
 #include "FMI3.h"
 #include "FMIUtil.h"
 
-#include "FMIRecorder.h"
+#include "FMICSVRecorder.h"
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
+struct FMIRecorderImpl {
 
-FMIRecorder* FMICreateRecorder(size_t nVariables, const FMIModelVariable* variables[], const char* file) {
+    FMIInstance* instance;
+    size_t nVariables;
+    const FMIModelVariable** variables;
+    FILE* file;
+    size_t nValues;
+    char* values;
+    size_t* sizes;
+
+} FMIRecorderImpl_CSV;
+
+// FMIRecorder* FMICSVRecorderCreate(FMIInstance* instance, size_t nVariables, const FMIModelVariable* variables[], const char* file) {
+FMIRecorder* FMICSVRecorderCreate(FMIInstance* instance, size_t nVariables, FMIModelVariable** variables, const char* file) {
 
     FMIStatus status = FMIOK;
 
-    FMIRecorder* result = NULL;
+    FMIRecorder* recorder = NULL;
     
-    CALL(FMICalloc((void**)&result, 1, sizeof(FMIRecorder)));
+    CALL(FMICalloc((void**)&recorder, 1, sizeof(FMIRecorder)));
 
-    result->nVariables = nVariables;
-    result->variables = variables;
-    result->file = fopen(file, "w");
+    recorder->instance = instance;
+    recorder->nVariables = nVariables;
+    recorder->variables = variables;
+    recorder->file = fopen(file, "w");
 
-    if (!result->file) {
+    if (!recorder->file) {
         status = FMIError;
         goto TERMINATE;
     }
@@ -32,60 +45,62 @@ FMIRecorder* FMICreateRecorder(size_t nVariables, const FMIModelVariable* variab
 TERMINATE:
 
     if (status != FMIOK) {
-        FMIFree((void**)&result);
+        FMIFree((void**)&recorder);
     }
 
-    return result;
+    return recorder;
 }
 
-void FMIFreeRecorder(FMIRecorder* result) {
+void FMICSVRecorderFree(FMIRecorder* recorder) {
 
-    if (result) {
+    if (recorder) {
         
-        if (result->file) {
-            fclose(result->file);
+        if (recorder->file) {
+            fclose(recorder->file);
         }
 
-        free(result->values);
-        free(result->sizes);
+        free(recorder->values);
+        free(recorder->sizes);
 
-        free(result);
+        free(recorder);
     }
 }
 
-FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
+FMIStatus FMICSVRecorderSample(FMIRecorder* recorder, double time) {
 
     FMIStatus status = FMIOK;
 
-    if (!result) {
+    if (!recorder) {
         goto TERMINATE;
     }
 
-    FILE* file = result->file;
+    FMIInstance *instance = recorder->instance;
+
+    FILE* file = recorder->file;
 
     if (!file) {
         goto TERMINATE;
     }
 
-    if (!result->instance) {
+    if (!recorder->instance) {
 
-        fprintf(result->file, "\"time\"");
+        fprintf(recorder->file, "\"time\"");
 
-        for (size_t i = 0; i < result->nVariables; i++) {
-            const FMIModelVariable* variable = result->variables[i];
-            fprintf(result->file, ",\"%s\"", result->variables[i]->name);
+        for (size_t i = 0; i < recorder->nVariables; i++) {
+            const FMIModelVariable* variable = recorder->variables[i];
+            fprintf(recorder->file, ",\"%s\"", recorder->variables[i]->name);
         }
 
-        fputc('\n', result->file);
+        fputc('\n', recorder->file);
 
-        result->instance = instance;
+        recorder->instance = instance;
     }
 
     fprintf(file, "%.16g", time);
 
-    for (size_t i = 0; i < result->nVariables; i++) {
+    for (size_t i = 0; i < recorder->nVariables; i++) {
 
-        const FMIModelVariable* variable = result->variables[i];
+        const FMIModelVariable* variable = recorder->variables[i];
         const FMIValueReference* vr = &variable->valueReference;
         const FMIVariableType type = variable->type;
 
@@ -135,14 +150,14 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
             
             CALL(FMIGetNumberOfVariableValues(instance, variable, &nValues));
 
-            if (result->nValues < nValues * 8) {
+            if (recorder->nValues < nValues * 8) {
 
-                result->nValues = nValues * 8;
+                recorder->nValues = nValues * 8;
                 
-                result->values = realloc(result->values, result->nValues);
-                result->sizes = realloc(result->sizes, nValues * sizeof(size_t));
+                recorder->values = realloc(recorder->values, recorder->nValues);
+                recorder->sizes = realloc(recorder->sizes, nValues * sizeof(size_t));
                 
-                if (!result->values || !result->sizes) {
+                if (!recorder->values || !recorder->sizes) {
                     FMILogError("Failed to allocate buffer.\n");
                     goto TERMINATE;
                 }
@@ -152,7 +167,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             if (type == FMIFloat32Type || type == FMIDiscreteFloat32Type) {
 
-                fmi3Float32* values = (fmi3Float32*)result->values;
+                fmi3Float32* values = (fmi3Float32*)recorder->values;
 
                 CALL(FMI3GetFloat32(instance, vr, 1, values, nValues));
 
@@ -163,7 +178,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIFloat64Type || type == FMIDiscreteFloat64Type) {
 
-                fmi3Float64* values = (fmi3Float64*)result->values;
+                fmi3Float64* values = (fmi3Float64*)recorder->values;
                 
                 CALL(FMI3GetFloat64(instance, vr, 1, values, nValues));
                 
@@ -174,7 +189,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIInt8Type) {
 
-                fmi3Int8* values = (fmi3Int8*)result->values;
+                fmi3Int8* values = (fmi3Int8*)recorder->values;
 
                 CALL(FMI3GetInt8(instance, vr, 1, values, nValues));
 
@@ -185,7 +200,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIUInt8Type) {
 
-                fmi3UInt8* values = (fmi3UInt8*)result->values;
+                fmi3UInt8* values = (fmi3UInt8*)recorder->values;
 
                 CALL(FMI3GetUInt8(instance, vr, 1, values, nValues));
 
@@ -196,7 +211,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIInt16Type) {
 
-                fmi3Int16* values = (fmi3Int16*)result->values;
+                fmi3Int16* values = (fmi3Int16*)recorder->values;
 
                 CALL(FMI3GetInt16(instance, vr, 1, values, nValues));
 
@@ -207,7 +222,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIUInt16Type) {
 
-                fmi3UInt16* values = (fmi3UInt16*)result->values;
+                fmi3UInt16* values = (fmi3UInt16*)recorder->values;
 
                 CALL(FMI3GetUInt16(instance, vr, 1, values, nValues));
 
@@ -218,7 +233,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIInt32Type) {
 
-                fmi3Int32* values = (fmi3Int32*)result->values;
+                fmi3Int32* values = (fmi3Int32*)recorder->values;
 
                 CALL(FMI3GetInt32(instance, vr, 1, values, nValues));
 
@@ -229,7 +244,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIUInt32Type) {
 
-                fmi3UInt32* values = (fmi3UInt32*)result->values;
+                fmi3UInt32* values = (fmi3UInt32*)recorder->values;
 
                 CALL(FMI3GetUInt32(instance, vr, 1, values, nValues));
 
@@ -240,7 +255,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIInt64Type) {
 
-                fmi3Int64* values = (fmi3Int64*)result->values;
+                fmi3Int64* values = (fmi3Int64*)recorder->values;
 
                 CALL(FMI3GetInt64(instance, vr, 1, values, nValues));
 
@@ -251,7 +266,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIUInt64Type) {
 
-                fmi3UInt64* values = (fmi3UInt64*)result->values;
+                fmi3UInt64* values = (fmi3UInt64*)recorder->values;
 
                 CALL(FMI3GetUInt64(instance, vr, 1, values, nValues));
 
@@ -262,7 +277,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIBooleanType) {
 
-                fmi3Boolean* values = (fmi3Boolean*)result->values;
+                fmi3Boolean* values = (fmi3Boolean*)recorder->values;
 
                 CALL(FMI3GetBoolean(instance, vr, 1, values, nValues));
 
@@ -273,7 +288,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIStringType) {
 
-                fmi3String* values = (fmi3String*)result->values;
+                fmi3String* values = (fmi3String*)recorder->values;
 
                 CALL(FMI3GetString(instance, vr, 1, values, nValues));
 
@@ -284,8 +299,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
 
             } else if (type == FMIBinaryType) {
 
-                size_t* sizes = (size_t*)result->sizes;
-                fmi3Binary* values = (fmi3Binary*)result->values;
+                size_t* sizes = (size_t*)recorder->sizes;
+                fmi3Binary* values = (fmi3Binary*)recorder->values;
 
                 CALL(FMI3GetBinary(instance, vr, 1, sizes, values, nValues));
 
