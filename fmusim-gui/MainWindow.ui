@@ -298,6 +298,12 @@ QStatusBar::item {
    </property>
   </widget>
   <widget class="QDockWidget" name="dockWidget">
+   <property name="minimumSize">
+    <size>
+     <width>500</width>
+     <height>75</height>
+    </size>
+   </property>
    <property name="styleSheet">
     <string notr="true">QDockWidget &gt; QWidget {
 	border-right: 1px solid palette(midlight);

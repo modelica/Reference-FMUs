@@ -6,6 +6,7 @@
 #include <QDoubleValidator>
 #include <QComboBox>
 #include <QFileSystemModel>
+#include <QMap>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -34,6 +35,7 @@ private:
     QComboBox* interfaceTypeComboBox;
     FMIModelDescription* modelDescription = nullptr;
     QString unzipdir;
+    QMap<const FMIModelVariable*, QString> startValues;
 
     static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message);
 

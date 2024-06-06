@@ -114,7 +114,9 @@ void MainWindow::loadFMU(const QString &filename) {
     ui->generationToolLabel->setText(modelDescription->generationTool);
     ui->descriptionLabel->setText(modelDescription->description);
 
-    ModelVariablesItemModel* model = new ModelVariablesItemModel(modelDescription, this);
+    startValues.insert(&modelDescription->modelVariables[1], "2.5");
+
+    ModelVariablesItemModel* model = new ModelVariablesItemModel(modelDescription, &startValues, this);
 
     ui->treeView->setModel(model);
 
@@ -125,6 +127,17 @@ void MainWindow::loadFMU(const QString &filename) {
     for (size_t i = 0; i < ModelVariablesItemModel::NUMBER_OF_COLUMNS - 1; i++) {
         ui->treeView->setColumnWidth(i, COLUMN_WIDTHS[i]);
     }
+
+    // hide columns
+    ui->treeView->hideColumn(ModelVariablesItemModel::TYPE_COLUMN_INDEX);
+    ui->treeView->hideColumn(ModelVariablesItemModel::DIMENSION_COLUMN_INDEX);
+    ui->treeView->hideColumn(ModelVariablesItemModel::VALUE_REFERENCE_COLUMN_INDEX);
+    ui->treeView->hideColumn(ModelVariablesItemModel::INITIAL_COLUMN_INDEX);
+    ui->treeView->hideColumn(ModelVariablesItemModel::CAUSALITY_COLUMN_INDEX);
+    ui->treeView->hideColumn(ModelVariablesItemModel::VARIABITLITY_COLUMN_INDEX);
+    ui->treeView->hideColumn(ModelVariablesItemModel::NOMINAL_COLUMN_INDEX);
+    ui->treeView->hideColumn(ModelVariablesItemModel::MIN_COLUMN_INDEX);
+    ui->treeView->hideColumn(ModelVariablesItemModel::MAX_COLUMN_INDEX);
 
     filesModel.setRootPath(this->unzipdir);
 

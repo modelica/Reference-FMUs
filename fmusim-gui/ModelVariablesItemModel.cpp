@@ -1,10 +1,12 @@
 #include "ModelVariablesItemModel.h"
 #include <QIcon>
+#include <QFont>
 
-ModelVariablesItemModel::ModelVariablesItemModel(const FMIModelDescription* modelDescription, QObject *parent)
+ModelVariablesItemModel::ModelVariablesItemModel(const FMIModelDescription* modelDescription, QMap<const FMIModelVariable*, QString> *startValues,  QObject *parent)
     : QAbstractItemModel{parent}
 {
     this->modelDescription = modelDescription;
+    this->startValues = startValues;
 }
 
 QModelIndex ModelVariablesItemModel::index(int row, int column, const QModelIndex &parent) const {
@@ -114,7 +116,11 @@ QVariant ModelVariablesItemModel::data(const QModelIndex &index, int role) const
                 case FMIContinuous: return "continuous";
             }
         case START_COLUMN_INDEX:
-            return variable->start;
+            if (startValues->contains(variable)) {
+                return startValues->value(variable);
+            } else {
+                return variable->start;
+            }
         case NOMINAL_COLUMN_INDEX:
             return variable->nominal;
         case MIN_COLUMN_INDEX:
@@ -137,6 +143,13 @@ QVariant ModelVariablesItemModel::data(const QModelIndex &index, int role) const
             return int(Qt::AlignRight | Qt::AlignVCenter);
         default: break;
         }
+    case Qt::FontRole:
+        if (index.column() == START_COLUMN_INDEX && startValues->contains(variable)) {
+            QFont font;
+            font.setBold(true);
+            return font;
+        }
+        break;
     default:
         break;
     }
@@ -144,6 +157,27 @@ QVariant ModelVariablesItemModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
+bool ModelVariablesItemModel::setData(const QModelIndex &index, const QVariant &value, int role) {
+
+    if (!index.isValid()) {
+        return false;
+    }
+
+    const FMIModelVariable* variable = static_cast<FMIModelVariable*>(index.internalPointer());
+
+    if (index.column() == START_COLUMN_INDEX) {
+
+        if (value.toString().isEmpty()) {
+            startValues->remove(variable);
+        } else {
+            startValues->insert(variable, value.toString());
+        }
+
+        return true;
+    }
+
+    return false;
+}
 
 QVariant ModelVariablesItemModel::headerData(int section, Qt::Orientation orientation, int role) const {
 
@@ -158,3 +192,17 @@ QVariant ModelVariablesItemModel::headerData(int section, Qt::Orientation orient
 
     return QVariant();
 }
+
+Qt::ItemFlags ModelVariablesItemModel::flags(const QModelIndex &index) const {
+
+    if (!index.isValid()) {
+        return Qt::NoItemFlags;
+    }
+
+    if (index.column() == START_COLUMN_INDEX) {
+        return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
+    } else {
+        return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+    }
+}
+
