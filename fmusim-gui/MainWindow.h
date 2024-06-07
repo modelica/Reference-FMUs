@@ -18,6 +18,8 @@ extern "C" {
 #include "FMIModelDescription.h"
 }
 
+class ModelVariablesItemModel;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -36,12 +38,14 @@ private:
     FMIModelDescription* modelDescription = nullptr;
     QString unzipdir;
     QMap<const FMIModelVariable*, QString> startValues;
+    ModelVariablesItemModel* variablesListModel = nullptr;
 
     static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message);
 
     void setCurrentPage(QWidget *page);
 
 private slots:
+    void openFile();
     void openUnzipDirectory();
     void openFileInDefaultApplication(const QModelIndex &index);
     void simulate();

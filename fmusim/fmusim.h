@@ -9,8 +9,8 @@ typedef struct {
 
     // Common
     size_t nStartValues;
-    const FMIModelVariable** startVariables;
-    const char** startValues;
+    FMIModelVariable** startVariables;
+    char** startValues;
     double tolerance;
     double startTime;
     double stopTime;

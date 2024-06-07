@@ -29,7 +29,11 @@ public:
     const static int NAME_COLUMN_DEFAULT_WIDTH = 200;
     const static int START_COLUMN_DEFAULT_WIDTH = 70;
 
-    explicit ModelVariablesItemModel(const FMIModelDescription* modelDescription, QMap<const FMIModelVariable*, QString> *startValues, QObject *parent = nullptr);
+    explicit ModelVariablesItemModel(QObject *parent = nullptr);
+
+    void setModelDescription(const FMIModelDescription* modelDescription);
+
+    void setStartValues(QMap<const FMIModelVariable*, QString> *startValues);
 
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
 
@@ -48,8 +52,8 @@ public:
     Qt::ItemFlags flags(const QModelIndex &index) const;
 
 protected:
-    const FMIModelDescription* modelDescription;
-    QMap<const FMIModelVariable*, QString> *startValues;
+    const FMIModelDescription* modelDescription = nullptr;
+    QMap<const FMIModelVariable*, QString> *startValues = nullptr;
 
 };
 

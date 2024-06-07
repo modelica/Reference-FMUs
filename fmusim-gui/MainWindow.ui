@@ -361,7 +361,7 @@ QStatusBar::item {
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="loadFMUAction"/>
+   <addaction name="openFileAction"/>
    <addaction name="separator"/>
    <addaction name="showSettingsAction"/>
    <addaction name="showFilesAction"/>
@@ -427,16 +427,16 @@ QStatusBar::item {
     <enum>QAction::NoRole</enum>
    </property>
   </action>
-  <action name="loadFMUAction">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
+  <action name="openFileAction">
    <property name="icon">
     <iconset resource="buttons.qrc">
      <normaloff>:/buttons/folder-open.svg</normaloff>:/buttons/folder-open.svg</iconset>
    </property>
    <property name="text">
-    <string>Load FMU</string>
+    <string>Open File</string>
+   </property>
+   <property name="toolTip">
+    <string>Open a file</string>
    </property>
    <property name="menuRole">
     <enum>QAction::NoRole</enum>

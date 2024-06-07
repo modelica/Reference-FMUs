@@ -2,10 +2,13 @@
 #include "./ui_MainWindow.h"
 #include <QStringListModel>
 #include <QDesktopServices>
+#include <QFileDialog>
 #include "ModelVariablesItemModel.h"
 
 extern "C" {
 #include "FMIZip.h"
+#include "FMIUtil.h"
+#include "FMI3.h"
 #include "fmusim_fmi3_cs.h"
 // #include "FMICSVRecorder.h"
 #include "FMIDemoRecorder.h"
@@ -52,11 +55,36 @@ MainWindow::MainWindow(QWidget *parent)
     //ui->filesTreeView->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     connect(ui->filesTreeView, &QAbstractItemView::doubleClicked, this, &MainWindow::openFileInDefaultApplication);
 
+    connect(ui->openFileAction,          &QAction::triggered, this, &MainWindow::openFile);
     connect(ui->showSettingsAction,      &QAction::triggered, this, [this]() { setCurrentPage(ui->settingsPage);     });
     connect(ui->showFilesAction,         &QAction::triggered, this, [this]() { setCurrentPage(ui->filesPage);        });
     connect(ui->showDocumentationAction, &QAction::triggered, this, [this]() { setCurrentPage(ui->documenationPage); });
     connect(ui->showLogAction,           &QAction::triggered, this, [this]() { setCurrentPage(ui->logPage);          });
     connect(ui->showPlotAction,          &QAction::triggered, this, [this]() { setCurrentPage(ui->plotPage);         });
+
+    variablesListModel = new ModelVariablesItemModel(this);
+    variablesListModel->setStartValues(&startValues);
+
+    ui->treeView->setModel(variablesListModel);
+
+    // ui->treeView->setColumnWidth(0, ModelVariablesItemModel::NAME_COLUMN_DEFAULT_WIDTH);
+    // ui->treeView->setColumnWidth(1, ModelVariablesItemModel::START_COLUMN_DEFAULT_WIDTH);
+    const static int COLUMN_WIDTHS[] = {200, 50, 70, 100, 70, 70, 70, 70, 70, 70, 70, 40, 40};
+
+    for (size_t i = 0; i < ModelVariablesItemModel::NUMBER_OF_COLUMNS - 1; i++) {
+        ui->treeView->setColumnWidth(i, COLUMN_WIDTHS[i]);
+    }
+
+    // hide columns
+    ui->treeView->hideColumn(ModelVariablesItemModel::TYPE_COLUMN_INDEX);
+    ui->treeView->hideColumn(ModelVariablesItemModel::DIMENSION_COLUMN_INDEX);
+    ui->treeView->hideColumn(ModelVariablesItemModel::VALUE_REFERENCE_COLUMN_INDEX);
+    ui->treeView->hideColumn(ModelVariablesItemModel::INITIAL_COLUMN_INDEX);
+    ui->treeView->hideColumn(ModelVariablesItemModel::CAUSALITY_COLUMN_INDEX);
+    ui->treeView->hideColumn(ModelVariablesItemModel::VARIABITLITY_COLUMN_INDEX);
+    ui->treeView->hideColumn(ModelVariablesItemModel::NOMINAL_COLUMN_INDEX);
+    ui->treeView->hideColumn(ModelVariablesItemModel::MIN_COLUMN_INDEX);
+    ui->treeView->hideColumn(ModelVariablesItemModel::MAX_COLUMN_INDEX);
 }
 
 void MainWindow::setCurrentPage(QWidget *page) {
@@ -108,36 +136,18 @@ void MainWindow::loadFMU(const QString &filename) {
         break;
     }
 
+    // Loading finished. Update the GUI.
+    startValues.clear();
+
+    setWindowTitle("FMUSim GUI - " + filename);
+
+    variablesListModel->setModelDescription(modelDescription);
+
     ui->variablesLabel->setText(QString::number(modelDescription->nModelVariables));
 
     ui->generationDateLabel->setText(modelDescription->generationDate);
     ui->generationToolLabel->setText(modelDescription->generationTool);
     ui->descriptionLabel->setText(modelDescription->description);
-
-    startValues.insert(&modelDescription->modelVariables[1], "2.5");
-
-    ModelVariablesItemModel* model = new ModelVariablesItemModel(modelDescription, &startValues, this);
-
-    ui->treeView->setModel(model);
-
-    // ui->treeView->setColumnWidth(0, ModelVariablesItemModel::NAME_COLUMN_DEFAULT_WIDTH);
-    // ui->treeView->setColumnWidth(1, ModelVariablesItemModel::START_COLUMN_DEFAULT_WIDTH);
-    const static int COLUMN_WIDTHS[] = {200, 50, 70, 100, 70, 70, 70, 70, 70, 70, 70, 40, 40};
-
-    for (size_t i = 0; i < ModelVariablesItemModel::NUMBER_OF_COLUMNS - 1; i++) {
-        ui->treeView->setColumnWidth(i, COLUMN_WIDTHS[i]);
-    }
-
-    // hide columns
-    ui->treeView->hideColumn(ModelVariablesItemModel::TYPE_COLUMN_INDEX);
-    ui->treeView->hideColumn(ModelVariablesItemModel::DIMENSION_COLUMN_INDEX);
-    ui->treeView->hideColumn(ModelVariablesItemModel::VALUE_REFERENCE_COLUMN_INDEX);
-    ui->treeView->hideColumn(ModelVariablesItemModel::INITIAL_COLUMN_INDEX);
-    ui->treeView->hideColumn(ModelVariablesItemModel::CAUSALITY_COLUMN_INDEX);
-    ui->treeView->hideColumn(ModelVariablesItemModel::VARIABITLITY_COLUMN_INDEX);
-    ui->treeView->hideColumn(ModelVariablesItemModel::NOMINAL_COLUMN_INDEX);
-    ui->treeView->hideColumn(ModelVariablesItemModel::MIN_COLUMN_INDEX);
-    ui->treeView->hideColumn(ModelVariablesItemModel::MAX_COLUMN_INDEX);
 
     filesModel.setRootPath(this->unzipdir);
 
@@ -151,8 +161,6 @@ void MainWindow::loadFMU(const QString &filename) {
     ui->documentationWebEngineView->load(QUrl::fromLocalFile(doc));
 
     ui->plotWebEngineView->load(QUrl::fromLocalFile("E:\\Development\\Reference-FMUs\\fmusim-gui\\plot.html"));
-
-    setWindowTitle("FMUSim GUI - " + filename);
 }
 
 static void logMessage(FMIInstance* instance, FMIStatus status, const char* category, const char* message) {
@@ -217,7 +225,6 @@ void MainWindow::logFunctionCall(FMIInstance* instance, FMIStatus status, const 
 
 void MainWindow::simulate() {
 
-
     FMISimulationSettings settings;
 
     settings.tolerance                = 0;
@@ -232,6 +239,19 @@ void MainWindow::simulate() {
     settings.recordIntermediateValues = false;
     settings.initialFMUStateFile      = NULL;
     settings.finalFMUStateFile        = NULL;
+
+    settings.nStartValues = startValues.count();
+    settings.startVariables = (FMIModelVariable**)calloc(settings.nStartValues, sizeof(FMIModelVariable*));
+    settings.startValues = (char**)calloc(settings.nStartValues, sizeof(char*));
+
+    size_t i = 0;
+
+    for (auto [variable, value] : startValues.asKeyValueRange()) {
+        settings.startVariables[i] = (FMIModelVariable*)variable;
+        QByteArray buffer = value.toLocal8Bit();
+        settings.startValues[i] = _strdup(buffer.data());
+        i++;
+    }
 
     char platformBinaryPath[FMI_PATH_MAX] = "";
 
@@ -286,6 +306,16 @@ void MainWindow::simulate() {
     // ui->plotWebEngineView->page()->runJavaScript("Plotly.newPlot('gd', { 'data': [{ 'x': [" + x + "], 'y': [" + y + "] }] })");
     // ui->plotWebEngineView->page()->runJavaScript("Plotly.newPlot('gd', { 'data': [{ 'x': [" + x + "], 'y': [" + y + "] }], 'layout': { 'width': 600, 'height': 400} } })");
 }
+
+void MainWindow::openFile() {
+
+    const QString filename = QFileDialog::getOpenFileName(this, "Open File", QDir::homePath(), "FMUs (*.fmu);;All Files (*.*)");
+
+    if (!filename.isEmpty()) {
+        loadFMU(filename);
+    }
+}
+
 
 void MainWindow::openUnzipDirectory() {
     QDesktopServices::openUrl(QUrl::fromLocalFile(unzipdir));

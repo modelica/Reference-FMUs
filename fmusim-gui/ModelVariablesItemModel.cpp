@@ -2,11 +2,21 @@
 #include <QIcon>
 #include <QFont>
 
-ModelVariablesItemModel::ModelVariablesItemModel(const FMIModelDescription* modelDescription, QMap<const FMIModelVariable*, QString> *startValues,  QObject *parent)
+ModelVariablesItemModel::ModelVariablesItemModel(QObject *parent)
     : QAbstractItemModel{parent}
 {
+}
+
+void ModelVariablesItemModel::setModelDescription(const FMIModelDescription* modelDescription) {
+    beginResetModel();
     this->modelDescription = modelDescription;
+    endResetModel();
+}
+
+void ModelVariablesItemModel::setStartValues(QMap<const FMIModelVariable*, QString> *startValues) {
+    beginResetModel();
     this->startValues = startValues;
+    endResetModel();
 }
 
 QModelIndex ModelVariablesItemModel::index(int row, int column, const QModelIndex &parent) const {
@@ -20,11 +30,11 @@ QModelIndex ModelVariablesItemModel::parent(const QModelIndex &child) const {
 
 int ModelVariablesItemModel::rowCount(const QModelIndex &parent) const {
 
-    if (!parent.isValid()) {
+    if (!parent.isValid() && modelDescription) {
         return (int)modelDescription->nModelVariables;
-    } else {
-        return 0;
     }
+
+    return 0;
 }
 
 int ModelVariablesItemModel::columnCount(const QModelIndex &parent) const {
@@ -44,6 +54,7 @@ QVariant ModelVariablesItemModel::data(const QModelIndex &index, int role) const
             return QVariant();
         }
     case Qt::DisplayRole:
+    case Qt::EditRole:
         switch (index.column()) {
         case NAME_COLUMN_INDEX:
             return variable->name;
@@ -116,7 +127,7 @@ QVariant ModelVariablesItemModel::data(const QModelIndex &index, int role) const
                 case FMIContinuous: return "continuous";
             }
         case START_COLUMN_INDEX:
-            if (startValues->contains(variable)) {
+            if (startValues && startValues->contains(variable)) {
                 return startValues->value(variable);
             } else {
                 return variable->start;
@@ -144,7 +155,7 @@ QVariant ModelVariablesItemModel::data(const QModelIndex &index, int role) const
         default: break;
         }
     case Qt::FontRole:
-        if (index.column() == START_COLUMN_INDEX && startValues->contains(variable)) {
+        if (index.column() == START_COLUMN_INDEX && startValues && startValues->contains(variable)) {
             QFont font;
             font.setBold(true);
             return font;
@@ -199,7 +210,7 @@ Qt::ItemFlags ModelVariablesItemModel::flags(const QModelIndex &index) const {
         return Qt::NoItemFlags;
     }
 
-    if (index.column() == START_COLUMN_INDEX) {
+    if (index.column() == START_COLUMN_INDEX && startValues) {
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
     } else {
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
