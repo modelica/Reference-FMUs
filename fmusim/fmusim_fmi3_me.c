@@ -58,18 +58,19 @@ FMIStatus simulateFMI3ME(
         CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
     }
 
-    // set start values
     CALL(applyStartValues(S, settings));
-    CALL(FMIApplyInput(S, input, time,
-        true,  // discrete
-        true,  // continous
-        false  // after event
-    ));
 
     if (!settings->initialFMUStateFile) {
 
         // initialize
         CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, time, fmi3False, 0));
+        
+        CALL(FMIApplyInput(S, input, time,
+            true,  // discrete
+            true,  // continous
+            false  // after event
+        ));
+        
         CALL(FMI3ExitInitializationMode(S));
 
         // intial event iteration
