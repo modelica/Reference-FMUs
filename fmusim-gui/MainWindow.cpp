@@ -86,6 +86,16 @@ MainWindow::MainWindow(QWidget *parent)
     ui->treeView->hideColumn(ModelVariablesItemModel::NOMINAL_COLUMN_INDEX);
     ui->treeView->hideColumn(ModelVariablesItemModel::MIN_COLUMN_INDEX);
     ui->treeView->hideColumn(ModelVariablesItemModel::MAX_COLUMN_INDEX);
+
+    // disable widgets
+    ui->showSettingsAction->setEnabled(false);
+    ui->showFilesAction->setEnabled(false);
+    ui->showDocumentationAction->setEnabled(false);
+    ui->showLogAction->setEnabled(false);
+    ui->showPlotAction->setEnabled(false);
+    ui->simulateAction->setEnabled(false);
+    stopTimeLineEdit->setEnabled(false);
+    interfaceTypeComboBox->setEnabled(false);
 }
 
 void MainWindow::setCurrentPage(QWidget *page) {
@@ -167,7 +177,17 @@ void MainWindow::loadFMU(const QString &filename) {
     const QString doc = QDir::cleanPath(this->unzipdir + QDir::separator() + "documentation" + QDir::separator() + "index.html");
     ui->documentationWebEngineView->load(QUrl::fromLocalFile(doc));
 
-    ui->plotWebEngineView->load(QUrl::fromLocalFile("E:\\Development\\Reference-FMUs\\fmusim-gui\\plot.html"));
+    ui->plotWebEngineView->load(QUrl("qrc:/plot.html"));
+
+    // enable widgets
+    ui->showSettingsAction->setEnabled(true);
+    ui->showFilesAction->setEnabled(true);
+    ui->showDocumentationAction->setEnabled(true);
+    ui->showLogAction->setEnabled(true);
+    ui->showPlotAction->setEnabled(true);
+    ui->simulateAction->setEnabled(true);
+    stopTimeLineEdit->setEnabled(true);
+    interfaceTypeComboBox->setEnabled(true);
 }
 
 static void logMessage(FMIInstance* instance, FMIStatus status, const char* category, const char* message) {

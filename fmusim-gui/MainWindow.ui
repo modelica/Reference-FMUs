@@ -494,6 +494,10 @@ QStatusBar::item {
    </property>
   </action>
   <action name="showLogAction">
+   <property name="icon">
+    <iconset resource="buttons.qrc">
+     <normaloff>:/buttons/list-task.svg</normaloff>:/buttons/list-task.svg</iconset>
+   </property>
    <property name="text">
     <string>Show Log</string>
    </property>

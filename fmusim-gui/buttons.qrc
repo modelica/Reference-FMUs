@@ -13,5 +13,8 @@
         <file>buttons/graph.svg</file>
         <file>buttons/play.svg</file>
         <file>buttons/stop.svg</file>
+        <file>buttons/list-task.svg</file>
+        <file>plot.html</file>
+        <file>plotly-2.32.0.js</file>
     </qresource>
 </RCC>
