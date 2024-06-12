@@ -26,13 +26,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     // add the simulation controls to the toolbar
     stopTimeLineEdit = new QLineEdit(this);
-    stopTimeLineEdit->setEnabled(false);
-    ui->toolBar->addWidget(stopTimeLineEdit);
+    // stopTimeLineEdit->setEnabled(false);
+    stopTimeLineEdit->setText("10.0");
     stopTimeLineEdit->setToolTip("Stop time");
     stopTimeLineEdit->setFixedWidth(50);
     stopTimeValidator = new QDoubleValidator(this);
     stopTimeValidator->setBottom(0);
     stopTimeLineEdit->setValidator(stopTimeValidator);
+    ui->toolBar->addWidget(stopTimeLineEdit);
 
     QWidget* spacer = new QWidget(this);
     spacer->setFixedWidth(10);
@@ -141,9 +142,15 @@ void MainWindow::loadFMU(const QString &filename) {
 
     setWindowTitle("FMUSim GUI - " + filename);
 
+    if (modelDescription->defaultExperiment && modelDescription->defaultExperiment->stopTime) {
+        stopTimeLineEdit->setText(modelDescription->defaultExperiment->stopTime);
+    }
+
     variablesListModel->setModelDescription(modelDescription);
 
     ui->variablesLabel->setText(QString::number(modelDescription->nModelVariables));
+    ui->continuousStatesLabel->setText(QString::number(modelDescription->nContinuousStates));
+    ui->eventIndicatorsLabel->setText(QString::number(modelDescription->nEventIndicators));
 
     ui->generationDateLabel->setText(modelDescription->generationDate);
     ui->generationToolLabel->setText(modelDescription->generationTool);
@@ -233,7 +240,7 @@ void MainWindow::simulate() {
     settings.startValues              = NULL;
     settings.startTime                = 0.0;
     settings.outputInterval           = 0.01;
-    settings.stopTime                 = 3.0;
+    settings.stopTime                 = stopTimeLineEdit->text().toDouble();
     settings.earlyReturnAllowed       = false;
     settings.eventModeUsed            = false;
     settings.recordIntermediateValues = false;

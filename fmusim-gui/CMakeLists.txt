@@ -62,6 +62,11 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 
         ../fmusim/FMIDemoRecorder.c
         ../fmusim/FMIDemoRecorder.h
+
+        ../fmusim/FMISimulation.c
+        ../fmusim/FMISimulation.h
+
+        ../fmusim/fmusim.h
     )
 
 target_include_directories(fmusim-gui PRIVATE

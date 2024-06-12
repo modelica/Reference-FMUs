@@ -76,7 +76,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="settingsPage">
        <layout class="QGridLayout" name="gridLayout_3">
@@ -89,28 +89,17 @@
            <bool>true</bool>
           </property>
           <layout class="QGridLayout" name="gridLayout">
-           <item row="4" column="0">
-            <widget class="QLabel" name="label_4">
+           <item row="6" column="1">
+            <widget class="QLabel" name="descriptionLabel">
              <property name="text">
-              <string>Description</string>
+              <string/>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>Generation Date</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>Generation Tool</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
+           <item row="7" column="0">
             <spacer name="verticalSpacer">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
@@ -123,8 +112,29 @@
              </property>
             </spacer>
            </item>
+           <item row="5" column="1">
+            <widget class="QLabel" name="generationToolLabel">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_7">
+             <property name="text">
+              <string>Event Indicators</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_6">
+             <property name="text">
+              <string>Continuous States</string>
+             </property>
+            </widget>
+           </item>
            <item row="2" column="1">
-            <widget class="QLabel" name="generationDateLabel">
+            <widget class="QLabel" name="continuousStatesLabel">
              <property name="text">
               <string/>
              </property>
@@ -143,27 +153,38 @@
              </property>
             </widget>
            </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>FMI Version</string>
-             </property>
-            </widget>
-           </item>
            <item row="3" column="1">
-            <widget class="QLabel" name="generationToolLabel">
+            <widget class="QLabel" name="eventIndicatorsLabel">
              <property name="text">
               <string/>
              </property>
             </widget>
            </item>
            <item row="4" column="1">
-            <widget class="QLabel" name="descriptionLabel">
+            <widget class="QLabel" name="generationDateLabel">
              <property name="text">
               <string/>
              </property>
-             <property name="wordWrap">
-              <bool>true</bool>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Generation Tool</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="variablesLabel">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>Generation Date</string>
              </property>
             </widget>
            </item>
@@ -174,10 +195,17 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="1">
-            <widget class="QLabel" name="variablesLabel">
+           <item row="0" column="0">
+            <widget class="QLabel" name="label">
              <property name="text">
-              <string/>
+              <string>FMI Version</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0">
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>Description</string>
              </property>
             </widget>
            </item>

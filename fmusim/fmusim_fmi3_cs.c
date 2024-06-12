@@ -3,6 +3,7 @@
 
 #include "FMI3.h"
 #include "FMIUtil.h"
+#include "FMISimulation.h"
 
 #include "fmusim_fmi3_cs.h"
 
@@ -93,12 +94,14 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
         CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
     }
 
-    // CALL(applyStartValues(S, settings));
-    CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
+    CALL(FMIApplyStartValues(S, settings));
 
     if (!settings->initialFMUStateFile) {
 
         CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, settings->startTime, fmi3False, 0));
+
+        CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
+
         CALL(FMI3ExitInitializationMode(S));
 
         if (settings->eventModeUsed) {
