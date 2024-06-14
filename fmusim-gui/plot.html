@@ -1,14 +1,70 @@
-<head>
-    <script src="plotly-2.32.0.js" charset="utf-8"></script>
-</head>
-<body>
-    <!--<div id="gd" style="height: 100%; margin: 10px; border: 1px solid red;"></div>-->
-    <div id="gd" style="height: 100%"></div>
+<html class="dark-mode">
+    <head>
+        <script src="plotly-2.32.0.js" charset="utf-8"></script>
 
-    <!--script>
-        Plotly.newPlot("gd", /* JSON object */ {
-            "data": [{ "y": [1, 2, 3] }],
-            "layout": { "width": 600, "height": 400}
-        })
-    </script-->
-</body>
+<style>
+.dark-mode body {
+    background-color: #1e1e1e !important;
+    color: #a0aaba !important;
+}
+</style>
+    </head>
+    <body>
+        <!--<div id="gd" style="height: 100%; margin: 10px; border: 1px solid red;"></div>-->
+        <div id="gd" style="height: 100%"></div>
+
+        <script>
+            /*
+            Plotly.newPlot("gd", {
+                "data": [{ "y": [1, 2, 3] }],
+                "layout": { "width": 600, "height": 400}
+            })
+            */
+
+//     ui->plotWebEngineView->page()->runJavaScript("Plotly.newPlot('gd', { 'data': [{ 'y': [" + y + "] }], 'layout': { 'autosize': true }, 'config': { 'responsive': true, 'theme': 'ggplot2' } })");
+
+
+            var trace1 = {
+              x: [0, 1, 2, 3],
+              y: [0, 4, 5, 6],
+              type: 'scatter',
+              name: 'height [m]'
+            };
+
+            var trace2 = {
+              ygap: 0,
+              x: [0, 1, 2, 3],
+              y: [50, 60, 70, -10],
+              xaxis: 'x2',
+              yaxis: 'y2',
+              type: 'scatter',
+              name: 'velocity [m/s]'
+            };
+
+            var data = [trace1, trace2];
+
+            var layout = {
+              showlegend: false,
+              autosize: true,
+              font_color: "#0ff",
+              plot_bgcolor: "#1e1e1e",
+              paper_bgcolor: "#1e1e1e",
+              grid: {rows: 2, columns: 1, pattern: 'independent'},
+              template: 'plotly_dark',
+              xaxis: {color: '#fff', matches: 'x2', showticklabels: false},
+              yaxis: {title: 'height [m]', color: '#fff', domain: [0.52, 1.0]},
+              xaxis2: {color: '#fff', range: [-0.05, 3.05]},
+              yaxis2: {title: 'velocity [m/s]', color: '#fff', domain: [0.0, 0.48]},
+              color: '#0f0',
+              margin: { l: 50, r: 20, b: 30, t: 20, pad: 0 }
+            };
+
+            var config = {
+              'responsive': true
+            };
+
+            Plotly.newPlot('gd', data, layout, config);
+
+        </script>
+    </body>
+</html>

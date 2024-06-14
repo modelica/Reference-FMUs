@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     darkPalette.setColor(QPalette::Disabled, QPalette::Window, QColor(68, 68, 68));
     darkPalette.setColor(QPalette::Disabled, QPalette::Highlight, QColor(68, 68, 68));
 
-    // a.setStyle("Fusion");
+    a.setStyle("Fusion");
     // a.setStyle("Windows");
     // a.setStyle("WindowsVista");
 
