@@ -238,7 +238,7 @@ static bool allowedState(ModelInstance *instance, int statesExpected, char *name
  Common Functions
  ****************************************************/
 
-const char* fmi3GetVersion() {
+const char* fmi3GetVersion(void) {
     return fmi3Version;
 }
 
