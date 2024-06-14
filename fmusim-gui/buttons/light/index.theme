@@ -1,0 +1,23 @@
+[Icon Theme]
+Name=light
+Comment=light theme icons
+
+PanelDefault=22
+PanelSizes=22
+
+Directories=svg,png
+
+[svg]
+Size=48
+Context=Applications
+MinSize=16
+MaxSize=512
+Type=Scalable
+
+
+[png]
+Size=24
+Context=Applications
+MinSize=16
+MaxSize=512
+Type=Fixed

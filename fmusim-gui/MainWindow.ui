@@ -278,6 +278,9 @@ QStatusBar::item {
 }
 </string>
    </property>
+   <property name="sizeGripEnabled">
+    <bool>false</bool>
+   </property>
   </widget>
   <widget class="QDockWidget" name="dockWidget">
    <property name="minimumSize">
@@ -364,7 +367,7 @@ QStatusBar::item {
   <action name="showSettingsAction">
    <property name="icon">
     <iconset resource="buttons.qrc">
-     <normaloff>:/buttons/buttons/gear.svg</normaloff>:/buttons/buttons/gear.svg</iconset>
+     <normaloff>:/buttons/dark/gear.svg</normaloff>:/buttons/dark/gear.svg</iconset>
    </property>
    <property name="text">
     <string>Show Settings</string>
@@ -376,7 +379,7 @@ QStatusBar::item {
   <action name="showFilesAction">
    <property name="icon">
     <iconset resource="buttons.qrc">
-     <normaloff>:/buttons/buttons/file-earmark-zip.svg</normaloff>:/buttons/buttons/file-earmark-zip.svg</iconset>
+     <normaloff>:/buttons/dark/file-earmark-zip.svg</normaloff>:/buttons/dark/file-earmark-zip.svg</iconset>
    </property>
    <property name="text">
     <string>Show Files</string>
@@ -388,7 +391,7 @@ QStatusBar::item {
   <action name="showDocumentationAction">
    <property name="icon">
     <iconset resource="buttons.qrc">
-     <normaloff>:/buttons/buttons/book.svg</normaloff>:/buttons/buttons/book.svg</iconset>
+     <normaloff>:/buttons/dark/book.svg</normaloff>:/buttons/dark/book.svg</iconset>
    </property>
    <property name="text">
     <string>Show Documentation</string>
@@ -400,7 +403,7 @@ QStatusBar::item {
   <action name="showPlotAction">
    <property name="icon">
     <iconset resource="buttons.qrc">
-     <normaloff>:/buttons/buttons/graph.svg</normaloff>:/buttons/buttons/graph.svg</iconset>
+     <normaloff>:/buttons/dark/graph.svg</normaloff>:/buttons/dark/graph.svg</iconset>
    </property>
    <property name="text">
     <string>Show Plot</string>
@@ -412,7 +415,7 @@ QStatusBar::item {
   <action name="openFileAction">
    <property name="icon">
     <iconset resource="buttons.qrc">
-     <normaloff>:/buttons/folder-open.svg</normaloff>:/buttons/folder-open.svg</iconset>
+     <normaloff>:/buttons/dark/folder-open.svg</normaloff>:/buttons/dark/folder-open.svg</iconset>
    </property>
    <property name="text">
     <string>Open File</string>
@@ -427,7 +430,7 @@ QStatusBar::item {
   <action name="simulateAction">
    <property name="icon">
     <iconset resource="buttons.qrc">
-     <normaloff>:/buttons/play.svg</normaloff>:/buttons/play.svg</iconset>
+     <normaloff>:/buttons/dark/play.svg</normaloff>:/buttons/dark/play.svg</iconset>
    </property>
    <property name="text">
     <string>Simulate</string>
@@ -450,7 +453,7 @@ QStatusBar::item {
   <action name="showLogAction">
    <property name="icon">
     <iconset resource="buttons.qrc">
-     <normaloff>:/buttons/list-task.svg</normaloff>:/buttons/list-task.svg</iconset>
+     <normaloff>:/buttons/dark/list-task.svg</normaloff>:/buttons/dark/list-task.svg</iconset>
    </property>
    <property name="text">
     <string>Show Log</string>

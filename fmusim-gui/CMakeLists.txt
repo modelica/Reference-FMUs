@@ -40,7 +40,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ModelVariablesItemModel.cpp
         icons/icons.qrc
         plot.html
-        buttons.qrc
+
         ../fmusim/fmusim_fmi3_cs.c
         ../fmusim/fmusim_fmi3_cs.h
         ../fmusim/fmusim_input.c
@@ -67,6 +67,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ../fmusim/FMISimulation.h
 
         ../fmusim/fmusim.h
+        buttons.qrc
+        plot.qrc
     )
 
 target_include_directories(fmusim-gui PRIVATE

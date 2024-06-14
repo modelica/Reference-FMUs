@@ -42,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
     interfaceTypeComboBox = new QComboBox(this);
     interfaceTypeComboBox->setEnabled(false);
     interfaceTypeComboBox->addItem("Co-Simulation");
+    interfaceTypeComboBox->addItem("Model Exchange");
     interfaceTypeComboBox->setToolTip("Interface type");
     interfaceTypeComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     ui->toolBar->addWidget(interfaceTypeComboBox);

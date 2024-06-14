@@ -1,10 +1,25 @@
 #include "MainWindow.h"
 
 #include <QApplication>
+#include <QDebug>
+#include <QIcon>
+
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+
+    qDebug() << QIcon::themeSearchPaths();
+
+    QStringList themeSearchPaths;
+
+    themeSearchPaths << ":/buttons";
+
+    QIcon::setThemeSearchPaths(themeSearchPaths);
+
+    qDebug() << QIcon::themeSearchPaths();
+
+    QIcon::setThemeName("dark");
 
     QPalette darkPalette;
     darkPalette.setColor(QPalette::Window, QColor(53, 53, 53));

@@ -1,20 +1,22 @@
 <RCC>
-    <qresource prefix="/buttons">
-        <file>buttons/book.svg</file>
-        <file>buttons/file-earmark-zip.svg</file>
-        <file>buttons/gear.svg</file>
-        <file>buttons/graph.svg</file>
-    </qresource>
     <qresource prefix="/">
-        <file>buttons/book.svg</file>
-        <file>buttons/file-earmark-zip.svg</file>
-        <file>buttons/folder-open.svg</file>
-        <file>buttons/gear.svg</file>
-        <file>buttons/graph.svg</file>
-        <file>buttons/play.svg</file>
-        <file>buttons/stop.svg</file>
-        <file>buttons/list-task.svg</file>
-        <file>plot.html</file>
-        <file>plotly-2.32.0.js</file>
+        <file>buttons/dark/book.svg</file>
+        <file>buttons/dark/file-earmark-zip.svg</file>
+        <file>buttons/dark/folder-open.svg</file>
+        <file>buttons/dark/gear.svg</file>
+        <file>buttons/dark/graph.svg</file>
+        <file>buttons/dark/index.theme</file>
+        <file>buttons/dark/list-task.svg</file>
+        <file>buttons/dark/play.svg</file>
+        <file>buttons/dark/stop.svg</file>
+        <file>buttons/light/book.svg</file>
+        <file>buttons/light/file-earmark-zip.svg</file>
+        <file>buttons/light/folder-open.svg</file>
+        <file>buttons/light/gear.svg</file>
+        <file>buttons/light/graph.svg</file>
+        <file>buttons/light/index.theme</file>
+        <file>buttons/light/list-task.svg</file>
+        <file>buttons/light/play.svg</file>
+        <file>buttons/light/stop.svg</file>
     </qresource>
 </RCC>
