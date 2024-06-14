@@ -53,6 +53,8 @@ MainWindow::MainWindow(QWidget *parent)
     // hide the dock's title bar
     ui->dockWidget->setTitleBarWidget(new QWidget());
 
+    connect(ui->openButton, &QPushButton::clicked, this, &MainWindow::openFile);
+
     //ui->filesTreeView->resizeColumnToContents(0);
     //ui->filesTreeView->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     connect(ui->filesTreeView, &QAbstractItemView::doubleClicked, this, &MainWindow::openFileInDefaultApplication);
@@ -89,6 +91,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->treeView->hideColumn(ModelVariablesItemModel::MAX_COLUMN_INDEX);
 
     // disable widgets
+    ui->dockWidget->setHidden(true);
     ui->showSettingsAction->setEnabled(false);
     ui->showFilesAction->setEnabled(false);
     ui->showDocumentationAction->setEnabled(false);
@@ -181,6 +184,8 @@ void MainWindow::loadFMU(const QString &filename) {
     ui->plotWebEngineView->load(QUrl("qrc:/plot.html"));
 
     // enable widgets
+    ui->dockWidget->setHidden(false);
+    ui->stackedWidget->setCurrentWidget(ui->settingsPage);
     ui->showSettingsAction->setEnabled(true);
     ui->showFilesAction->setEnabled(true);
     ui->showDocumentationAction->setEnabled(true);
