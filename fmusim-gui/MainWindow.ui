@@ -47,14 +47,7 @@
           </property>
          </spacer>
         </item>
-        <item row="0" column="1">
-         <widget class="QPushButton" name="openButton">
-          <property name="text">
-           <string>Open an FMU</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="2">
+        <item row="0" column="3">
          <spacer name="horizontalSpacer_2">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -66,6 +59,20 @@
            </size>
           </property>
          </spacer>
+        </item>
+        <item row="0" column="2">
+         <widget class="QPushButton" name="openButton">
+          <property name="text">
+           <string>Open an FMU</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>Drop FMUs here or</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>

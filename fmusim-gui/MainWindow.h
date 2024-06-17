@@ -29,6 +29,10 @@ public:
     ~MainWindow();
     void loadFMU(const QString &filename);
 
+protected:
+    void dragEnterEvent(QDragEnterEvent *event) override;
+    void dropEvent(QDropEvent *event) override;
+
 private:
     Ui::MainWindow *ui;
     QLineEdit *stopTimeLineEdit;

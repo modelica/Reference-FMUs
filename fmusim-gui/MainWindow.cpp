@@ -3,6 +3,8 @@
 #include <QStringListModel>
 #include <QDesktopServices>
 #include <QFileDialog>
+#include <QDragEnterEvent>
+#include <QMimeData>>
 #include "ModelVariablesItemModel.h"
 
 extern "C" {
@@ -194,6 +196,32 @@ void MainWindow::loadFMU(const QString &filename) {
     ui->simulateAction->setEnabled(true);
     stopTimeLineEdit->setEnabled(true);
     interfaceTypeComboBox->setEnabled(true);
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
+
+    for (const QUrl &url : event->mimeData()->urls()) {
+
+        if (!url.isLocalFile()) {
+            return;
+        }
+    }
+
+    qDebug() << "accepting " << event;
+
+    event->acceptProposedAction();
+}
+
+void MainWindow::dropEvent(QDropEvent *event) {
+
+    MainWindow* window = nullptr;
+
+    for (const QUrl &url : event->mimeData()->urls()) {
+
+        window = !window ? this : new MainWindow();
+
+        window->loadFMU(url.toLocalFile());
+    }
 }
 
 static void logMessage(FMIInstance* instance, FMIStatus status, const char* category, const char* message) {
