@@ -49,7 +49,18 @@ QVariant ModelVariablesItemModel::data(const QModelIndex &index, int role) const
     case Qt::DecorationRole:
         switch (index.column()) {
         case NAME_COLUMN_INDEX:
-            return QIcon(":/icons/light/float_variable.svg");
+            switch (variable->causality) {
+            case FMIParameter:
+            case FMIStructuralParameter:
+            case FMICalculatedParameter:
+                return QIcon(":/variables/dark/float-parameter.svg");
+            case FMIInput:
+                return QIcon(":/variables/dark/float-input.svg");
+            case FMIOutput:
+                return QIcon(":/variables/dark/float-output.svg");
+            default:
+                return QIcon(":/variables/dark/float-variable.svg");
+            }
         default:
             return QVariant();
         }

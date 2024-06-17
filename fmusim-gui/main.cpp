@@ -48,6 +48,15 @@ int main(int argc, char *argv[])
     // a.setStyle("Windows");
     // a.setStyle("WindowsVista");
 
+    QFont f = a.font();
+
+    qDebug() << f;
+
+    //f.setFamily("Monaco");
+    f.setPointSize(10);
+
+    a.setFont(f);
+
     MainWindow *w = new MainWindow();
     w->show();
 

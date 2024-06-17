@@ -69,6 +69,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ../fmusim/fmusim.h
         buttons.qrc
         plot.qrc
+        icons/variables/variables.qrc
     )
 
 target_include_directories(fmusim-gui PRIVATE
