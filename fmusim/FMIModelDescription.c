@@ -231,7 +231,7 @@ static void readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescription* m
 
         (*unknowns)[i].modelVariable = FMIModelVariableForIndexLiteral(modelDescription, indexLiteral);
 
-        free((void*)indexLiteral);
+        xmlFree((void*)indexLiteral);
     }
 
     xmlXPathFreeObject(xpathObj);
@@ -362,7 +362,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
             variable->variability = FMIContinuous;
         }
 
-        free((void*)variability);
+        xmlFree((void*)variability);
 
         if (!strcmp(typeName, "Real")) {
             variable->type = variable->variability == FMIDiscrete ? FMIDiscreteRealType : FMIRealType;
@@ -380,7 +380,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
         variable->valueReference = FMIValueReferenceForLiteral(vr);
 
-        free((void*)vr);
+        xmlFree((void*)vr);
         
         const char* causality = (char*)xmlGetProp(variableNode, (xmlChar*)"causality");
 
@@ -398,7 +398,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
             variable->causality = FMILocal;
         }
 
-        free((void*)causality);
+        xmlFree((void*)causality);
     }
 
     xmlXPathFreeObject(xpathObj);
