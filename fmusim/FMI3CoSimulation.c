@@ -32,11 +32,11 @@
 //     *earlyReturnRequested = fmi3False;
 // }
 
-FMIStatus simulateFMI3CS(FMIInstance* S,
+FMIStatus FMI3SimulateCS(FMIInstance* S,
     const FMIModelDescription * modelDescription,
     const char* resourcePath,
     // FMIRecorder* recorder,
-    //const FMUStaticInput * input,
+    const FMUStaticInput * input,
     const FMISimulationSettings * settings) {
 
     FMIStatus status = FMIOK;
@@ -100,7 +100,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
 
         CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, settings->startTime, fmi3False, 0));
 
-        CALL(FMIApplyInput(S, settings->input, settings->startTime, true, true, false));
+        CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
 
         CALL(FMI3ExitInitializationMode(S));
 
@@ -145,7 +145,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
 
         nextCommunicationPoint = nextRegularPoint;
 
-        nextInputEventTime = FMINextInputEvent(settings->input, time);
+        nextInputEventTime = FMINextInputEvent(input, time);
 
         inputEvent = nextCommunicationPoint >= nextInputEventTime;
 
@@ -155,7 +155,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
 
         stepSize = nextCommunicationPoint - time;
 
-        CALL(FMIApplyInput(S, settings->input, time,
+        CALL(FMIApplyInput(S, input, time,
             !settings->eventModeUsed,  // discrete
             true,                      // continuous
             !settings->eventModeUsed   // afterEvent
@@ -199,7 +199,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
             CALL(FMI3EnterEventMode(S));
 
             if (inputEvent) {
-                CALL(FMIApplyInput(S, settings->input, time,
+                CALL(FMIApplyInput(S, input, time,
                     true,  // discrete
                     true,  // continous
                     true   // after event

@@ -17,7 +17,7 @@
 #include "FMI3.h"
 #include "FMIZip.h"
 #include "FMIModelDescription.h"
-#include "FMIRecorder.h"
+#include "FMICSVRecorder.h"
 #include "FMIUtil.h"
 
 #include "fmusim.h"
@@ -469,7 +469,7 @@ int main(int argc, const char* argv[]) {
         outputFile = "result.csv";
     }
 
-    result = FMICreateRecorder(nOutputVariables, (const FMIModelVariable**)outputVariables, outputFile);
+    result = FMICSVRecorderCreate(S, nOutputVariables, outputVariables, outputFile);
 
     if (!result) {
         printf("Failed to open result file %s for writing.\n", outputFile);
@@ -535,6 +535,10 @@ int main(int argc, const char* argv[]) {
     settings.recordIntermediateValues = recordIntermediateValues;
     settings.initialFMUStateFile      = initialFMUStateFile;
     settings.finalFMUStateFile        = finalFMUStateFile;
+    
+    settings.input = input;
+    settings.recorder = result;
+    settings.sample = FMICSVRecorderSample;
 
     if (!strcmp("euler", solver)) {
         settings.solverCreate = FMIEulerCreate;
@@ -559,9 +563,9 @@ int main(int argc, const char* argv[]) {
             char fmuLocation[FMI_PATH_MAX] = "";
             CALL(FMIPathToURI(unzipdir, fmuLocation, FMI_PATH_MAX));
 
-            status = simulateFMI1CS(S, modelDescription, fmuLocation, result, input, &settings);
+            status = simulateFMI1CS(S, modelDescription, fmuLocation/*, result*/, input, &settings);
         } else {
-            status = simulateFMI1ME(S, modelDescription, result, input, &settings);
+            status = simulateFMI1ME(S, modelDescription/*, result*/, input, &settings);
         }
 
     } else if (modelDescription->fmiVersion == FMIVersion2) {
@@ -570,20 +574,22 @@ int main(int argc, const char* argv[]) {
         CALL(FMIPathToURI(resourcePath, resourceURI, FMI_PATH_MAX));
 
         if (interfaceType == FMICoSimulation) {
-            status = simulateFMI2CS(S, modelDescription, resourceURI, result, input, &settings);
+            status = simulateFMI2CS(S, modelDescription, resourceURI/*, result*/, input, &settings);
         } else {
-            status = simulateFMI2ME(S, modelDescription, resourceURI, result, input, &settings);
+            status = simulateFMI2ME(S, modelDescription, resourceURI/*, result*/, input, &settings);
         }
 
     } else {
 
         if (interfaceType == FMICoSimulation) {
-            status = simulateFMI3CS(S, modelDescription, resourcePath, result, input, &settings);
+            status = simulateFMI3CS(S, modelDescription, resourcePath/*, result*//*, input*/, &settings);
         } else {
-            status = simulateFMI3ME(S, modelDescription, resourcePath, result, input, &settings);
+            status = simulateFMI3ME(S, modelDescription, resourcePath/*, result*/, input, &settings);
         }
 
     }
+
+    FMICSVRecorderDump(settings.recorder);
 
 TERMINATE:
 
@@ -592,7 +598,7 @@ TERMINATE:
     }
 
     if (result) {
-        FMIFreeRecorder(result);
+        FMICSVRecorderFree(result);
     }
 
     if (modelDescription) {

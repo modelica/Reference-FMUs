@@ -11,6 +11,6 @@ FMIStatus simulateFMI2CS(
     FMIInstance* S, 
     const FMIModelDescription* modelDescription,
     const char* resourceURI,
-    FMIRecorder* result,
+    //FMIRecorder* result,
     const FMUStaticInput* input,
     const FMISimulationSettings* settings);

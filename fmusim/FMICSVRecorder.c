@@ -11,17 +11,68 @@
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
-struct FMIRecorderImpl {
+static size_t FMISizeOf(FMIVariableType type, FMIVersion fmiVersion) {
 
-    FMIInstance* instance;
-    size_t nVariables;
-    const FMIModelVariable** variables;
-    FILE* file;
-    size_t nValues;
-    char* values;
-    size_t* sizes;
+    switch (type) {
 
-} FMIRecorderImpl_CSV;
+    case FMIFloat32Type:
+    case FMIDiscreteFloat32Type:
+        return sizeof(fmi3Float32);
+
+    case FMIFloat64Type:
+    case FMIDiscreteFloat64Type:
+        return sizeof(fmi3Float64);
+
+    case FMIInt8Type:
+        return sizeof(fmi3Int8);
+
+    case FMIUInt8Type:
+        return sizeof(fmi3UInt8);
+
+    case FMIInt16Type:
+        return sizeof(fmi3Int16);
+
+    case FMIUInt16Type:
+        return sizeof(fmi3UInt16);
+
+    case FMIInt32Type:
+        return sizeof(fmi3Int32);
+
+    case FMIUInt32Type:
+        return sizeof(fmi3UInt32);
+
+    case FMIInt64Type:
+        return sizeof(fmi3Int64);
+
+    case FMIUInt64Type:
+        return sizeof(fmi3UInt64);
+
+    case FMIBooleanType:
+        switch (fmiVersion) {
+        case FMIVersion1:
+            return sizeof(fmi1Boolean);
+        case FMIVersion2:
+            return sizeof(fmi2Boolean);
+        case FMIVersion3:
+            return sizeof(fmi3Boolean);
+        default:
+            return 0;
+        }
+
+    case FMIClockType:
+        return sizeof(fmi3Clock);
+
+    case FMIValueReferenceType:
+        return sizeof(FMIValueReference);
+
+    case FMISizeTType:
+        return sizeof(size_t);
+
+    default:
+        return 0;
+    }
+
+}
 
 // FMIRecorder* FMICSVRecorderCreate(FMIInstance* instance, size_t nVariables, const FMIModelVariable* variables[], const char* file) {
 FMIRecorder* FMICSVRecorderCreate(FMIInstance* instance, size_t nVariables, FMIModelVariable** variables, const char* file) {
@@ -32,9 +83,37 @@ FMIRecorder* FMICSVRecorderCreate(FMIInstance* instance, size_t nVariables, FMIM
     
     CALL(FMICalloc((void**)&recorder, 1, sizeof(FMIRecorder)));
 
-    recorder->instance = instance;
+    recorder->instance   = instance;
     recorder->nVariables = nVariables;
-    recorder->variables = variables;
+    recorder->variables  = variables;
+
+    // allocate memory
+    recorder->float64Variables       = calloc(nVariables, sizeof(FMIModelVariable*));
+    recorder->float64Sizes           = calloc(nVariables, sizeof(size_t));
+    recorder->float64ValueReferences = calloc(nVariables, sizeof(FMIValueReference));
+
+    // collect variable infos
+    for (size_t i = 0; i < nVariables; i++) {
+
+        const FMIModelVariable* variable = variables[i];
+
+        switch (variable->type) {
+        case FMIFloat64Type:
+        case FMIDiscreteFloat64Type:
+            recorder->float64Variables[recorder->nFloat64Variables] = variable;
+            recorder->float64Sizes[recorder->nFloat64Variables] = 1;
+            recorder->float64ValueReferences[recorder->nFloat64Variables] = variable->valueReference;
+            recorder->nFloat64Variables++;
+            recorder->nFloat64Values++;
+            break;
+        default:
+            break;
+        }
+    }
+
+    recorder->nRows = 0;
+    recorder->rows = NULL;
+
     recorder->file = fopen(file, "w");
 
     if (!recorder->file) {
@@ -96,6 +175,8 @@ FMIStatus FMICSVRecorderSample(FMIRecorder* recorder, double time) {
         recorder->instance = instance;
     }
 
+    // FILE
+    /*
     fprintf(file, "%.16g", time);
 
     for (size_t i = 0; i < recorder->nVariables; i++) {
@@ -334,7 +415,41 @@ FMIStatus FMICSVRecorderSample(FMIRecorder* recorder, double time) {
     }
 
     fputc('\n', file);
+    */
+
+    // DATA
+    recorder->rows = realloc(recorder->rows, (recorder->nRows + 1) * sizeof(Row*));
+
+    Row* row = calloc(1, sizeof(Row));
+
+    row->float64Values = calloc(recorder->nFloat64Values, sizeof(fmi3Float64));
+
+    recorder->rows[recorder->nRows] = row;
+
+    row->time = time;
+
+    if (recorder->nFloat64Variables) {
+        CALL(FMI3GetFloat64(recorder->instance, recorder->float64ValueReferences, recorder->nFloat64Variables, row->float64Values, recorder->nFloat64Values));
+    }
+
+    recorder->nRows++;
 
 TERMINATE:
     return status;
+}
+
+void FMICSVRecorderDump(FMIRecorder* recorder) {
+
+    for (size_t i = 0; i < recorder->nRows; i++) {
+
+        Row* row = recorder->rows[i];
+
+        printf("%f", row->time);
+
+        for (size_t j = 0; j < recorder->nFloat64Values; j++) {
+            printf(", %f", row->float64Values[j]);
+        }
+
+        printf("\n");
+    }
 }

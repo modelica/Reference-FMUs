@@ -13,7 +13,7 @@ FMIStatus simulateFMI3ME(
     FMIInstance* S, 
     const FMIModelDescription* modelDescription, 
     const char* resourcePath,
-    FMIRecorder* result,
+    //FMIRecorder* result,
     const FMUStaticInput * input,
     const FMISimulationSettings * settings) {
 
@@ -125,7 +125,8 @@ FMIStatus simulateFMI3ME(
 
     for (;;) {
 
-        CALL(FMISample(S, time, result));
+        //CALL(FMISample(S, time, result));
+        CALL(settings->sample(settings->recorder, time));
 
         if (time >= settings->stopTime) {
             break;
@@ -170,7 +171,8 @@ FMIStatus simulateFMI3ME(
 
         if (inputEvent || timeEvent || stateEvent || stepEvent) {
 
-            CALL(FMISample(S, time, result));
+            //CALL(FMISample(S, time, result));
+            CALL(settings->sample(settings->recorder, time));
 
             CALL(FMI3EnterEventMode(S));
 
@@ -195,7 +197,8 @@ FMIStatus simulateFMI3ME(
                     &nextEventTime));
                 
                 if (terminateSimulation) {
-                    CALL(FMISample(S, time, result));
+                    //CALL(FMISample(S, time, result));
+                    CALL(settings->sample(settings->recorder, time));
                     goto TERMINATE;
                 }
 

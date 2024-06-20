@@ -3,6 +3,7 @@
 #include "FMIModelDescription.h"
 #include "FMISolver.h"
 #include "FMIRecorder.h"
+#include "fmusim_input.h"
 
 
 typedef struct {
@@ -17,6 +18,9 @@ typedef struct {
     double outputInterval;
     const char* initialFMUStateFile;
     const char* finalFMUStateFile;
+
+    // Input
+    FMUStaticInput* input;
 
     // Recorder
     FMIRecorder* recorder;

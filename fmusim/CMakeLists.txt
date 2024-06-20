@@ -49,8 +49,10 @@ set(sources
   FMICVode.c
   FMIModelDescription.h
   FMIModelDescription.c
-  FMIRecorder.h
-  FMIRecorder.c
+  FMISimulation.h
+  FMISimulation.c
+  FMICSVRecorder.h
+  FMICSVRecorder.c
   FMIZip.h
   FMIZip.c
   fmi1schema.h

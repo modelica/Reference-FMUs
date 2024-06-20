@@ -13,7 +13,8 @@ extern "C" {
 #include "FMI3.h"
 #include "fmusim_fmi3_cs.h"
 // #include "FMICSVRecorder.h"
-#include "FMIDemoRecorder.h"
+//#include "FMIDemoRecorder.h"
+#include "FMICSVRecorder.h"
 }
 
 #define FMI_PATH_MAX 4096
@@ -331,36 +332,50 @@ void MainWindow::simulate() {
 
     FMILoadPlatformBinary(S, platformBinaryPath);
 
-    size_t nOutputVariables = 0;
+    size_t nOutputVariables = 2;
 
-
-    FMIModelVariable* variables[2];
-    variables[0] = &modelDescription->modelVariables[1];
-    variables[1] = &modelDescription->modelVariables[3];
+    FMIModelVariable* outputVariables[2];
+    outputVariables[0] = &modelDescription->modelVariables[1];
+    outputVariables[1] = &modelDescription->modelVariables[3];
 
     // FMIModelVariable** outputVariables = variables;
 
     //FMIRecorder *recorder = FMICreateRecorder(0, NULL, "BouncingBall_out.csv");
-    settings.recorder = FMIDemoRecorderCreate(S);
-    settings.sample = FMIDemoRecorderSample;
+    settings.recorder = FMICSVRecorderCreate(S, nOutputVariables, outputVariables, "dummy.csv");
+    settings.sample = FMICSVRecorderSample;
 
-    const FMIStatus status = simulateFMI3CS(S, modelDescription, NULL, NULL, &settings);
+    const FMIStatus status = simulateFMI3CS(S, modelDescription, NULL, &settings);
 
-    size_t nRows;
-    const double* values = FMIDemoRecorderValues(settings.recorder, &nRows);
+    // size_t nRows;
+    // const double* values = FMIDemoRecorderValues(settings.recorder, &nRows);
 
     QString x;
     QString y;
 
-    for (size_t i = 0; i < nRows; i++) {
+    // for (size_t i = 0; i < nRows; i++) {
+
+    //     if (i > 0) {
+    //         x += ", ";
+    //         y += ", ";
+    //     }
+
+    //     x += QString::number(values[2 * i]);
+    //     y += QString::number(values[2 * i + 1]);
+    // }
+
+    FMIRecorder* recorder = settings.recorder;
+
+    for (size_t i = 0; i < recorder->nRows; i++) {
+
+        Row* row = recorder->rows[i];
 
         if (i > 0) {
             x += ", ";
             y += ", ";
         }
 
-        x += QString::number(values[2 * i]);
-        y += QString::number(values[2 * i + 1]);
+        x += QString::number(row->time);
+        y += QString::number(row->float64Values[0]);
     }
 
     ui->plotWebEngineView->page()->runJavaScript("Plotly.newPlot('gd', { 'data': [{ 'y': [" + y + "] }], 'layout': { 'autosize': true }, 'config': { 'responsive': true, 'theme': 'ggplot2' } })");

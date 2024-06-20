@@ -8,7 +8,7 @@ FMIStatus simulateFMI1CS(
     FMIInstance* S,
     const FMIModelDescription* modelDescription,
     const char* fmuLocation,
-    FMIRecorder* result,
+    //FMIRecorder* result,
     const FMUStaticInput * input,
     const FMISimulationSettings * settings) {
 
@@ -36,7 +36,8 @@ FMIStatus simulateFMI1CS(
         
         const fmi1Real time = settings->startTime + step * settings->outputInterval;
 
-        CALL(FMISample(S, time, result));
+        //CALL(FMISample(S, time, result));
+        CALL(settings->sample(settings->recorder, time));
 
         CALL(FMIApplyInput(S, input, time, true, true, false));
 
@@ -58,7 +59,8 @@ FMIStatus simulateFMI1CS(
 
                 CALL(FMI1GetRealStatus(S, fmi1LastSuccessfulTime, &lastSuccessfulTime));
 
-                CALL(FMISample(S, time, result));
+                //CALL(FMISample(S, time, result));
+                CALL(settings->sample(settings->recorder, time));
 
                 break;
             }
