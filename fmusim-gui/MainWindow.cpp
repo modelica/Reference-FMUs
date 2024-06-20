@@ -294,7 +294,7 @@ void MainWindow::simulate() {
     settings.startVariables           = NULL;
     settings.startValues              = NULL;
     settings.startTime                = 0.0;
-    settings.outputInterval           = 0.01;
+    settings.outputInterval           = 0.05;
     settings.stopTime                 = stopTimeLineEdit->text().toDouble();
     settings.earlyReturnAllowed       = false;
     settings.eventModeUsed            = false;
@@ -349,8 +349,8 @@ void MainWindow::simulate() {
     // size_t nRows;
     // const double* values = FMIDemoRecorderValues(settings.recorder, &nRows);
 
-    QString x;
-    QString y;
+    // QString x;
+    // QString y;
 
     // for (size_t i = 0; i < nRows; i++) {
 
@@ -365,22 +365,115 @@ void MainWindow::simulate() {
 
     FMIRecorder* recorder = settings.recorder;
 
-    for (size_t i = 0; i < recorder->nRows; i++) {
+    // for (size_t i = 0; i < recorder->nRows; i++) {
 
-        Row* row = recorder->rows[i];
+    //     Row* row = recorder->rows[i];
 
-        if (i > 0) {
-            x += ", ";
-            y += ", ";
-        }
+    //     if (i > 0) {
+    //         x += ", ";
+    //         y += ", ";
+    //     }
 
-        x += QString::number(row->time);
-        y += QString::number(row->float64Values[0]);
-    }
+    //     x += QString::number(row->time);
+    //     y += QString::number(row->float64Values[0]);
+    // }
 
-    ui->plotWebEngineView->page()->runJavaScript("Plotly.newPlot('gd', { 'data': [{ 'y': [" + y + "] }], 'layout': { 'autosize': true }, 'config': { 'responsive': true, 'theme': 'ggplot2' } })");
+
+
+    // ui->plotWebEngineView->page()->runJavaScript("Plotly.newPlot('gd', { 'data': [{ 'y': [" + y + "] }], 'layout': { 'autosize': true }, 'config': { 'responsive': true, 'theme': 'ggplot2' } })");
     // ui->plotWebEngineView->page()->runJavaScript("Plotly.newPlot('gd', { 'data': [{ 'x': [" + x + "], 'y': [" + y + "] }] })");
     // ui->plotWebEngineView->page()->runJavaScript("Plotly.newPlot('gd', { 'data': [{ 'x': [" + x + "], 'y': [" + y + "] }], 'layout': { 'width': 600, 'height': 400} } })");
+
+    QString data;
+    data += "var data = [";
+
+    for (size_t i = 0; i < recorder->nVariables; i++) {
+
+        const FMIModelVariable* variable = recorder->variables[i];
+
+        //data += "  {x: [" + x + "], y: [" + y + "], type: 'scatter'},";
+        //data += "  {x: [" + x + "], y: [" + y + "], type: 'scatter', xaxis: 'x2', yaxis: 'y2'}";
+
+        QString x;
+        QString y;
+
+        for (size_t j = 0; j < recorder->nRows; j++) {
+
+            Row* row = recorder->rows[j];
+
+            if (j > 0) {
+                x += ", ";
+                y += ", ";
+            }
+
+            x += QString::number(row->time);
+            y += QString::number(row->float64Values[i]);
+        }
+
+        if (i > 0) {
+            data += ", ";
+        }
+
+        data += "{x: [" + x + "], y: [" + y + "], type: 'scatter', name: '" + variable->name + "'";
+
+        if (i > 0) {
+            const QString plotIndex = QString::number(i + 1);
+            data += ", xaxis: 'x" + plotIndex + "', yaxis: 'y" + plotIndex + "'";
+        }
+
+        data += "}";
+    }
+
+    data += "];";
+
+    qDebug() << data;
+
+    /*
+    var trace1 = {
+        x: [0, 1, 2, 3],
+        y: [0, 4, 5, 6],
+        type: 'scatter',
+        name: 'height [m]'
+    };
+
+    var trace2 = {
+        ygap: 0,
+        x: [0, 1, 2, 3],
+        y: [50, 60, 70, -10],
+        xaxis: 'x2',
+        yaxis: 'y2',
+        type: 'scatter',
+        name: 'velocity [m/s]'
+    };
+
+    var data = [trace1, trace2];
+    */
+
+    QString javaScript =
+        data +
+    "    var layout = {"
+    "    showlegend: false,"
+    "    autosize: true,"
+    "    font_color: '#0ff',"
+    "    plot_bgcolor: '#1e1e1e',"
+    "    paper_bgcolor: '#1e1e1e',"
+    "    grid: {rows: 2, columns: 1, pattern: 'independent'},"
+    "    template: 'plotly_dark',"
+    "    xaxis: {color: '#fff', zerolinecolor: '#666', matches: 'x2', showticklabels: true},"
+    "    yaxis: {title: 'height [m]', color: '#fff', zerolinecolor: '#666', domain: [0.52, 1.0]},"
+    "    xaxis2: {color: '#fff', zerolinecolor: '#666', range: [-0.05, 3.05]},"
+    "    yaxis2: {title: 'velocity [m/s]', color: '#fff', zerolinecolor: '#666', domain: [0.0, 0.48]},"
+    "    color: '#0f0',"
+    "    margin: { l: 50, r: 20, b: 30, t: 20, pad: 0 }"
+    "};"
+    "var config = {"
+    "    'responsive': true"
+    "};"
+    "Plotly.newPlot('gd', data, layout, config);";
+
+    qDebug() << javaScript;
+
+    ui->plotWebEngineView->page()->runJavaScript(javaScript);
 }
 
 void MainWindow::openFile() {
