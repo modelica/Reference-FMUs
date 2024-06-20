@@ -18,5 +18,6 @@
         <file>buttons/light/list-task.svg</file>
         <file>buttons/light/play.svg</file>
         <file>buttons/light/stop.svg</file>
+        <file>buttons/dark/side-bar.svg</file>
     </qresource>
 </RCC>

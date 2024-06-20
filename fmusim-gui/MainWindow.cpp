@@ -38,7 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
     stopTimeLineEdit->setValidator(stopTimeValidator);
     ui->toolBar->addWidget(stopTimeLineEdit);
 
-    QWidget* spacer = new QWidget(this);
+    QWidget* spacer = new QWidget();
     spacer->setFixedWidth(10);
     ui->toolBar->addWidget(spacer);
 
@@ -49,6 +49,13 @@ MainWindow::MainWindow(QWidget *parent)
     interfaceTypeComboBox->setToolTip("Interface type");
     interfaceTypeComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContents);
     ui->toolBar->addWidget(interfaceTypeComboBox);
+
+    QWidget* spacer2 = new QWidget();
+    spacer2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    ui->toolBar->addWidget(spacer2);
+    ui->toolBar->addAction(ui->showSideBarAction);
+
+    connect(ui->showSideBarAction, &QAction::toggled, this, [this](bool checked) { ui->dockWidget->setVisible(checked); });
 
     connect(ui->openUnzipDirectoryAction, &QAction::triggered, this, &MainWindow::openUnzipDirectory);
     connect(ui->simulateAction, &QAction::triggered, this, &MainWindow::simulate);
@@ -101,6 +108,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->showLogAction->setEnabled(false);
     ui->showPlotAction->setEnabled(false);
     ui->simulateAction->setEnabled(false);
+    ui->showSideBarAction->setEnabled(false);
     stopTimeLineEdit->setEnabled(false);
     interfaceTypeComboBox->setEnabled(false);
 }
@@ -187,7 +195,9 @@ void MainWindow::loadFMU(const QString &filename) {
     ui->plotWebEngineView->load(QUrl("qrc:/plot.html"));
 
     // enable widgets
-    ui->dockWidget->setHidden(false);
+    // ui->dockWidget->setHidden(false);
+    ui->showSideBarAction->setEnabled(true);
+    ui->showSideBarAction->toggle();
     ui->stackedWidget->setCurrentWidget(ui->settingsPage);
     ui->showSettingsAction->setEnabled(true);
     ui->showFilesAction->setEnabled(true);
@@ -426,7 +436,30 @@ void MainWindow::simulate() {
 
     data += "];";
 
-    qDebug() << data;
+    QString axes;
+
+    for (size_t i = 0; i < recorder->nVariables; i++) {
+
+        const FMIModelVariable* variable = recorder->variables[i];
+
+        const QString name = QString::fromUtf8(variable->name);
+        const QString colors = "color: '#fff', zerolinecolor: '#666'";
+
+        const double segment = 1.0 / recorder->nVariables;
+        const double margin = 0.02;
+
+        const QString domain = "[" + QString::number(i * segment + (i == 0 ? 0.0 : margin)) + ", " + QString::number((i + 1) * segment - (i == recorder->nVariables ? 0.0 : margin)) + "]";
+
+        if (i == 0) {
+            axes += "xaxis: {" + colors + ", matches: 'x" + QString::number(recorder->nVariables) + "'},";
+            axes += "yaxis: {title: '" + name + "', " + colors + ", domain: " + domain + "},";
+        } else {
+            axes += "xaxis2: {" + colors + "},";
+            axes += "yaxis2: {title: '" + name + "', " + colors + ", domain: " + domain + "},";
+        }
+    }
+
+    qDebug() << axes;
 
     /*
     var trace1 = {
@@ -458,20 +491,18 @@ void MainWindow::simulate() {
     "    plot_bgcolor: '#1e1e1e',"
     "    paper_bgcolor: '#1e1e1e',"
     "    grid: {rows: 2, columns: 1, pattern: 'independent'},"
-    "    template: 'plotly_dark',"
-    "    xaxis: {color: '#fff', zerolinecolor: '#666', matches: 'x2', showticklabels: true},"
-    "    yaxis: {title: 'height [m]', color: '#fff', zerolinecolor: '#666', domain: [0.52, 1.0]},"
-    "    xaxis2: {color: '#fff', zerolinecolor: '#666', range: [-0.05, 3.05]},"
-    "    yaxis2: {title: 'velocity [m/s]', color: '#fff', zerolinecolor: '#666', domain: [0.0, 0.48]},"
+    "    template: 'plotly_dark'," + axes +
+    // "    xaxis: {color: '#fff', zerolinecolor: '#666', matches: 'x2', showticklabels: true},"
+    // "    yaxis: {title: 'height [m]', color: '#fff', zerolinecolor: '#666', domain: [0.52, 1.0]},"
+    // "    xaxis2: {color: '#fff', zerolinecolor: '#666', range: [-0.05, 3.05]},"
+    // "    yaxis2: {title: 'velocity [m/s]', color: '#fff', zerolinecolor: '#666', domain: [0.0, 0.48]},"
     "    color: '#0f0',"
-    "    margin: { l: 50, r: 20, b: 30, t: 20, pad: 0 }"
+    "    margin: { l: 60, r: 20, b: 30, t: 20, pad: 0 }"
     "};"
     "var config = {"
     "    'responsive': true"
     "};"
     "Plotly.newPlot('gd', data, layout, config);";
-
-    qDebug() << javaScript;
 
     ui->plotWebEngineView->page()->runJavaScript(javaScript);
 }
