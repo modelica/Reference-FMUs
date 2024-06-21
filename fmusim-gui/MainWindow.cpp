@@ -32,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     // stopTimeLineEdit->setEnabled(false);
     stopTimeLineEdit->setText("10.0");
     stopTimeLineEdit->setToolTip("Stop time");
-    stopTimeLineEdit->setFixedWidth(50);
+    stopTimeLineEdit->setFixedWidth(80);
     stopTimeValidator = new QDoubleValidator(this);
     stopTimeValidator->setBottom(0);
     stopTimeLineEdit->setValidator(stopTimeValidator);
@@ -299,11 +299,13 @@ void MainWindow::simulate() {
 
     FMISimulationSettings settings;
 
+    settings.visible                  = false;
+    settings.loggingOn                = ui->debugLoggingCheckBox->isChecked();
     settings.tolerance                = 0;
     settings.nStartValues             = 0;
     settings.startVariables           = NULL;
     settings.startValues              = NULL;
-    settings.startTime                = 0.0;
+    settings.startTime                = ui->startTimeLineEdit->text().toDouble();
     settings.outputInterval           = 0.05;
     settings.stopTime                 = stopTimeLineEdit->text().toDouble();
     settings.earlyReturnAllowed       = false;
@@ -331,7 +333,7 @@ void MainWindow::simulate() {
 
     FMIPlatformBinaryPath(ba.data(), modelDescription->coSimulation->modelIdentifier, modelDescription->fmiVersion, platformBinaryPath, FMI_PATH_MAX);
 
-    FMIInstance *S = FMICreateInstance("instance1", logMessage, logFunctionCall);
+    FMIInstance *S = FMICreateInstance("instance1", logMessage, ui->logFMICallsCheckBox->isChecked() ? logFunctionCall : nullptr);
 
     if (!S) {
         printf("Failed to create FMU instance.\n");

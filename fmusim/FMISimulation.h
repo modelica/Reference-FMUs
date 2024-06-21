@@ -9,6 +9,8 @@
 typedef struct {
 
     // Common
+    bool visible;
+    bool loggingOn;
     size_t nStartValues;
     FMIModelVariable** startVariables;
     char** startValues;

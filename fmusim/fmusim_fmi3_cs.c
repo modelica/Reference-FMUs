@@ -79,8 +79,8 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
     CALL(FMI3InstantiateCoSimulation(S,
         modelDescription->instantiationToken,  // instantiationToken
         resourcePath,                          // resourcePath
-        fmi3False,                             // visible
-        fmi3False,                             // loggingOn
+        settings->visible,                     // visible
+        settings->loggingOn,                   // loggingOn
         settings->eventModeUsed,               // eventModeUsed
         settings->earlyReturnAllowed,          // earlyReturnAllowed
         requiredIntermediateVariables,         // requiredIntermediateVariables
