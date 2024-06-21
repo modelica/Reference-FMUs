@@ -11,7 +11,7 @@
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
-static size_t FMISizeOf(FMIVariableType type, FMIVersion fmiVersion) {
+static size_t FMISizeOf(FMIVariableType type, FMIMajorVersion fmiMajorVersion) {
 
     switch (type) {
 
@@ -48,12 +48,12 @@ static size_t FMISizeOf(FMIVariableType type, FMIVersion fmiVersion) {
         return sizeof(fmi3UInt64);
 
     case FMIBooleanType:
-        switch (fmiVersion) {
-        case FMIVersion1:
+        switch (fmiMajorVersion) {
+        case FMIMajorVersion1:
             return sizeof(fmi1Boolean);
-        case FMIVersion2:
+        case FMIMajorVersion2:
             return sizeof(fmi2Boolean);
-        case FMIVersion3:
+        case FMIMajorVersion3:
             return sizeof(fmi3Boolean);
         default:
             return 0;

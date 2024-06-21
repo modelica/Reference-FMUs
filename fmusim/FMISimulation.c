@@ -25,7 +25,7 @@ FMIStatus FMIApplyStartValues(FMIInstance* S, const FMISimulationSettings* setti
 
         if (causality == FMIStructuralParameter && type == FMIUInt64Type) {
 
-            CALL(FMIParseValues(FMIVersion3, type, literal, &nValues, &values));
+            CALL(FMIParseValues(FMIMajorVersion3, type, literal, &nValues, &values));
 
             if (!configurationMode) {
                 CALL(FMI3EnterConfigurationMode(S));
@@ -55,7 +55,7 @@ FMIStatus FMIApplyStartValues(FMIInstance* S, const FMISimulationSettings* setti
             continue;
         }
 
-        CALL(FMIParseValues(S->fmiVersion, type, literal, &nValues, &values));
+        CALL(FMIParseValues(S->fmiMajorVersion, type, literal, &nValues, &values));
 
 
         if (variable->type == FMIBinaryType) {
@@ -65,11 +65,11 @@ FMIStatus FMIApplyStartValues(FMIInstance* S, const FMISimulationSettings* setti
 
         } else {
 
-            if (S->fmiVersion == FMIVersion1) {
+            if (S->fmiMajorVersion == FMIMajorVersion1) {
                 CALL(FMI1SetValues(S, type, &vr, 1, values));
-            } else if (S->fmiVersion == FMIVersion2) {
+            } else if (S->fmiMajorVersion == FMIMajorVersion2) {
                 CALL(FMI2SetValues(S, type, &vr, 1, values));
-            } else if (S->fmiVersion == FMIVersion3) {
+            } else if (S->fmiMajorVersion == FMIMajorVersion3) {
                 CALL(FMI3SetValues(S, type, &vr, 1, values, nValues));
             }
         }

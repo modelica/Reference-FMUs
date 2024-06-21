@@ -19,7 +19,7 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 	CALL(FMICalloc((void**)&input, 1, sizeof(FMUStaticInput)));
 	
-	input->fmiVersion = modelDescription->fmiVersion;
+	input->fmiMajorVersion = modelDescription->fmiMajorVersion;
 
 	char* row = NULL;
 	int cols = 0;
@@ -82,7 +82,7 @@ FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 			const size_t index = (input->nRows * input->nVariables) + i;
 
-			CALL(FMIParseValues(modelDescription->fmiVersion, variable->type, col, &input->nValues[index], &input->values[index]));
+			CALL(FMIParseValues(modelDescription->fmiMajorVersion, variable->type, col, &input->nValues[index], &input->values[index]));
 			
 			i++;
 		}
@@ -114,7 +114,7 @@ void FMIFreeInput(FMUStaticInput* input) {
 	FMIFree((void**)&input);
 }
 
-static size_t FMISizeOf(FMIVariableType type, FMIVersion fmiVersion) {
+static size_t FMISizeOf(FMIVariableType type, FMIMajorVersion fmiMajorVersion) {
 
 	switch (type) {
 
@@ -151,12 +151,12 @@ static size_t FMISizeOf(FMIVariableType type, FMIVersion fmiVersion) {
 		return sizeof(fmi3UInt64);
 	
 	case FMIBooleanType:
-		switch (fmiVersion) {
-		case FMIVersion1:
+		switch (fmiMajorVersion) {
+		case FMIMajorVersion1:
 			return sizeof(fmi1Boolean);
-		case FMIVersion2:
+		case FMIMajorVersion2:
 			return sizeof(fmi2Boolean);
-		case FMIVersion3:
+		case FMIMajorVersion3:
 			return sizeof(fmi3Boolean);
 		default: 
 			return 0;
@@ -210,7 +210,7 @@ double FMINextInputEvent(const FMUStaticInput* input, double time) {
 
 			const void* values0 = input->values[i * input->nVariables + j];
 			const void* values1 = input->values[(i + 1) * input->nVariables + j];
-			const size_t size = FMISizeOf(type, input->fmiVersion) * nValues;
+			const size_t size = FMISizeOf(type, input->fmiMajorVersion) * nValues;
 
 			if (memcmp(values0, values1, size)) {
 				return t1;
@@ -328,11 +328,11 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, doub
 
 			}
 
-			if (instance->fmiVersion == FMIVersion1) {
+			if (instance->fmiMajorVersion == FMIMajorVersion1) {
 				CALL(FMI1SetValues(instance, type, &vr, 1, input->buffer));
-			} else if (instance->fmiVersion == FMIVersion2) {
+			} else if (instance->fmiMajorVersion == FMIMajorVersion2) {
 				CALL(FMI2SetValues(instance, type, &vr, 1, input->buffer));
-			} else if (instance->fmiVersion == FMIVersion3) {
+			} else if (instance->fmiMajorVersion == FMIMajorVersion3) {
 				CALL(FMI3SetValues(instance, type, &vr, 1, input->buffer, nValues));
 			}
 
@@ -370,11 +370,11 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, doub
 
 			if (nValues == 0) continue;
 
-			if (instance->fmiVersion == FMIVersion1) {
+			if (instance->fmiMajorVersion == FMIMajorVersion1) {
 				CALL(FMI1SetValues(instance, type, &vr, 1, values));
-			} else if (instance->fmiVersion == FMIVersion2) {
+			} else if (instance->fmiMajorVersion == FMIMajorVersion2) {
 				CALL(FMI2SetValues(instance, type, &vr, 1, values));
-			} else if (instance->fmiVersion == FMIVersion3) {
+			} else if (instance->fmiMajorVersion == FMIMajorVersion3) {
 				CALL(FMI3SetValues(instance, type, &vr, 1, values, nValues));
 			}
 

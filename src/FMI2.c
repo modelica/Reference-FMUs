@@ -136,7 +136,7 @@ FMIStatus FMI2SetDebugLogging(FMIInstance *instance, fmi2Boolean loggingOn, size
 FMIStatus FMI2Instantiate(FMIInstance *instance, const char *fmuResourceLocation, fmi2Type fmuType, fmi2String fmuGUID,
     fmi2Boolean visible, fmi2Boolean loggingOn) {
 
-    instance->fmiVersion = FMIVersion2;
+    instance->fmiMajorVersion = FMIMajorVersion2;
 
     instance->fmi2Functions = calloc(1, sizeof(FMI2Functions));
 

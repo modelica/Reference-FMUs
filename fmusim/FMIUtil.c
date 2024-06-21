@@ -174,7 +174,7 @@ FMIStatus FMI3SetValues(
         (*nValues)++; \
     }
 
-FMIStatus FMIParseValues(FMIVersion fmiVersion, FMIVariableType type, const char* literal, size_t* nValues, void** values) {
+FMIStatus FMIParseValues(FMIMajorVersion fmiMajorVersion, FMIVariableType type, const char* literal, size_t* nValues, void** values) {
 
     FMIStatus status = FMIOK;
 
@@ -235,14 +235,14 @@ FMIStatus FMIParseValues(FMIVersion fmiVersion, FMIVariableType type, const char
 
         size_t size = 0;
 
-        switch (fmiVersion) {
-        case FMIVersion1:
+        switch (fmiMajorVersion) {
+        case FMIMajorVersion1:
             size = sizeof(fmi1Boolean);
             break;
-        case FMIVersion2:
+        case FMIMajorVersion2:
             size = sizeof(fmi2Boolean);
             break;
-        case FMIVersion3:
+        case FMIMajorVersion3:
             size = sizeof(fmi2Boolean);
             break;
         }
@@ -487,13 +487,13 @@ FMIStatus FMIRestoreFMUStateFromFile(FMIInstance* S, const char* filename) {
 
      void* FMUState = NULL;
 
-     switch (S->fmiVersion) {
-     case FMIVersion2:
+     switch (S->fmiMajorVersion) {
+     case FMIMajorVersion2:
          CALL(FMI2DeSerializeFMUstate(S, serializedFMUState, serializedFMUStateSize, &FMUState));
          CALL(FMI2SetFMUstate(S, FMUState));
          CALL(FMI2FreeFMUstate(S, FMUState));
          break;
-     case FMIVersion3:
+     case FMIMajorVersion3:
          CALL(FMI3DeserializeFMUState(S, serializedFMUState, serializedFMUStateSize, &FMUState));
          CALL(FMI3SetFMUState(S, FMUState));
          CALL(FMI3FreeFMUState(S, FMUState));
@@ -513,7 +513,7 @@ FMIStatus FMIRestoreFMUStateFromFile(FMIInstance* S, const char* filename) {
 
 FMIStatus FMISaveFMUStateToFile(FMIInstance* S, const char* filename) {
 
-    if (S->fmiVersion == FMIVersion1) {
+    if (S->fmiMajorVersion == FMIMajorVersion1) {
         return FMIError;
     }
 
@@ -521,7 +521,7 @@ FMIStatus FMISaveFMUStateToFile(FMIInstance* S, const char* filename) {
 
     void* FMUState = NULL;
 
-    if (S->fmiVersion == FMIVersion2) {
+    if (S->fmiMajorVersion == FMIMajorVersion2) {
         CALL(FMI2GetFMUstate(S, &FMUState));
     } else {
         CALL(FMI3GetFMUState(S, &FMUState));
@@ -529,7 +529,7 @@ FMIStatus FMISaveFMUStateToFile(FMIInstance* S, const char* filename) {
 
     size_t serializedFMUStateSize = 0;
 
-    if (S->fmiVersion == FMIVersion2) {
+    if (S->fmiMajorVersion == FMIMajorVersion2) {
         CALL(FMI2SerializedFMUstateSize(S, FMUState, &serializedFMUStateSize));
     } else {
         CALL(FMI3SerializedFMUStateSize(S, FMUState, &serializedFMUStateSize));
@@ -539,7 +539,7 @@ FMIStatus FMISaveFMUStateToFile(FMIInstance* S, const char* filename) {
     
     CALL(FMICalloc((void**)&serializedFMUState, serializedFMUStateSize, sizeof(char)));
 
-    if (S->fmiVersion == FMIVersion2) {
+    if (S->fmiMajorVersion == FMIMajorVersion2) {
         CALL(FMI2SerializeFMUstate(S, FMUState, serializedFMUState, serializedFMUStateSize));
     } else {
         CALL(FMI3SerializeFMUState(S, FMUState, serializedFMUState, serializedFMUStateSize));
@@ -563,7 +563,7 @@ FMIStatus FMISaveFMUStateToFile(FMIInstance* S, const char* filename) {
 
     free(serializedFMUState);
 
-    if (S->fmiVersion == FMIVersion2) {
+    if (S->fmiMajorVersion == FMIMajorVersion2) {
         CALL(FMI2FreeFMUstate(S, FMUState));
     } else {
         CALL(FMI3FreeFMUState(S, FMUState));
