@@ -143,17 +143,18 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
         }
 
         xmlFree((void*)causality);
-        
+
+        const bool fixed = getBooleanAttribute(typeNode, "fixed");
+
         const char* variability = (char*)xmlGetProp(variableNode, (xmlChar*)"variability");
 
-        if (!variability) {
-            // default
+        if (!variability) { // default
             variable->variability = FMIContinuous;
         } else if (!strcmp(variability, "constant")) {
             variable->variability = FMIConstant;
         } else if (!strcmp(variability, "parameter")) {
             variable->causality = FMIParameter;
-            variable->variability = FMITunable;
+            variable->variability = fixed ? FMIFixed : FMITunable;
         } else if (!strcmp(variability, "discrete")) {
             variable->variability = FMIDiscrete;
         } else if (!strcmp(variability, "continuous")) {
