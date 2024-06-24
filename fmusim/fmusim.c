@@ -150,7 +150,7 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
 
         if (causality == FMIStructuralParameter && type == FMIUInt64Type) {
 
-            CALL(FMIParseValues(FMIVersion3, type, literal, &nValues, &values));
+            CALL(FMIParseValues(FMIMajorVersion3, type, literal, &nValues, &values));
 
             if (!configurationMode) {
                 CALL(FMI3EnterConfigurationMode(S));
@@ -180,7 +180,7 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
             continue;
         }
 
-        CALL(FMIParseValues(S->fmiVersion, type, literal, &nValues, &values));
+        CALL(FMIParseValues(S->fmiMajorVersion, type, literal, &nValues, &values));
 
 
         if (variable->type == FMIBinaryType) {
@@ -190,11 +190,11 @@ FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings
         
         } else {
 
-            if (S->fmiVersion == FMIVersion1) {
+            if (S->fmiMajorVersion == FMIMajorVersion1) {
                 CALL(FMI1SetValues(S, type, &vr, 1, values));
-            } else if (S->fmiVersion == FMIVersion2) {
+            } else if (S->fmiMajorVersion == FMIMajorVersion2) {
                 CALL(FMI2SetValues(S, type, &vr, 1, values));
-            } else if (S->fmiVersion == FMIVersion3) {
+            } else if (S->fmiMajorVersion == FMIMajorVersion3) {
                 CALL(FMI3SetValues(S, type, &vr, 1, values, nValues));
             }
         }
@@ -425,7 +425,7 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    FMIPlatformBinaryPath(unzipdir, modelIdentifier, modelDescription->fmiVersion, platformBinaryPath, FMI_PATH_MAX);
+    FMIPlatformBinaryPath(unzipdir, modelIdentifier, modelDescription->fmiMajorVersion, platformBinaryPath, FMI_PATH_MAX);
 
     S = FMICreateInstance("instance1", logMessage, logFMICalls ? logFunctionCall : NULL);
 
@@ -552,7 +552,7 @@ int main(int argc, const char* argv[]) {
         goto TERMINATE;
     }
 
-    if (modelDescription->fmiVersion == FMIVersion1) {
+    if (modelDescription->fmiMajorVersion == FMIMajorVersion1) {
 
         if (interfaceType == FMICoSimulation) {
 
@@ -564,7 +564,7 @@ int main(int argc, const char* argv[]) {
             status = simulateFMI1ME(S, modelDescription, result, input, &settings);
         }
 
-    } else if (modelDescription->fmiVersion == FMIVersion2) {
+    } else if (modelDescription->fmiMajorVersion == FMIMajorVersion2) {
 
         char resourceURI[FMI_PATH_MAX] = "";
         CALL(FMIPathToURI(resourcePath, resourceURI, FMI_PATH_MAX));

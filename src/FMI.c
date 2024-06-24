@@ -262,14 +262,14 @@ void FMIAppendArrayToLogMessageBuffer(FMIInstance* instance, const void* values,
             length = snprintf(s, n, "%" PRIu64, ((uint64_t *)values)[i]);
             break;
         case FMIBooleanType:
-            switch (instance->fmiVersion) {
-                case FMIVersion1:
+            switch (instance->fmiMajorVersion) {
+                case FMIMajorVersion1:
                     length = snprintf(s, n, "%d", ((char*)values)[i]);
                     break;
-                case FMIVersion2:
+                case FMIMajorVersion2:
                     length = snprintf(s, n, "%d", ((int*)values)[i]);
                     break;
-                case FMIVersion3:
+                case FMIMajorVersion3:
                     length = snprintf(s, n, "%d", ((bool*)values)[i]);
                     break;
             }
@@ -391,7 +391,7 @@ FMIStatus FMIPathToURI(const char *path, char *uri, const size_t uriLength) {
     return FMIOK;
 }
 
-FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *modelIdentifier, FMIVersion fmiVersion, char *platformBinaryPath, size_t size) {
+FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *modelIdentifier, FMIMajorVersion fmiMajorVersion, char *platformBinaryPath, size_t size) {
 
     char* separator = ""; // optional separator after the unzipdir
 
@@ -401,7 +401,7 @@ FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *modelIdentifie
         separator = FMI_FILE_SEPARATOR;
     }
 
-    const char* platform = fmiVersion < FMIVersion3 ? FMI_PLATFORM : FMI_PLATFORM_TUPLE;
+    const char* platform = fmiMajorVersion < FMIMajorVersion3 ? FMI_PLATFORM : FMI_PLATFORM_TUPLE;
 
     const int rc = snprintf(platformBinaryPath, size, "%s%sbinaries" FMI_FILE_SEPARATOR "%s" FMI_FILE_SEPARATOR "%s" FMI_SHARED_LIBRARY_EXTENSION,
         unzipdir, separator, platform, modelIdentifier);

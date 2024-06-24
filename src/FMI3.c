@@ -129,7 +129,7 @@ static FMIStatus loadSymbols3(FMIInstance *instance) {
         return FMIError;
     }
 
-    instance->fmiVersion = FMIVersion3;
+    instance->fmiMajorVersion = FMIMajorVersion3;
 
     /***************************************************
     Common Functions

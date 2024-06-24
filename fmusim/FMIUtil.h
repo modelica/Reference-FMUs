@@ -37,7 +37,7 @@ FMIStatus FMI3SetValues(
     const void* values,
     size_t nValues);
 
-FMIStatus FMIParseValues(FMIVersion fmiVerion, FMIVariableType type, const char* literal, size_t* nValues, void** values);
+FMIStatus FMIParseValues(FMIMajorVersion fmiVerion, FMIVariableType type, const char* literal, size_t* nValues, void** values);
 
 FMIStatus FMIParseStartValues(FMIVariableType type, const char* literal, size_t nValues, void* values);
 

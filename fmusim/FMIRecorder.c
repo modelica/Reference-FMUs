@@ -89,7 +89,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
         const FMIValueReference* vr = &variable->valueReference;
         const FMIVariableType type = variable->type;
 
-        if (instance->fmiVersion == FMIVersion1) {
+        if (instance->fmiMajorVersion == FMIMajorVersion1) {
 
             if (type == FMIRealType || type == FMIDiscreteRealType) {
                 fmi1Real value;
@@ -109,7 +109,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 fprintf(file, ",\"%s\"", value);
             }
 
-        } else if (instance->fmiVersion == FMIVersion2) {
+        } else if (instance->fmiMajorVersion == FMIMajorVersion2) {
 
             if (type == FMIRealType || type == FMIDiscreteRealType) {
                 fmi2Real value;
@@ -129,7 +129,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result) {
                 fprintf(file, ",\"%s\"", value);
             }
 
-        } else if (instance->fmiVersion == FMIVersion3) {
+        } else if (instance->fmiMajorVersion == FMIMajorVersion3) {
 
             size_t nValues;
             

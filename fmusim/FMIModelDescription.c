@@ -60,7 +60,7 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 
     CALL(FMICalloc((void**)&modelDescription, 1, sizeof(FMIModelDescription)));
 
-    modelDescription->fmiVersion               = FMIVersion1;
+    modelDescription->fmiMajorVersion          = FMIMajorVersion1;
     modelDescription->modelName                = (char*)xmlGetProp(root, (xmlChar*)"modelName");
     modelDescription->instantiationToken       = (char*)xmlGetProp(root, (xmlChar*)"guid");
     modelDescription->description              = (char*)xmlGetProp(root, (xmlChar*)"description");
@@ -283,12 +283,12 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     
     CALL(FMICalloc((void**)&modelDescription, 1, sizeof(FMIModelDescription)));
 
-    modelDescription->fmiVersion = FMIVersion2;
-    modelDescription->modelName = (char*)xmlGetProp(root, (xmlChar*)"modelName");
-    modelDescription->instantiationToken = (char*)xmlGetProp(root, (xmlChar*)"guid");
-    modelDescription->description = (char*)xmlGetProp(root, (xmlChar*)"description");
-    modelDescription->generationTool = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
-    modelDescription->generationDate = (char*)xmlGetProp(root, (xmlChar*)"generationDate");
+    modelDescription->fmiMajorVersion          = FMIMajorVersion2;
+    modelDescription->modelName                = (char*)xmlGetProp(root, (xmlChar*)"modelName");
+    modelDescription->instantiationToken       = (char*)xmlGetProp(root, (xmlChar*)"guid");
+    modelDescription->description              = (char*)xmlGetProp(root, (xmlChar*)"description");
+    modelDescription->generationTool           = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
+    modelDescription->generationDate           = (char*)xmlGetProp(root, (xmlChar*)"generationDate");
     modelDescription->variableNamingConvention = getVariableNamingConvention(root);
 
     const char* numberOfEventIndicators = (char*)xmlGetProp(root, (xmlChar*)"numberOfEventIndicators");
@@ -456,7 +456,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
     CALL(FMICalloc((void**)&modelDescription, 1, sizeof(FMIModelDescription)));
 
-    modelDescription->fmiVersion               = FMIVersion3;
+    modelDescription->fmiMajorVersion          = FMIMajorVersion3;
     modelDescription->modelName                = (char*)xmlGetProp(root, (xmlChar*)"modelName");
     modelDescription->instantiationToken       = (char*)xmlGetProp(root, (xmlChar*)"instantiationToken");
     modelDescription->description              = (char*)xmlGetProp(root, (xmlChar*)"description");
@@ -749,8 +749,8 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
     xmlSchemaParserCtxtPtr pctxt = NULL;
     xmlSchemaValidCtxtPtr vctxt = NULL;
     FMIModelDescription* modelDescription = NULL;
-    const char* version = NULL;
-    FMIVersion fmiVersion;
+    const char* fmiVersion = NULL;
+    FMIMajorVersion fmiMajorVersion;
 
     doc = xmlParseFile(filename);
 
@@ -769,22 +769,22 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
         goto TERMINATE;
     }
 
-    version = (char*)xmlGetProp(root, (xmlChar*)"fmiVersion");
+    fmiVersion = (char*)xmlGetProp(root, (xmlChar*)"fmiVersion");
 
-    if (!version) {
+    if (!fmiVersion) {
         FMILogError("Attribute fmiVersion is missing.\n");
         goto TERMINATE;
-    } else if (!strcmp(version, "1.0")) {
-        fmiVersion = FMIVersion1;
+    } else if (!strcmp(fmiVersion, "1.0")) {
+        fmiMajorVersion = FMIMajorVersion1;
         pctxt = xmlSchemaNewMemParserCtxt((char*)fmi1Merged_xsd, fmi1Merged_xsd_len);
-    } else if (!strcmp(version, "2.0")) {
-        fmiVersion = FMIVersion2;
+    } else if (!strcmp(fmiVersion, "2.0")) {
+        fmiMajorVersion = FMIMajorVersion2;
         pctxt = xmlSchemaNewMemParserCtxt((char*)fmi2Merged_xsd, fmi2Merged_xsd_len);
-    } else if(!strncmp(version, "3.", 2)) {
+    } else if(!strncmp(fmiVersion, "3.", 2)) {
         pctxt = xmlSchemaNewMemParserCtxt((char*)fmi3Merged_xsd, fmi3Merged_xsd_len);
-        fmiVersion = FMIVersion3;
+        fmiMajorVersion = FMIMajorVersion3;
     } else {
-        FMILogError("Unsupported FMI version: %s.\n", version);
+        FMILogError("Unsupported FMI version: %s.\n", fmiVersion);
         goto TERMINATE;
     }
 
@@ -806,12 +806,18 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
         goto TERMINATE;
     }
 
-    if (fmiVersion == FMIVersion1) {
+    if (fmiMajorVersion == FMIMajorVersion1) {
         modelDescription = readModelDescriptionFMI1(root);
-    } else if (fmiVersion == FMIVersion2) {
+    } else if (fmiMajorVersion == FMIMajorVersion2) {
         modelDescription = readModelDescriptionFMI2(root);
     } else {
         modelDescription = readModelDescriptionFMI3(root);
+    }
+
+    if (modelDescription) {
+        modelDescription->fmiVersion = fmiVersion;
+    } else {
+        xmlFree((void*)fmiVersion);
     }
 
 TERMINATE:
@@ -841,6 +847,7 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
         return;
     }
 
+    xmlFree((void*)modelDescription->fmiVersion);
     free((void*)modelDescription->modelName);
     free((void*)modelDescription->instantiationToken);
     free((void*)modelDescription->description);

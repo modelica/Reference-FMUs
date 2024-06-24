@@ -161,7 +161,7 @@ FMIStatus FMI1InstantiateModel(FMIInstance *instance, fmi1String modelIdentifier
 
     currentInstance = instance;
 
-    instance->fmiVersion = FMIVersion1;
+    instance->fmiMajorVersion = FMIMajorVersion1;
 
     instance->interfaceType = FMIModelExchange;
 
@@ -419,7 +419,7 @@ FMIStatus FMI1InstantiateSlave(FMIInstance *instance, fmi1String modelIdentifier
 
     currentInstance = instance;
 
-    instance->fmiVersion = FMIVersion1;
+    instance->fmiMajorVersion = FMIMajorVersion1;
 
     instance->interfaceType = FMICoSimulation;
 
