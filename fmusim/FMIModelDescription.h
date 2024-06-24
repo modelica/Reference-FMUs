@@ -149,6 +149,7 @@ typedef struct {
 
 typedef struct {
 
+    const char* fmiVersion;
     FMIMajorVersion fmiMajorVersion;
     const char* modelName;
     const char* instantiationToken;

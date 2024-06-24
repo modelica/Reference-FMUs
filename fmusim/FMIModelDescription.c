@@ -889,6 +889,12 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
         modelDescription = readModelDescriptionFMI3(root);
     }
 
+    if (modelDescription) {
+        modelDescription->fmiVersion = version;
+    } else {
+        xmlFree(version);
+    }
+
 TERMINATE:
 
     if (vctxt) {
@@ -916,6 +922,7 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
         return;
     }
 
+    xmlFree((void*)modelDescription->fmiVersion);
     xmlFree((void*)modelDescription->modelName);
     xmlFree((void*)modelDescription->instantiationToken);
     xmlFree((void*)modelDescription->description);

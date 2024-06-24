@@ -150,17 +150,7 @@ void MainWindow::loadFMU(const QString &filename) {
 
     modelDescription = FMIReadModelDescription(modelDescriptionPath);
 
-    switch (modelDescription->fmiVersion) {
-    case FMIVersion1:
-        ui->FMIVersionLabel->setText("1.0");
-        break;
-    case FMIVersion2:
-        ui->FMIVersionLabel->setText("2.0");
-        break;
-    case FMIVersion3:
-        ui->FMIVersionLabel->setText("3.0");
-        break;
-    }
+    ui->FMIVersionLabel->setText(modelDescription->fmiVersion);
 
     // Loading finished. Update the GUI.
     startValues.clear();
@@ -331,7 +321,7 @@ void MainWindow::simulate() {
 
     auto ba = unzipdir.toLocal8Bit();
 
-    FMIPlatformBinaryPath(ba.data(), modelDescription->coSimulation->modelIdentifier, modelDescription->fmiVersion, platformBinaryPath, FMI_PATH_MAX);
+    FMIPlatformBinaryPath(ba.data(), modelDescription->coSimulation->modelIdentifier, modelDescription->fmiMajorVersion, platformBinaryPath, FMI_PATH_MAX);
 
     FMIInstance *S = FMICreateInstance("instance1", logMessage, ui->logFMICallsCheckBox->isChecked() ? logFunctionCall : nullptr);
 
