@@ -749,7 +749,7 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
     xmlSchemaParserCtxtPtr pctxt = NULL;
     xmlSchemaValidCtxtPtr vctxt = NULL;
     FMIModelDescription* modelDescription = NULL;
-    const char* version = NULL;
+    const char* fmiVersion = NULL;
     FMIMajorVersion fmiMajorVersion;
 
     doc = xmlParseFile(filename);
@@ -769,22 +769,22 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
         goto TERMINATE;
     }
 
-    version = (char*)xmlGetProp(root, (xmlChar*)"fmiVersion");
+    fmiVersion = (char*)xmlGetProp(root, (xmlChar*)"fmiVersion");
 
-    if (!version) {
+    if (!fmiVersion) {
         FMILogError("Attribute fmiVersion is missing.\n");
         goto TERMINATE;
-    } else if (!strcmp(version, "1.0")) {
+    } else if (!strcmp(fmiVersion, "1.0")) {
         fmiMajorVersion = FMIMajorVersion1;
         pctxt = xmlSchemaNewMemParserCtxt((char*)fmi1Merged_xsd, fmi1Merged_xsd_len);
-    } else if (!strcmp(version, "2.0")) {
+    } else if (!strcmp(fmiVersion, "2.0")) {
         fmiMajorVersion = FMIMajorVersion2;
         pctxt = xmlSchemaNewMemParserCtxt((char*)fmi2Merged_xsd, fmi2Merged_xsd_len);
-    } else if(!strncmp(version, "3.", 2)) {
+    } else if(!strncmp(fmiVersion, "3.", 2)) {
         pctxt = xmlSchemaNewMemParserCtxt((char*)fmi3Merged_xsd, fmi3Merged_xsd_len);
         fmiMajorVersion = FMIMajorVersion3;
     } else {
-        FMILogError("Unsupported FMI version: %s.\n", version);
+        FMILogError("Unsupported FMI version: %s.\n", fmiVersion);
         goto TERMINATE;
     }
 
@@ -814,6 +814,12 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
         modelDescription = readModelDescriptionFMI3(root);
     }
 
+    if (modelDescription) {
+        modelDescription->fmiVersion = fmiVersion;
+    } else {
+        xmlFree((void*)fmiVersion);
+    }
+
 TERMINATE:
 
     if (vctxt) {
@@ -841,6 +847,7 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
         return;
     }
 
+    xmlFree((void*)modelDescription->fmiVersion);
     free((void*)modelDescription->modelName);
     free((void*)modelDescription->instantiationToken);
     free((void*)modelDescription->description);
