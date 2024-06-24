@@ -123,8 +123,14 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
 
         variable->line = variableNode->line;
-        variable->name = (char*)xmlGetProp(variableNode, (xmlChar*)"name");
+
+        variable->name        = (char*)xmlGetProp(variableNode, (xmlChar*)"name");
         variable->description = (char*)xmlGetProp(variableNode, (xmlChar*)"description");
+
+        variable->min     = (char*)xmlGetProp(typeNode, (xmlChar*)"min");
+        variable->max     = (char*)xmlGetProp(typeNode, (xmlChar*)"max");
+        variable->nominal = (char*)xmlGetProp(typeNode, (xmlChar*)"nominal");
+        variable->start   = (char*)xmlGetProp(typeNode, (xmlChar*)"start");
 
         const char* typeName = (char*)typeNode->name;
 
@@ -322,8 +328,8 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
         CALL(FMICalloc((void**)&modelDescription->defaultExperiment, 1, sizeof(FMIDefaultExperiment)));
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
         modelDescription->defaultExperiment->startTime = (char*)xmlGetProp(node, (xmlChar*)"startTime");
-        modelDescription->defaultExperiment->stopTime = (char*)xmlGetProp(node, (xmlChar*)"stopTime");
-        modelDescription->defaultExperiment->stepSize = (char*)xmlGetProp(node, (xmlChar*)"stepSize");
+        modelDescription->defaultExperiment->stopTime  = (char*)xmlGetProp(node, (xmlChar*)"stopTime");
+        modelDescription->defaultExperiment->stepSize  = (char*)xmlGetProp(node, (xmlChar*)"stepSize");
     }
     xmlXPathFreeObject(xpathObj);
 
@@ -334,14 +340,20 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
-        xmlNodePtr typeNode = xpathObj->nodesetval->nodeTab[i];
-        xmlNodePtr variableNode = typeNode->parent;
+        const xmlNodePtr typeNode = xpathObj->nodesetval->nodeTab[i];
+        const xmlNodePtr variableNode = typeNode->parent;
 
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
 
-        variable->line = variableNode->line;
-        variable->name = (char*)xmlGetProp(variableNode, (xmlChar*)"name");
+        variable->name        = (char*)xmlGetProp(variableNode, (xmlChar*)"name");        
         variable->description = (char*)xmlGetProp(variableNode, (xmlChar*)"description");
+
+        variable->min     = (char*)xmlGetProp(typeNode, (xmlChar*)"min");
+        variable->max     = (char*)xmlGetProp(typeNode, (xmlChar*)"max");
+        variable->nominal = (char*)xmlGetProp(typeNode, (xmlChar*)"nominal");
+        variable->start   = (char*)xmlGetProp(typeNode, (xmlChar*)"start");
+
+        variable->line = variableNode->line;
 
         variable->derivative = (FMIModelVariable*)xmlGetProp(typeNode, (xmlChar*)"derivative");
 
@@ -523,9 +535,12 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
         xmlNodePtr variableNode = xpathObj->nodesetval->nodeTab[i];
 
-        variable->line = variableNode->line;
-        variable->name = (char*)xmlGetProp(variableNode, (xmlChar*)"name");
-        variable->start = (char*)xmlGetProp(variableNode, (xmlChar*)"start");
+        variable->line        = variableNode->line;
+        variable->name        = (char*)xmlGetProp(variableNode, (xmlChar*)"name");
+        variable->min         = (char*)xmlGetProp(variableNode, (xmlChar*)"min");
+        variable->max         = (char*)xmlGetProp(variableNode, (xmlChar*)"max");
+        variable->nominal     = (char*)xmlGetProp(variableNode, (xmlChar*)"nominal");
+        variable->start       = (char*)xmlGetProp(variableNode, (xmlChar*)"start");
         variable->description = (char*)xmlGetProp(variableNode, (xmlChar*)"description");
 
         FMIVariableType type;
@@ -875,6 +890,9 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
         xmlFree((void*)variable->name);
+        xmlFree((void*)variable->min);
+        xmlFree((void*)variable->max);
+        xmlFree((void*)variable->nominal);
         xmlFree((void*)variable->start);
         xmlFree((void*)variable->description);
     }
