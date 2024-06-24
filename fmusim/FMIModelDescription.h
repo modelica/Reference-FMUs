@@ -52,6 +52,9 @@ struct FMIModelVariable {
     
     FMIVariableType type;
     const char* name;
+    const char* min;
+    const char* max;
+    const char* nominal;
     const char* start;
     const char* description;
     unsigned int valueReference;
