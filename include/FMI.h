@@ -100,10 +100,10 @@ typedef enum {
 } FMIVariableType;
 
 typedef enum {
-    FMIVersion1 = 1,
-    FMIVersion2 = 2,
-    FMIVersion3 = 3
-} FMIVersion;
+    FMIMajorVersion1 = 1,
+    FMIMajorVersion2 = 2,
+    FMIMajorVersion3 = 3
+} FMIMajorVersion;
 
 typedef enum {
     FMIModelExchange,
@@ -175,7 +175,7 @@ struct FMIInstance_ {
 
     FMIStatus status;
 
-    FMIVersion fmiVersion;
+    FMIMajorVersion fmiMajorVersion;
 
     FMIInterfaceType interfaceType;
 
@@ -205,7 +205,7 @@ FMI_STATIC void FMIAppendArrayToLogMessageBuffer(FMIInstance* instance, const vo
 
 FMI_STATIC FMIStatus FMIPathToURI(const char *path, char *uri, const size_t uriLength);
 
-FMI_STATIC FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *modelIdentifier, FMIVersion fmiVersion, char *platformBinaryPath, size_t size);
+FMI_STATIC FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *modelIdentifier, FMIMajorVersion fmiMajorVersion, char *platformBinaryPath, size_t size);
 
 #ifdef __cplusplus
 }  /* end of extern "C" { */
