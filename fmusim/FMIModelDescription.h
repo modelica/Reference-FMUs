@@ -83,7 +83,7 @@ typedef struct {
     const char* name;
     const char* quantity;
     FMIUnit* unit;
-    const char* displayUnit;
+    FMIDisplayUnit* displayUnit;
     bool relativeQuantity;
     const char* min;
     const char* max;
@@ -201,6 +201,8 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription);
 FMIValueReference FMIValueReferenceForLiteral(const char* literal);
 
 FMIUnit* FMIUnitForName(const FMIModelDescription* modelDescription, const char* name);
+
+FMIDisplayUnit* FMIDisplayUnitForName(const FMIUnit* unit, const char* name);
 
 FMITypeDefinition* FMITypeDefintionForName(const FMIModelDescription* modelDescription, const char* name);
 

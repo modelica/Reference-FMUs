@@ -445,7 +445,13 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
             typeDefinition->unit = FMIUnitForName(modelDescription, unitName);
             xmlFree((void*)unitName);
 
-            typeDefinition->displayUnit      = (char*)xmlGetProp(typeNode, (xmlChar*)"displayUnit");
+            const char* displayUnit = (char*)xmlGetProp(typeNode, (xmlChar*)"displayUnit");
+
+            if (displayUnit) {
+                typeDefinition->displayUnit = FMIDisplayUnitForName(typeDefinition->unit, displayUnit);
+                xmlFree((void*)displayUnit);
+            }
+
             typeDefinition->relativeQuantity = getBooleanAttribute(typeNode, "relativeQuantity");
             typeDefinition->min              = (char*)xmlGetProp(typeNode, (xmlChar*)"min");
             typeDefinition->max              = (char*)xmlGetProp(typeNode, (xmlChar*)"max");
@@ -751,7 +757,13 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
             xmlFree((void*)unitName);
 
-            typeDefinition->displayUnit      = (char*)xmlGetProp(typeDefinitionNode, (xmlChar*)"displayUnit");
+            const char* displayUnit = (char*)xmlGetProp(typeDefinitionNode, (xmlChar*)"displayUnit");
+
+            if (displayUnit) {
+                typeDefinition->displayUnit = FMIDisplayUnitForName(typeDefinition->unit, displayUnit);
+                xmlFree((void*)displayUnit);
+            }
+
             typeDefinition->relativeQuantity = getBooleanAttribute(typeDefinitionNode, "relativeQuantity");
             typeDefinition->min              = (char*)xmlGetProp(typeDefinitionNode, (xmlChar*)"min");
             typeDefinition->max              = (char*)xmlGetProp(typeDefinitionNode, (xmlChar*)"max");
@@ -1183,7 +1195,6 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
 
             xmlFree(typeDefintion->name);
             xmlFree(typeDefintion->quantity);
-            xmlFree(typeDefintion->displayUnit);
             xmlFree(typeDefintion->min);
             xmlFree(typeDefintion->max);
             xmlFree(typeDefintion->nominal);
@@ -1216,7 +1227,7 @@ FMIValueReference FMIValueReferenceForLiteral(const char* literal) {
 
 FMIUnit* FMIUnitForName(const FMIModelDescription* modelDescription, const char* name) {
 
-    if (!name) {
+    if (!modelDescription || !name) {
         return NULL;
     }
 
@@ -1232,9 +1243,25 @@ FMIUnit* FMIUnitForName(const FMIModelDescription* modelDescription, const char*
     return NULL;
 }
 
+FMIDisplayUnit* FMIDisplayUnitForName(const FMIUnit* unit, const char* name) {
+
+    if (!unit || !name) {
+        return NULL;
+    }
+
+    for (size_t i = 0; i < unit->nDisplayUnits; i++) {
+
+        FMIDisplayUnit* displayUnit = unit->displayUnits[i];
+
+        if (!strcmp(displayUnit->name, name)) {
+            return displayUnit;
+        }
+    }
+}
+
 FMITypeDefinition* FMITypeDefintionForName(const FMIModelDescription* modelDescription, const char* name) {
 
-    if (!name) {
+    if (!modelDescription || !name) {
         return NULL;
     }
 
@@ -1290,8 +1317,6 @@ FMIModelVariable* FMIModelVariableForIndexLiteral(const FMIModelDescription* mod
 }
 
 static bool isLegalCombination(FMIModelVariable* variable) {
-
-    //FMICausality causality, FMIVariability variability, FMIInitial initial;
 
     if (variable->causality == FMIStructuralParameter || variable->causality == FMIParameter) {
         
