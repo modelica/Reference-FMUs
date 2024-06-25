@@ -115,6 +115,7 @@ struct FMIModelVariable {
     FMIModelVariable* derivative;
     FMIUnit* unit;
     bool relativeQuantity;
+    FMITypeDefinition* declaredType;
     unsigned short line;
 
 };
