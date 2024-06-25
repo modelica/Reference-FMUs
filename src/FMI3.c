@@ -37,7 +37,7 @@ do { \
     instance->fmi3Functions->fmi3 ## f = (fmi3 ## f ## TYPE*)GetProcAddress(instance->libraryHandle, "fmi3" #f); \
     if (!instance->fmi3Functions->fmi3 ## f) { \
         instance->logMessage(instance, FMIFatal, "fatal", "Symbol fmi3" #f " is missing in shared library."); \
-        return fmi3Fatal; \
+        return FMIFatal; \
     } \
 } while (0)
 #else
