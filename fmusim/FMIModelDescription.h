@@ -44,18 +44,6 @@ typedef enum {
 
 } FMIInitial;
 
-typedef struct FMIDimension FMIDimension;
-
-typedef struct FMIModelVariable FMIModelVariable;
-
-// typedef struct {
-
-//     const char* name;
-//     const char* factor;
-//     const char* offset;
-
-// } FMIDisplayUnit;
-
 typedef struct {
 
     const char* name;
@@ -69,9 +57,24 @@ typedef struct {
     int rad;
     double factor;
     double offset;
-    // const char* baseUnit;
-    // size_t nDisplayUnits;
-    // FMIDisplayUnit* displayUnits;
+
+} FMIBaseUnit;
+
+typedef struct {
+
+    const char* name;
+    double factor;
+    double offset;
+
+} FMIDisplayUnit;
+
+typedef struct {
+
+    const char* name;
+    size_t nBaseUnits;
+    FMIBaseUnit* baseUnit;
+    size_t nDisplayUnits;
+    FMIDisplayUnit** displayUnits;
 
 } FMIUnit;
 
@@ -90,6 +93,10 @@ typedef struct {
 
 } FMITypeDefinition;
 
+typedef struct FMIDimension FMIDimension;
+
+typedef struct FMIModelVariable FMIModelVariable;
+
 struct FMIModelVariable {
     
     FMIVariableType type;
@@ -106,7 +113,8 @@ struct FMIModelVariable {
     size_t nDimensions;
     FMIDimension* dimensions;
     FMIModelVariable* derivative;
-    FMITypeDefinition* declaredType;
+    FMIUnit* unit;
+    bool relativeQuantity;
     unsigned short line;
 
 };
@@ -149,8 +157,8 @@ typedef struct {
 
 typedef struct {
 
-    const char* fmiVersion;
     FMIMajorVersion fmiMajorVersion;
+    const char* fmiVersion;
     const char* modelName;
     const char* instantiationToken;
     const char* description;
@@ -163,11 +171,11 @@ typedef struct {
 
     FMIDefaultExperiment* defaultExperiment;
 
-    size_t nUnitDefinitions;
-    FMIUnit* unitDefinitions;
+    size_t nUnits;
+    FMIUnit** units;
 
     size_t nTypeDefinitions;
-    FMITypeDefinition* typeDefinitions;
+    FMITypeDefinition** typeDefinitions;
 
     size_t nModelVariables;
     FMIModelVariable* modelVariables;
@@ -191,8 +199,6 @@ FMIModelDescription* FMIReadModelDescription(const char* filename);
 void FMIFreeModelDescription(FMIModelDescription* modelDescription);
 
 FMIValueReference FMIValueReferenceForLiteral(const char* literal);
-
-FMITypeDefinition* FMITypeDefinitionForName(const FMIModelDescription* modelDescription, const char* name);
 
 FMIUnit* FMIUnitForName(const FMIModelDescription* modelDescription, const char* name);
 
