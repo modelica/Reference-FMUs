@@ -1152,6 +1152,49 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
         xmlFree(modelDescription->defaultExperiment);
     }
 
+    // units
+    for (size_t i = 0; i < modelDescription->nUnits; i++) {
+
+        FMIUnit* unit = modelDescription->units[i];
+        
+        if (unit) {
+
+            xmlFree(unit->name);
+            FMIFree(&unit->baseUnit);
+
+            for (size_t j = 0; j < unit->nDisplayUnits; j++) {
+                FMIDisplayUnit* displayUnit = unit->displayUnits[j];
+                xmlFree(displayUnit->name);
+                FMIFree(&displayUnit);
+            }
+
+            FMIFree(&unit);
+        }
+    }
+
+    FMIFree(&modelDescription->units);
+
+    // type defintions
+    for (size_t i = 0; i < modelDescription->nTypeDefinitions; i++) {
+
+        FMITypeDefinition* typeDefintion = modelDescription->typeDefinitions[i];
+
+        if (typeDefintion) {
+
+            xmlFree(typeDefintion->name);
+            xmlFree(typeDefintion->quantity);
+            xmlFree(typeDefintion->displayUnit);
+            xmlFree(typeDefintion->min);
+            xmlFree(typeDefintion->max);
+            xmlFree(typeDefintion->nominal);
+
+            FMIFree(&typeDefintion);
+        }
+    }
+
+    FMIFree(&modelDescription->typeDefinitions);
+
+    // model variables
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
         FMIModelVariable* variable = &modelDescription->modelVariables[i];
         xmlFree((void*)variable->name);
@@ -1162,9 +1205,9 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
         xmlFree((void*)variable->description);
     }
 
-    free(modelDescription->modelVariables);
+    FMIFree(&modelDescription->modelVariables);
 
-    xmlFree(modelDescription);
+    FMIFree(&modelDescription);
 }
 
 FMIValueReference FMIValueReferenceForLiteral(const char* literal) {

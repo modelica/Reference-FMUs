@@ -71,7 +71,6 @@ typedef struct {
 typedef struct {
 
     const char* name;
-    size_t nBaseUnits;
     FMIBaseUnit* baseUnit;
     size_t nDisplayUnits;
     FMIDisplayUnit** displayUnits;
