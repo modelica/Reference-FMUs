@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
 
     CALL(FMI3ExitInitializationMode(S));
 
-    // intial event iteration
+    // initial event iteration
     while (discreteStatesNeedUpdate) {
 
         CALL(FMI3UpdateDiscreteStates(S,
