@@ -73,7 +73,7 @@ FMIStatus simulateFMI3ME(
         
         CALL(FMI3ExitInitializationMode(S));
 
-        // intial event iteration
+        // initial event iteration
         do {
 
             CALL(FMI3UpdateDiscreteStates(S,
