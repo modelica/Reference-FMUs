@@ -670,13 +670,13 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
                 CALL(FMICalloc((void**)&baseUnit, 1, sizeof(FMIBaseUnit)));
 
-                baseUnit->kg = getIntAttribute(childNode, "kg");
-                baseUnit->m = getIntAttribute(childNode, "m");
-                baseUnit->s = getIntAttribute(childNode, "s");
-                baseUnit->A = getIntAttribute(childNode, "A");
-                baseUnit->K = getIntAttribute(childNode, "K");
+                baseUnit->kg  = getIntAttribute(childNode, "kg");
+                baseUnit->m   = getIntAttribute(childNode, "m");
+                baseUnit->s   = getIntAttribute(childNode, "s");
+                baseUnit->A   = getIntAttribute(childNode, "A");
+                baseUnit->K   = getIntAttribute(childNode, "K");
                 baseUnit->mol = getIntAttribute(childNode, "mol");
-                baseUnit->cd = getIntAttribute(childNode, "cd");
+                baseUnit->cd  = getIntAttribute(childNode, "cd");
                 baseUnit->rad = getIntAttribute(childNode, "rad");
 
                 baseUnit->factor = getDoubleAttribute(childNode, "factor", 1.0);
