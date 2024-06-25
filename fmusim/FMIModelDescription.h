@@ -44,6 +44,54 @@ typedef enum {
 
 } FMIInitial;
 
+typedef struct {
+
+    const char* name;
+    int kg;
+    int m;
+    int s;
+    int A;
+    int K;
+    int mol;
+    int cd;
+    int rad;
+    double factor;
+    double offset;
+
+} FMIBaseUnit;
+
+typedef struct {
+
+    const char* name;
+    double factor;
+    double offset;
+
+} FMIDisplayUnit;
+
+typedef struct {
+
+    const char* name;
+    FMIBaseUnit* baseUnit;
+    size_t nDisplayUnits;
+    FMIDisplayUnit** displayUnits;
+
+} FMIUnit;
+
+typedef struct {
+
+    FMIVariableType type;
+    const char* name;
+    const char* quantity;
+    FMIUnit* unit;
+    FMIDisplayUnit* displayUnit;
+    bool relativeQuantity;
+    const char* min;
+    const char* max;
+    const char* nominal;
+    bool unbounded;
+
+} FMITypeDefinition;
+
 typedef struct FMIDimension FMIDimension;
 
 typedef struct FMIModelVariable FMIModelVariable;
@@ -64,6 +112,9 @@ struct FMIModelVariable {
     size_t nDimensions;
     FMIDimension* dimensions;
     FMIModelVariable* derivative;
+    FMIUnit* unit;
+    bool relativeQuantity;
+    FMITypeDefinition* declaredType;
     unsigned short line;
 
 };
@@ -120,6 +171,12 @@ typedef struct {
 
     FMIDefaultExperiment* defaultExperiment;
 
+    size_t nUnits;
+    FMIUnit** units;
+
+    size_t nTypeDefinitions;
+    FMITypeDefinition** typeDefinitions;
+
     size_t nModelVariables;
     FMIModelVariable* modelVariables;
 
@@ -142,6 +199,12 @@ FMIModelDescription* FMIReadModelDescription(const char* filename);
 void FMIFreeModelDescription(FMIModelDescription* modelDescription);
 
 FMIValueReference FMIValueReferenceForLiteral(const char* literal);
+
+FMIUnit* FMIUnitForName(const FMIModelDescription* modelDescription, const char* name);
+
+FMIDisplayUnit* FMIDisplayUnitForName(const FMIUnit* unit, const char* name);
+
+FMITypeDefinition* FMITypeDefintionForName(const FMIModelDescription* modelDescription, const char* name);
 
 FMIModelVariable* FMIModelVariableForName(const FMIModelDescription* modelDescription, const char* name);
 
