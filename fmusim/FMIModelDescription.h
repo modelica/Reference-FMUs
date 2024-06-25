@@ -115,6 +115,7 @@ struct FMIModelVariable {
     FMIModelVariable* derivative;
     FMIUnit* unit;
     bool relativeQuantity;
+    FMITypeDefinition* declaredType;
     unsigned short line;
 
 };
@@ -201,6 +202,8 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription);
 FMIValueReference FMIValueReferenceForLiteral(const char* literal);
 
 FMIUnit* FMIUnitForName(const FMIModelDescription* modelDescription, const char* name);
+
+FMITypeDefinition* FMITypeDefintionForName(const FMIModelDescription* modelDescription, const char* name);
 
 FMIModelVariable* FMIModelVariableForName(const FMIModelDescription* modelDescription, const char* name);
 
