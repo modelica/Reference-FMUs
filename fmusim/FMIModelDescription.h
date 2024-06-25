@@ -203,6 +203,8 @@ FMIValueReference FMIValueReferenceForLiteral(const char* literal);
 
 FMIUnit* FMIUnitForName(const FMIModelDescription* modelDescription, const char* name);
 
+FMITypeDefinition* FMITypeDefintionForName(const FMIModelDescription* modelDescription, const char* name);
+
 FMIModelVariable* FMIModelVariableForName(const FMIModelDescription* modelDescription, const char* name);
 
 FMIModelVariable* FMIModelVariableForValueReference(const FMIModelDescription* modelDescription, FMIValueReference valueReference);

@@ -482,8 +482,16 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
         variable->derivative = (FMIModelVariable*)xmlGetProp(typeNode, (xmlChar*)"derivative");
 
         const char* unit = (char*)xmlGetProp(typeNode, (xmlChar*)"unit");
-        variable->unit = FMIUnitForName(modelDescription, unit);
-        xmlFree((void*)unit);
+        if (unit) {
+            variable->unit = FMIUnitForName(modelDescription, unit);
+            xmlFree((void*)unit);
+        }
+
+        const char* declaredType = (char*)xmlGetProp(typeNode, (xmlChar*)"declaredType");
+        if (declaredType) {
+            variable->declaredType = FMITypeDefintionForName(modelDescription, declaredType);
+            xmlFree((void*)declaredType);
+        }
 
         const char* typeName = (char*)typeNode->name;
 
@@ -644,11 +652,56 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
-        FMIUnit* unit = &modelDescription->units[i];
+        FMIUnit* unit = NULL;
 
-        //unit->factor = 1.0;
+        CALL(FMICalloc((void**)&unit, 1, sizeof(FMIUnit)));
+
+        modelDescription->units[i] = unit;
 
         xmlNodePtr unitNode = xpathObj->nodesetval->nodeTab[i];
+
+        xmlNodePtr childNode = unitNode->children;
+
+        while (childNode) {
+
+            if (childNode->name && !strcmp((char*)childNode->name, "BaseUnit")) {
+
+                FMIBaseUnit* baseUnit = NULL;
+
+                CALL(FMICalloc((void**)&baseUnit, 1, sizeof(FMIBaseUnit)));
+
+                baseUnit->kg = getIntAttribute(childNode, "kg");
+                baseUnit->m = getIntAttribute(childNode, "m");
+                baseUnit->s = getIntAttribute(childNode, "s");
+                baseUnit->A = getIntAttribute(childNode, "A");
+                baseUnit->K = getIntAttribute(childNode, "K");
+                baseUnit->mol = getIntAttribute(childNode, "mol");
+                baseUnit->cd = getIntAttribute(childNode, "cd");
+                baseUnit->rad = getIntAttribute(childNode, "rad");
+
+                baseUnit->factor = getDoubleAttribute(childNode, "factor", 1.0);
+                baseUnit->offset = getDoubleAttribute(childNode, "offset", 0.0);
+
+                unit->baseUnit = baseUnit;
+
+            } else if (childNode->name && !strcmp((char*)childNode->name, "DisplayUnit")) {
+
+                CALL(FMIRealloc((void**)&unit->displayUnits, (unit->nDisplayUnits + 1) * sizeof(FMIDisplayUnit*)));
+
+                FMIDisplayUnit* displayUnit;
+
+                CALL(FMICalloc((void**)&displayUnit, 1, sizeof(FMIDisplayUnit)));
+
+                displayUnit->name = (char*)xmlGetProp(childNode, (xmlChar*)"name");
+                displayUnit->factor = getDoubleAttribute(childNode, "factor", 1.0);
+                displayUnit->offset = getDoubleAttribute(childNode, "offset", 0.0);
+
+                unit->displayUnits[unit->nDisplayUnits] = displayUnit;
+                unit->nDisplayUnits++;
+            }
+
+            childNode = childNode->next;
+        }
 
         unit->name = (char*)xmlGetProp(unitNode, (xmlChar*)"name");
     }
@@ -682,7 +735,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
             FMITypeDefinition* typeDefinition = NULL;
             
-            CALL(FMICalloc(&typeDefinition, 1, sizeof(FMITypeDefinition)));
+            CALL(FMICalloc((void**)&typeDefinition, 1, sizeof(FMITypeDefinition)));
 
             modelDescription->typeDefinitions[i] = typeDefinition;
 
@@ -743,9 +796,17 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         variable->start       = (char*)xmlGetProp(variableNode, (xmlChar*)"start");
         variable->description = (char*)xmlGetProp(variableNode, (xmlChar*)"description");
 
-        const char* unit = (char*)xmlGetProp(variableNode, (xmlChar*)"unit");
-        variable->unit = FMIUnitForName(modelDescription, unit);
-        xmlFree((void*)unit);
+        const char* unit = (char*)xmlGetProp(variableNode, (xmlChar*)"unit");        
+        if (unit) {
+            variable->unit = FMIUnitForName(modelDescription, unit);
+            xmlFree((void*)unit);
+        }
+
+        const char* declaredType = (char*)xmlGetProp(variableNode, (xmlChar*)"declaredType");
+        if (declaredType) {
+            variable->declaredType = FMITypeDefintionForName(modelDescription, declaredType);
+            xmlFree((void*)declaredType);
+        }
 
         FMIVariableType type;
         
@@ -861,7 +922,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
         variable->derivative = (FMIModelVariable*)xmlGetProp(variableNode, (xmlChar*)"derivative");
 
-        xmlXPathObjectPtr xpathObj2 = xmlXPathNodeEval(variableNode, ".//Dimension", xpathCtx);
+        xmlXPathObjectPtr xpathObj2 = xmlXPathNodeEval(variableNode, (xmlChar*)".//Dimension", xpathCtx);
 
         for (size_t j = 0; j < xpathObj2->nodesetval->nodeNr; j++) {
 
@@ -1118,10 +1179,28 @@ FMIUnit* FMIUnitForName(const FMIModelDescription* modelDescription, const char*
 
     for (size_t i = 0; i < modelDescription->nUnits; i++) {
 
-        FMIUnit* unit = &modelDescription->units[i];
+        FMIUnit* unit = modelDescription->units[i];
 
         if (!strcmp(unit->name, name)) {
             return unit;
+        }
+    }
+
+    return NULL;
+}
+
+FMITypeDefinition* FMITypeDefintionForName(const FMIModelDescription* modelDescription, const char* name) {
+
+    if (!name) {
+        return NULL;
+    }
+
+    for (size_t i = 0; i < modelDescription->nTypeDefinitions; i++) {
+
+        FMITypeDefinition* typeDefintion = modelDescription->typeDefinitions[i];
+
+        if (!strcmp(typeDefintion->name, name)) {
+            return typeDefintion;
         }
     }
 
