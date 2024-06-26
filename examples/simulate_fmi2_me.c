@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
 
     fmi2EventInfo eventInfo = { 0 };
 
-    // intial event iteration
+    // initial event iteration
     do {
 
         CALL(FMI2NewDiscreteStates(S, &eventInfo));
