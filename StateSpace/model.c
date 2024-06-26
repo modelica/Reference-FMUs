@@ -196,6 +196,16 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
             M(u)[i] = values[(*index)++];
         }
         break;
+    case vr_x:
+        if (comp->state != ContinuousTimeMode && comp->state != EventMode) {
+            logError(comp, "Variable \"x\" can only be set in Continuous Time Mode and Event Mode.", vr);
+            return Error;
+        }
+        ASSERT_NVALUES((size_t)M(n));
+        for (size_t i = 0; i < M(n); i++) {
+            M(x)[i] = values[(*index)++];
+        }
+        break;
     default:
         logError(comp, "Set Float64 is not allowed for value reference %u.", vr);
         return Error;
