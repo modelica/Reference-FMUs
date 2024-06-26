@@ -179,8 +179,6 @@ static size_t FMISizeOf(FMIVariableType type, FMIMajorVersion fmiMajorVersion) {
 
 double FMINextInputEvent(const FMUStaticInput* input, double time) {
 
-    return INFINITY;
-
 	if (!input) {
 		return INFINITY;
 	}
@@ -223,8 +221,6 @@ double FMINextInputEvent(const FMUStaticInput* input, double time) {
 }
 
 FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, double time, bool discrete, bool continuous, bool afterEvent) {
-
-    return FMIOK;
 
 	FMIStatus status = FMIOK;
 

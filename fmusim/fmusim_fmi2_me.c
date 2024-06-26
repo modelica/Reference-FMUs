@@ -13,7 +13,7 @@ FMIStatus simulateFMI2ME(
     FMIInstance* S, 
     const FMIModelDescription* modelDescription, 
     const char* resourceURI,
-    //FMIRecorder* result,
+    FMIRecorder* result,
     const FMUStaticInput * input,
     const FMISimulationSettings* settings) {
 
@@ -60,19 +60,17 @@ FMIStatus simulateFMI2ME(
         CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
     }
 
-    // set start values
     CALL(applyStartValues(S, settings));
-    CALL(FMIApplyInput(S, input, time,
-        true,  // discrete
-        true,  // continous
-        false  // after event
-    ));
 
     if (!settings->initialFMUStateFile) {
 
-        // initialize
         CALL(FMI2SetupExperiment(S, settings->tolerance > 0, settings->tolerance, time, fmi2False, 0));
         CALL(FMI2EnterInitializationMode(S));
+        CALL(FMIApplyInput(S, input, time,
+            true,  // discrete
+            true,  // continous
+            false  // after event
+        ));
         CALL(FMI2ExitInitializationMode(S));
 
         do {
@@ -120,8 +118,7 @@ FMIStatus simulateFMI2ME(
 
     for (;;) {
 
-        //CALL(FMISample(S, time, result));
-        CALL(settings->sample(settings->recorder, time));
+        CALL(FMISample(S, time, result));
 
         if (time >= settings->stopTime) {
             break;
@@ -167,8 +164,7 @@ FMIStatus simulateFMI2ME(
         if (inputEvent || timeEvent || stateEvent || stepEvent) {
 
             // record the values before the event
-            //CALL(FMISample(S, time, result));
-            CALL(settings->sample(settings->recorder, time));
+            CALL(FMISample(S, time, result));
 
             CALL(FMI2EnterEventMode(S));
 
@@ -187,8 +183,7 @@ FMIStatus simulateFMI2ME(
                 CALL(FMI2NewDiscreteStates(S, &eventInfo));
 
                 if (eventInfo.terminateSimulation) {
-                    //CALL(FMISample(S, time, result));
-                    CALL(settings->sample(settings->recorder, time));
+                    CALL(FMISample(S, time, result));
                     goto TERMINATE;
                 }
 

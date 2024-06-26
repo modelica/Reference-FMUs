@@ -13,7 +13,7 @@ FMIStatus simulateFMI3ME(
     FMIInstance* S, 
     const FMIModelDescription* modelDescription, 
     const char* resourcePath,
-    //FMIRecorder* result,
+    FMIRecorder* result,
     const FMUStaticInput * input,
     const FMISimulationSettings * settings) {
 
@@ -58,21 +58,22 @@ FMIStatus simulateFMI3ME(
         CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
     }
 
-    // set start values
     CALL(applyStartValues(S, settings));
-    CALL(FMIApplyInput(S, input, time,
-        true,  // discrete
-        true,  // continous
-        false  // after event
-    ));
 
     if (!settings->initialFMUStateFile) {
 
         // initialize
         CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, time, fmi3False, 0));
+        
+        CALL(FMIApplyInput(S, input, time,
+            true,  // discrete
+            true,  // continous
+            false  // after event
+        ));
+        
         CALL(FMI3ExitInitializationMode(S));
 
-        // intial event iteration
+        // initial event iteration
         do {
 
             CALL(FMI3UpdateDiscreteStates(S,
@@ -125,8 +126,7 @@ FMIStatus simulateFMI3ME(
 
     for (;;) {
 
-        //CALL(FMISample(S, time, result));
-        CALL(settings->sample(settings->recorder, time));
+        CALL(FMISample(S, time, result));
 
         if (time >= settings->stopTime) {
             break;
@@ -171,8 +171,7 @@ FMIStatus simulateFMI3ME(
 
         if (inputEvent || timeEvent || stateEvent || stepEvent) {
 
-            //CALL(FMISample(S, time, result));
-            CALL(settings->sample(settings->recorder, time));
+            CALL(FMISample(S, time, result));
 
             CALL(FMI3EnterEventMode(S));
 
@@ -197,8 +196,7 @@ FMIStatus simulateFMI3ME(
                     &nextEventTime));
                 
                 if (terminateSimulation) {
-                    //CALL(FMISample(S, time, result));
-                    CALL(settings->sample(settings->recorder, time));
+                    CALL(FMISample(S, time, result));
                     goto TERMINATE;
                 }
 

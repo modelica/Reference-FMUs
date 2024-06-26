@@ -14,7 +14,7 @@ extern "C" {
 #include "fmusim_fmi3_cs.h"
 // #include "FMICSVRecorder.h"
 //#include "FMIDemoRecorder.h"
-#include "FMICSVRecorder.h"
+//#include "FMICSVRecorder.h"
 }
 
 #define FMI_PATH_MAX 4096
@@ -289,8 +289,8 @@ void MainWindow::simulate() {
 
     FMISimulationSettings settings;
 
-    settings.visible                  = false;
-    settings.loggingOn                = ui->debugLoggingCheckBox->isChecked();
+    //settings.visible                  = false;
+    //settings.loggingOn                = ui->debugLoggingCheckBox->isChecked();
     settings.tolerance                = 0;
     settings.nStartValues             = 0;
     settings.startVariables           = NULL;
@@ -304,9 +304,9 @@ void MainWindow::simulate() {
     settings.initialFMUStateFile      = NULL;
     settings.finalFMUStateFile        = NULL;
 
-    settings.nStartValues = startValues.count();
-    settings.startVariables = (FMIModelVariable**)calloc(settings.nStartValues, sizeof(FMIModelVariable*));
-    settings.startValues = (char**)calloc(settings.nStartValues, sizeof(char*));
+    //settings.nStartValues = startValues.count();
+    //settings.startVariables = (FMIModelVariable**)calloc(settings.nStartValues, sizeof(FMIModelVariable*));
+    //settings.startValues = (char**)calloc(settings.nStartValues, sizeof(char*));
 
     size_t i = 0;
 
@@ -343,10 +343,10 @@ void MainWindow::simulate() {
     // FMIModelVariable** outputVariables = variables;
 
     //FMIRecorder *recorder = FMICreateRecorder(0, NULL, "BouncingBall_out.csv");
-    settings.recorder = FMICSVRecorderCreate(S, nOutputVariables, outputVariables, "dummy.csv");
-    settings.sample = FMICSVRecorderSample;
+    //settings.recorder = FMICSVRecorderCreate(S, nOutputVariables, outputVariables, "dummy.csv");
+    //settings.sample = FMICSVRecorderSample;
 
-    const FMIStatus status = simulateFMI3CS(S, modelDescription, NULL, &settings);
+    //const FMIStatus status = simulateFMI3CS(S, modelDescription, NULL, &settings);
 
     // size_t nRows;
     // const double* values = FMIDemoRecorderValues(settings.recorder, &nRows);
@@ -365,7 +365,7 @@ void MainWindow::simulate() {
     //     y += QString::number(values[2 * i + 1]);
     // }
 
-    FMIRecorder* recorder = settings.recorder;
+    //FMIRecorder* recorder = settings.recorder;
 
     // for (size_t i = 0; i < recorder->nRows; i++) {
 
@@ -386,72 +386,72 @@ void MainWindow::simulate() {
     // ui->plotWebEngineView->page()->runJavaScript("Plotly.newPlot('gd', { 'data': [{ 'x': [" + x + "], 'y': [" + y + "] }] })");
     // ui->plotWebEngineView->page()->runJavaScript("Plotly.newPlot('gd', { 'data': [{ 'x': [" + x + "], 'y': [" + y + "] }], 'layout': { 'width': 600, 'height': 400} } })");
 
-    QString data;
-    data += "var data = [";
+    // QString data;
+    // data += "var data = [";
 
-    for (size_t i = 0; i < recorder->nVariables; i++) {
+    // for (size_t i = 0; i < recorder->nVariables; i++) {
 
-        const FMIModelVariable* variable = recorder->variables[i];
+    //     const FMIModelVariable* variable = recorder->variables[i];
 
-        //data += "  {x: [" + x + "], y: [" + y + "], type: 'scatter'},";
-        //data += "  {x: [" + x + "], y: [" + y + "], type: 'scatter', xaxis: 'x2', yaxis: 'y2'}";
+    //     //data += "  {x: [" + x + "], y: [" + y + "], type: 'scatter'},";
+    //     //data += "  {x: [" + x + "], y: [" + y + "], type: 'scatter', xaxis: 'x2', yaxis: 'y2'}";
 
-        QString x;
-        QString y;
+    //     QString x;
+    //     QString y;
 
-        for (size_t j = 0; j < recorder->nRows; j++) {
+    //     for (size_t j = 0; j < recorder->nRows; j++) {
 
-            Row* row = recorder->rows[j];
+    //         Row* row = recorder->rows[j];
 
-            if (j > 0) {
-                x += ", ";
-                y += ", ";
-            }
+    //         if (j > 0) {
+    //             x += ", ";
+    //             y += ", ";
+    //         }
 
-            x += QString::number(row->time);
-            y += QString::number(row->float64Values[i]);
-        }
+    //         x += QString::number(row->time);
+    //         y += QString::number(row->float64Values[i]);
+    //     }
 
-        if (i > 0) {
-            data += ", ";
-        }
+    //     if (i > 0) {
+    //         data += ", ";
+    //     }
 
-        data += "{x: [" + x + "], y: [" + y + "], type: 'scatter', name: '" + variable->name + "'";
+    //     data += "{x: [" + x + "], y: [" + y + "], type: 'scatter', name: '" + variable->name + "'";
 
-        if (i > 0) {
-            const QString plotIndex = QString::number(i + 1);
-            data += ", xaxis: 'x" + plotIndex + "', yaxis: 'y" + plotIndex + "'";
-        }
+    //     if (i > 0) {
+    //         const QString plotIndex = QString::number(i + 1);
+    //         data += ", xaxis: 'x" + plotIndex + "', yaxis: 'y" + plotIndex + "'";
+    //     }
 
-        data += "}";
-    }
+    //     data += "}";
+    // }
 
-    data += "];";
+    // data += "];";
 
-    QString axes;
+    // QString axes;
 
-    for (size_t i = 0; i < recorder->nVariables; i++) {
+    // for (size_t i = 0; i < recorder->nVariables; i++) {
 
-        const FMIModelVariable* variable = recorder->variables[i];
+    //     const FMIModelVariable* variable = recorder->variables[i];
 
-        const QString name = QString::fromUtf8(variable->name);
-        const QString colors = "color: '#fff', zerolinecolor: '#666'";
+    //     const QString name = QString::fromUtf8(variable->name);
+    //     const QString colors = "color: '#fff', zerolinecolor: '#666'";
 
-        const double segment = 1.0 / recorder->nVariables;
-        const double margin = 0.02;
+    //     const double segment = 1.0 / recorder->nVariables;
+    //     const double margin = 0.02;
 
-        const QString domain = "[" + QString::number(i * segment + (i == 0 ? 0.0 : margin)) + ", " + QString::number((i + 1) * segment - (i == recorder->nVariables ? 0.0 : margin)) + "]";
+    //     const QString domain = "[" + QString::number(i * segment + (i == 0 ? 0.0 : margin)) + ", " + QString::number((i + 1) * segment - (i == recorder->nVariables ? 0.0 : margin)) + "]";
 
-        if (i == 0) {
-            axes += "xaxis: {" + colors + ", matches: 'x" + QString::number(recorder->nVariables) + "'},";
-            axes += "yaxis: {title: '" + name + "', " + colors + ", domain: " + domain + "},";
-        } else {
-            axes += "xaxis2: {" + colors + "},";
-            axes += "yaxis2: {title: '" + name + "', " + colors + ", domain: " + domain + "},";
-        }
-    }
+    //     if (i == 0) {
+    //         axes += "xaxis: {" + colors + ", matches: 'x" + QString::number(recorder->nVariables) + "'},";
+    //         axes += "yaxis: {title: '" + name + "', " + colors + ", domain: " + domain + "},";
+    //     } else {
+    //         axes += "xaxis2: {" + colors + "},";
+    //         axes += "yaxis2: {title: '" + name + "', " + colors + ", domain: " + domain + "},";
+    //     }
+    // }
 
-    qDebug() << axes;
+    // qDebug() << axes;
 
     /*
     var trace1 = {
@@ -474,29 +474,29 @@ void MainWindow::simulate() {
     var data = [trace1, trace2];
     */
 
-    QString javaScript =
-        data +
-    "    var layout = {"
-    "    showlegend: false,"
-    "    autosize: true,"
-    "    font_color: '#0ff',"
-    "    plot_bgcolor: '#1e1e1e',"
-    "    paper_bgcolor: '#1e1e1e',"
-    "    grid: {rows: 2, columns: 1, pattern: 'independent'},"
-    "    template: 'plotly_dark'," + axes +
-    // "    xaxis: {color: '#fff', zerolinecolor: '#666', matches: 'x2', showticklabels: true},"
-    // "    yaxis: {title: 'height [m]', color: '#fff', zerolinecolor: '#666', domain: [0.52, 1.0]},"
-    // "    xaxis2: {color: '#fff', zerolinecolor: '#666', range: [-0.05, 3.05]},"
-    // "    yaxis2: {title: 'velocity [m/s]', color: '#fff', zerolinecolor: '#666', domain: [0.0, 0.48]},"
-    "    color: '#0f0',"
-    "    margin: { l: 60, r: 20, b: 30, t: 20, pad: 0 }"
-    "};"
-    "var config = {"
-    "    'responsive': true"
-    "};"
-    "Plotly.newPlot('gd', data, layout, config);";
+    // QString javaScript =
+    //     data +
+    // "    var layout = {"
+    // "    showlegend: false,"
+    // "    autosize: true,"
+    // "    font_color: '#0ff',"
+    // "    plot_bgcolor: '#1e1e1e',"
+    // "    paper_bgcolor: '#1e1e1e',"
+    // "    grid: {rows: 2, columns: 1, pattern: 'independent'},"
+    // "    template: 'plotly_dark'," + axes +
+    // // "    xaxis: {color: '#fff', zerolinecolor: '#666', matches: 'x2', showticklabels: true},"
+    // // "    yaxis: {title: 'height [m]', color: '#fff', zerolinecolor: '#666', domain: [0.52, 1.0]},"
+    // // "    xaxis2: {color: '#fff', zerolinecolor: '#666', range: [-0.05, 3.05]},"
+    // // "    yaxis2: {title: 'velocity [m/s]', color: '#fff', zerolinecolor: '#666', domain: [0.0, 0.48]},"
+    // "    color: '#0f0',"
+    // "    margin: { l: 60, r: 20, b: 30, t: 20, pad: 0 }"
+    // "};"
+    // "var config = {"
+    // "    'responsive': true"
+    // "};"
+    // "Plotly.newPlot('gd', data, layout, config);";
 
-    ui->plotWebEngineView->page()->runJavaScript(javaScript);
+    // ui->plotWebEngineView->page()->runJavaScript(javaScript);
 }
 
 void MainWindow::openFile() {

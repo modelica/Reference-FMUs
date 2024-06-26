@@ -41,10 +41,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         icons/icons.qrc
         plot.html
 
-        ../fmusim/fmusim_fmi3_cs.c
-        ../fmusim/fmusim_fmi3_cs.h
-        ../fmusim/fmusim_input.c
-        ../fmusim/fmusim_input.h
         ../src/FMI1.c
         ../src/FMI2.c
         ../include/FMI1.h
@@ -57,14 +53,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ../fmusim/csv.h
 
         ../fmusim/FMIRecorder.h
-        ../fmusim/FMICSVRecorder.c
-        ../fmusim/FMICSVRecorder.h
-
-        ../fmusim/FMIDemoRecorder.c
-        ../fmusim/FMIDemoRecorder.h
-
-        ../fmusim/FMISimulation.c
-        ../fmusim/FMISimulation.h
+        ../fmusim/FMIRecorder.c
 
         ../fmusim/fmusim.h
         buttons.qrc
