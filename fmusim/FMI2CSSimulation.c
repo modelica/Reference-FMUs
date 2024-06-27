@@ -1,17 +1,17 @@
 #include "FMIUtil.h"
-
-#include "fmusim_fmi2_cs.h"
+#include "FMI2.h"
+#include "FMI2CSSimulation.h"
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMIStatus simulateFMI2CS(
+FMIStatus FMI2CSSimulate(
     FMIInstance* S,
     const FMIModelDescription* modelDescription,
     const char* resourceURI,
     FMIRecorder* result,
-    const FMUStaticInput * input,
+    const FMIStaticInput * input,
     const FMISimulationSettings * settings) {
 
     FMIStatus status = FMIOK;
@@ -28,7 +28,7 @@ FMIStatus simulateFMI2CS(
         CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
     }
 
-    CALL(applyStartValues(S, settings));
+    CALL(FMIApplyStartValues(S, settings));
 
     if (!settings->initialFMUStateFile) {
         CALL(FMI2SetupExperiment(S, settings->tolerance > 0, settings->tolerance, settings->startTime, fmi2False, 0));

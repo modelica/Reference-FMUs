@@ -2,8 +2,8 @@
 #include <math.h>
 
 #include "FMIUtil.h"
-
-#include "fmusim_fmi3_cs.h"
+#include "FMI3.h"
+#include "FMI3CSSimulation.h"
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
@@ -30,11 +30,11 @@ static void recordIntermediateValues(
     *earlyReturnRequested = fmi3False;
 }
 
-FMIStatus simulateFMI3CS(FMIInstance* S,
+FMIStatus FMI3CSSimulate(FMIInstance* S,
     const FMIModelDescription * modelDescription,
     const char* resourcePath,
     FMIRecorder* recorder,
-    const FMUStaticInput * input,
+    const FMIStaticInput * input,
     const FMISimulationSettings * settings) {
 
     FMIStatus status = FMIOK;
@@ -92,7 +92,7 @@ FMIStatus simulateFMI3CS(FMIInstance* S,
         CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
     }
 
-    CALL(applyStartValues(S, settings));
+    CALL(FMIApplyStartValues(S, settings));
 
     if (!settings->initialFMUStateFile) {
 

@@ -1,17 +1,18 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "fmusim_fmi1_me.h"
+#include "FMI1.h"
+#include "FMI1MESimulation.h"
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMIStatus simulateFMI1ME(
+FMIStatus FMI1MESimulate(
     FMIInstance* S, 
     const FMIModelDescription* modelDescription, 
     FMIRecorder* result,
-    const FMUStaticInput * input,
+    const FMIStaticInput * input,
     const FMISimulationSettings* settings) {
 
     FMIStatus status = FMIOK;
@@ -48,7 +49,7 @@ FMIStatus simulateFMI1ME(
     ));
 
     // set start values
-    CALL(applyStartValues(S, settings));
+    CALL(FMIApplyStartValues(S, settings));
 
     CALL(FMIApplyInput(S, input, time,
         true,  // discrete

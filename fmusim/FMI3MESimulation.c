@@ -2,19 +2,19 @@
 #include <math.h>
 
 #include "FMIUtil.h"
-
-#include "fmusim_fmi3_me.h"
+#include "FMI3.h"
+#include "FMI3MESimulation.h"
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMIStatus simulateFMI3ME(
+FMIStatus FMI3MESimulate(
     FMIInstance* S, 
     const FMIModelDescription* modelDescription, 
     const char* resourcePath,
     FMIRecorder* result,
-    const FMUStaticInput * input,
+    const FMIStaticInput * input,
     const FMISimulationSettings * settings) {
 
     const bool needsCompletedIntegratorStep = modelDescription->modelExchange->needsCompletedIntegratorStep;
@@ -58,7 +58,7 @@ FMIStatus simulateFMI3ME(
         CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
     }
 
-    CALL(applyStartValues(S, settings));
+    CALL(FMIApplyStartValues(S, settings));
 
     if (!settings->initialFMUStateFile) {
 
