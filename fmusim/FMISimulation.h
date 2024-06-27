@@ -3,7 +3,7 @@
 #include "FMIModelDescription.h"
 #include "FMISolver.h"
 #include "FMIRecorder.h"
-#include "fmusim_input.h"
+#include "FMISimulationInput.h"
 
 
 typedef struct {

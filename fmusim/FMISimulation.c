@@ -1,13 +1,14 @@
-#include "FMI3.h"
-#include "FMIUtil.h"
-#include "FMISimulation.h"
-#include "fmusim_fmi1_cs.h"
-#include "fmusim_fmi1_me.h"
-#include "fmusim_fmi2_cs.h"
-#include "fmusim_fmi2_me.h"
-#include "fmusim_fmi3_cs.h"
-#include "fmusim_fmi3_me.h"
 #include "stdlib.h"
+
+#include "FMI3.h"
+#include "FMISimulation.h"
+#include "FMI1CSSimulation.h"
+#include "FMI1MESimulation.h"
+#include "FMI2CSSimulation.h"
+#include "FMI2MESimulation.h"
+#include "FMI3CSSimulation.h"
+#include "FMI3MESimulation.h"
+#include "FMIUtil.h"
 
 #define FMI_PATH_MAX 4096
 

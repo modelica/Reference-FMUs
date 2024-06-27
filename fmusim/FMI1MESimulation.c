@@ -1,7 +1,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "fmusim_fmi1_me.h"
+#include "FMI1.h"
+#include "FMI1MESimulation.h"
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)

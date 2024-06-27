@@ -1,9 +1,5 @@
 #pragma once
 
-#include "FMI2.h"
-#include "FMIModelDescription.h"
-#include "FMIRecorder.h"
-#include "fmusim_input.h"
 #include "FMISimulation.h"
 
 

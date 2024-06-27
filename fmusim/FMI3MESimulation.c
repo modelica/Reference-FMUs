@@ -2,8 +2,8 @@
 #include <math.h>
 
 #include "FMIUtil.h"
-
-#include "fmusim_fmi3_me.h"
+#include "FMI3.h"
+#include "FMI3MESimulation.h"
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)

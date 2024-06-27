@@ -1,11 +1,12 @@
 #include <string.h>
 #include <math.h>
+
 #include "csv.h"
 #include "FMI1.h"
 #include "FMI2.h"
 #include "FMI3.h"
 #include "FMIUtil.h"
-#include "fmusim_input.h"
+#include "FMISimulationInput.h"
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)

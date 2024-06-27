@@ -1257,6 +1257,8 @@ FMIDisplayUnit* FMIDisplayUnitForName(const FMIUnit* unit, const char* name) {
             return displayUnit;
         }
     }
+
+    return NULL;
 }
 
 FMITypeDefinition* FMITypeDefintionForName(const FMIModelDescription* modelDescription, const char* name) {

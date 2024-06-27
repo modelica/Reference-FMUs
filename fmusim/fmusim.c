@@ -14,21 +14,12 @@
 
 #include <errno.h>
 
-#include "FMI3.h"
 #include "FMIZip.h"
 #include "FMIModelDescription.h"
 #include "FMIRecorder.h"
 #include "FMIUtil.h"
 
 #include "FMISimulation.h"
-#include "fmusim_fmi1_cs.h"
-#include "fmusim_fmi1_me.h"
-#include "fmusim_fmi2_cs.h"
-#include "fmusim_fmi2_me.h"
-#include "fmusim_fmi3_cs.h"
-#include "fmusim_fmi3_me.h"
-
-#include "fmusim_input.h"
 
 #include "FMIEuler.h"
 #include "FMICVode.h"

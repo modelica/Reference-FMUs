@@ -1,5 +1,5 @@
-#include "fmusim_fmi1_cs.h"
-
+#include "FMI1.h"
+#include "FMI1CSSimulation.h"
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
