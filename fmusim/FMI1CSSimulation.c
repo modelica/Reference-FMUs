@@ -1,10 +1,10 @@
-#include "fmusim_fmi1_cs.h"
-
+#include "FMI1.h"
+#include "FMI1CSSimulation.h"
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMIStatus simulateFMI1CS(
+FMIStatus FMI1CSSimulate(
     FMIInstance* S,
     const FMIModelDescription* modelDescription,
     const char* fmuLocation,
@@ -26,7 +26,7 @@ FMIStatus simulateFMI1CS(
     ));
 
     // set start values
-    CALL(applyStartValues(S, settings));
+    CALL(FMIApplyStartValues(S, settings));
     CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
 
     // initialize

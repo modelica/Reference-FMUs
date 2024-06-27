@@ -2,14 +2,14 @@
 #include <math.h>
 
 #include "FMIUtil.h"
-
-#include "fmusim_fmi2_me.h"
+#include "FMI2.h"
+#include "FMI2MESimulation.h"
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMIStatus simulateFMI2ME(
+FMIStatus FMI2MESimulate(
     FMIInstance* S, 
     const FMIModelDescription* modelDescription, 
     const char* resourceURI,
@@ -60,7 +60,7 @@ FMIStatus simulateFMI2ME(
         CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
     }
 
-    CALL(applyStartValues(S, settings));
+    CALL(FMIApplyStartValues(S, settings));
 
     if (!settings->initialFMUStateFile) {
 

@@ -1,16 +1,12 @@
 #pragma once
 
-#include "FMI2.h"
-#include "FMIModelDescription.h"
-#include "FMIRecorder.h"
-#include "fmusim_input.h"
-#include "fmusim.h"
+#include "FMISimulation.h"
 
 
-FMIStatus simulateFMI2CS(
+FMIStatus FMI3CSSimulate(
     FMIInstance* S, 
     const FMIModelDescription* modelDescription,
-    const char* resourceURI,
+    const char* resourcePath,
     FMIRecorder* result,
     const FMUStaticInput* input,
     const FMISimulationSettings* settings);

@@ -2,10 +2,14 @@
 
 #include "FMIModelDescription.h"
 #include "FMISolver.h"
+#include "FMIRecorder.h"
+#include "FMISimulationInput.h"
+
 
 typedef struct {
 
     // Common
+    FMIInterfaceType interfaceType;
     size_t nStartValues;
     const FMIModelVariable** startVariables;
     const char** startValues;
@@ -29,4 +33,12 @@ typedef struct {
 
 } FMISimulationSettings;
 
-FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings);
+FMIStatus FMIApplyStartValues(FMIInstance* S, const FMISimulationSettings* settings);
+
+FMIStatus FMISimulate(
+    FMIInstance* S,
+    const FMIModelDescription* modelDescription,
+    const char* unzipdir,
+    FMIRecorder* recorder,
+    const FMUStaticInput* input,
+    const FMISimulationSettings* settings);

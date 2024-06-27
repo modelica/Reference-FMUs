@@ -56,20 +56,21 @@ set(sources
   fmi1schema.h
   fmi2schema.h
   fmi3schema.h
-  fmusim.h
+  FMISimulation.h
+  FMISimulation.c
+  FMI1CSSimulation.h
+  FMI1CSSimulation.c
+  FMI1MESimulation.h
+  FMI1MESimulation.c
+  FMI2CSSimulation.h
+  FMI2CSSimulation.c
+  FMI2MESimulation.h
+  FMI2MESimulation.c
+  FMI3CSSimulation.h
+  FMI3CSSimulation.c
+  FMI3MESimulation.h
+  FMI3MESimulation.c
   fmusim.c
-  fmusim_fmi1_cs.h
-  fmusim_fmi1_cs.c
-  fmusim_fmi1_me.h
-  fmusim_fmi1_me.c
-  fmusim_fmi2_cs.h
-  fmusim_fmi2_cs.c
-  fmusim_fmi2_me.h
-  fmusim_fmi2_me.c
-  fmusim_fmi3_cs.h
-  fmusim_fmi3_cs.c
-  fmusim_fmi3_me.h
-  fmusim_fmi3_me.c
   fmusim_input.h
   fmusim_input.c
   miniunzip.c

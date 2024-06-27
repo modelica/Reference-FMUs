@@ -14,21 +14,12 @@
 
 #include <errno.h>
 
-#include "FMI3.h"
 #include "FMIZip.h"
 #include "FMIModelDescription.h"
 #include "FMIRecorder.h"
 #include "FMIUtil.h"
 
-#include "fmusim.h"
-#include "fmusim_fmi1_cs.h"
-#include "fmusim_fmi1_me.h"
-#include "fmusim_fmi2_cs.h"
-#include "fmusim_fmi2_me.h"
-#include "fmusim_fmi3_cs.h"
-#include "fmusim_fmi3_me.h"
-
-#include "fmusim_input.h"
+#include "FMISimulation.h"
 
 #include "FMIEuler.h"
 #include "FMICVode.h"
@@ -129,86 +120,6 @@ void printUsage() {
         "\n"
         "  " PROGNAME " BouncingBall.fmu  simulate with the default settings\n"
     );
-}
-
-FMIStatus applyStartValues(FMIInstance* S, const FMISimulationSettings* settings) {
-
-    FMIStatus status = FMIOK;
-
-    size_t nValues = 0;
-    void* values = NULL;
-
-    bool configurationMode = false;
-
-    for (size_t i = 0; i < settings->nStartValues; i++) {
-
-        const FMIModelVariable* variable = settings->startVariables[i];
-        const FMICausality causality = variable->causality;
-        const FMIValueReference vr = variable->valueReference;
-        const FMIVariableType type = variable->type;
-        const char* literal = settings->startValues[i];
-
-        if (causality == FMIStructuralParameter && type == FMIUInt64Type) {
-
-            CALL(FMIParseValues(FMIMajorVersion3, type, literal, &nValues, &values));
-
-            if (!configurationMode) {
-                CALL(FMI3EnterConfigurationMode(S));
-                configurationMode = true;
-            }
-
-            CALL(FMI3SetUInt64(S, &vr, 1, (fmi3UInt64*)values, nValues));
-
-            free(values);
-            values = NULL;
-        }
-    }
-
-    if (configurationMode) {
-        CALL(FMI3ExitConfigurationMode(S));
-    }
-
-    for (size_t i = 0; i < settings->nStartValues; i++) {
-
-        const FMIModelVariable* variable = settings->startVariables[i];
-        const FMICausality causality = variable->causality;
-        const FMIValueReference vr = variable->valueReference;
-        const FMIVariableType type = variable->type;
-        const char* literal = settings->startValues[i];
-
-        if (causality == FMIStructuralParameter) {
-            continue;
-        }
-
-        CALL(FMIParseValues(S->fmiMajorVersion, type, literal, &nValues, &values));
-
-
-        if (variable->type == FMIBinaryType) {
-
-            const size_t size = strlen(literal) / 2;
-            CALL(FMI3SetBinary(S, &vr, 1, &size, values, 1));
-        
-        } else {
-
-            if (S->fmiMajorVersion == FMIMajorVersion1) {
-                CALL(FMI1SetValues(S, type, &vr, 1, values));
-            } else if (S->fmiMajorVersion == FMIMajorVersion2) {
-                CALL(FMI2SetValues(S, type, &vr, 1, values));
-            } else if (S->fmiMajorVersion == FMIMajorVersion3) {
-                CALL(FMI3SetValues(S, type, &vr, 1, values, nValues));
-            }
-        }
-
-        free(values);
-        values = NULL;
-    }
-
-TERMINATE:
-    if (values) {
-        free(values);
-    }
-
-    return status;
 }
 
 int main(int argc, const char* argv[]) {
@@ -476,14 +387,6 @@ int main(int argc, const char* argv[]) {
         status = FMIError;
         goto TERMINATE;
     }
-
-    char resourcePath[FMI_PATH_MAX] = "";
-
-#ifdef _WIN32
-    snprintf(resourcePath, FMI_PATH_MAX, "%s\\resources\\", unzipdir);
-#else
-    snprintf(resourcePath, FMI_PATH_MAX, "%s/resources/", unzipdir);
-#endif
     
     if (inputFile) {
         input = FMIReadInput(modelDescription, inputFile);
@@ -523,6 +426,7 @@ int main(int argc, const char* argv[]) {
 
     FMISimulationSettings settings;
 
+    settings.interfaceType            = interfaceType;
     settings.tolerance                = tolerance;
     settings.nStartValues             = nStartValues;
     settings.startVariables           = (const FMIModelVariable**)startVariables;
@@ -552,38 +456,7 @@ int main(int argc, const char* argv[]) {
         goto TERMINATE;
     }
 
-    if (modelDescription->fmiMajorVersion == FMIMajorVersion1) {
-
-        if (interfaceType == FMICoSimulation) {
-
-            char fmuLocation[FMI_PATH_MAX] = "";
-            CALL(FMIPathToURI(unzipdir, fmuLocation, FMI_PATH_MAX));
-
-            status = simulateFMI1CS(S, modelDescription, fmuLocation, result, input, &settings);
-        } else {
-            status = simulateFMI1ME(S, modelDescription, result, input, &settings);
-        }
-
-    } else if (modelDescription->fmiMajorVersion == FMIMajorVersion2) {
-
-        char resourceURI[FMI_PATH_MAX] = "";
-        CALL(FMIPathToURI(resourcePath, resourceURI, FMI_PATH_MAX));
-
-        if (interfaceType == FMICoSimulation) {
-            status = simulateFMI2CS(S, modelDescription, resourceURI, result, input, &settings);
-        } else {
-            status = simulateFMI2ME(S, modelDescription, resourceURI, result, input, &settings);
-        }
-
-    } else {
-
-        if (interfaceType == FMICoSimulation) {
-            status = simulateFMI3CS(S, modelDescription, resourcePath, result, input, &settings);
-        } else {
-            status = simulateFMI3ME(S, modelDescription, resourcePath, result, input, &settings);
-        }
-
-    }
+    status = FMISimulate(S, modelDescription, unzipdir, result, input, &settings);
 
 TERMINATE:
 
