@@ -100,7 +100,7 @@ FMIStatus FMISimulate(
     const FMIModelDescription* modelDescription,
     const char* unzipdir,
     FMIRecorder* recorder,
-    const FMUStaticInput* input,
+    const FMIStaticInput* input,
     const FMISimulationSettings* settings) {
 
     FMIStatus status = FMIOK;

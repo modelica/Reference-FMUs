@@ -58,6 +58,8 @@ set(sources
   fmi3schema.h
   FMISimulation.h
   FMISimulation.c
+  FMIStaticInput.h
+  FMIStaticInput.c
   FMI1CSSimulation.h
   FMI1CSSimulation.c
   FMI1MESimulation.h
@@ -71,8 +73,6 @@ set(sources
   FMI3MESimulation.h
   FMI3MESimulation.c
   fmusim.c
-  fmusim_input.h
-  fmusim_input.c
   miniunzip.c
   ${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c
   ${ZLIB_SRC_DIR}/contrib/minizip/unzip.c

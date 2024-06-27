@@ -6,19 +6,19 @@
 #include "FMI2.h"
 #include "FMI3.h"
 #include "FMIUtil.h"
-#include "FMISimulationInput.h"
+#include "FMIStaticInput.h"
 
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMUStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const char* filename) {
+FMIStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const char* filename) {
 
 	FMIStatus status = FMIOK;
 
-	FMUStaticInput* input = NULL;
+	FMIStaticInput* input = NULL;
 
-	CALL(FMICalloc((void**)&input, 1, sizeof(FMUStaticInput)));
+	CALL(FMICalloc((void**)&input, 1, sizeof(FMIStaticInput)));
 	
 	input->fmiMajorVersion = modelDescription->fmiMajorVersion;
 
@@ -102,7 +102,7 @@ TERMINATE:
 	return NULL;
 }
 
-void FMIFreeInput(FMUStaticInput* input) {
+void FMIFreeInput(FMIStaticInput* input) {
 
 	if (!input) {
 		return;
@@ -178,7 +178,7 @@ static size_t FMISizeOf(FMIVariableType type, FMIMajorVersion fmiMajorVersion) {
 
 }
 
-double FMINextInputEvent(const FMUStaticInput* input, double time) {
+double FMINextInputEvent(const FMIStaticInput* input, double time) {
 
 	if (!input) {
 		return INFINITY;
@@ -221,7 +221,7 @@ double FMINextInputEvent(const FMUStaticInput* input, double time) {
 	return INFINITY;
 }
 
-FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, double time, bool discrete, bool continuous, bool afterEvent) {
+FMIStatus FMIApplyInput(FMIInstance* instance, const FMIStaticInput* input, double time, bool discrete, bool continuous, bool afterEvent) {
 
 	FMIStatus status = FMIOK;
 
@@ -274,7 +274,7 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMUStaticInput* input, doub
 			if (input->bufferSize < requiredBufferSize) {
 				// TODO: allocate in FMIReadInput()
 				CALL(FMIRealloc((void**)&input->buffer, requiredBufferSize));
-				((FMUStaticInput*)input)->bufferSize = requiredBufferSize;
+				((FMIStaticInput*)input)->bufferSize = requiredBufferSize;
 			}
 
 			if (variable->type == FMIFloat32Type) {

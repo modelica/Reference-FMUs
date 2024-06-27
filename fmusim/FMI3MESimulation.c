@@ -14,7 +14,7 @@ FMIStatus FMI3MESimulate(
     const FMIModelDescription* modelDescription, 
     const char* resourcePath,
     FMIRecorder* result,
-    const FMUStaticInput * input,
+    const FMIStaticInput * input,
     const FMISimulationSettings * settings) {
 
     const bool needsCompletedIntegratorStep = modelDescription->modelExchange->needsCompletedIntegratorStep;

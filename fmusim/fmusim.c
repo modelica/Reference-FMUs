@@ -150,7 +150,7 @@ int main(int argc, const char* argv[]) {
 
     FMIModelDescription* modelDescription = NULL;
     FMIInstance* S = NULL;
-    FMUStaticInput* input = NULL;
+    FMIStaticInput* input = NULL;
     FMIRecorder* result = NULL;
     const char* unzipdir = NULL;
     FMIStatus status = FMIFatal;
