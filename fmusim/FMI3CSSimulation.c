@@ -30,7 +30,7 @@ static void recordIntermediateValues(
     *earlyReturnRequested = fmi3False;
 }
 
-FMIStatus simulateFMI3CS(FMIInstance* S,
+FMIStatus FMI3CSSimulate(FMIInstance* S,
     const FMIModelDescription * modelDescription,
     const char* resourcePath,
     FMIRecorder* recorder,

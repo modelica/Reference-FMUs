@@ -8,7 +8,7 @@
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMIStatus simulateFMI1ME(
+FMIStatus FMI1MESimulate(
     FMIInstance* S, 
     const FMIModelDescription* modelDescription, 
     FMIRecorder* result,

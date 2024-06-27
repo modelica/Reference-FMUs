@@ -4,7 +4,7 @@
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMIStatus simulateFMI1CS(
+FMIStatus FMI1CSSimulate(
     FMIInstance* S,
     const FMIModelDescription* modelDescription,
     const char* fmuLocation,

@@ -118,9 +118,9 @@ FMIStatus FMISimulate(
         if (settings->interfaceType == FMICoSimulation) {
             char fmuLocation[FMI_PATH_MAX] = "";
             CALL(FMIPathToURI(unzipdir, fmuLocation, FMI_PATH_MAX));
-            CALL(simulateFMI1CS(S, modelDescription, fmuLocation, recorder, input, settings));
+            CALL(FMI1CSSimulate(S, modelDescription, fmuLocation, recorder, input, settings));
         } else {
-            CALL(simulateFMI1ME(S, modelDescription, recorder, input, settings));
+            CALL(FMI1MESimulate(S, modelDescription, recorder, input, settings));
         }
 
     } else if (modelDescription->fmiMajorVersion == FMIMajorVersion2) {
@@ -129,17 +129,17 @@ FMIStatus FMISimulate(
         CALL(FMIPathToURI(resourcePath, resourceURI, FMI_PATH_MAX));
 
         if (settings->interfaceType == FMICoSimulation) {
-            CALL(simulateFMI2CS(S, modelDescription, resourceURI, recorder, input, settings));
+            CALL(FMI2CSSimulate(S, modelDescription, resourceURI, recorder, input, settings));
         } else {
-            CALL(simulateFMI2ME(S, modelDescription, resourceURI, recorder, input, settings));
+            CALL(FMI2MESimulate(S, modelDescription, resourceURI, recorder, input, settings));
         }
 
     } else {
 
         if (settings->interfaceType == FMICoSimulation) {
-            CALL(simulateFMI3CS(S, modelDescription, resourcePath, recorder, input, settings));
+            CALL(FMI3CSSimulate(S, modelDescription, resourcePath, recorder, input, settings));
         } else {
-            CALL(simulateFMI3ME(S, modelDescription, resourcePath, recorder, input, settings));
+            CALL(FMI3MESimulate(S, modelDescription, resourcePath, recorder, input, settings));
         }
 
     }

@@ -3,7 +3,7 @@
 #include "FMISimulation.h"
 
 
-FMIStatus simulateFMI3ME(
+FMIStatus FMI3MESimulate(
     FMIInstance* S, 
     const FMIModelDescription* modelDescription, 
     const char* resourcePath,
