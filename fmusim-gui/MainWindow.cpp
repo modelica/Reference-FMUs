@@ -148,8 +148,6 @@ void MainWindow::loadFMU(const QString &filename) {
 
     modelDescription = FMIReadModelDescription(modelDescriptionPath);
 
-    ui->FMIVersionLabel->setText(modelDescription->fmiVersion);
-
     // Loading finished. Update the GUI.
     startValues.clear();
 
@@ -160,6 +158,20 @@ void MainWindow::loadFMU(const QString &filename) {
     }
 
     variablesListModel->setModelDescription(modelDescription);
+
+    ui->FMIVersionLabel->setText(modelDescription->fmiVersion);
+
+    QStringList interfaces;
+
+    if (modelDescription->modelExchange) {
+        interfaces << "Model Exchange";
+    }
+
+    if (modelDescription->coSimulation) {
+        interfaces << "Co-Simulation";
+    }
+
+    ui->interfacesLabel->setText(interfaces.join(", "));
 
     ui->variablesLabel->setText(QString::number(modelDescription->nModelVariables));
     ui->continuousStatesLabel->setText(QString::number(modelDescription->nContinuousStates));
