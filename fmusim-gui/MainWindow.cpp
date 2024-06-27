@@ -9,9 +9,7 @@
 
 extern "C" {
 #include "FMIZip.h"
-#include "FMIUtil.h"
-#include "FMI3.h"
-#include "fmusim_fmi3_cs.h"
+#include "FMISimulation.h"
 // #include "FMICSVRecorder.h"
 //#include "FMIDemoRecorder.h"
 //#include "FMICSVRecorder.h"
@@ -289,6 +287,7 @@ void MainWindow::simulate() {
 
     FMISimulationSettings settings;
 
+    settings.interfaceType            = interfaceTypeComboBox->currentText() == "Co-Simulation" ? FMICoSimulation : FMIModelExchange;
     //settings.visible                  = false;
     //settings.loggingOn                = ui->debugLoggingCheckBox->isChecked();
     settings.tolerance                = 0;
@@ -346,7 +345,7 @@ void MainWindow::simulate() {
 
     FMIRecorder *recorder = FMICreateRecorder(0, NULL, "result.csv");
 
-    const FMIStatus status = simulateFMI3CS(S, modelDescription, NULL, recorder, input, &settings);
+    const FMIStatus status = FMISimulate(S, modelDescription, NULL, recorder, input, &settings);
 
     // size_t nRows;
     // const double* values = FMIDemoRecorderValues(settings.recorder, &nRows);

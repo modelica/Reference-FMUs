@@ -52,11 +52,23 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ../fmusim/csv.c
         ../fmusim/csv.h
 
-        ../fmusim/fmusim_input.h
-        ../fmusim/fmusim_input.c
+        ../fmusim/FMISimulationInput.h
+        ../fmusim/FMISimulationInput.c
 
-        ../fmusim/fmusim_fmi3_cs.h
-        ../fmusim/fmusim_fmi3_cs.c
+        ../fmusim/FMI1CSSimulation.h
+        ../fmusim/FMI1CSSimulation.c
+        ../fmusim/FMI1MESimulation.h
+        ../fmusim/FMI1MESimulation.c
+
+        ../fmusim/FMI2CSSimulation.h
+        ../fmusim/FMI2CSSimulation.c
+        ../fmusim/FMI2MESimulation.h
+        ../fmusim/FMI2MESimulation.c
+
+        ../fmusim/FMI3CSSimulation.h
+        ../fmusim/FMI3CSSimulation.c
+        ../fmusim/FMI3MESimulation.h
+        ../fmusim/FMI3MESimulation.c
 
         ../fmusim/FMIRecorder.h
         ../fmusim/FMIRecorder.c
