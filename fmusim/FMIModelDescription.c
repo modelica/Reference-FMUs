@@ -88,7 +88,7 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
     modelDescription->instantiationToken       = (char*)xmlGetProp(root, (xmlChar*)"guid");
     modelDescription->description              = (char*)xmlGetProp(root, (xmlChar*)"description");
     modelDescription->generationTool           = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
-    modelDescription->generationDate           = (char*)xmlGetProp(root, (xmlChar*)"generationDateAndTime");
+    modelDescription->generationDateAndTime    = (char*)xmlGetProp(root, (xmlChar*)"generationDateAndTime");
     modelDescription->variableNamingConvention = getVariableNamingConvention(root);
 
     const char* numberOfContinuousStates = (char*)xmlGetProp(root, (xmlChar*)"numberOfContinuousStates");
@@ -318,7 +318,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     modelDescription->instantiationToken       = (char*)xmlGetProp(root, (xmlChar*)"guid");
     modelDescription->description              = (char*)xmlGetProp(root, (xmlChar*)"description");
     modelDescription->generationTool           = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
-    modelDescription->generationDate           = (char*)xmlGetProp(root, (xmlChar*)"generationDate");
+    modelDescription->generationDateAndTime    = (char*)xmlGetProp(root, (xmlChar*)"generationDateAndTime");
     modelDescription->variableNamingConvention = getVariableNamingConvention(root);
 
     const char* numberOfEventIndicators = (char*)xmlGetProp(root, (xmlChar*)"numberOfEventIndicators");
@@ -616,7 +616,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
     modelDescription->instantiationToken       = (char*)xmlGetProp(root, (xmlChar*)"instantiationToken");
     modelDescription->description              = (char*)xmlGetProp(root, (xmlChar*)"description");
     modelDescription->generationTool           = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
-    modelDescription->generationDate           = (char*)xmlGetProp(root, (xmlChar*)"generationDate");
+    modelDescription->generationDateAndTime    = (char*)xmlGetProp(root, (xmlChar*)"generationDateAndTime");
     modelDescription->variableNamingConvention = getVariableNamingConvention(root);
 
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(root->doc);
@@ -1145,7 +1145,7 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
     xmlFree((void*)modelDescription->instantiationToken);
     xmlFree((void*)modelDescription->description);
     xmlFree((void*)modelDescription->generationTool);
-    xmlFree((void*)modelDescription->generationDate);
+    xmlFree((void*)modelDescription->generationDateAndTime);
 
     if (modelDescription->modelExchange) {
         xmlFree((void*)modelDescription->modelExchange->modelIdentifier);
@@ -1504,7 +1504,7 @@ void FMIDumpModelDescription(FMIModelDescription* modelDescription, FILE* file) 
     fprintf(file, "Continuous States  %zu\n", modelDescription->nContinuousStates);
     fprintf(file, "Event Indicators   %zu\n", modelDescription->nEventIndicators);
     fprintf(file, "Generation Tool    %s\n", modelDescription->generationTool ? modelDescription->generationTool : "n/a");
-    fprintf(file, "Generation Date    %s\n", modelDescription->generationDate ? modelDescription->generationDate : "n/a");
+    fprintf(file, "Generation Date    %s\n", modelDescription->generationDateAndTime ? modelDescription->generationDateAndTime : "n/a");
     fprintf(file, "\n");
     fprintf(file, "Model Variables\n");
     fprintf(file, "\n");
