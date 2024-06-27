@@ -86,10 +86,20 @@
           <property name="title">
            <string>Simulation</string>
           </property>
-          <layout class="QGridLayout" name="gridLayout_10" rowminimumheight="23,23,23,23,0">
+          <layout class="QGridLayout" name="gridLayout_10" rowminimumheight="23,23,23,23,0,0">
            <property name="horizontalSpacing">
             <number>10</number>
            </property>
+           <item row="1" column="0">
+            <widget class="QRadioButton" name="radioButton">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Output Interval</string>
+             </property>
+            </widget>
+           </item>
            <item row="1" column="1">
             <widget class="QLineEdit" name="outputIntervalLineEdit">
              <property name="enabled">
@@ -97,6 +107,20 @@
              </property>
              <property name="text">
               <string>0.01</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0" colspan="2">
+            <widget class="QCheckBox" name="logFMICallsCheckBox">
+             <property name="text">
+              <string>Log FMI Calls</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string>Start Time</string>
              </property>
             </widget>
            </item>
@@ -110,6 +134,20 @@
              </property>
             </widget>
            </item>
+           <item row="5" column="0" colspan="2">
+            <widget class="QCheckBox" name="debugLoggingCheckBox">
+             <property name="text">
+              <string>Debug Logging</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="startTimeLineEdit">
+             <property name="text">
+              <string>0.0</string>
+             </property>
+            </widget>
+           </item>
            <item row="2" column="1">
             <widget class="QLineEdit" name="maxSamplesLineEdit">
              <property name="enabled">
@@ -120,42 +158,55 @@
              </property>
             </widget>
            </item>
-           <item row="3" column="0" colspan="2">
-            <widget class="QCheckBox" name="logFMICallsCheckBox">
+           <item row="3" column="0">
+            <widget class="QCheckBox" name="inputCheckBox">
              <property name="text">
-              <string>Log FMI Calls</string>
+              <string>Input</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="0">
-            <widget class="QRadioButton" name="radioButton">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Output Interval</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0" colspan="2">
-            <widget class="QCheckBox" name="debugLoggingCheckBox">
-             <property name="text">
-              <string>Debug Logging</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_9">
-             <property name="text">
-              <string>Start Time</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QLineEdit" name="startTimeLineEdit">
-             <property name="text">
-              <string>0.0</string>
-             </property>
+           <item row="3" column="1">
+            <widget class="QWidget" name="widget" native="true">
+             <layout class="QGridLayout" name="gridLayout_11">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item row="0" column="0">
+               <widget class="QLineEdit" name="inputLineEdit">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="placeholderText">
+                 <string>Select input file</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QPushButton" name="inputPushButton">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>50</width>
+                  <height>16777215</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>...</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>
@@ -630,7 +681,7 @@
   </action>
   <action name="showSettingsAction">
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/gear.svg</normaloff>:/buttons/dark/gear.svg</iconset>
    </property>
    <property name="text">
@@ -642,7 +693,7 @@
   </action>
   <action name="showFilesAction">
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/file-earmark-zip.svg</normaloff>:/buttons/dark/file-earmark-zip.svg</iconset>
    </property>
    <property name="text">
@@ -654,7 +705,7 @@
   </action>
   <action name="showDocumentationAction">
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/book.svg</normaloff>:/buttons/dark/book.svg</iconset>
    </property>
    <property name="text">
@@ -666,7 +717,7 @@
   </action>
   <action name="showPlotAction">
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/graph.svg</normaloff>:/buttons/dark/graph.svg</iconset>
    </property>
    <property name="text">
@@ -678,7 +729,7 @@
   </action>
   <action name="openFileAction">
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/folder-open.svg</normaloff>:/buttons/dark/folder-open.svg</iconset>
    </property>
    <property name="text">
@@ -693,7 +744,7 @@
   </action>
   <action name="simulateAction">
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/play.svg</normaloff>:/buttons/dark/play.svg</iconset>
    </property>
    <property name="text">
@@ -716,7 +767,7 @@
   </action>
   <action name="showLogAction">
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/list-task.svg</normaloff>:/buttons/dark/list-task.svg</iconset>
    </property>
    <property name="text">
@@ -731,7 +782,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/side-bar.svg</normaloff>:/buttons/dark/side-bar.svg</iconset>
    </property>
    <property name="text">
@@ -750,8 +801,39 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="buttons.qrc"/>
- </resources>
- <connections/>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>inputCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>inputLineEdit</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>565</x>
+     <y>433</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>851</x>
+     <y>433</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>inputCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>inputPushButton</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>565</x>
+     <y>433</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1109</x>
+     <y>432</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

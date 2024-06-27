@@ -98,6 +98,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->treeView->hideColumn(ModelVariablesItemModel::MIN_COLUMN_INDEX);
     ui->treeView->hideColumn(ModelVariablesItemModel::MAX_COLUMN_INDEX);
 
+    connect(ui->inputPushButton, &QPushButton::clicked, this, &MainWindow::selectInputFile);
+
     // disable widgets
     ui->dockWidget->setHidden(true);
     ui->showSettingsAction->setEnabled(false);
@@ -355,6 +357,15 @@ void MainWindow::simulate() {
 
     FMIStaticInput* input = nullptr;
 
+    if (ui->inputCheckBox->isChecked()) {
+        const QString inputPath = ui->inputLineEdit->text();
+        const std::wstring  wstr  = ui->inputLineEdit->text().toStdWString();
+        input = FMIReadInput(modelDescription, (char*)wstr.c_str());
+        if (!input) {
+            ui->listWidget->addItem("Failed to load " + inputPath + ".");
+        }
+    }
+
     FMIRecorder *recorder = FMICreateRecorder(0, NULL, "result.csv");
 
     const FMIStatus status = FMISimulate(S, modelDescription, NULL, recorder, input, &settings);
@@ -519,6 +530,14 @@ void MainWindow::openFile() {
     }
 }
 
+void MainWindow::selectInputFile() {
+
+    const QString filename = QFileDialog::getOpenFileName(this, "Open File", QDir::homePath(), "CSVs (*.csv);;All Files (*.*)");
+
+    if (!filename.isEmpty()) {
+        ui->inputLineEdit->setText(filename);
+    }
+}
 
 void MainWindow::openUnzipDirectory() {
     QDesktopServices::openUrl(QUrl::fromLocalFile(unzipdir));

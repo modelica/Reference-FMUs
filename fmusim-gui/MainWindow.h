@@ -50,6 +50,7 @@ private:
 
 private slots:
     void openFile();
+    void selectInputFile();
     void openUnzipDirectory();
     void openFileInDefaultApplication(const QModelIndex &index);
     void simulate();
