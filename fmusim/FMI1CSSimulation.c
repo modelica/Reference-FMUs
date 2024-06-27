@@ -9,7 +9,7 @@ FMIStatus FMI1CSSimulate(
     const FMIModelDescription* modelDescription,
     const char* fmuLocation,
     FMIRecorder* result,
-    const FMUStaticInput * input,
+    const FMIStaticInput * input,
     const FMISimulationSettings * settings) {
 
     FMIStatus status = FMIOK;

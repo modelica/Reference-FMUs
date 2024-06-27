@@ -3,7 +3,7 @@
 #include "FMIModelDescription.h"
 #include "FMISolver.h"
 #include "FMIRecorder.h"
-#include "FMISimulationInput.h"
+#include "FMIStaticInput.h"
 
 
 typedef struct {
@@ -40,5 +40,5 @@ FMIStatus FMISimulate(
     const FMIModelDescription* modelDescription,
     const char* unzipdir,
     FMIRecorder* recorder,
-    const FMUStaticInput* input,
+    const FMIStaticInput* input,
     const FMISimulationSettings* settings);

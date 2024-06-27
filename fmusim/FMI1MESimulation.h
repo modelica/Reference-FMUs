@@ -7,5 +7,5 @@ FMIStatus FMI1MESimulate(
     FMIInstance* S,
     const FMIModelDescription* modelDescription,
     FMIRecorder* result,
-    const FMUStaticInput* input,
+    const FMIStaticInput* input,
     const FMISimulationSettings* settings);

@@ -1,4 +1,5 @@
-#include "stdlib.h"
+#include <stdlib.h>
+#include <string.h>
 
 #include "FMI3.h"
 #include "FMISimulation.h"
@@ -100,7 +101,7 @@ FMIStatus FMISimulate(
     const FMIModelDescription* modelDescription,
     const char* unzipdir,
     FMIRecorder* recorder,
-    const FMUStaticInput* input,
+    const FMIStaticInput* input,
     const FMISimulationSettings* settings) {
 
     FMIStatus status = FMIOK;

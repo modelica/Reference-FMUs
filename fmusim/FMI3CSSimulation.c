@@ -34,7 +34,7 @@ FMIStatus FMI3CSSimulate(FMIInstance* S,
     const FMIModelDescription * modelDescription,
     const char* resourcePath,
     FMIRecorder* recorder,
-    const FMUStaticInput * input,
+    const FMIStaticInput * input,
     const FMISimulationSettings * settings) {
 
     FMIStatus status = FMIOK;

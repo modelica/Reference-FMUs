@@ -177,7 +177,7 @@ void MainWindow::loadFMU(const QString &filename) {
     ui->continuousStatesLabel->setText(QString::number(modelDescription->nContinuousStates));
     ui->eventIndicatorsLabel->setText(QString::number(modelDescription->nEventIndicators));
 
-    ui->generationDateLabel->setText(modelDescription->generationDate);
+    ui->generationDateLabel->setText(modelDescription->generationDateAndTime);
     ui->generationToolLabel->setText(modelDescription->generationTool);
     ui->descriptionLabel->setText(modelDescription->description);
 
@@ -353,7 +353,7 @@ void MainWindow::simulate() {
 
     // FMIModelVariable** outputVariables = variables;
 
-    FMUStaticInput* input = nullptr;
+    FMIStaticInput* input = nullptr;
 
     FMIRecorder *recorder = FMICreateRecorder(0, NULL, "result.csv");
 

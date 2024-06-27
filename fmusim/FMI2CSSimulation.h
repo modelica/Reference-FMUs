@@ -8,5 +8,5 @@ FMIStatus FMI2CSSimulate(
     const FMIModelDescription* modelDescription,
     const char* resourceURI,
     FMIRecorder* result,
-    const FMUStaticInput* input,
+    const FMIStaticInput* input,
     const FMISimulationSettings* settings);
