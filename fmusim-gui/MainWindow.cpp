@@ -342,11 +342,11 @@ void MainWindow::simulate() {
 
     // FMIModelVariable** outputVariables = variables;
 
-    //FMIRecorder *recorder = FMICreateRecorder(0, NULL, "BouncingBall_out.csv");
-    //settings.recorder = FMICSVRecorderCreate(S, nOutputVariables, outputVariables, "dummy.csv");
-    //settings.sample = FMICSVRecorderSample;
+    FMUStaticInput* input = nullptr;
 
-    //const FMIStatus status = simulateFMI3CS(S, modelDescription, NULL, &settings);
+    FMIRecorder *recorder = FMICreateRecorder(0, NULL, "result.csv");
+
+    const FMIStatus status = simulateFMI3CS(S, modelDescription, NULL, recorder, input, &settings);
 
     // size_t nRows;
     // const double* values = FMIDemoRecorderValues(settings.recorder, &nRows);

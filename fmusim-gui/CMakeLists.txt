@@ -52,10 +52,18 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ../fmusim/csv.c
         ../fmusim/csv.h
 
+        ../fmusim/fmusim_input.h
+        ../fmusim/fmusim_input.c
+
+        ../fmusim/fmusim_fmi3_cs.h
+        ../fmusim/fmusim_fmi3_cs.c
+
         ../fmusim/FMIRecorder.h
         ../fmusim/FMIRecorder.c
 
-        ../fmusim/fmusim.h
+        ../fmusim/FMISimulation.h
+        ../fmusim/FMISimulation.c
+
         buttons.qrc
         plot.qrc
         icons/variables/variables.qrc

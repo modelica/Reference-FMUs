@@ -26,7 +26,7 @@ FMIStatus simulateFMI1CS(
     ));
 
     // set start values
-    CALL(applyStartValues(S, settings));
+    CALL(FMIApplyStartValues(S, settings));
     CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
 
     // initialize

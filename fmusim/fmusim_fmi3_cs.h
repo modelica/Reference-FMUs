@@ -4,7 +4,7 @@
 #include "FMIModelDescription.h"
 #include "FMIRecorder.h"
 #include "fmusim_input.h"
-#include "fmusim.h"
+#include "FMISimulation.h"
 
 
 FMIStatus simulateFMI3CS(

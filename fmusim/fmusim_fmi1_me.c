@@ -48,7 +48,7 @@ FMIStatus simulateFMI1ME(
     ));
 
     // set start values
-    CALL(applyStartValues(S, settings));
+    CALL(FMIApplyStartValues(S, settings));
 
     CALL(FMIApplyInput(S, input, time,
         true,  // discrete

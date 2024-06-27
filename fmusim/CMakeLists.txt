@@ -56,7 +56,8 @@ set(sources
   fmi1schema.h
   fmi2schema.h
   fmi3schema.h
-  fmusim.h
+  FMISimulation.h
+  FMISimulation.c
   fmusim.c
   fmusim_fmi1_cs.h
   fmusim_fmi1_cs.c
