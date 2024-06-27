@@ -134,8 +134,8 @@
 #define fmiVersion "1.0"
 
 /* Inquire version numbers of header files */
-   DllExport const char* fmiGetModelTypesPlatform();
-   DllExport const char* fmiGetVersion();
+   DllExport const char* fmiGetModelTypesPlatform(void);
+   DllExport const char* fmiGetVersion(void);
 
 /* make sure all compiler use the same alignment policies for structures */
 #ifdef WIN32
