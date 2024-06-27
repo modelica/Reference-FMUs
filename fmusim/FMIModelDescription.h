@@ -163,7 +163,7 @@ typedef struct {
     const char* instantiationToken;
     const char* description;
     const char* generationTool;
-    const char* generationDate;
+    const char* generationDateAndTime;
     FMIVariableNamingConvention variableNamingConvention;
 
     FMIModelExchangeInterface* modelExchange;
