@@ -52,8 +52,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ../fmusim/csv.c
         ../fmusim/csv.h
 
-        ../fmusim/FMISimulationInput.h
-        ../fmusim/FMISimulationInput.c
+        ../fmusim/FMIStaticInput.h
+        ../fmusim/FMIStaticInput.c
 
         ../fmusim/FMI1CSSimulation.h
         ../fmusim/FMI1CSSimulation.c
