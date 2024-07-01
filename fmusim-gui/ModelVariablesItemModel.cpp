@@ -19,6 +19,13 @@ void ModelVariablesItemModel::setStartValues(QMap<const FMIModelVariable*, QStri
     endResetModel();
 }
 
+void ModelVariablesItemModel::setPlotVariables(QList<const FMIModelVariable*> *plotVariables) {
+    beginResetModel();
+    this->plotVariables = plotVariables;
+    endResetModel();
+}
+
+
 QModelIndex ModelVariablesItemModel::index(int row, int column, const QModelIndex &parent) const {
     FMIModelVariable* variable = &modelDescription->modelVariables[row];
     return createIndex(row, column, variable);
@@ -172,6 +179,11 @@ QVariant ModelVariablesItemModel::data(const QModelIndex &index, int role) const
             return font;
         }
         break;
+    case Qt::CheckStateRole:
+        if (index.column() == PLOT_COLUMN_INDEX) {
+            return (plotVariables && plotVariables->contains(variable)) ? Qt::Checked : Qt::Unchecked;
+        }
+        break;
     default:
         break;
     }
@@ -196,6 +208,16 @@ bool ModelVariablesItemModel::setData(const QModelIndex &index, const QVariant &
         }
 
         return true;
+
+    } else if (index.column() == PLOT_COLUMN_INDEX && role == Qt::CheckStateRole) {
+
+        if (value == Qt::Checked) {
+            emit plotVariableSelected(variable);
+        } else {
+            emit plotVariableDeselected(variable);
+        }
+
+        return true;
     }
 
     return false;
@@ -205,7 +227,7 @@ QVariant ModelVariablesItemModel::headerData(int section, Qt::Orientation orient
 
     Q_ASSERT(section < NUMBER_OF_COLUMNS);
 
-    const char* columnNames[] = {"Name", "Type", "Dimensions", "Value Reference", "Initial", "Causality", "Variabitliy", "Start", "Nominal", "Min", "Max", "Unit", "Description"};
+    const char* columnNames[] = {"Name", "Type", "Dimensions", "Value Reference", "Initial", "Causality", "Variabitliy", "Start", "Nominal", "Min", "Max", "Unit", "Plot", "Description"};
 
     switch (role) {
     case Qt::DisplayRole:
@@ -223,6 +245,8 @@ Qt::ItemFlags ModelVariablesItemModel::flags(const QModelIndex &index) const {
 
     if (index.column() == START_COLUMN_INDEX && startValues) {
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
+    } else if (index.column() == PLOT_COLUMN_INDEX) {
+        return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable;
     } else {
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
     }

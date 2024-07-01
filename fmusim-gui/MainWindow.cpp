@@ -77,6 +77,9 @@ MainWindow::MainWindow(QWidget *parent)
     variablesListModel = new ModelVariablesItemModel(this);
     variablesListModel->setStartValues(&startValues);
 
+    connect(variablesListModel, &ModelVariablesItemModel::plotVariableSelected, this, &MainWindow::addPlotVariable);
+    connect(variablesListModel, &ModelVariablesItemModel::plotVariableDeselected, this, &MainWindow::removePlotVariable);
+
     ui->treeView->setModel(variablesListModel);
 
     // ui->treeView->setColumnWidth(0, ModelVariablesItemModel::NAME_COLUMN_DEFAULT_WIDTH);
@@ -153,6 +156,17 @@ void MainWindow::loadFMU(const QString &filename) {
     // Loading finished. Update the GUI.
     startValues.clear();
 
+    plotVariables.clear();
+
+    for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+
+        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+
+        if (variable->causality == FMIOutput) {
+            plotVariables << variable;
+        }
+    }
+
     setWindowTitle("FMUSim GUI - " + filename);
 
     if (modelDescription->defaultExperiment && modelDescription->defaultExperiment->stopTime) {
@@ -160,6 +174,7 @@ void MainWindow::loadFMU(const QString &filename) {
     }
 
     variablesListModel->setModelDescription(modelDescription);
+    variablesListModel->setPlotVariables(&plotVariables);
 
     ui->FMIVersionLabel->setText(modelDescription->fmiVersion);
 
@@ -347,13 +362,25 @@ void MainWindow::simulate() {
 
     FMILoadPlatformBinary(S, platformBinaryPath);
 
-    size_t nOutputVariables = 2;
+    QList<FMIModelVariable*> recordedVariables;
 
-    FMIModelVariable* outputVariables[2];
-    outputVariables[0] = &modelDescription->modelVariables[1];
-    outputVariables[1] = &modelDescription->modelVariables[3];
+    for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-    // FMIModelVariable** outputVariables = variables;
+        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+
+        if (variable->variability == FMITunable || variable->variability == FMIContinuous || variable->variability == FMIDiscrete) {
+            recordedVariables << variable;
+        }
+
+    }
+
+    // size_t nOutputVariables = 2;
+
+    // FMIModelVariable* outputVariables[2];
+    // outputVariables[0] = &modelDescription->modelVariables[1];
+    // outputVariables[1] = &modelDescription->modelVariables[3];
+
+    //const FMIModelVariable** outputVariables2 = outputVariables;
 
     FMIStaticInput* input = nullptr;
 
@@ -366,159 +393,11 @@ void MainWindow::simulate() {
         }
     }
 
-    FMIRecorder *recorder = FMICreateRecorder(0, NULL, "result.csv");
+    recorder = FMICreateRecorder(S, recordedVariables.size(), (const FMIModelVariable**)recordedVariables.data(), "result.csv");
 
     const FMIStatus status = FMISimulate(S, modelDescription, NULL, recorder, input, &settings);
 
-    // size_t nRows;
-    // const double* values = FMIDemoRecorderValues(settings.recorder, &nRows);
-
-    // QString x;
-    // QString y;
-
-    // for (size_t i = 0; i < nRows; i++) {
-
-    //     if (i > 0) {
-    //         x += ", ";
-    //         y += ", ";
-    //     }
-
-    //     x += QString::number(values[2 * i]);
-    //     y += QString::number(values[2 * i + 1]);
-    // }
-
-    //FMIRecorder* recorder = settings.recorder;
-
-    // for (size_t i = 0; i < recorder->nRows; i++) {
-
-    //     Row* row = recorder->rows[i];
-
-    //     if (i > 0) {
-    //         x += ", ";
-    //         y += ", ";
-    //     }
-
-    //     x += QString::number(row->time);
-    //     y += QString::number(row->float64Values[0]);
-    // }
-
-
-
-    // ui->plotWebEngineView->page()->runJavaScript("Plotly.newPlot('gd', { 'data': [{ 'y': [" + y + "] }], 'layout': { 'autosize': true }, 'config': { 'responsive': true, 'theme': 'ggplot2' } })");
-    // ui->plotWebEngineView->page()->runJavaScript("Plotly.newPlot('gd', { 'data': [{ 'x': [" + x + "], 'y': [" + y + "] }] })");
-    // ui->plotWebEngineView->page()->runJavaScript("Plotly.newPlot('gd', { 'data': [{ 'x': [" + x + "], 'y': [" + y + "] }], 'layout': { 'width': 600, 'height': 400} } })");
-
-    // QString data;
-    // data += "var data = [";
-
-    // for (size_t i = 0; i < recorder->nVariables; i++) {
-
-    //     const FMIModelVariable* variable = recorder->variables[i];
-
-    //     //data += "  {x: [" + x + "], y: [" + y + "], type: 'scatter'},";
-    //     //data += "  {x: [" + x + "], y: [" + y + "], type: 'scatter', xaxis: 'x2', yaxis: 'y2'}";
-
-    //     QString x;
-    //     QString y;
-
-    //     for (size_t j = 0; j < recorder->nRows; j++) {
-
-    //         Row* row = recorder->rows[j];
-
-    //         if (j > 0) {
-    //             x += ", ";
-    //             y += ", ";
-    //         }
-
-    //         x += QString::number(row->time);
-    //         y += QString::number(row->float64Values[i]);
-    //     }
-
-    //     if (i > 0) {
-    //         data += ", ";
-    //     }
-
-    //     data += "{x: [" + x + "], y: [" + y + "], type: 'scatter', name: '" + variable->name + "'";
-
-    //     if (i > 0) {
-    //         const QString plotIndex = QString::number(i + 1);
-    //         data += ", xaxis: 'x" + plotIndex + "', yaxis: 'y" + plotIndex + "'";
-    //     }
-
-    //     data += "}";
-    // }
-
-    // data += "];";
-
-    // QString axes;
-
-    // for (size_t i = 0; i < recorder->nVariables; i++) {
-
-    //     const FMIModelVariable* variable = recorder->variables[i];
-
-    //     const QString name = QString::fromUtf8(variable->name);
-    //     const QString colors = "color: '#fff', zerolinecolor: '#666'";
-
-    //     const double segment = 1.0 / recorder->nVariables;
-    //     const double margin = 0.02;
-
-    //     const QString domain = "[" + QString::number(i * segment + (i == 0 ? 0.0 : margin)) + ", " + QString::number((i + 1) * segment - (i == recorder->nVariables ? 0.0 : margin)) + "]";
-
-    //     if (i == 0) {
-    //         axes += "xaxis: {" + colors + ", matches: 'x" + QString::number(recorder->nVariables) + "'},";
-    //         axes += "yaxis: {title: '" + name + "', " + colors + ", domain: " + domain + "},";
-    //     } else {
-    //         axes += "xaxis2: {" + colors + "},";
-    //         axes += "yaxis2: {title: '" + name + "', " + colors + ", domain: " + domain + "},";
-    //     }
-    // }
-
-    // qDebug() << axes;
-
-    /*
-    var trace1 = {
-        x: [0, 1, 2, 3],
-        y: [0, 4, 5, 6],
-        type: 'scatter',
-        name: 'height [m]'
-    };
-
-    var trace2 = {
-        ygap: 0,
-        x: [0, 1, 2, 3],
-        y: [50, 60, 70, -10],
-        xaxis: 'x2',
-        yaxis: 'y2',
-        type: 'scatter',
-        name: 'velocity [m/s]'
-    };
-
-    var data = [trace1, trace2];
-    */
-
-    // QString javaScript =
-    //     data +
-    // "    var layout = {"
-    // "    showlegend: false,"
-    // "    autosize: true,"
-    // "    font_color: '#0ff',"
-    // "    plot_bgcolor: '#1e1e1e',"
-    // "    paper_bgcolor: '#1e1e1e',"
-    // "    grid: {rows: 2, columns: 1, pattern: 'independent'},"
-    // "    template: 'plotly_dark'," + axes +
-    // // "    xaxis: {color: '#fff', zerolinecolor: '#666', matches: 'x2', showticklabels: true},"
-    // // "    yaxis: {title: 'height [m]', color: '#fff', zerolinecolor: '#666', domain: [0.52, 1.0]},"
-    // // "    xaxis2: {color: '#fff', zerolinecolor: '#666', range: [-0.05, 3.05]},"
-    // // "    yaxis2: {title: 'velocity [m/s]', color: '#fff', zerolinecolor: '#666', domain: [0.0, 0.48]},"
-    // "    color: '#0f0',"
-    // "    margin: { l: 60, r: 20, b: 30, t: 20, pad: 0 }"
-    // "};"
-    // "var config = {"
-    // "    'responsive': true"
-    // "};"
-    // "Plotly.newPlot('gd', data, layout, config);";
-
-    // ui->plotWebEngineView->page()->runJavaScript(javaScript);
+    updatePlot();
 }
 
 void MainWindow::openFile() {
@@ -546,4 +425,123 @@ void MainWindow::openUnzipDirectory() {
 void MainWindow::openFileInDefaultApplication(const QModelIndex &index) {
     const QString path = filesModel.filePath(index);
     QDesktopServices::openUrl(QUrl(path));
+}
+
+void MainWindow::updatePlot() {
+
+    if (!recorder) {
+        return;
+    }
+
+    QString data;
+    data += "var data = [\n";
+
+    size_t k = 0;
+
+    for (size_t i = 0; i < recorder->nVariables; i++) {
+
+        const FMIModelVariable* variable = recorder->variables[i];
+
+        if (!plotVariables.contains(variable)) {
+            continue;
+        }
+
+        QString x;
+        QString y;
+
+        for (size_t j = 0; j < recorder->nRows; j++) {
+
+            Row* row = recorder->rows[j];
+
+            if (j > 0) {
+                x += ", ";
+                y += ", ";
+            }
+
+            x += QString::number(row->time);
+            y += QString::number(row->float64Values[i]);
+        }
+
+        if (k > 0) {
+            data += ", ";
+        }
+
+        data += "{x: [" + x + "], y: [" + y + "], type: 'scatter', name: '', line: {color: '#248BD2', width: 1.5 }";
+
+        if (k > 0) {
+            const QString plotIndex = QString::number(k + 1);
+            data += ", xaxis: 'x" + plotIndex + "', yaxis: 'y" + plotIndex + "'";
+        }
+
+        data += "}\n";
+
+        k++;
+    }
+
+    data += "];\n";
+
+    QString axes;
+
+    k = 0;
+
+    for (size_t i = 0; i < recorder->nVariables; i++) {
+
+        const FMIModelVariable* variable = recorder->variables[i];
+
+        if (!plotVariables.contains(variable)) {
+            continue;
+        }
+
+        const QString name = QString::fromUtf8(variable->name);
+        const QString colors = "color: '#fff', zerolinecolor: '#666'";
+
+        const double segment = 1.0 / plotVariables.size();
+        const double margin = 0.02;
+
+        const QString domain = "[" + QString::number(k * segment + (k == 0 ? 0.0 : margin)) + ", " + QString::number((k + 1) * segment - (k == recorder->nVariables ? 0.0 : margin)) + "]";
+
+        if (k == 0) {
+            axes += "xaxis: {" + colors + "},";
+            axes += "yaxis: {title: '" + name + "', " + colors + ", domain: " + domain + "},";
+        } else {
+            axes += "xaxis" + QString::number(k + 1) +  ": {" + colors + ", matches: 'x'},";
+            axes += "yaxis" + QString::number(k + 1) +  ": {title: '" + name + "', " + colors + ", domain: " + domain + "},";
+        }
+
+        k++;
+    }
+
+    QString javaScript =
+        data +
+        "    var layout = {"
+        "    showlegend: false,"
+        "    autosize: true,"
+        "    font: {family: 'Segoe UI', size: 12},"
+        "    plot_bgcolor: '#1e1e1e',"
+        "    paper_bgcolor: '#1e1e1e',"
+        "    grid: {rows: " + QString::number(plotVariables.size()) + ", columns: 1, pattern: 'independent'},"
+                                                  "    template: 'plotly_dark'," + axes +
+        "    color: '#0f0',"
+        "    margin: { l: 60, r: 20, b: 20, t: 20, pad: 0 }"
+        "};"
+        "var config = {"
+        "    'responsive': true"
+        "};"
+        "Plotly.newPlot('gd', data, layout, config);";
+
+    qDebug() << javaScript;
+
+    ui->plotWebEngineView->page()->runJavaScript(javaScript);
+}
+
+void MainWindow::addPlotVariable(const FMIModelVariable* variable) {
+    plotVariables.append(variable);
+    variablesListModel->setPlotVariables(&plotVariables);
+    updatePlot();
+}
+
+void MainWindow::removePlotVariable(const FMIModelVariable* variable) {
+    plotVariables.removeAll(variable);
+    variablesListModel->setPlotVariables(&plotVariables);
+    updatePlot();
 }

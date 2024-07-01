@@ -380,7 +380,7 @@ int main(int argc, const char* argv[]) {
         outputFile = "result.csv";
     }
 
-    result = FMICreateRecorder(nOutputVariables, (const FMIModelVariable**)outputVariables, outputFile);
+    result = FMICreateRecorder(S, nOutputVariables, (const FMIModelVariable**)outputVariables, outputFile);
 
     if (!result) {
         printf("Failed to open result file %s for writing.\n", outputFile);
@@ -457,6 +457,8 @@ int main(int argc, const char* argv[]) {
     }
 
     status = FMISimulate(S, modelDescription, unzipdir, result, input, &settings);
+
+    FMIRecorderWriteCSV(result, stdout);
 
 TERMINATE:
 

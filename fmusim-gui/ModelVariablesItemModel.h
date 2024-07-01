@@ -9,8 +9,10 @@ extern "C" {
 
 class ModelVariablesItemModel : public QAbstractItemModel
 {
+    Q_OBJECT
+
 public:
-    const static int NUMBER_OF_COLUMNS = 13;
+    const static int NUMBER_OF_COLUMNS = 14;
 
     const static int NAME_COLUMN_INDEX = 0;
     const static int TYPE_COLUMN_INDEX = 1;
@@ -24,7 +26,8 @@ public:
     const static int MIN_COLUMN_INDEX = 9;
     const static int MAX_COLUMN_INDEX = 10;
     const static int UNIT_COLUMN_INDEX = 11;
-    const static int DESCRIPTION_COLUMN_INDEX = 12;
+    const static int PLOT_COLUMN_INDEX = 12;
+    const static int DESCRIPTION_COLUMN_INDEX = 13;
 
     const static int NAME_COLUMN_DEFAULT_WIDTH = 200;
     const static int START_COLUMN_DEFAULT_WIDTH = 70;
@@ -34,6 +37,8 @@ public:
     void setModelDescription(const FMIModelDescription* modelDescription);
 
     void setStartValues(QMap<const FMIModelVariable*, QString> *startValues);
+
+    void setPlotVariables(QList<const FMIModelVariable*> *plotVariables);
 
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
 
@@ -51,9 +56,14 @@ public:
 
     Qt::ItemFlags flags(const QModelIndex &index) const;
 
+signals:
+    void plotVariableSelected(const FMIModelVariable* variable);
+    void plotVariableDeselected(const FMIModelVariable* variable);
+
 protected:
     const FMIModelDescription* modelDescription = nullptr;
     QMap<const FMIModelVariable*, QString> *startValues = nullptr;
+    QList<const FMIModelVariable*> *plotVariables = nullptr;
 
 };
 

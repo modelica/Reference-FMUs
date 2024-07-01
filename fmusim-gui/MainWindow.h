@@ -16,6 +16,7 @@ QT_END_NAMESPACE
 
 extern "C" {
 #include "FMIModelDescription.h"
+struct FMIRecorder;
 }
 
 class ModelVariablesItemModel;
@@ -42,11 +43,14 @@ private:
     FMIModelDescription* modelDescription = nullptr;
     QString unzipdir;
     QMap<const FMIModelVariable*, QString> startValues;
+    QList<const FMIModelVariable*> plotVariables;
     ModelVariablesItemModel* variablesListModel = nullptr;
+    FMIRecorder* recorder = nullptr;
 
     static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message);
 
     void setCurrentPage(QWidget *page);
+    void updatePlot();
 
 private slots:
     void openFile();
@@ -54,6 +58,8 @@ private slots:
     void openUnzipDirectory();
     void openFileInDefaultApplication(const QModelIndex &index);
     void simulate();
+    void addPlotVariable(const FMIModelVariable* variable);
+    void removePlotVariable(const FMIModelVariable* variable);
 
 };
 #endif // MAINWINDOW_H
