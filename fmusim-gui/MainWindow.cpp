@@ -198,6 +198,10 @@ void MainWindow::loadFMU(const QString &filename) {
     ui->generationToolLabel->setText(modelDescription->generationTool);
     ui->descriptionLabel->setText(modelDescription->description);
 
+    if (modelDescription->defaultExperiment && modelDescription->defaultExperiment->stepSize) {
+        ui->outputIntervalLineEdit->setText(modelDescription->defaultExperiment->stepSize);
+    }
+
     filesModel.setRootPath(this->unzipdir);
 
     auto rootIndex = filesModel.index(this->unzipdir);
@@ -314,6 +318,15 @@ void MainWindow::logFunctionCall(FMIInstance* instance, FMIStatus status, const 
 
 void MainWindow::simulate() {
 
+    double stopTime = stopTimeLineEdit->text().toDouble();
+    double outputInterval;
+
+    if (ui->outputIntervalRadioButton->isChecked()) {
+        outputInterval = ui->outputIntervalLineEdit->text().toDouble();
+    } else {
+        outputInterval = stopTime / ui->maxSamplesLineEdit->text().toDouble();
+    }
+
     FMISimulationSettings settings;
 
     settings.interfaceType            = interfaceTypeComboBox->currentText() == "Co-Simulation" ? FMICoSimulation : FMIModelExchange;
@@ -324,8 +337,9 @@ void MainWindow::simulate() {
     settings.startVariables           = NULL;
     settings.startValues              = NULL;
     settings.startTime                = ui->startTimeLineEdit->text().toDouble();
-    settings.outputInterval           = 0.05;
-    settings.stopTime                 = stopTimeLineEdit->text().toDouble();
+
+    settings.outputInterval           = outputInterval;
+    settings.stopTime                 = stopTime;
     settings.earlyReturnAllowed       = false;
     settings.eventModeUsed            = false;
     settings.recordIntermediateValues = false;
