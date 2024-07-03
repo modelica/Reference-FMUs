@@ -3,12 +3,24 @@
 #include "FMIModelDescription.h"
 #include <stdio.h>
 
+#define N_VARIABLE_TYPES (FMIClockType + 1)
+
 typedef struct {
 
     double time;
-    double* float64Values;
+    void* values[N_VARIABLE_TYPES];
 
 } Row;
+
+typedef struct {
+
+    size_t nVariables;
+    size_t nValues;
+    FMIModelVariable** variables;
+    size_t* sizes;
+    FMIValueReference* valueReferences;
+
+} VariableInfo;
 
 typedef struct FMIRecorder {
 
@@ -20,12 +32,7 @@ typedef struct FMIRecorder {
     char* values;
     size_t* sizes;
 
-    // data
-    size_t nFloat64Variables;
-    size_t nFloat64Values;
-    FMIModelVariable** float64Variables;
-    size_t* float64Sizes;
-    FMIValueReference* float64ValueReferences;
+    VariableInfo* variableInfos[N_VARIABLE_TYPES];
 
     size_t nRows;
     Row** rows;
