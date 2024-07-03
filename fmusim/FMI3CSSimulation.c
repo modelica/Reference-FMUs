@@ -128,6 +128,8 @@ FMIStatus FMI3CSSimulate(FMIInstance* S,
         }
     }
 
+    CALL(FMIRecorderUpdateSizes(recorder));
+
     CALL(FMISample(S, time, recorder));
 
     size_t nSteps = 0;

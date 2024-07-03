@@ -43,6 +43,8 @@ FMIRecorder* FMICreateRecorder(FMIInstance* instance, size_t nVariables, const F
 
 void FMIFreeRecorder(FMIRecorder* result);
 
+FMIStatus FMIRecorderUpdateSizes(FMIRecorder* recorder);
+
 FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result);
 
 FMIStatus FMIRecorderWriteCSV(FMIRecorder* recorder, FILE* file);

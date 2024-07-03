@@ -84,6 +84,34 @@ void FMIFreeRecorder(FMIRecorder* result) {
     }
 }
 
+FMIStatus FMIRecorderUpdateSizes(FMIRecorder* recorder) {
+
+    FMIStatus status = FMIOK;
+
+    for (size_t i = 0; i < N_VARIABLE_TYPES; i++) {
+
+        VariableInfo* info = recorder->variableInfos[i];
+
+        if (!info) {
+            continue;
+        }
+
+        info->nValues = 0;
+
+        for (size_t j = 0; j < info->nVariables; j++) {
+            FMIModelVariable* variable = info->variables[j];
+            size_t nValues;
+            CALL(FMIGetNumberOfVariableValues(recorder->instance, variable, &nValues));
+            info->sizes[j] = nValues;
+            info->nValues += nValues;
+        }
+    }
+
+TERMINATE:
+    
+    return status;
+}
+
 static size_t FMISizeOfVariableType(FMIMajorVersion majorVersion, FMIVariableType type) {
     
     switch (type) {
@@ -618,7 +646,13 @@ FMIStatus FMIRecorderWriteCSV(FMIRecorder* recorder, FILE* file) {
                 //}
 
                 for (size_t l = 0; l < info->sizes[k]; l++) {
+
+                    if (l > 0) {
+                        fputc(' ', file);
+                    }
+                    
                     print_value(file, type, value);
+                    
                     value += size;
                 }
             }
