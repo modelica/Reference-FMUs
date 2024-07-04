@@ -9,6 +9,7 @@ typedef struct {
 
     double time;
     void* values[N_VARIABLE_TYPES];
+    size_t* sizes;
 
 } Row;
 

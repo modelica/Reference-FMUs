@@ -155,9 +155,13 @@ static size_t FMISizeOfVariableType(FMIMajorVersion majorVersion, FMIVariableTyp
             return sizeof(fmi2Boolean);
         case FMIMajorVersion3:
             return sizeof(fmi3Boolean);
-        default:
-            return 0;
         }
+
+    case FMIStringType:
+        return sizeof(fmi3String);
+
+    case FMIBinaryType:
+        return sizeof(fmi3Binary);
 
     case FMIClockType:
         return sizeof(fmi3Clock);
@@ -178,6 +182,7 @@ static FMIStatus FMI3GetValues(
     FMIVariableType type,
     const FMIValueReference valueReferences[],
     size_t nValueReferences,
+    size_t sizes[],
     void* values,
     size_t nValues) {
 
@@ -209,7 +214,7 @@ static FMIStatus FMI3GetValues(
     case FMIStringType:
         return FMI3GetString(instance, valueReferences, nValueReferences, (fmi3String*)values, nValues);
     case FMIBinaryType:
-        return FMIError;
+        return FMI3GetBinary(instance, valueReferences, nValueReferences, sizes, (fmi3Binary*)values, nValues);
     case FMIClockType:
         return FMI3GetClock(instance, valueReferences, nValueReferences, (fmi3Clock*)values);
     default:
@@ -508,6 +513,10 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder) {
             continue;
         }
 
+        if (type == FMIBinaryType) {
+            CALL(FMICalloc(&row->sizes, info->nValues, sizeof(size_t)));
+        }
+
         if (
             i != FMIFloat32Type &&
             i != FMIDiscreteFloat32Type &&
@@ -521,7 +530,8 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder) {
             i != FMIUInt32Type &&
             i != FMIInt64Type &&
             i != FMIUInt64Type &&
-            i != FMIBooleanType
+            i != FMIBooleanType &&
+            i != FMIBinaryType
             ) {
             continue;
         }
@@ -530,7 +540,16 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder) {
 
         CALL(FMICalloc(&values, info->nValues, FMISizeOfVariableType(FMIMajorVersion3, type)));
 
-        CALL(FMI3GetValues(recorder->instance, type, info->valueReferences, info->nVariables, values, info->nValues));
+        CALL(FMI3GetValues(recorder->instance, type, info->valueReferences, info->nVariables, row->sizes, values, info->nValues));
+
+        if (type == FMIBinaryType) {
+            for (size_t j = 0; j < info->nValues; j++) {
+                char* buffer = NULL;
+                CALL(FMICalloc(&buffer, row->sizes[j], sizeof(fmi3Byte)));
+                memcpy(buffer, ((void**)values)[j], row->sizes[j]);
+                ((void**)values)[j] = buffer;
+            }
+        }
 
         row->values[i] = values;
     }
@@ -545,6 +564,8 @@ TERMINATE:
 
 
 static void print_value(FILE* file, FMIVariableType type, void* value) {
+
+    size_t size = 3;
 
     if (!value) {
         fprintf(file, "NULL");
@@ -586,6 +607,24 @@ static void print_value(FILE* file, FMIVariableType type, void* value) {
         break;
     case FMIBooleanType:
         fprintf(file, "%d", *((fmi3Boolean*)value));
+        break;
+    case FMIBinaryType: {
+
+            const fmi3Binary v = *((fmi3Binary*)value);
+
+            for (size_t i = 0; i < size; i++) {
+
+                const fmi3Byte b = v[i];
+
+                const char hex[3] = {
+                    "0123456789abcdef"[b >> 4],
+                    "0123456789abcdef"[b & 0x0F],
+                    '\0'
+                };
+
+                fputs(hex, file);
+            }
+        }
         break;
     default:
         fprintf(file, "x");
