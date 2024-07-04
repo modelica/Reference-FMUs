@@ -10,6 +10,94 @@
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
+FMIStatus FMIGetValues(
+    FMIInstance* instance,
+    FMIVariableType type,
+    const FMIValueReference valueReferences[],
+    size_t nValueReferences,
+    size_t sizes[],
+    void* values,
+    size_t nValues) {
+
+    switch (instance->fmiMajorVersion) {
+
+    case FMIMajorVersion1:
+
+        switch (type) {
+        case FMIRealType:
+        case FMIDiscreteRealType:
+            return FMI1GetReal(instance, valueReferences, nValueReferences, (fmi1Real*)values);
+        case FMIIntegerType:
+            return FMI1GetInteger(instance, valueReferences, nValueReferences, (fmi1Integer*)values);
+        case FMIBooleanType:
+            return FMI1GetBoolean(instance, valueReferences, nValueReferences, (fmi1Boolean*)values);
+        case FMIStringType:
+            return FMI1GetString(instance, valueReferences, nValueReferences, (fmi1String*)values);
+        default:
+            return FMIError;
+        }
+
+        break;
+
+    case FMIMajorVersion2:
+
+        switch (type) {
+        case FMIRealType:
+        case FMIDiscreteRealType:
+            return FMI2GetReal(instance, valueReferences, nValueReferences, (fmi2Real*)values);
+        case FMIIntegerType:
+            return FMI2GetInteger(instance, valueReferences, nValueReferences, (fmi2Integer*)values);
+        case FMIBooleanType:
+            return FMI2GetBoolean(instance, valueReferences, nValueReferences, (fmi2Boolean*)values);
+        case FMIStringType:
+            return FMI2GetString(instance, valueReferences, nValueReferences, (fmi2String*)values);
+        default:
+            return FMIError;
+        }
+
+        break;
+    
+    case FMIMajorVersion3:
+
+        switch (type) {
+        case FMIFloat32Type:
+        case FMIDiscreteFloat32Type:
+            return FMI3GetFloat32(instance, valueReferences, nValueReferences, (fmi3Float32*)values, nValues);
+        case FMIFloat64Type:
+        case FMIDiscreteFloat64Type:
+            return FMI3GetFloat64(instance, valueReferences, nValueReferences, (fmi3Float64*)values, nValues);
+        case FMIInt8Type:
+            return FMI3GetInt8(instance, valueReferences, nValueReferences, (fmi3Int8*)values, nValues);
+        case FMIUInt8Type:
+            return FMI3GetUInt8(instance, valueReferences, nValueReferences, (fmi3UInt8*)values, nValues);
+        case FMIInt16Type:
+            return FMI3GetInt16(instance, valueReferences, nValueReferences, (fmi3Int16*)values, nValues);
+        case FMIUInt16Type:
+            return FMI3GetUInt16(instance, valueReferences, nValueReferences, (fmi3UInt16*)values, nValues);
+        case FMIInt32Type:
+            return FMI3GetInt32(instance, valueReferences, nValueReferences, (fmi3Int32*)values, nValues);
+        case FMIUInt32Type:
+            return FMI3GetUInt32(instance, valueReferences, nValueReferences, (fmi3UInt32*)values, nValues);
+        case FMIInt64Type:
+            return FMI3GetInt64(instance, valueReferences, nValueReferences, (fmi3Int64*)values, nValues);
+        case FMIUInt64Type:
+            return FMI3GetUInt64(instance, valueReferences, nValueReferences, (fmi3UInt64*)values, nValues);
+        case FMIBooleanType:
+            return FMI3GetBoolean(instance, valueReferences, nValueReferences, (fmi3Boolean*)values, nValues);
+        case FMIStringType:
+            return FMI3GetString(instance, valueReferences, nValueReferences, (fmi3String*)values, nValues);
+        case FMIBinaryType:
+            return FMI3GetBinary(instance, valueReferences, nValueReferences, sizes, (fmi3Binary*)values, nValues);
+        case FMIClockType:
+            return FMI3GetClock(instance, valueReferences, nValueReferences, (fmi3Clock*)values);
+        default:
+            return FMIError;
+        }
+
+        break;
+    }
+}
+
  FMIStatus FMIGetNumberOfVariableValues(
      FMIInstance* instance, 
      const FMIModelVariable* variable, 
@@ -72,93 +160,93 @@ FMIStatus FMIGetNumberOfUnkownValues(
      return status;
  }
 
-FMIStatus FMI1SetValues(
-     FMIInstance* instance,
-     FMIVariableType type,
-     const FMIValueReference valueReferences[],
-     size_t nValueReferences,
-     const void* values) {
-
-     switch (type) {
-     case FMIRealType:
-     case FMIDiscreteRealType:
-         return FMI1SetReal(instance, valueReferences, nValueReferences, (fmi1Real*)values);
-     case FMIIntegerType:
-         return FMI1SetInteger(instance, valueReferences, nValueReferences, (fmi1Integer*)values);
-     case FMIBooleanType:
-         return FMI1SetBoolean(instance, valueReferences, nValueReferences, (fmi1Boolean*)values);
-     case FMIStringType:
-         return FMI1SetString(instance, valueReferences, nValueReferences, (fmi1String*)values);
-     default:
-         return FMIError;
-     }
- }
-
-FMIStatus FMI2SetValues(
+FMIStatus FMISetValues(
     FMIInstance* instance,
     FMIVariableType type,
     const FMIValueReference valueReferences[],
     size_t nValueReferences,
-    const void* values) {
-
-    switch (type) {
-    case FMIRealType:
-    case FMIDiscreteRealType:
-        return FMI2SetReal(instance, valueReferences, nValueReferences, (fmi2Real*)values);
-    case FMIIntegerType:
-        return FMI2SetInteger(instance, valueReferences, nValueReferences, (fmi2Integer*)values);
-    case FMIBooleanType:
-        return FMI2SetBoolean(instance, valueReferences, nValueReferences, (fmi2Boolean*)values);
-    case FMIStringType:
-        return FMI2SetString(instance, valueReferences, nValueReferences, (fmi2String*)values);
-    default:
-        return FMIError;
-    }
-}
-
-FMIStatus FMI3SetValues(
-    FMIInstance* instance,
-    FMIVariableType type,
-    const FMIValueReference valueReferences[],
-    size_t nValueReferences,
+    const size_t sizes[],
     const void* values,
     size_t nValues) {
 
-    switch (type) {
-    case FMIFloat32Type:
-    case FMIDiscreteFloat32Type:
-        return FMI3SetFloat32(instance, valueReferences, nValueReferences, (fmi3Float32*)values, nValues);
-    case FMIFloat64Type:
-    case FMIDiscreteFloat64Type:
-        return FMI3SetFloat64(instance, valueReferences, nValueReferences, (fmi3Float64*)values, nValues);
-    case FMIInt8Type:
-        return FMI3SetInt8(instance, valueReferences, nValueReferences, (fmi3Int8*)values, nValues);
-    case FMIUInt8Type:
-        return FMI3SetUInt8(instance, valueReferences, nValueReferences, (fmi3UInt8*)values, nValues);
-    case FMIInt16Type:
-        return FMI3SetInt16(instance, valueReferences, nValueReferences, (fmi3Int16*)values, nValues);
-    case FMIUInt16Type:
-        return FMI3SetUInt16(instance, valueReferences, nValueReferences, (fmi3UInt16*)values, nValues);
-    case FMIInt32Type:
-        return FMI3SetInt32(instance, valueReferences, nValueReferences, (fmi3Int32*)values, nValues);
-    case FMIUInt32Type:
-        return FMI3SetUInt32(instance, valueReferences, nValueReferences, (fmi3UInt32*)values, nValues);
-    case FMIInt64Type:
-        return FMI3SetInt64(instance, valueReferences, nValueReferences, (fmi3Int64*)values, nValues);
-    case FMIUInt64Type:
-        return FMI3SetUInt64(instance, valueReferences, nValueReferences, (fmi3UInt64*)values, nValues);
-    case FMIBooleanType:
-        return FMI3SetBoolean(instance, valueReferences, nValueReferences, (fmi3Boolean*)values, nValues);
-    case FMIStringType:
-        return FMI3SetString(instance, valueReferences, nValueReferences, (fmi3String*)values, nValues);
-    case FMIBinaryType:
-        return FMIError;
-    case FMIClockType:
-        return FMI3SetClock(instance, valueReferences, nValueReferences, (fmi3Clock*)values);
-    default:
-        return FMIError;
+    switch(instance->fmiMajorVersion) {
+    case FMIMajorVersion1:
+
+        switch (type) {
+        case FMIRealType:
+        case FMIDiscreteRealType:
+            return FMI1SetReal(instance, valueReferences, nValueReferences, (fmi1Real*)values);
+        case FMIIntegerType:
+            return FMI1SetInteger(instance, valueReferences, nValueReferences, (fmi1Integer*)values);
+        case FMIBooleanType:
+            return FMI1SetBoolean(instance, valueReferences, nValueReferences, (fmi1Boolean*)values);
+        case FMIStringType:
+            return FMI1SetString(instance, valueReferences, nValueReferences, (fmi1String*)values);
+        default:
+            return FMIError;
+        }
+
+        break;
+
+    case FMIMajorVersion2:
+
+        switch (type) {
+        case FMIRealType:
+        case FMIDiscreteRealType:
+            return FMI2SetReal(instance, valueReferences, nValueReferences, (fmi2Real*)values);
+        case FMIIntegerType:
+            return FMI2SetInteger(instance, valueReferences, nValueReferences, (fmi2Integer*)values);
+        case FMIBooleanType:
+            return FMI2SetBoolean(instance, valueReferences, nValueReferences, (fmi2Boolean*)values);
+        case FMIStringType:
+            return FMI2SetString(instance, valueReferences, nValueReferences, (fmi2String*)values);
+        default:
+            return FMIError;
+        }
+
+        break;
+
+    case FMIMajorVersion3:
+
+        switch (type) {
+        case FMIFloat32Type:
+        case FMIDiscreteFloat32Type:
+            return FMI3SetFloat32(instance, valueReferences, nValueReferences, (fmi3Float32*)values, nValues);
+        case FMIFloat64Type:
+        case FMIDiscreteFloat64Type:
+            return FMI3SetFloat64(instance, valueReferences, nValueReferences, (fmi3Float64*)values, nValues);
+        case FMIInt8Type:
+            return FMI3SetInt8(instance, valueReferences, nValueReferences, (fmi3Int8*)values, nValues);
+        case FMIUInt8Type:
+            return FMI3SetUInt8(instance, valueReferences, nValueReferences, (fmi3UInt8*)values, nValues);
+        case FMIInt16Type:
+            return FMI3SetInt16(instance, valueReferences, nValueReferences, (fmi3Int16*)values, nValues);
+        case FMIUInt16Type:
+            return FMI3SetUInt16(instance, valueReferences, nValueReferences, (fmi3UInt16*)values, nValues);
+        case FMIInt32Type:
+            return FMI3SetInt32(instance, valueReferences, nValueReferences, (fmi3Int32*)values, nValues);
+        case FMIUInt32Type:
+            return FMI3SetUInt32(instance, valueReferences, nValueReferences, (fmi3UInt32*)values, nValues);
+        case FMIInt64Type:
+            return FMI3SetInt64(instance, valueReferences, nValueReferences, (fmi3Int64*)values, nValues);
+        case FMIUInt64Type:
+            return FMI3SetUInt64(instance, valueReferences, nValueReferences, (fmi3UInt64*)values, nValues);
+        case FMIBooleanType:
+            return FMI3SetBoolean(instance, valueReferences, nValueReferences, (fmi3Boolean*)values, nValues);
+        case FMIStringType:
+            return FMI3SetString(instance, valueReferences, nValueReferences, (fmi3String*)values, nValues);
+        case FMIBinaryType:
+            return FMI3SetBinary(instance, valueReferences, nValueReferences, sizes, (fmi3Binary*)values, nValues);
+        case FMIClockType:
+            return FMI3SetClock(instance, valueReferences, nValueReferences, (fmi3Clock*)values);
+        default:
+            return FMIError;
+        }
+
+        break;
     }
- }
+
+}
 
 #define PARSE_VALUES(t, f, ...) \
     while (strlen(next) > 0) { \

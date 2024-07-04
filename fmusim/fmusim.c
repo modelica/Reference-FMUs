@@ -94,7 +94,7 @@ static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char*
 void printUsage() {
     printf(
         "Usage: " PROGNAME " [OPTION]... [FMU]\n\n"
-        "Simulate a Functional Mock-up Unit and write the output to result.csv.\n"
+        "Simulate a Functional Mock-up Unit\n"
         "\n"
         "  --help                           display this help and exit\n"
         "  --version                        display the program version\n"
@@ -151,7 +151,7 @@ int main(int argc, const char* argv[]) {
     FMIModelDescription* modelDescription = NULL;
     FMIInstance* S = NULL;
     FMIStaticInput* input = NULL;
-    FMIRecorder* result = NULL;
+    FMIRecorder* recorder = NULL;
     const char* unzipdir = NULL;
     FMIStatus status = FMIFatal;
     bool earlyReturnAllowed = false;
@@ -376,13 +376,9 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    if (!outputFile) {
-        outputFile = "result.csv";
-    }
+    recorder = FMICreateRecorder(S, nOutputVariables, (const FMIModelVariable**)outputVariables, outputFile);
 
-    result = FMICreateRecorder(S, nOutputVariables, (const FMIModelVariable**)outputVariables, outputFile);
-
-    if (!result) {
+    if (!recorder) {
         printf("Failed to open result file %s for writing.\n", outputFile);
         status = FMIError;
         goto TERMINATE;
@@ -456,34 +452,33 @@ int main(int argc, const char* argv[]) {
         goto TERMINATE;
     }
 
-    status = FMISimulate(S, modelDescription, unzipdir, result, input, &settings);
+    status = FMISimulate(S, modelDescription, unzipdir, recorder, input, &settings);
 
-    FMIRecorderWriteCSV(result, stdout);
+    if (outputFile) {
+        
+        FILE* file = fopen(outputFile, "w");
+
+        if (!file) {
+            printf("Failed to open output file %s.\n", outputFile);
+            status = FMIError;
+            goto TERMINATE;
+        }
+
+        FMIRecorderWriteCSV(recorder, file);
+
+        fclose(file);
+    }
 
 TERMINATE:
 
-    if (input) {
-        FMIFreeInput(input);
-    }
-
-    if (result) {
-        FMIFreeRecorder(result);
-    }
-
-    if (modelDescription) {
-        FMIFreeModelDescription(modelDescription);
-    }
-
-    if (S) {
-        FMIFreeInstance(S);
-    }
+    FMIFreeInput(input);
+    FMIFreeRecorder(recorder);
+    FMIFreeModelDescription(modelDescription);
+    FMIFreeInstance(S);
 
     if (unzipdir) {
         FMIRemoveDirectory(unzipdir);
-    }
-
-    if (unzipdir) {
-        free((void*)unzipdir);
+        FMIFree(&unzipdir);
     }
 
     if (s_fmiLogFile) {
@@ -491,9 +486,9 @@ TERMINATE:
         s_fmiLogFile = NULL;
     }
 
-    free(startNames);
-    free(startValues);
-    free(outputVariableNames);
+    FMIFree(&startNames);
+    FMIFree(&startValues);
+    FMIFree(&outputVariableNames);
 
     return (int)status;
 }

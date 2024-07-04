@@ -159,8 +159,6 @@ static size_t FMISizeOf(FMIVariableType type, FMIMajorVersion fmiMajorVersion) {
 			return sizeof(fmi2Boolean);
 		case FMIMajorVersion3:
 			return sizeof(fmi3Boolean);
-		default: 
-			return 0;
 		}
 	
 	case FMIClockType:
@@ -325,13 +323,7 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMIStaticInput* input, doub
 
 			}
 
-			if (instance->fmiMajorVersion == FMIMajorVersion1) {
-				CALL(FMI1SetValues(instance, type, &vr, 1, input->buffer));
-			} else if (instance->fmiMajorVersion == FMIMajorVersion2) {
-				CALL(FMI2SetValues(instance, type, &vr, 1, input->buffer));
-			} else if (instance->fmiMajorVersion == FMIMajorVersion3) {
-				CALL(FMI3SetValues(instance, type, &vr, 1, input->buffer, nValues));
-			}
+			CALL(FMISetValues(instance, type, &vr, 1, NULL, input->buffer, nValues));
 
 		} else if (discrete && (variable->variability == FMIDiscrete || variable->variability == FMITunable)) {
 
@@ -367,16 +359,8 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMIStaticInput* input, doub
 
 			if (nValues == 0) continue;
 
-			if (instance->fmiMajorVersion == FMIMajorVersion1) {
-				CALL(FMI1SetValues(instance, type, &vr, 1, values));
-			} else if (instance->fmiMajorVersion == FMIMajorVersion2) {
-				CALL(FMI2SetValues(instance, type, &vr, 1, values));
-			} else if (instance->fmiMajorVersion == FMIMajorVersion3) {
-				CALL(FMI3SetValues(instance, type, &vr, 1, values, nValues));
-			}
-
+			CALL(FMISetValues(instance, type, &vr, 1, NULL, values, nValues));
 		}
-
 	}
 
 TERMINATE:

@@ -165,52 +165,6 @@ static size_t FMISizeOfVariableType(FMIMajorVersion majorVersion, FMIVariableTyp
     }
 }
 
-static FMIStatus FMI3GetValues(
-    FMIInstance* instance,
-    FMIVariableType type,
-    const FMIValueReference valueReferences[],
-    size_t nValueReferences,
-    size_t sizes[],
-    void* values,
-    size_t nValues) {
-
-    switch (type) {
-    case FMIFloat32Type:
-    case FMIDiscreteFloat32Type:
-        return FMI3GetFloat32(instance, valueReferences, nValueReferences, (fmi3Float32*)values, nValues);
-    case FMIFloat64Type:
-    case FMIDiscreteFloat64Type:
-        return FMI3GetFloat64(instance, valueReferences, nValueReferences, (fmi3Float64*)values, nValues);
-    case FMIInt8Type:
-        return FMI3GetInt8(instance, valueReferences, nValueReferences, (fmi3Int8*)values, nValues);
-    case FMIUInt8Type:
-        return FMI3GetUInt8(instance, valueReferences, nValueReferences, (fmi3UInt8*)values, nValues);
-    case FMIInt16Type:
-        return FMI3GetInt16(instance, valueReferences, nValueReferences, (fmi3Int16*)values, nValues);
-    case FMIUInt16Type:
-        return FMI3GetUInt16(instance, valueReferences, nValueReferences, (fmi3UInt16*)values, nValues);
-    case FMIInt32Type:
-        return FMI3GetInt32(instance, valueReferences, nValueReferences, (fmi3Int32*)values, nValues);
-    case FMIUInt32Type:
-        return FMI3GetUInt32(instance, valueReferences, nValueReferences, (fmi3UInt32*)values, nValues);
-    case FMIInt64Type:
-        return FMI3GetInt64(instance, valueReferences, nValueReferences, (fmi3Int64*)values, nValues);
-    case FMIUInt64Type:
-        return FMI3GetUInt64(instance, valueReferences, nValueReferences, (fmi3UInt64*)values, nValues);
-    case FMIBooleanType:
-        return FMI3GetBoolean(instance, valueReferences, nValueReferences, (fmi3Boolean*)values, nValues);
-    case FMIStringType:
-        return FMI3GetString(instance, valueReferences, nValueReferences, (fmi3String*)values, nValues);
-    case FMIBinaryType:
-        return FMI3GetBinary(instance, valueReferences, nValueReferences, sizes, (fmi3Binary*)values, nValues);
-    case FMIClockType:
-        return FMI3GetClock(instance, valueReferences, nValueReferences, (fmi3Clock*)values);
-    default:
-        return FMIError;
-    }
-
-}
-
 FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder) {
 
     FMIStatus status = FMIOK;
@@ -245,9 +199,9 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder) {
 
         void* values = NULL;
 
-        CALL(FMICalloc(&values, info->nValues, FMISizeOfVariableType(FMIMajorVersion3, type)));
+        CALL(FMICalloc(&values, info->nValues, FMISizeOfVariableType(recorder->instance->fmiMajorVersion, type)));
 
-        CALL(FMI3GetValues(recorder->instance, type, info->valueReferences, info->nVariables, row->sizes, values, info->nValues));
+        CALL(FMIGetValues(recorder->instance, type, info->valueReferences, info->nVariables, row->sizes, values, info->nValues));
 
         if (type == FMIBinaryType) {
 
