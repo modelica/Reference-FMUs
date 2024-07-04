@@ -463,9 +463,11 @@ void MainWindow::updatePlot() {
         QString x;
         QString y;
 
+
         for (size_t j = 0; j < recorder->nRows; j++) {
 
             Row* row = recorder->rows[j];
+            double* values = (double*)row->values[FMIFloat64Type];
 
             if (j > 0) {
                 x += ", ";
@@ -473,7 +475,7 @@ void MainWindow::updatePlot() {
             }
 
             x += QString::number(row->time);
-            y += QString::number(row->float64Values[i]);
+            y += QString::number(values[i]);
         }
 
         if (k > 0) {
