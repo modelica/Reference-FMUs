@@ -28,7 +28,6 @@ typedef struct FMIRecorder {
     FMIInstance* instance;
     size_t nVariables;
     const FMIModelVariable** variables;
-    FILE* file;
     size_t nValues;
     char* values;
     size_t* sizes;
