@@ -13,7 +13,7 @@ FMIStatus FMI3MESimulate(
     FMIInstance* S, 
     const FMIModelDescription* modelDescription, 
     const char* resourcePath,
-    FMIRecorder* result,
+    FMIRecorder* recorder,
     const FMIStaticInput * input,
     const FMISimulationSettings * settings) {
 
@@ -97,6 +97,8 @@ FMIStatus FMI3MESimulate(
         CALL(FMI3EnterContinuousTimeMode(S));
     }
 
+    CALL(FMIRecorderUpdateSizes(recorder));
+
     FMISolverParameters solverFunctions = {
         .modelInstance = S,
         .input = input,
@@ -126,7 +128,7 @@ FMIStatus FMI3MESimulate(
 
     for (;;) {
 
-        CALL(FMISample(S, time, result));
+        CALL(FMISample(S, time, recorder));
 
         if (time >= settings->stopTime) {
             break;
@@ -171,7 +173,7 @@ FMIStatus FMI3MESimulate(
 
         if (inputEvent || timeEvent || stateEvent || stepEvent) {
 
-            CALL(FMISample(S, time, result));
+            CALL(FMISample(S, time, recorder));
 
             CALL(FMI3EnterEventMode(S));
 
@@ -196,7 +198,7 @@ FMIStatus FMI3MESimulate(
                     &nextEventTime));
                 
                 if (terminateSimulation) {
-                    CALL(FMISample(S, time, result));
+                    CALL(FMISample(S, time, recorder));
                     goto TERMINATE;
                 }
 
