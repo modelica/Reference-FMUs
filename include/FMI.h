@@ -189,6 +189,10 @@ FMI_STATIC FMIStatus FMICalloc(void** memory, size_t count, size_t size);
 
 FMI_STATIC FMIStatus FMIRealloc(void** memory, size_t size);
 
+FMI_STATIC FMIStatus FMIDuplicateString(const char* source, char** destination);
+
+FMI_STATIC FMIStatus FMIDuplicateBuffer(const void* source, void** destination, size_t size);
+
 FMI_STATIC void FMIFree(void** memory);
 
 FMI_STATIC FMIInstance* FMICreateInstance(const char* instanceName, FMILogMessage* logMessage, FMILogFunctionCall* logFunctionCall);

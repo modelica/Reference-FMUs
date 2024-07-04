@@ -223,6 +223,24 @@ static FMIStatus FMI3GetValues(
 
 }
 
+//FMIStatus FMICopyBuffer(const void* source, void** destination, size_t size) {
+//
+//    char* buffer = NULL;
+//    
+//    if (FMICalloc(&buffer, size, sizeof(fmi3Byte)) != FMIOK) {
+//        return NULL;
+//    }
+//    
+//    if (!memcpy(buffer, source, size)) {
+//        FMIFree(&buffer);
+//        return FMIError;
+//    }
+//    
+//    *destination = buffer;
+//
+//    return FMIOK;
+//}
+
 FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder) {
 
     FMIStatus status = FMIOK;
@@ -531,6 +549,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder) {
             i != FMIInt64Type &&
             i != FMIUInt64Type &&
             i != FMIBooleanType &&
+            i != FMIStringType &&
             i != FMIBinaryType
             ) {
             continue;
@@ -543,12 +562,17 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder) {
         CALL(FMI3GetValues(recorder->instance, type, info->valueReferences, info->nVariables, row->sizes, values, info->nValues));
 
         if (type == FMIBinaryType) {
+
             for (size_t j = 0; j < info->nValues; j++) {
-                char* buffer = NULL;
-                CALL(FMICalloc(&buffer, row->sizes[j], sizeof(fmi3Byte)));
-                memcpy(buffer, ((void**)values)[j], row->sizes[j]);
-                ((void**)values)[j] = buffer;
+                CALL(FMIDuplicateBuffer(((void**)values)[j], &((void**)values)[j], row->sizes[j]));
             }
+
+        } else if (type == FMIStringType) {
+
+            for (size_t j = 0; j < info->nValues; j++) {
+                CALL(FMIDuplicateString( ((void**)values)[j], &((void**)values)[j]));
+            }
+
         }
 
         row->values[i] = values;
@@ -559,9 +583,6 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder) {
 TERMINATE:
     return status;
 }
-
-#define FLOAT64_FMT "%.16g"
-
 
 static void print_value(FILE* file, FMIVariableType type, void* value) {
 
@@ -607,6 +628,9 @@ static void print_value(FILE* file, FMIVariableType type, void* value) {
         break;
     case FMIBooleanType:
         fprintf(file, "%d", *((fmi3Boolean*)value));
+        break;
+    case FMIStringType:
+        fprintf(file, "\"%s\"", *((fmi3String*)value));
         break;
     case FMIBinaryType: {
 
