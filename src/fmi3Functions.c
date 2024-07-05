@@ -568,8 +568,9 @@ fmi3Status fmi3GetBinary(fmi3Instance instance,
 
     BEGIN_FUNCTION(GetBinary);
 
+    size_t index = 0;
+
     for (size_t i = 0; i < nValueReferences; i++) {
-        size_t index = 0;
         CALL(getBinary(S, (ValueReference)valueReferences[i], valueSizes, (const char**)values, nValues, &index));
     }
 
@@ -694,8 +695,9 @@ fmi3Status fmi3SetBinary(fmi3Instance instance,
 
     BEGIN_FUNCTION(SetBinary);
 
+    size_t index = 0;
+
     for (size_t i = 0; i < nValueReferences; i++) {
-        size_t index = 0;
         CALL(setBinary(S, (ValueReference)valueReferences[i], valueSizes, (const char* const*)values, nValues, &index));
     }
 
