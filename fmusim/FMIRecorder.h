@@ -16,9 +16,9 @@ typedef struct {
 typedef struct {
 
     size_t nVariables;
-    size_t nValues;
+    size_t nValues; ///> total number of values
     FMIModelVariable** variables;
-    size_t* sizes;
+    size_t* sizes;  ///> values per variable 
     FMIValueReference* valueReferences;
 
 } VariableInfo;

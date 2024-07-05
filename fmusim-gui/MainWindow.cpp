@@ -467,7 +467,6 @@ void MainWindow::updatePlot() {
         for (size_t j = 0; j < recorder->nRows; j++) {
 
             Row* row = recorder->rows[j];
-            double* values = (double*)row->values[FMIFloat64Type];
 
             if (j > 0) {
                 x += ", ";
@@ -475,7 +474,26 @@ void MainWindow::updatePlot() {
             }
 
             x += QString::number(row->time);
-            y += QString::number(values[i]);
+
+            switch (variable->type) {
+            case FMIFloat64Type:
+            {
+                const double* values = (double*)row->values[FMIFloat64Type];
+                y += QString::number(values[i]);
+            }
+            break;
+            case FMIInt32Type:
+            {
+                const int* values = (int*)row->values[FMIInt32Type];
+                y += QString::number(values[i]);
+            }
+            break;
+            default:
+                y += "0";
+                break;
+            }
+
+
         }
 
         if (k > 0) {
