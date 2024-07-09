@@ -4,15 +4,15 @@
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QDragEnterEvent>
-#include <QMimeData>>
+#include <QMimeData>
+#include <QMessageBox>
 #include "ModelVariablesItemModel.h"
 
 extern "C" {
 #include "FMIZip.h"
 #include "FMISimulation.h"
-// #include "FMICSVRecorder.h"
-//#include "FMIDemoRecorder.h"
-//#include "FMICSVRecorder.h"
+#include "FMIEuler.h"
+#include "FMICVode.h"
 }
 
 #define FMI_PATH_MAX 4096
@@ -179,6 +179,11 @@ void MainWindow::loadFMU(const QString &filename) {
     FMIPathAppend(modelDescriptionPath, "modelDescription.xml");
 
     modelDescription = FMIReadModelDescription(modelDescriptionPath);
+
+    if (!modelDescription) {
+        QMessageBox::critical(this, "Failed to load Model Description", "Failed to load Model Description");
+        return;
+    }
 
     // Loading finished. Update the GUI.
     startValues.clear();
@@ -359,7 +364,7 @@ void MainWindow::simulate() {
     settings.interfaceType            = interfaceTypeComboBox->currentText() == "Co-Simulation" ? FMICoSimulation : FMIModelExchange;
     //settings.visible                  = false;
     //settings.loggingOn                = ui->debugLoggingCheckBox->isChecked();
-    settings.tolerance                = 0;
+    settings.tolerance                = ui->relativeToleranceLineEdit->text().toDouble();
     settings.nStartValues             = 0;
     settings.startVariables           = NULL;
     settings.startValues              = NULL;
@@ -376,6 +381,18 @@ void MainWindow::simulate() {
     settings.nStartValues = startValues.count();
     settings.startVariables = (const FMIModelVariable**)calloc(settings.nStartValues, sizeof(FMIModelVariable*));
     settings.startValues = (const char**)calloc(settings.nStartValues, sizeof(char*));
+
+    if (ui->solverComboBox->currentText() == "Euler") {
+        settings.solverCreate = FMIEulerCreate;
+        settings.solverFree   = FMIEulerFree;
+        settings.solverStep   = FMIEulerStep;
+        settings.solverReset  = FMIEulerReset;
+    } else {
+        settings.solverCreate = FMICVodeCreate;
+        settings.solverFree   = FMICVodeFree;
+        settings.solverStep   = FMICVodeStep;
+        settings.solverReset  = FMICVodeReset;
+    }
 
     size_t i = 0;
 

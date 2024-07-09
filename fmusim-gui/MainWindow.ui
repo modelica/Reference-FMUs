@@ -86,18 +86,11 @@
           <property name="title">
            <string>Simulation</string>
           </property>
-          <layout class="QGridLayout" name="gridLayout_10" rowminimumheight="23,23,23,23,0,0">
+          <layout class="QGridLayout" name="gridLayout_10">
            <property name="horizontalSpacing">
             <number>10</number>
            </property>
-           <item row="1" column="0">
-            <widget class="QRadioButton" name="outputIntervalRadioButton">
-             <property name="text">
-              <string>Output Interval</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
+           <item row="3" column="1">
             <widget class="QLineEdit" name="outputIntervalLineEdit">
              <property name="enabled">
               <bool>false</bool>
@@ -107,59 +100,42 @@
              </property>
             </widget>
            </item>
-           <item row="4" column="0" colspan="2">
-            <widget class="QCheckBox" name="logFMICallsCheckBox">
-             <property name="text">
-              <string>Log FMI Calls</string>
-             </property>
-            </widget>
-           </item>
            <item row="0" column="0">
-            <widget class="QLabel" name="label_9">
+            <widget class="QLabel" name="label_11">
              <property name="text">
-              <string>Start Time</string>
+              <string>Solver</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="0">
-            <widget class="QRadioButton" name="maxSamplesRadioButton">
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="relativeToleranceLineEdit">
              <property name="text">
-              <string>Max. Samples</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
+              <string>1e-5</string>
              </property>
             </widget>
            </item>
-           <item row="5" column="0" colspan="2">
+           <item row="7" column="0" colspan="2">
             <widget class="QCheckBox" name="debugLoggingCheckBox">
              <property name="text">
               <string>Debug Logging</string>
              </property>
             </widget>
            </item>
-           <item row="0" column="1">
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_13">
+             <property name="text">
+              <string>Relative Tolerance</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
             <widget class="QLineEdit" name="startTimeLineEdit">
              <property name="text">
               <string>0.0</string>
              </property>
             </widget>
            </item>
-           <item row="2" column="1">
-            <widget class="QLineEdit" name="maxSamplesLineEdit">
-             <property name="text">
-              <string>500</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QCheckBox" name="inputCheckBox">
-             <property name="text">
-              <string>Input</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
+           <item row="5" column="1">
             <widget class="QWidget" name="widget" native="true">
              <layout class="QGridLayout" name="gridLayout_11">
               <property name="leftMargin">
@@ -201,6 +177,65 @@
                </widget>
               </item>
              </layout>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QRadioButton" name="outputIntervalRadioButton">
+             <property name="text">
+              <string>Output Interval</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0">
+            <widget class="QCheckBox" name="inputCheckBox">
+             <property name="text">
+              <string>Input</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QRadioButton" name="maxSamplesRadioButton">
+             <property name="text">
+              <string>Max. Samples</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0" colspan="2">
+            <widget class="QCheckBox" name="logFMICallsCheckBox">
+             <property name="text">
+              <string>Log FMI Calls</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="solverComboBox">
+             <item>
+              <property name="text">
+               <string>CVode</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Euler</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="maxSamplesLineEdit">
+             <property name="text">
+              <string>500</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_9">
+             <property name="text">
+              <string>Start Time</string>
+             </property>
             </widget>
            </item>
           </layout>
@@ -678,7 +713,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="buttons.qrc">
      <normaloff>:/buttons/dark/gear.svg</normaloff>:/buttons/dark/gear.svg</iconset>
    </property>
    <property name="text">
@@ -693,7 +728,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="buttons.qrc">
      <normaloff>:/buttons/dark/file-earmark-zip.svg</normaloff>:/buttons/dark/file-earmark-zip.svg</iconset>
    </property>
    <property name="text">
@@ -708,7 +743,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="buttons.qrc">
      <normaloff>:/buttons/dark/book.svg</normaloff>:/buttons/dark/book.svg</iconset>
    </property>
    <property name="text">
@@ -723,7 +758,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="buttons.qrc">
      <normaloff>:/buttons/dark/graph.svg</normaloff>:/buttons/dark/graph.svg</iconset>
    </property>
    <property name="text">
@@ -735,7 +770,7 @@
   </action>
   <action name="openFileAction">
    <property name="icon">
-    <iconset>
+    <iconset resource="buttons.qrc">
      <normaloff>:/buttons/dark/folder-open.svg</normaloff>:/buttons/dark/folder-open.svg</iconset>
    </property>
    <property name="text">
@@ -750,7 +785,7 @@
   </action>
   <action name="simulateAction">
    <property name="icon">
-    <iconset>
+    <iconset resource="buttons.qrc">
      <normaloff>:/buttons/dark/play.svg</normaloff>:/buttons/dark/play.svg</iconset>
    </property>
    <property name="text">
@@ -776,7 +811,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="buttons.qrc">
      <normaloff>:/buttons/dark/list-task.svg</normaloff>:/buttons/dark/list-task.svg</iconset>
    </property>
    <property name="text">
@@ -791,7 +826,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="buttons.qrc">
      <normaloff>:/buttons/dark/side-bar.svg</normaloff>:/buttons/dark/side-bar.svg</iconset>
    </property>
    <property name="text">
@@ -810,7 +845,9 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="buttons.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>inputCheckBox</sender>

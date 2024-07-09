@@ -76,6 +76,12 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ../fmusim/FMISimulation.h
         ../fmusim/FMISimulation.c
 
+        ../fmusim/FMIEuler.h
+        ../fmusim/FMIEuler.c
+
+        ../fmusim/FMICVode.h
+        ../fmusim/FMICVode.c
+
         buttons.qrc
         plot.qrc
         icons/variables/variables.qrc
@@ -87,6 +93,7 @@ target_include_directories(fmusim-gui PRIVATE
     ../build/libxml2-msvc2019-2-install/include/libxml2
     ../build/zlib-1.3-msvc2019-install/zlib/include
     ../build/zlib-1.3/contrib/minizip
+    ../build/cvode-x86_64-windows/install/include
 )
 
 target_compile_definitions(fmusim-gui PRIVATE
@@ -97,6 +104,7 @@ target_link_libraries(fmusim-gui PRIVATE
     Qt6::WebEngineWidgets
     "E:/Development/Reference-FMUs/build/libxml2-msvc2019-2-install/lib/libxml2.lib"
     "E:/Development/Reference-FMUs/build/zlib-1.3-msvc2019-install/zlib/lib/zlib.lib"
+    "E:/Development/Reference-FMUs/build/cvode-x86_64-windows/install/lib/sundials_cvode.lib"
     #../build/libxml2-msvc2019-2-install/lib/libxml2s.lib
     #E:/Development/Reference-FMUs/build/libxml2-x86_64-windows/install/lib/libxml2s.lib
 )
