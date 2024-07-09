@@ -346,9 +346,9 @@ void MainWindow::simulate() {
     settings.initialFMUStateFile      = NULL;
     settings.finalFMUStateFile        = NULL;
 
-    //settings.nStartValues = startValues.count();
-    //settings.startVariables = (FMIModelVariable**)calloc(settings.nStartValues, sizeof(FMIModelVariable*));
-    //settings.startValues = (char**)calloc(settings.nStartValues, sizeof(char*));
+    settings.nStartValues = startValues.count();
+    settings.startVariables = (const FMIModelVariable**)calloc(settings.nStartValues, sizeof(FMIModelVariable*));
+    settings.startValues = (const char**)calloc(settings.nStartValues, sizeof(char*));
 
     size_t i = 0;
 
@@ -463,7 +463,6 @@ void MainWindow::updatePlot() {
         QString x;
         QString y;
 
-
         for (size_t j = 0; j < recorder->nRows; j++) {
 
             Row* row = recorder->rows[j];
@@ -473,34 +472,57 @@ void MainWindow::updatePlot() {
                 y += ", ";
             }
 
+            size_t index;
+
+            for (index = 0; index < recorder->variableInfos[variable->type]->nVariables; index++) {
+                if (recorder->variableInfos[variable->type]->variables[index] == variable) {
+                    break;
+                }
+            }
+
             x += QString::number(row->time);
 
             switch (variable->type) {
             case FMIFloat64Type:
             {
                 const double* values = (double*)row->values[FMIFloat64Type];
-                y += QString::number(values[i]);
+                y += QString::number(values[index]);
             }
             break;
             case FMIInt32Type:
             {
                 const int* values = (int*)row->values[FMIInt32Type];
-                y += QString::number(values[i]);
+                QString s = QString::number(values[index]);
+                y += s;
+            }
+            break;
+            case FMIBooleanType:
+            {
+                const bool* values = (bool*)row->values[FMIBooleanType];
+                QString s = QString::number(values[index]);
+                y += s;
             }
             break;
             default:
                 y += "0";
                 break;
             }
-
-
         }
 
         if (k > 0) {
             data += ", ";
         }
+        
+        data += "{x: [" + x + "], y: [" + y + "], type: 'scatter', name: '', line: {color: '#248BD2', width: 1.5";
 
-        data += "{x: [" + x + "], y: [" + y + "], type: 'scatter', name: '', line: {color: '#248BD2', width: 1.5 }";
+
+        if (variable->variability == FMIContinuous) {
+            data += "}";
+        } else if (variable->type == FMIBooleanType) {
+            data += ", shape: 'hv'}, fill: 'tozeroy'";
+        } else {
+            data += ", shape: 'hv'}";
+        }
 
         if (k > 0) {
             const QString plotIndex = QString::number(k + 1);
