@@ -412,6 +412,12 @@ void MainWindow::simulate() {
     const FMIStatus status = FMISimulate(S, modelDescription, NULL, recorder, input, &settings);
 
     updatePlot();
+
+    if (status == FMIOK) {
+        setCurrentPage(ui->plotPage);
+    } else {
+        setCurrentPage(ui->logPage);
+    }
 }
 
 void MainWindow::openFile() {
