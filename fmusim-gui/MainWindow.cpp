@@ -173,7 +173,12 @@ void MainWindow::loadFMU(const QString &filename) {
     QByteArray bytes = filename.toLocal8Bit();
     const char *cstr = bytes.data();
 
-    int status = FMIExtractArchive(cstr, unzipdir);
+    const int status = FMIExtractArchive(cstr, unzipdir);
+
+    if (status) {
+        QMessageBox::critical(this, "Failed to extract FMU", "Failed to extract FMU");
+        return;
+    }
 
     FMIPathAppend(modelDescriptionPath, unzipdir);
     FMIPathAppend(modelDescriptionPath, "modelDescription.xml");
@@ -230,8 +235,15 @@ void MainWindow::loadFMU(const QString &filename) {
     ui->generationToolLabel->setText(modelDescription->generationTool);
     ui->descriptionLabel->setText(modelDescription->description);
 
-    if (modelDescription->defaultExperiment && modelDescription->defaultExperiment->stepSize) {
-        ui->outputIntervalLineEdit->setText(modelDescription->defaultExperiment->stepSize);
+    if (modelDescription->defaultExperiment) {
+
+        const FMIDefaultExperiment *experiment = modelDescription->defaultExperiment;
+
+        if (experiment->stepSize) {
+            ui->outputIntervalLineEdit->setText(modelDescription->defaultExperiment->stepSize);
+        }
+
+        ui->relativeToleranceLineEdit->setText(experiment->tolerance ? experiment->tolerance : "1e-5");
     }
 
     filesModel.setRootPath(this->unzipdir);
@@ -368,6 +380,7 @@ void MainWindow::simulate() {
     settings.nStartValues             = 0;
     settings.startVariables           = NULL;
     settings.startValues              = NULL;
+    settings.tolerance                = ui->relativeToleranceLineEdit->text().toDouble();
     settings.startTime                = ui->startTimeLineEdit->text().toDouble();
 
     settings.outputInterval           = outputInterval;
