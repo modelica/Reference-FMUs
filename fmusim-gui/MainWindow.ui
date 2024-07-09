@@ -30,7 +30,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="startPage">
        <layout class="QGridLayout" name="gridLayout_9">
@@ -457,7 +457,7 @@
          <number>0</number>
         </property>
         <item row="0" column="0">
-         <widget class="QListWidget" name="listWidget">
+         <widget class="QPlainTextEdit" name="logPlainTextEdit">
           <property name="palette">
            <palette>
             <active>
@@ -482,18 +482,14 @@
               </brush>
              </colorrole>
             </inactive>
-            <disabled>
-             <colorrole role="Base">
-              <brush brushstyle="SolidPattern">
-               <color alpha="0">
-                <red>0</red>
-                <green>0</green>
-                <blue>0</blue>
-               </color>
-              </brush>
-             </colorrole>
-            </disabled>
+            <disabled/>
            </palette>
+          </property>
+          <property name="lineWrapMode">
+           <enum>QPlainTextEdit::NoWrap</enum>
+          </property>
+          <property name="readOnly">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -627,7 +623,7 @@
    <property name="minimumSize">
     <size>
      <width>500</width>
-     <height>75</height>
+     <height>77</height>
     </size>
    </property>
    <property name="styleSheet">

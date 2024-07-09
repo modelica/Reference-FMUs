@@ -357,10 +357,12 @@ void MainWindow::logFunctionCall(FMIInstance* instance, FMIStatus status, const 
         break;
     }
 
-    window->ui->listWidget->addItem(item);
+    window->ui->logPlainTextEdit->appendPlainText(item);
 }
 
 void MainWindow::simulate() {
+
+    ui->logPlainTextEdit->clear();
 
     double stopTime = stopTimeLineEdit->text().toDouble();
     double outputInterval;
@@ -445,14 +447,6 @@ void MainWindow::simulate() {
 
     }
 
-    // size_t nOutputVariables = 2;
-
-    // FMIModelVariable* outputVariables[2];
-    // outputVariables[0] = &modelDescription->modelVariables[1];
-    // outputVariables[1] = &modelDescription->modelVariables[3];
-
-    //const FMIModelVariable** outputVariables2 = outputVariables;
-
     FMIStaticInput* input = nullptr;
 
     if (ui->inputCheckBox->isChecked()) {
@@ -460,7 +454,7 @@ void MainWindow::simulate() {
         const std::wstring  wstr  = ui->inputLineEdit->text().toStdWString();
         input = FMIReadInput(modelDescription, (char*)wstr.c_str());
         if (!input) {
-            ui->listWidget->addItem("Failed to load " + inputPath + ".");
+            ui->logPlainTextEdit->appendPlainText("Failed to load " + inputPath + ".");
         }
     }
 
