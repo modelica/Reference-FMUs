@@ -74,6 +74,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->showLogAction,           &QAction::triggered, this, [this]() { setCurrentPage(ui->logPage);          });
     connect(ui->showPlotAction,          &QAction::triggered, this, [this]() { setCurrentPage(ui->plotPage);         });
 
+    ui->showPlotAction->setEnabled(false);
+
+    setCurrentPage(ui->startPage);
+
     variablesListModel = new ModelVariablesItemModel(this);
     variablesListModel->setStartValues(&startValues);
 
@@ -117,7 +121,30 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 void MainWindow::setCurrentPage(QWidget *page) {
+
+    // block the signals during the update
+    ui->showSettingsAction->blockSignals(true);
+    ui->showFilesAction->blockSignals(true);
+    ui->showDocumentationAction->blockSignals(true);
+    ui->showLogAction->blockSignals(true);
+    ui->showPlotAction->blockSignals(true);
+
+    // set the current page
     ui->stackedWidget->setCurrentWidget(page);
+
+    // toggle the actions
+    ui->showSettingsAction->setChecked(page == ui->settingsPage);
+    ui->showFilesAction->setChecked(page == ui->filesPage);
+    ui->showDocumentationAction->setChecked(page == ui->documenationPage);
+    ui->showLogAction->setChecked(page == ui->logPage);
+    ui->showPlotAction->setChecked(page == ui->plotPage);
+
+    // un-block the signals during the update
+    ui->showSettingsAction->blockSignals(false);
+    ui->showFilesAction->blockSignals(false);
+    ui->showDocumentationAction->blockSignals(false);
+    ui->showLogAction->blockSignals(false);
+    ui->showPlotAction->blockSignals(false);
 }
 
 MainWindow::~MainWindow()
@@ -219,15 +246,15 @@ void MainWindow::loadFMU(const QString &filename) {
     // ui->dockWidget->setHidden(false);
     ui->showSideBarAction->setEnabled(true);
     ui->showSideBarAction->toggle();
-    ui->stackedWidget->setCurrentWidget(ui->settingsPage);
     ui->showSettingsAction->setEnabled(true);
     ui->showFilesAction->setEnabled(true);
     ui->showDocumentationAction->setEnabled(true);
     ui->showLogAction->setEnabled(true);
-    ui->showPlotAction->setEnabled(true);
     ui->simulateAction->setEnabled(true);
     stopTimeLineEdit->setEnabled(true);
     interfaceTypeComboBox->setEnabled(true);
+
+    setCurrentPage(ui->settingsPage);
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
@@ -413,6 +440,8 @@ void MainWindow::simulate() {
 
     updatePlot();
 
+    ui->showPlotAction->setEnabled(false);
+
     if (status == FMIOK) {
         setCurrentPage(ui->plotPage);
     } else {
@@ -462,6 +491,8 @@ void MainWindow::updatePlot() {
 
         const FMIModelVariable* variable = recorder->variables[i];
 
+        const FMIVariableType type = variable->type;
+
         if (!plotVariables.contains(variable)) {
             continue;
         }
@@ -480,33 +511,81 @@ void MainWindow::updatePlot() {
 
             size_t index;
 
-            for (index = 0; index < recorder->variableInfos[variable->type]->nVariables; index++) {
-                if (recorder->variableInfos[variable->type]->variables[index] == variable) {
+            for (index = 0; index < recorder->variableInfos[type]->nVariables; index++) {
+                if (recorder->variableInfos[type]->variables[index] == variable) {
                     break;
                 }
             }
 
             x += QString::number(row->time);
 
-            switch (variable->type) {
-            case FMIFloat64Type:
+            switch (type) {
+            case FMIFloat32Type:
+            case FMIDiscreteFloat32Type:
             {
-                const double* values = (double*)row->values[FMIFloat64Type];
+                const float* values = (float*)row->values[type];
+                y += QString::number(values[index]);
+            }
+            break;
+            case FMIFloat64Type:
+            case FMIDiscreteFloat64Type:
+            {
+                const double* values = (double*)row->values[type];
+                y += QString::number(values[index]);
+            }
+            break;
+            case FMIInt8Type:
+            {
+                const int8_t* values = (int8_t*)row->values[type];
+                y += QString::number(values[index]);
+            }
+            break;
+            case FMIUInt8Type:
+            {
+                const uint8_t* values = (uint8_t*)row->values[type];
+                y += QString::number(values[index]);
+            }
+            break;
+            case FMIInt16Type:
+            {
+                const int16_t* values = (int16_t*)row->values[type];
+                y += QString::number(values[index]);
+            }
+            break;
+            case FMIUInt16Type:
+            {
+                const uint16_t* values = (uint16_t*)row->values[type];
                 y += QString::number(values[index]);
             }
             break;
             case FMIInt32Type:
             {
-                const int* values = (int*)row->values[FMIInt32Type];
-                QString s = QString::number(values[index]);
-                y += s;
+                const int32_t* values = (int32_t*)row->values[type];
+                y += QString::number(values[index]);
+            }
+            break;
+            case FMIUInt32Type:
+            {
+                const uint32_t* values = (uint32_t*)row->values[type];
+                y += QString::number(values[index]);
+            }
+            break;
+            case FMIInt64Type:
+            {
+                const int64_t* values = (int64_t*)row->values[type];
+                y += QString::number(values[index]);
+            }
+            break;
+            case FMIUInt64Type:
+            {
+                const uint64_t* values = (uint64_t*)row->values[type];
+                y += QString::number(values[index]);
             }
             break;
             case FMIBooleanType:
             {
-                const bool* values = (bool*)row->values[FMIBooleanType];
-                QString s = QString::number(values[index]);
-                y += s;
+                const bool* values = (bool*)row->values[type];
+                y += QString::number(values[index]);
             }
             break;
             default:
@@ -524,7 +603,7 @@ void MainWindow::updatePlot() {
 
         if (variable->variability == FMIContinuous) {
             data += "}";
-        } else if (variable->type == FMIBooleanType) {
+        } else if (type == FMIBooleanType) {
             data += ", shape: 'hv'}, fill: 'tozeroy'";
         } else {
             data += ", shape: 'hv'}";

@@ -674,8 +674,11 @@
    </property>
   </action>
   <action name="showSettingsAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/gear.svg</normaloff>:/buttons/dark/gear.svg</iconset>
    </property>
    <property name="text">
@@ -686,8 +689,11 @@
    </property>
   </action>
   <action name="showFilesAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/file-earmark-zip.svg</normaloff>:/buttons/dark/file-earmark-zip.svg</iconset>
    </property>
    <property name="text">
@@ -698,8 +704,11 @@
    </property>
   </action>
   <action name="showDocumentationAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/book.svg</normaloff>:/buttons/dark/book.svg</iconset>
    </property>
    <property name="text">
@@ -710,8 +719,11 @@
    </property>
   </action>
   <action name="showPlotAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/graph.svg</normaloff>:/buttons/dark/graph.svg</iconset>
    </property>
    <property name="text">
@@ -723,7 +735,7 @@
   </action>
   <action name="openFileAction">
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/folder-open.svg</normaloff>:/buttons/dark/folder-open.svg</iconset>
    </property>
    <property name="text">
@@ -738,7 +750,7 @@
   </action>
   <action name="simulateAction">
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/play.svg</normaloff>:/buttons/dark/play.svg</iconset>
    </property>
    <property name="text">
@@ -760,8 +772,11 @@
    </property>
   </action>
   <action name="showLogAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/list-task.svg</normaloff>:/buttons/dark/list-task.svg</iconset>
    </property>
    <property name="text">
@@ -776,7 +791,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/side-bar.svg</normaloff>:/buttons/dark/side-bar.svg</iconset>
    </property>
    <property name="text">
@@ -795,9 +810,7 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="buttons.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>inputCheckBox</sender>
