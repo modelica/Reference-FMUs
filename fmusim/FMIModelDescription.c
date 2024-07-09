@@ -127,7 +127,8 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
         CALL(FMICalloc((void**)&modelDescription->defaultExperiment, 1, sizeof(FMIDefaultExperiment)));
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
         modelDescription->defaultExperiment->startTime = (char*)xmlGetProp(node, (xmlChar*)"startTime");
-        modelDescription->defaultExperiment->stopTime = (char*)xmlGetProp(node, (xmlChar*)"stopTime");
+        modelDescription->defaultExperiment->stopTime  = (char*)xmlGetProp(node, (xmlChar*)"stopTime");
+        modelDescription->defaultExperiment->tolerance = (char*)xmlGetProp(node, (xmlChar*)"tolerance");
     }
     
     xmlXPathFreeObject(xpathObj);
@@ -352,6 +353,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
         modelDescription->defaultExperiment->startTime = (char*)xmlGetProp(node, (xmlChar*)"startTime");
         modelDescription->defaultExperiment->stopTime  = (char*)xmlGetProp(node, (xmlChar*)"stopTime");
+        modelDescription->defaultExperiment->tolerance = (char*)xmlGetProp(node, (xmlChar*)"tolerance");
         modelDescription->defaultExperiment->stepSize  = (char*)xmlGetProp(node, (xmlChar*)"stepSize");
     }
     xmlXPathFreeObject(xpathObj);
@@ -646,6 +648,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
         modelDescription->defaultExperiment->startTime = (char*)xmlGetProp(node, (xmlChar*)"startTime");
         modelDescription->defaultExperiment->stopTime  = (char*)xmlGetProp(node, (xmlChar*)"stopTime");
+        modelDescription->defaultExperiment->tolerance = (char*)xmlGetProp(node, (xmlChar*)"tolerance");
         modelDescription->defaultExperiment->stepSize  = (char*)xmlGetProp(node, (xmlChar*)"stepSize");
     }
     xmlXPathFreeObject(xpathObj);
