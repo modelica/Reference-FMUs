@@ -268,8 +268,11 @@ void MainWindow::loadFMU(const QString &filename) {
     ui->showDocumentationAction->setEnabled(true);
     ui->showLogAction->setEnabled(true);
     ui->simulateAction->setEnabled(true);
+
     stopTimeLineEdit->setEnabled(true);
-    interfaceTypeComboBox->setEnabled(true);
+
+    interfaceTypeComboBox->setCurrentText(modelDescription->coSimulation ? "Co-Simulation" : "Model Exchange");
+    interfaceTypeComboBox->setEnabled(modelDescription->modelExchange && modelDescription->coSimulation);
 
     setCurrentPage(ui->settingsPage);
 }
