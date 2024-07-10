@@ -30,7 +30,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>3</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="startPage">
        <layout class="QGridLayout" name="gridLayout_9">
@@ -117,7 +117,7 @@
            <item row="7" column="0" colspan="2">
             <widget class="QCheckBox" name="debugLoggingCheckBox">
              <property name="text">
-              <string>Debug Logging</string>
+              <string>Logging On</string>
              </property>
             </widget>
            </item>
