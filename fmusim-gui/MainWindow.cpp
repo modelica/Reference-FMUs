@@ -25,6 +25,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
 
+    // load the web engine, so the window doesn't jump later
+    ui->plotWebEngineView->setHtml("");
+
     // add the simulation controls to the toolbar
     stopTimeLineEdit = new QLineEdit(this);
     // stopTimeLineEdit->setEnabled(false);
