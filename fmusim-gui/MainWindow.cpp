@@ -426,7 +426,7 @@ void MainWindow::simulate() {
 
     char platformBinaryPath[FMI_PATH_MAX] = "";
 
-    auto ba = unzipdir.toLocal8Bit();
+    const QByteArray ba = unzipdir.toLocal8Bit();
 
     FMIPlatformBinaryPath(ba.data(), modelDescription->coSimulation->modelIdentifier, modelDescription->fmiMajorVersion, platformBinaryPath, FMI_PATH_MAX);
 
@@ -466,7 +466,7 @@ void MainWindow::simulate() {
 
     recorder = FMICreateRecorder(S, recordedVariables.size(), (const FMIModelVariable**)recordedVariables.data(), "result.csv");
 
-    const FMIStatus status = FMISimulate(S, modelDescription, NULL, recorder, input, &settings);
+    const FMIStatus status = FMISimulate(S, modelDescription, ba.data(), recorder, input, &settings);
 
     updatePlot();
 
