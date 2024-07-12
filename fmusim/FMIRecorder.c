@@ -64,9 +64,53 @@ TERMINATE:
 
 void FMIFreeRecorder(FMIRecorder* recorder) {
 
-    if (recorder) {
-        free(recorder);
+    if (!recorder) {
+        return;
     }
+
+    for (size_t i = 0; i < recorder->nRows; i++) {
+
+        Row* row = recorder->rows[i];
+
+        for (size_t j = 0; j < N_VARIABLE_TYPES; j++) {
+            
+            FMIVariableType type = (FMIVariableType)j;
+
+            VariableInfo* info = recorder->variableInfos[j];
+            void* values = row->values[j];
+
+            if (!values) {
+                continue;
+            }
+
+            if (type == FMIBinaryType || type == FMIStringType) {
+
+                char** binaryValues = (char**)values;
+
+                for (size_t k = 0; k < info->nValues; k++) {
+                    FMIFree(&binaryValues[k]);
+                }
+            }
+
+            FMIFree(&values);
+        }
+
+        FMIFree(&row->sizes);
+    }
+
+    for (size_t i = 0; i < N_VARIABLE_TYPES; i++) {
+
+        VariableInfo* info = recorder->variableInfos[i];
+
+        if (!info) {
+            continue;
+        }
+
+        FMIFree(&info->variables);
+        FMIFree(&info->sizes);
+    }
+
+    FMIFree(&recorder);
 }
 
 FMIStatus FMIRecorderUpdateSizes(FMIRecorder* recorder) {
