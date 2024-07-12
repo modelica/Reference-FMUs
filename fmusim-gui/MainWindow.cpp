@@ -56,7 +56,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->toolBar->addWidget(spacer2);
     ui->toolBar->addAction(ui->showSideBarAction);
 
-    connect(ui->showSideBarAction, &QAction::toggled, this, [this](bool checked) { ui->dockWidget->setVisible(checked); });
+    connect(ui->showSideBarAction, &QAction::toggled, this, [this](bool checked) {
+        ui->dockWidget->setVisible(checked);
+    });
 
     connect(ui->openUnzipDirectoryAction, &QAction::triggered, this, &MainWindow::openUnzipDirectory);
     connect(ui->simulateAction, &QAction::triggered, this, &MainWindow::simulate);
@@ -265,7 +267,7 @@ void MainWindow::loadFMU(const QString &filename) {
     // enable widgets
     // ui->dockWidget->setHidden(false);
     ui->showSideBarAction->setEnabled(true);
-    ui->showSideBarAction->toggle();
+    ui->showSideBarAction->setChecked(true);
     ui->showSettingsAction->setEnabled(true);
     ui->showFilesAction->setEnabled(true);
     ui->showDocumentationAction->setEnabled(true);
@@ -379,9 +381,20 @@ void MainWindow::simulate() {
         outputInterval = stopTime / ui->maxSamplesLineEdit->text().toDouble();
     }
 
+    FMIInterfaceType interfaceType;
+    const char* modelIdentifier;
+
+    if (interfaceTypeComboBox->currentText() == "Co-Simulation") {
+        interfaceType = FMICoSimulation;
+        modelIdentifier = modelDescription->coSimulation->modelIdentifier;
+    } else {
+        interfaceType = FMIModelExchange;
+        modelIdentifier = modelDescription->modelExchange->modelIdentifier;
+    }
+
     FMISimulationSettings settings;
 
-    settings.interfaceType            = interfaceTypeComboBox->currentText() == "Co-Simulation" ? FMICoSimulation : FMIModelExchange;
+    settings.interfaceType            = interfaceType;
     //settings.visible                  = false;
     //settings.loggingOn                = ui->debugLoggingCheckBox->isChecked();
     settings.tolerance                = ui->relativeToleranceLineEdit->text().toDouble();
@@ -428,7 +441,7 @@ void MainWindow::simulate() {
 
     const QByteArray ba = unzipdir.toLocal8Bit();
 
-    FMIPlatformBinaryPath(ba.data(), modelDescription->coSimulation->modelIdentifier, modelDescription->fmiMajorVersion, platformBinaryPath, FMI_PATH_MAX);
+    FMIPlatformBinaryPath(ba.data(), modelIdentifier, modelDescription->fmiMajorVersion, platformBinaryPath, FMI_PATH_MAX);
 
     FMIInstance *S = FMICreateInstance("instance1", logMessage, ui->logFMICallsCheckBox->isChecked() ? logFunctionCall : nullptr);
 
