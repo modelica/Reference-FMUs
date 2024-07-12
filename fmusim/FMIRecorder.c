@@ -62,14 +62,14 @@ TERMINATE:
     return recorder;
 }
 
-void FMIFreeRecorder(FMIRecorder* result) {
+void FMIFreeRecorder(FMIRecorder* recorder) {
 
-    if (result) {
+    if (recorder) {
 
-        free(result->values);
-        free(result->sizes);
+        free(recorder->values);
+        free(recorder->sizes);
 
-        free(result);
+        free(recorder);
     }
 }
 

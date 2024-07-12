@@ -42,10 +42,10 @@ typedef struct FMIRecorder {
 
 FMIRecorder* FMICreateRecorder(FMIInstance* instance, size_t nVariables, const FMIModelVariable** variables, const char* file);
 
-void FMIFreeRecorder(FMIRecorder* result);
+void FMIFreeRecorder(FMIRecorder* recorder);
 
 FMIStatus FMIRecorderUpdateSizes(FMIRecorder* recorder);
 
-FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* result);
+FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder);
 
 FMIStatus FMIRecorderWriteCSV(FMIRecorder* recorder, FILE* file);
