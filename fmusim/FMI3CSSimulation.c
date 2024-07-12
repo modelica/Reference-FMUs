@@ -20,10 +20,10 @@ static void recordIntermediateValues(
     fmi3Float64* earlyReturnTime) {
 
     FMIInstance* instance = (FMIInstance*)instanceEnvironment;
-
     FMIRecorder* recorder = (FMIRecorder*)instance->userData;
 
     if (intermediateVariableGetAllowed) {
+        // TODO: handle return code
         FMISample(instance, intermediateUpdateTime, recorder);
     }
 
@@ -60,17 +60,9 @@ FMIStatus FMI3CSSimulate(FMIInstance* S,
     fmi3IntermediateUpdateCallback intermediateUpdate = NULL;
 
     if (settings->recordIntermediateValues) {
-
+        requiredIntermediateVariables = (fmi3ValueReference*)recorder->valueReferences;
         nRequiredIntermediateVariables = recorder->nVariables;
-
-        CALL(FMICalloc((void**)&requiredIntermediateVariables, nRequiredIntermediateVariables, sizeof(fmi3ValueReference)));
-        
-        for (size_t i = 0; i < nRequiredIntermediateVariables; i++) {
-            requiredIntermediateVariables[i] = recorder->variables[i]->valueReference;
-        }
-
         intermediateUpdate = recordIntermediateValues;
-
         S->userData = recorder;
     }
 
@@ -85,8 +77,6 @@ FMIStatus FMI3CSSimulate(FMIInstance* S,
         nRequiredIntermediateVariables,        // nRequiredIntermediateVariables
         intermediateUpdate                     // intermediateUpdate
     ));
-
-    free(requiredIntermediateVariables);
 
     if (settings->initialFMUStateFile) {
         CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));

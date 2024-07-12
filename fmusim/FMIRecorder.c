@@ -17,20 +17,21 @@ FMIRecorder* FMICreateRecorder(FMIInstance* instance, size_t nVariables, const F
     FMIStatus status = FMIOK;
 
     FMIRecorder* recorder = NULL;
-    
+
     CALL(FMICalloc((void**)&recorder, 1, sizeof(FMIRecorder)));
-
-    recorder->nVariables = nVariables;
-
     CALL(FMICalloc((void**)&recorder->variables, nVariables, sizeof(FMIModelVariable*)));
-    memcpy(recorder->variables, variables, nVariables * sizeof(FMIModelVariable*));
+    CALL(FMICalloc((void**)&recorder->valueReferences, nVariables, sizeof(FMIValueReference*)));
 
-    recorder->instance   = instance;
+    recorder->instance = instance;
+    recorder->nVariables = nVariables;
 
     // collect variable infos
     for (size_t i = 0; i < nVariables; i++) {
 
         const FMIModelVariable* variable = variables[i];
+
+        recorder->variables[i] = variable;
+        recorder->valueReferences[i] = variable->valueReference;
 
         VariableInfo* info = recorder->variableInfos[variable->type];
 
@@ -50,7 +51,7 @@ FMIRecorder* FMICreateRecorder(FMIInstance* instance, size_t nVariables, const F
     }
 
     recorder->nRows = 0;
-    recorder->rows  = NULL;
+    recorder->rows = NULL;
 
 TERMINATE:
 

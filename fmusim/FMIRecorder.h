@@ -28,6 +28,7 @@ typedef struct FMIRecorder {
     FMIInstance* instance;
     size_t nVariables;
     const FMIModelVariable** variables;
+    FMIValueReference* valueReferences;
     size_t nValues;
     char* values;
     size_t* sizes;
