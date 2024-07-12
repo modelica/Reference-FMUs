@@ -65,10 +65,6 @@ TERMINATE:
 void FMIFreeRecorder(FMIRecorder* recorder) {
 
     if (recorder) {
-
-        free(recorder->values);
-        free(recorder->sizes);
-
         free(recorder);
     }
 }
