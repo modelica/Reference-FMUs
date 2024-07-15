@@ -526,6 +526,22 @@ void MainWindow::updatePlot() {
     }
 
     QString data;
+
+    data += "var time = [";
+
+    for (size_t i = 0; i < recorder->nRows; i++) {
+
+        Row* row = recorder->rows[i];
+
+        if (i > 0) {
+            data += ", ";
+        }
+
+        data += QString::number(row->time);
+    }
+
+    data += "];\n";
+
     data += "var data = [\n";
 
     size_t k = 0;
@@ -540,7 +556,6 @@ void MainWindow::updatePlot() {
             continue;
         }
 
-        QString x;
         QString y;
 
         for (size_t j = 0; j < recorder->nRows; j++) {
@@ -548,7 +563,6 @@ void MainWindow::updatePlot() {
             Row* row = recorder->rows[j];
 
             if (j > 0) {
-                x += ", ";
                 y += ", ";
             }
 
@@ -559,8 +573,6 @@ void MainWindow::updatePlot() {
                     break;
                 }
             }
-
-            x += QString::number(row->time);
 
             switch (type) {
             case FMIFloat32Type:
@@ -641,7 +653,7 @@ void MainWindow::updatePlot() {
             data += ", ";
         }
         
-        data += "{x: [" + x + "], y: [" + y + "], type: 'scatter', name: '', line: {color: '#248BD2', width: 1.5";
+        data += "{x: time, y: [" + y + "], type: 'scatter', name: '', line: {color: '#248BD2', width: 1.5";
 
 
         if (variable->variability == FMIContinuous) {
