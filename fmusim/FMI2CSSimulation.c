@@ -17,11 +17,11 @@ FMIStatus FMI2CSSimulate(
     FMIStatus status = FMIOK;
 
     CALL(FMI2Instantiate(S,
-        resourceURI,                          // fmuResourceLocation
-        fmi2CoSimulation,                     // fmuType
-        modelDescription->instantiationToken, // fmuGUID
-        fmi2False,                            // visible
-        fmi2False                             // loggingOn
+        resourceURI,
+        fmi2CoSimulation,
+        modelDescription->instantiationToken,
+        settings->visible,
+        settings->loggingOn
     ));
 
     if (settings->initialFMUStateFile) {

@@ -45,7 +45,7 @@ FMIStatus FMI1MESimulate(
     CALL(FMI1InstantiateModel(S,
         modelDescription->modelExchange->modelIdentifier,  // modelIdentifier
         modelDescription->instantiationToken,              // GUID
-        fmi1False                                          // loggingOn
+        settings->loggingOn                                // loggingOn
     ));
 
     // set start values

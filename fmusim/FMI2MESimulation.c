@@ -47,11 +47,11 @@ FMIStatus FMI2MESimulate(
     };
 
     CALL(FMI2Instantiate(S,
-        resourceURI,                          // fmuResourceLocation
-        fmi2ModelExchange,                    // fmuType
-        modelDescription->instantiationToken, // fmuGUID
-        fmi2False,                            // visible
-        fmi2False                             // loggingOn
+        resourceURI,
+        fmi2ModelExchange,
+        modelDescription->instantiationToken,
+        settings->visible,
+        settings->loggingOn
     ));
 
     time = settings->startTime;

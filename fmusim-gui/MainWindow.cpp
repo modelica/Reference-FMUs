@@ -95,7 +95,7 @@ MainWindow::MainWindow(QWidget *parent)
     // ui->treeView->setColumnWidth(1, ModelVariablesItemModel::START_COLUMN_DEFAULT_WIDTH);
     const static int COLUMN_WIDTHS[] = {200, 50, 70, 100, 70, 70, 70, 70, 70, 70, 70, 40, 40};
 
-    for (size_t i = 0; i < ModelVariablesItemModel::NUMBER_OF_COLUMNS - 1; i++) {
+    for (int i = 0; i < ModelVariablesItemModel::NUMBER_OF_COLUMNS - 1; i++) {
         ui->treeView->setColumnWidth(i, COLUMN_WIDTHS[i]);
     }
 
@@ -395,8 +395,8 @@ void MainWindow::simulate() {
     FMISimulationSettings settings;
 
     settings.interfaceType            = interfaceType;
-    //settings.visible                  = false;
-    //settings.loggingOn                = ui->debugLoggingCheckBox->isChecked();
+    settings.visible                  = false;
+    settings.loggingOn                = ui->debugLoggingCheckBox->isChecked();
     settings.tolerance                = ui->relativeToleranceLineEdit->text().toDouble();
     settings.nStartValues             = 0;
     settings.startVariables           = NULL;

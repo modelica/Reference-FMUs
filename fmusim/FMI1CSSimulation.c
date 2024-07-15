@@ -20,9 +20,9 @@ FMIStatus FMI1CSSimulate(
         fmuLocation,                                      // fmuLocation
         "application/x-fmusim",                           // mimeType
         0.0,                                              // timeout
-        fmi1False,                                        // visible
+        settings->visible,                                // visible
         fmi1False,                                        // interactive
-        fmi1False                                         // loggingOn
+        settings->loggingOn                               // loggingOn
     ));
 
     // set start values

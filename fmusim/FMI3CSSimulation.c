@@ -67,15 +67,15 @@ FMIStatus FMI3CSSimulate(FMIInstance* S,
     }
 
     CALL(FMI3InstantiateCoSimulation(S,
-        modelDescription->instantiationToken,  // instantiationToken
-        resourcePath,                          // resourcePath
-        fmi3False,                             // visible
-        fmi3False,                             // loggingOn
-        settings->eventModeUsed,               // eventModeUsed
-        settings->earlyReturnAllowed,          // earlyReturnAllowed
-        requiredIntermediateVariables,         // requiredIntermediateVariables
-        nRequiredIntermediateVariables,        // nRequiredIntermediateVariables
-        intermediateUpdate                     // intermediateUpdate
+        modelDescription->instantiationToken,
+        resourcePath,
+        settings->visible,
+        settings->loggingOn,
+        settings->eventModeUsed,
+        settings->earlyReturnAllowed,
+        requiredIntermediateVariables,
+        nRequiredIntermediateVariables,
+        intermediateUpdate
     ));
 
     if (settings->initialFMUStateFile) {

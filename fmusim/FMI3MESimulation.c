@@ -34,7 +34,6 @@ FMIStatus FMI3MESimulate(
     fmi3Boolean valuesOfContinuousStatesChanged   = fmi3False;
     fmi3Boolean nextEventTimeDefined              = fmi3False;
     fmi3Float64 nextEventTime                     = INFINITY;
-    fmi3Float64 nextInputEvent                    = INFINITY;
 
     size_t nSteps;
     fmi3Float64 nextRegularPoint;
@@ -46,10 +45,10 @@ FMIStatus FMI3MESimulate(
     FMISolver* solver = NULL;
 
     CALL(FMI3InstantiateModelExchange(S,
-        modelDescription->instantiationToken,  // instantiationToken
-        resourcePath,                          // resourcePath
-        fmi3False,                             // visible
-        fmi3False                              // loggingOn
+        modelDescription->instantiationToken,
+        resourcePath,
+        settings->visible,
+        settings->loggingOn
     ));
 
     time = settings->startTime;

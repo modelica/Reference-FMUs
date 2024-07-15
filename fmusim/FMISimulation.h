@@ -19,6 +19,8 @@ typedef struct {
     double outputInterval;
     const char* initialFMUStateFile;
     const char* finalFMUStateFile;
+    bool visible;
+    bool loggingOn;
 
     // Co-Simulation
     bool earlyReturnAllowed;
