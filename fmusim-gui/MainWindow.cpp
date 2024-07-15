@@ -17,6 +17,7 @@ extern "C" {
 
 #define FMI_PATH_MAX 4096
 
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -308,38 +309,11 @@ void MainWindow::dropEvent(QDropEvent *event) {
     }
 }
 
-static void logMessage(FMIInstance* instance, FMIStatus status, const char* category, const char* message) {
-
-    switch (status) {
-    case FMIOK:
-        printf("[OK] ");
-        break;
-    case FMIWarning:
-        printf("[Warning] ");
-        break;
-    case FMIDiscard:
-        printf("[Discard] ");
-        break;
-    case FMIError:
-        printf("[Error] ");
-        break;
-    case FMIFatal:
-        printf("[Fatal] ");
-        break;
-    case FMIPending:
-        printf("[Pending] ");
-        break;
-    }
-
-    puts(message);
-}
-
 void MainWindow::logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message) {
 
     MainWindow *window = (MainWindow *)instance->userData;
 
     QString item(message);
-
 
     switch (status) {
     case FMIOK:
@@ -366,6 +340,14 @@ void MainWindow::logFunctionCall(FMIInstance* instance, FMIStatus status, const 
     }
 
     window->ui->logPlainTextEdit->appendPlainText(item);
+}
+
+
+void MainWindow::logMessage(FMIInstance* instance, FMIStatus status, const char* category, const char* message) {
+
+    MainWindow *window = (MainWindow *)instance->userData;
+
+    window->ui->logPlainTextEdit->appendPlainText(message);
 }
 
 void MainWindow::simulate() {

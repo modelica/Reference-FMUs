@@ -48,6 +48,7 @@ private:
     FMIRecorder* recorder = nullptr;
 
     static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message);
+    static void logMessage(FMIInstance* instance, FMIStatus status, const char* category, const char* message);
 
     void setCurrentPage(QWidget *page);
     void updatePlot();
