@@ -429,8 +429,8 @@ void MainWindow::simulate() {
 
     settings.outputInterval           = outputInterval;
     settings.stopTime                 = stopTime;
-    settings.earlyReturnAllowed       = false;
-    settings.eventModeUsed            = false;
+    settings.earlyReturnAllowed       = ui->earlyReturnAllowedCheckBox->isChecked();
+    settings.eventModeUsed            = ui->eventModeUsedCheckBox->isChecked();
     settings.recordIntermediateValues = false;
     settings.initialFMUStateFile      = NULL;
     settings.finalFMUStateFile        = NULL;
