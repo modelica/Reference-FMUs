@@ -105,6 +105,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->filterInputVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterInputVariables);
     connect(ui->filterOutputVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterOutputVariables);
     connect(ui->filterLocalVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterLocalVariables);
+    connect(ui->showOptionalColumnsToolButton, &QToolButton::clicked, this, &MainWindow::setOptionalColumnsVisible);
 
     // ui->treeView->setColumnWidth(0, ModelVariablesItemModel::NAME_COLUMN_DEFAULT_WIDTH);
     // ui->treeView->setColumnWidth(1, ModelVariablesItemModel::START_COLUMN_DEFAULT_WIDTH);
@@ -115,15 +116,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     // hide columns
-    ui->treeView->hideColumn(ModelVariablesItemModel::TYPE_COLUMN_INDEX);
-    ui->treeView->hideColumn(ModelVariablesItemModel::DIMENSION_COLUMN_INDEX);
-    ui->treeView->hideColumn(ModelVariablesItemModel::VALUE_REFERENCE_COLUMN_INDEX);
-    ui->treeView->hideColumn(ModelVariablesItemModel::INITIAL_COLUMN_INDEX);
-    ui->treeView->hideColumn(ModelVariablesItemModel::CAUSALITY_COLUMN_INDEX);
-    ui->treeView->hideColumn(ModelVariablesItemModel::VARIABITLITY_COLUMN_INDEX);
-    ui->treeView->hideColumn(ModelVariablesItemModel::NOMINAL_COLUMN_INDEX);
-    ui->treeView->hideColumn(ModelVariablesItemModel::MIN_COLUMN_INDEX);
-    ui->treeView->hideColumn(ModelVariablesItemModel::MAX_COLUMN_INDEX);
+    setOptionalColumnsVisible(false);
 
     connect(ui->inputPushButton, &QPushButton::clicked, this, &MainWindow::selectInputFile);
 
@@ -773,4 +766,16 @@ void MainWindow::removePlotVariable(const FMIModelVariable* variable) {
     plotVariables.removeAll(variable);
     variablesListModel->setPlotVariables(&plotVariables);
     updatePlot();
+}
+
+void MainWindow::setOptionalColumnsVisible(bool visible) {
+    ui->treeView->setColumnHidden(ModelVariablesItemModel::TYPE_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesItemModel::DIMENSION_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesItemModel::VALUE_REFERENCE_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesItemModel::INITIAL_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesItemModel::CAUSALITY_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesItemModel::VARIABITLITY_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesItemModel::NOMINAL_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesItemModel::MIN_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesItemModel::MAX_COLUMN_INDEX, !visible);
 }

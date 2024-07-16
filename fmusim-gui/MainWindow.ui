@@ -690,6 +690,9 @@
         </property>
         <item row="0" column="1">
          <widget class="QToolButton" name="filterParameterVariablesToolButton">
+          <property name="toolTip">
+           <string>Filter parameter variables</string>
+          </property>
           <property name="text">
            <string>P</string>
           </property>
@@ -704,8 +707,30 @@
           </property>
          </widget>
         </item>
+        <item row="0" column="3">
+         <widget class="QToolButton" name="filterOutputVariablesToolButton">
+          <property name="toolTip">
+           <string>Filter output variables</string>
+          </property>
+          <property name="text">
+           <string>O</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <property name="autoRaise">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="2">
          <widget class="QToolButton" name="filterInputVariablesToolButton">
+          <property name="toolTip">
+           <string>Filter input variables</string>
+          </property>
           <property name="text">
            <string>I</string>
           </property>
@@ -722,6 +747,9 @@
         </item>
         <item row="0" column="4">
          <widget class="QToolButton" name="filterLocalVariablesToolButton">
+          <property name="toolTip">
+           <string>Filter local variables</string>
+          </property>
           <property name="text">
            <string>L</string>
           </property>
@@ -749,15 +777,15 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="3">
-         <widget class="QToolButton" name="filterOutputVariablesToolButton">
+        <item row="0" column="5">
+         <widget class="QToolButton" name="showOptionalColumnsToolButton">
+          <property name="toolTip">
+           <string>Show optional columns</string>
+          </property>
           <property name="text">
-           <string>O</string>
+           <string>C</string>
           </property>
           <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <property name="checked">
            <bool>true</bool>
           </property>
           <property name="autoRaise">

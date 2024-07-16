@@ -67,6 +67,7 @@ private slots:
     void simulate();
     void addPlotVariable(const FMIModelVariable* variable);
     void removePlotVariable(const FMIModelVariable* variable);
+    void setOptionalColumnsVisible(bool visible);
 
 };
 #endif // MAINWINDOW_H
