@@ -3,6 +3,7 @@
 #include <QStringListModel>
 #include <QDesktopServices>
 #include <QFileDialog>
+#include <QDateTime>
 #include <QDragEnterEvent>
 #include <QMimeData>
 #include <QMessageBox>
@@ -501,7 +502,13 @@ void MainWindow::simulate() {
 
     recorder = FMICreateRecorder(S, recordedVariables.size(), (const FMIModelVariable**)recordedVariables.data(), "result.csv");
 
+    const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
+
     const FMIStatus status = FMISimulate(S, modelDescription, ba.data(), recorder, input, &settings);
+
+    const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
+
+    ui->logPlainTextEdit->appendPlainText("Simulation took " + QString::number(endTime - startTime) + "  ms.");
 
     updatePlot();
 
