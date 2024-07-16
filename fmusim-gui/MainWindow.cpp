@@ -99,6 +99,7 @@ MainWindow::MainWindow(QWidget *parent)
     variablesFilterModel->setSourceModel(variablesListModel);
 
     ui->treeView->setModel(variablesFilterModel);
+    ui->treeView->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
     connect(ui->filterLineEdit, &QLineEdit::textChanged, variablesFilterModel, &VariablesFilterModel::setFilterFixedString);
     connect(ui->filterParameterVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterParamterVariables);
