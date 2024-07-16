@@ -85,6 +85,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         buttons.qrc
         plot.qrc
         icons/variables/variables.qrc
+        VariablesFilterModel.h VariablesFilterModel.cpp
     )
 
 target_include_directories(fmusim-gui PRIVATE

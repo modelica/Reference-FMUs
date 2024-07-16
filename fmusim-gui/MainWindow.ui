@@ -438,6 +438,9 @@
           <property name="frameShape">
            <enum>QFrame::NoFrame</enum>
           </property>
+          <property name="sortingEnabled">
+           <bool>true</bool>
+          </property>
          </widget>
         </item>
        </layout>
@@ -629,7 +632,7 @@
    <property name="minimumSize">
     <size>
      <width>500</width>
-     <height>77</height>
+     <height>116</height>
     </size>
    </property>
    <property name="styleSheet">
@@ -654,7 +657,10 @@
      <property name="bottomMargin">
       <number>0</number>
      </property>
-     <item row="0" column="0">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item row="1" column="0">
       <widget class="QTreeView" name="treeView">
        <property name="frameShape">
         <enum>QFrame::NoFrame</enum>
@@ -662,6 +668,104 @@
        <property name="rootIsDecorated">
         <bool>false</bool>
        </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QWidget" name="widget_2" native="true">
+       <layout class="QGridLayout" name="gridLayout_12">
+        <property name="leftMargin">
+         <number>3</number>
+        </property>
+        <property name="topMargin">
+         <number>1</number>
+        </property>
+        <property name="rightMargin">
+         <number>2</number>
+        </property>
+        <property name="bottomMargin">
+         <number>2</number>
+        </property>
+        <property name="spacing">
+         <number>2</number>
+        </property>
+        <item row="0" column="1">
+         <widget class="QToolButton" name="filterParameterVariablesToolButton">
+          <property name="text">
+           <string>P</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <property name="autoRaise">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QToolButton" name="filterInputVariablesToolButton">
+          <property name="text">
+           <string>I</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <property name="autoRaise">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="4">
+         <widget class="QToolButton" name="filterLocalVariablesToolButton">
+          <property name="text">
+           <string>L</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <property name="autoRaise">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QLineEdit" name="filterLineEdit">
+          <property name="maximumSize">
+           <size>
+            <width>16777215</width>
+            <height>21</height>
+           </size>
+          </property>
+          <property name="placeholderText">
+           <string>filter variables</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QToolButton" name="filterOutputVariablesToolButton">
+          <property name="text">
+           <string>O</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <property name="autoRaise">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
     </layout>

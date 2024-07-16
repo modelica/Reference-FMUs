@@ -8,6 +8,7 @@
 #include <QMessageBox>
 #include <QStyleHints>
 #include "ModelVariablesItemModel.h"
+#include "VariablesFilterModel.h"
 
 extern "C" {
 #include "FMIZip.h"
@@ -93,7 +94,17 @@ MainWindow::MainWindow(QWidget *parent)
     connect(variablesListModel, &ModelVariablesItemModel::plotVariableSelected, this, &MainWindow::addPlotVariable);
     connect(variablesListModel, &ModelVariablesItemModel::plotVariableDeselected, this, &MainWindow::removePlotVariable);
 
-    ui->treeView->setModel(variablesListModel);
+    variablesFilterModel = new VariablesFilterModel();
+
+    variablesFilterModel->setSourceModel(variablesListModel);
+
+    ui->treeView->setModel(variablesFilterModel);
+
+    connect(ui->filterLineEdit, &QLineEdit::textChanged, variablesFilterModel, &VariablesFilterModel::setFilterFixedString);
+    connect(ui->filterParameterVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterParamterVariables);
+    connect(ui->filterInputVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterInputVariables);
+    connect(ui->filterOutputVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterOutputVariables);
+    connect(ui->filterLocalVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterLocalVariables);
 
     // ui->treeView->setColumnWidth(0, ModelVariablesItemModel::NAME_COLUMN_DEFAULT_WIDTH);
     // ui->treeView->setColumnWidth(1, ModelVariablesItemModel::START_COLUMN_DEFAULT_WIDTH);

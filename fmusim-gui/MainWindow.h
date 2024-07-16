@@ -20,6 +20,7 @@ struct FMIRecorder;
 }
 
 class ModelVariablesItemModel;
+class VariablesFilterModel;
 
 class MainWindow : public QMainWindow
 {
@@ -49,6 +50,7 @@ private:
     QMap<const FMIModelVariable*, QString> startValues;
     QList<const FMIModelVariable*> plotVariables;
     ModelVariablesItemModel* variablesListModel = nullptr;
+    VariablesFilterModel* variablesFilterModel = nullptr;
     FMIRecorder* recorder = nullptr;
 
     static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message);
