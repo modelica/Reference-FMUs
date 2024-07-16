@@ -6,6 +6,7 @@
 #include <QDragEnterEvent>
 #include <QMimeData>
 #include <QMessageBox>
+#include <QStyleHints>
 #include "ModelVariablesItemModel.h"
 
 extern "C" {
@@ -22,9 +23,11 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-    QIcon::setThemeName("light");
+    // QIcon::setThemeName("light");
 
     ui->setupUi(this);
+
+    setColorScheme(QGuiApplication::styleHints()->colorScheme());
 
     // load the web engine, so the window doesn't jump later
     ui->plotWebEngineView->setHtml("");
@@ -309,6 +312,38 @@ void MainWindow::dropEvent(QDropEvent *event) {
     }
 }
 
+void MainWindow::changeEvent(QEvent *event) {
+
+    if (event->type() == QEvent::Type::StyleChange) {
+        QStyleHints *styleHints = QGuiApplication::styleHints();
+        setColorScheme(styleHints->colorScheme());
+    }
+
+    QMainWindow::changeEvent(event);
+}
+
+void MainWindow::setColorScheme(Qt::ColorScheme colorScheme) {
+
+    if (this->colorScheme == colorScheme) {
+        return;
+    }
+
+    const QString theme = colorScheme == Qt::ColorScheme::Dark ? "dark" : "light";
+
+    ui->openFileAction->setIcon(QIcon(":/buttons/" + theme + "/folder-open.svg"));
+    ui->showSettingsAction->setIcon(QIcon(":/buttons/" + theme + "/gear.svg"));
+    ui->showFilesAction->setIcon(QIcon(":/buttons/" + theme + "/file-earmark-zip.svg"));
+    ui->showDocumentationAction->setIcon(QIcon(":/buttons/" + theme + "/book.svg"));
+    ui->showLogAction->setIcon(QIcon(":/buttons/" + theme + "/list-task.svg"));
+    ui->showPlotAction->setIcon(QIcon(":/buttons/" + theme + "/graph.svg"));
+    ui->simulateAction->setIcon(QIcon(":/buttons/" + theme + "/play.svg"));
+    ui->showSideBarAction->setIcon(QIcon(":/buttons/" + theme + "/side-bar.svg"));
+
+    this->colorScheme = colorScheme;
+
+    updatePlot();
+}
+
 void MainWindow::logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message) {
 
     MainWindow *window = (MainWindow *)instance->userData;
@@ -465,7 +500,7 @@ void MainWindow::simulate() {
 
     updatePlot();
 
-    ui->showPlotAction->setEnabled(false);
+    ui->showPlotAction->setEnabled(true);
 
     if (status == FMIOK) {
         setCurrentPage(ui->plotPage);
@@ -671,7 +706,8 @@ void MainWindow::updatePlot() {
         }
 
         const QString name = QString::fromUtf8(variable->name);
-        const QString colors = "color: '#fff', zerolinecolor: '#666'";
+
+        const QString colors = colorScheme == Qt::ColorScheme::Dark ? "color: '#fff', zerolinecolor: '#666'" : "color: '#000', zerolinecolor: '#000'";
 
         const double segment = 1.0 / plotVariables.size();
         const double margin = 0.02;
@@ -689,17 +725,21 @@ void MainWindow::updatePlot() {
         k++;
     }
 
+    QString plotColors = colorScheme == Qt::ColorScheme::Dark ? "plot_bgcolor: '#1e1e1e', paper_bgcolor: '#1e1e1e'," : "";
+
     QString javaScript =
         data +
         "    var layout = {"
         "    showlegend: false,"
         "    autosize: true,"
         "    font: {family: 'Segoe UI', size: 12},"
-        "    plot_bgcolor: '#1e1e1e',"
-        "    paper_bgcolor: '#1e1e1e',"
+        + plotColors +
+        // "    plot_bgcolor: '#1e1e1e',"
+        // "    paper_bgcolor: '#1e1e1e',"
         "    grid: {rows: " + QString::number(plotVariables.size()) + ", columns: 1, pattern: 'independent'},"
-                                                  "    template: 'plotly_dark'," + axes +
-        "    color: '#0f0',"
+        // "    template: 'plotly_dark',"
+                         + axes +
+        // "    color: '#0f0',"
         "    margin: { l: 60, r: 20, b: 20, t: 20, pad: 0 }"
         "};"
         "var config = {"
@@ -707,7 +747,7 @@ void MainWindow::updatePlot() {
         "};"
         "Plotly.newPlot('gd', data, layout, config);";
 
-    qDebug() << javaScript;
+    // qDebug() << javaScript;
 
     ui->plotWebEngineView->page()->runJavaScript(javaScript);
 }

@@ -29,13 +29,17 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
     void loadFMU(const QString &filename);
+    void setColorScheme(Qt::ColorScheme colorScheme);
 
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
+    void changeEvent(QEvent *event) override;
+    // void update
 
 private:
     Ui::MainWindow *ui;
+    Qt::ColorScheme colorScheme = Qt::ColorScheme::Dark;
     QLineEdit *stopTimeLineEdit;
     QDoubleValidator *stopTimeValidator;
     QFileSystemModel filesModel;
