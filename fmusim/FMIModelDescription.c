@@ -1488,7 +1488,7 @@ size_t FMIValidateModelDescription(const FMIModelDescription* modelDescription) 
 
     if (nOutputs != modelDescription->nOutputs) {
         nProblems++;
-        FMILogError("The number of model varialbes with causality=\"output\" (%zu) must match the number of outputs"
+        FMILogError("The number of model variables with causality=\"output\" (%zu) must match the number of outputs"
             " in the model structure (%zu).\n", nOutputs, modelDescription->nContinuousStates);
     }
 
