@@ -5,8 +5,11 @@
 #include "FMIRecorder.h"
 #include "FMIStaticInput.h"
 
+typedef struct FMISimulationSettings FMISimulationSettings;
 
-typedef struct {
+typedef bool (*FMIStepFinished)(FMISimulationSettings* settings, double time);
+
+typedef struct FMISimulationSettings {
 
     // Common
     FMIInterfaceType interfaceType;
@@ -32,6 +35,10 @@ typedef struct {
     SolverFree solverFree;
     SolverStep solverStep;
     SolverReset solverReset;
+
+    // Callbacks
+    void* userData;
+    FMIStepFinished stepFinished;
 
 } FMISimulationSettings;
 

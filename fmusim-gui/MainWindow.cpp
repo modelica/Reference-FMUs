@@ -9,8 +9,10 @@
 #include <QMessageBox>
 #include <QStyleHints>
 #include <QDirIterator>
+#include <QProgressDialog>
 #include "ModelVariablesItemModel.h"
 #include "VariablesFilterModel.h"
+#include "SimulationThread.h"
 
 extern "C" {
 #include "FMIZip.h"
@@ -27,6 +29,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     // QIcon::setThemeName("light");
+
+    settings = (FMISimulationSettings*)calloc(1, sizeof(FMISimulationSettings));
 
     ui->setupUi(this);
 
@@ -436,48 +440,46 @@ void MainWindow::simulate() {
         modelIdentifier = modelDescription->modelExchange->modelIdentifier;
     }
 
-    FMISimulationSettings settings;
+    settings->interfaceType            = interfaceType;
+    settings->visible                  = false;
+    settings->loggingOn                = ui->debugLoggingCheckBox->isChecked();
+    settings->tolerance                = ui->relativeToleranceLineEdit->text().toDouble();
+    settings->nStartValues             = 0;
+    settings->startVariables           = NULL;
+    settings->startValues              = NULL;
+    settings->tolerance                = ui->relativeToleranceLineEdit->text().toDouble();
+    settings->startTime                = ui->startTimeLineEdit->text().toDouble();
 
-    settings.interfaceType            = interfaceType;
-    settings.visible                  = false;
-    settings.loggingOn                = ui->debugLoggingCheckBox->isChecked();
-    settings.tolerance                = ui->relativeToleranceLineEdit->text().toDouble();
-    settings.nStartValues             = 0;
-    settings.startVariables           = NULL;
-    settings.startValues              = NULL;
-    settings.tolerance                = ui->relativeToleranceLineEdit->text().toDouble();
-    settings.startTime                = ui->startTimeLineEdit->text().toDouble();
+    settings->outputInterval           = outputInterval;
+    settings->stopTime                 = stopTime;
+    settings->earlyReturnAllowed       = ui->earlyReturnAllowedCheckBox->isChecked();
+    settings->eventModeUsed            = ui->eventModeUsedCheckBox->isChecked();
+    settings->recordIntermediateValues = false;
+    settings->initialFMUStateFile      = NULL;
+    settings->finalFMUStateFile        = NULL;
 
-    settings.outputInterval           = outputInterval;
-    settings.stopTime                 = stopTime;
-    settings.earlyReturnAllowed       = ui->earlyReturnAllowedCheckBox->isChecked();
-    settings.eventModeUsed            = ui->eventModeUsedCheckBox->isChecked();
-    settings.recordIntermediateValues = false;
-    settings.initialFMUStateFile      = NULL;
-    settings.finalFMUStateFile        = NULL;
-
-    settings.nStartValues = startValues.count();
-    settings.startVariables = (const FMIModelVariable**)calloc(settings.nStartValues, sizeof(FMIModelVariable*));
-    settings.startValues = (const char**)calloc(settings.nStartValues, sizeof(char*));
+    settings->nStartValues = startValues.count();
+    settings->startVariables = (const FMIModelVariable**)calloc(settings->nStartValues, sizeof(FMIModelVariable*));
+    settings->startValues = (const char**)calloc(settings->nStartValues, sizeof(char*));
 
     if (ui->solverComboBox->currentText() == "Euler") {
-        settings.solverCreate = FMIEulerCreate;
-        settings.solverFree   = FMIEulerFree;
-        settings.solverStep   = FMIEulerStep;
-        settings.solverReset  = FMIEulerReset;
+        settings->solverCreate = FMIEulerCreate;
+        settings->solverFree   = FMIEulerFree;
+        settings->solverStep   = FMIEulerStep;
+        settings->solverReset  = FMIEulerReset;
     } else {
-        settings.solverCreate = FMICVodeCreate;
-        settings.solverFree   = FMICVodeFree;
-        settings.solverStep   = FMICVodeStep;
-        settings.solverReset  = FMICVodeReset;
+        settings->solverCreate = FMICVodeCreate;
+        settings->solverFree   = FMICVodeFree;
+        settings->solverStep   = FMICVodeStep;
+        settings->solverReset  = FMICVodeReset;
     }
 
     size_t i = 0;
 
     for (auto [variable, value] : startValues.asKeyValueRange()) {
-        settings.startVariables[i] = (FMIModelVariable*)variable;
+        settings->startVariables[i] = (FMIModelVariable*)variable;
         QByteArray buffer = value.toLocal8Bit();
-        settings.startValues[i] = _strdup(buffer.data());
+        settings->startValues[i] = _strdup(buffer.data());
         i++;
     }
 
@@ -521,25 +523,59 @@ void MainWindow::simulate() {
         }
     }
 
-    recorder = FMICreateRecorder(S, recordedVariables.size(), (const FMIModelVariable**)recordedVariables.data(), "result.csv");
+    recorder = FMICreateRecorder(S, recordedVariables.size(), (const FMIModelVariable**)recordedVariables.data());
 
-    const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
-
-    const FMIStatus status = FMISimulate(S, modelDescription, ba.data(), recorder, input, &settings);
-
-    const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
-
-    ui->logPlainTextEdit->appendPlainText("Simulation took " + QString::number(endTime - startTime) + "  ms.");
-
-    updatePlot();
-
-    ui->showPlotAction->setEnabled(true);
-
-    if (status == FMIOK) {
-        setCurrentPage(ui->plotPage);
-    } else {
-        setCurrentPage(ui->logPage);
+    if (!simulation) {
+        simulation = new SimulationThread();
     }
+
+    simulation->S = S;
+    simulation->modelDescripton = modelDescription;
+    simulation->unzipdir = ba.data();
+    simulation->recorder = recorder;
+    simulation->input = input;
+    simulation->settings = settings;
+
+    QProgressDialog* progressDialog = new QProgressDialog(this);
+
+    progressDialog->setLabelText("Label text");
+    progressDialog->setMinimum(0);
+    progressDialog->setMaximum(100);
+    progressDialog->setMinimumDuration(1000);
+    progressDialog->setCancelButton(nullptr);
+    progressDialog->setWindowModality(Qt::WindowModal);
+
+    Qt::WindowFlags flags = progressDialog->windowFlags();
+    Qt::WindowFlags closeFlag = Qt::WindowCloseButtonHint;
+    flags = flags & (~closeFlag);
+    progressDialog->setWindowFlags(flags);
+
+    connect(simulation, &SimulationThread::progressChanged, progressDialog, &QProgressDialog::setValue);
+    connect(simulation, &SimulationThread::finished, this, &MainWindow::simulationFinished);
+
+    // progressDialog->show();
+
+    simulation->start();
+
+    // const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
+
+    // const FMIStatus status = FMISimulate(S, modelDescription, ba.data(), recorder, input, &settings);
+
+    // // const FMIStatus status = simulation.status;
+
+    // const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
+
+    // ui->logPlainTextEdit->appendPlainText("Simulation took " + QString::number(endTime - startTime) + "  ms.");
+
+    // updatePlot();
+
+    // ui->showPlotAction->setEnabled(true);
+
+    // if (status == FMIOK) {
+    //     setCurrentPage(ui->plotPage);
+    // } else {
+    //     setCurrentPage(ui->logPage);
+    // }
 }
 
 void MainWindow::openFile() {
@@ -807,4 +843,39 @@ void MainWindow::setOptionalColumnsVisible(bool visible) {
     ui->treeView->setColumnHidden(ModelVariablesItemModel::NOMINAL_COLUMN_INDEX, !visible);
     ui->treeView->setColumnHidden(ModelVariablesItemModel::MIN_COLUMN_INDEX, !visible);
     ui->treeView->setColumnHidden(ModelVariablesItemModel::MAX_COLUMN_INDEX, !visible);
+}
+
+static bool stepFinished(FMISimulationSettings* settings, double time) {
+    //qDebug() << settings->stopTime;
+    //qDebug() << time;
+    int progress = time / (settings->stopTime - settings->startTime) * 100;
+    qDebug() << progress;
+    return time < 2;
+}
+
+void MainWindow::simulationFinished()
+{
+    const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
+
+    const QByteArray ba = unzipdir.toLocal8Bit();
+
+    settings->stepFinished = stepFinished;
+
+    const FMIStatus status = FMISimulate(simulation->S, modelDescription, ba.data(), recorder, simulation->input, simulation->settings);
+
+    // const FMIStatus status = simulation.status;
+
+    const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
+
+    ui->logPlainTextEdit->appendPlainText("Simulation took " + QString::number(endTime - startTime) + "  ms.");
+
+    updatePlot();
+
+    ui->showPlotAction->setEnabled(true);
+
+    if (status == FMIOK) {
+        setCurrentPage(ui->plotPage);
+    } else {
+        setCurrentPage(ui->logPage);
+    }
 }

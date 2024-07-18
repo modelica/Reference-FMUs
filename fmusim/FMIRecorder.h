@@ -36,7 +36,7 @@ typedef struct FMIRecorder {
 
 } FMIRecorder;
 
-FMIRecorder* FMICreateRecorder(FMIInstance* instance, size_t nVariables, const FMIModelVariable** variables, const char* file);
+FMIRecorder* FMICreateRecorder(FMIInstance* instance, size_t nVariables, const FMIModelVariable** variables);
 
 void FMIFreeRecorder(FMIRecorder* recorder);
 

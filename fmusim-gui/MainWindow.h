@@ -17,10 +17,12 @@ QT_END_NAMESPACE
 extern "C" {
 #include "FMIModelDescription.h"
 struct FMIRecorder;
+struct FMISimulationSettings;
 }
 
 class ModelVariablesItemModel;
 class VariablesFilterModel;
+class SimulationThread;
 
 class MainWindow : public QMainWindow
 {
@@ -52,6 +54,8 @@ private:
     ModelVariablesItemModel* variablesListModel = nullptr;
     VariablesFilterModel* variablesFilterModel = nullptr;
     FMIRecorder* recorder = nullptr;
+    FMISimulationSettings* settings = nullptr;
+    SimulationThread* simulation = nullptr;
 
     static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message);
     static void logMessage(FMIInstance* instance, FMIStatus status, const char* category, const char* message);
@@ -68,6 +72,7 @@ private slots:
     void addPlotVariable(const FMIModelVariable* variable);
     void removePlotVariable(const FMIModelVariable* variable);
     void setOptionalColumnsVisible(bool visible);
+    void simulationFinished();
 
 };
 #endif // MAINWINDOW_H
