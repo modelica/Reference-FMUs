@@ -20,5 +20,15 @@
         <file>buttons/light/stop.svg</file>
         <file>buttons/dark/side-bar.svg</file>
         <file>buttons/light/side-bar.svg</file>
+        <file>buttons/dark/columns.svg</file>
+        <file>buttons/dark/checkers.svg</file>
+        <file>buttons/dark/checkers-14x14.svg</file>
+        <file>buttons/dark/columns-14x14.svg</file>
+        <file>buttons/dark/columns-14x14.png</file>
+        <file>buttons/dark/checkers-14x14.png</file>
+        <file>buttons/dark/parameter.svg</file>
+        <file>buttons/dark/output-variable.svg</file>
+        <file>buttons/dark/input-variable.svg</file>
+        <file>buttons/dark/local-variable.svg</file>
     </qresource>
 </RCC>

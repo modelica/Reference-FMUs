@@ -713,6 +713,10 @@
           <property name="text">
            <string>P</string>
           </property>
+          <property name="icon">
+           <iconset resource="buttons.qrc">
+            <normaloff>:/buttons/dark/parameter.svg</normaloff>:/buttons/dark/parameter.svg</iconset>
+          </property>
           <property name="checkable">
            <bool>true</bool>
           </property>
@@ -731,6 +735,10 @@
           </property>
           <property name="text">
            <string>O</string>
+          </property>
+          <property name="icon">
+           <iconset resource="buttons.qrc">
+            <normaloff>:/buttons/dark/output-variable.svg</normaloff>:/buttons/dark/output-variable.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -751,6 +759,10 @@
           <property name="text">
            <string>I</string>
           </property>
+          <property name="icon">
+           <iconset resource="buttons.qrc">
+            <normaloff>:/buttons/dark/input-variable.svg</normaloff>:/buttons/dark/input-variable.svg</iconset>
+          </property>
           <property name="checkable">
            <bool>true</bool>
           </property>
@@ -769,6 +781,16 @@
           </property>
           <property name="text">
            <string>L</string>
+          </property>
+          <property name="icon">
+           <iconset resource="buttons.qrc">
+            <normaloff>:/buttons/dark/local-variable.svg</normaloff>:/buttons/dark/local-variable.svg</iconset>
+          </property>
+          <property name="iconSize">
+           <size>
+            <width>16</width>
+            <height>16</height>
+           </size>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -801,6 +823,10 @@
           </property>
           <property name="text">
            <string>C</string>
+          </property>
+          <property name="icon">
+           <iconset resource="buttons.qrc">
+            <normaloff>:/buttons/dark/columns-14x14.svg</normaloff>:/buttons/dark/columns-14x14.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
