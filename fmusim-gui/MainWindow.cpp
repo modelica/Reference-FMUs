@@ -8,6 +8,7 @@
 #include <QMimeData>
 #include <QMessageBox>
 #include <QStyleHints>
+#include <QDirIterator>
 #include "ModelVariablesItemModel.h"
 #include "VariablesFilterModel.h"
 
@@ -197,6 +198,18 @@ void MainWindow::loadFMU(const QString &filename) {
 
     FMIPathAppend(modelDescriptionPath, unzipdir);
     FMIPathAppend(modelDescriptionPath, "modelDescription.xml");
+
+    QDir binariesDir(QString(unzipdir) + QDir::separator() + "binaries");
+
+    QList<QString> platforms;
+
+    for(const QFileInfo &fileInfo: binariesDir.entryInfoList()) {
+        if (fileInfo.isDir() && !fileInfo.fileName().startsWith(".")) {
+            platforms << fileInfo.fileName();
+        }
+    }
+
+    ui->platformsLabel->setText(platforms.join(", "));
 
     modelDescription = FMIReadModelDescription(modelDescriptionPath);
 

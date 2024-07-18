@@ -263,56 +263,31 @@
           <property name="flat">
            <bool>true</bool>
           </property>
-          <layout class="QGridLayout" name="gridLayout" rowminimumheight="23,23,23,23,23,23,23,0">
+          <layout class="QGridLayout" name="gridLayout" rowminimumheight="23,23,23,23,23,23,23,0,0">
            <property name="horizontalSpacing">
             <number>10</number>
            </property>
-           <item row="3" column="1">
-            <widget class="QLabel" name="continuousStatesLabel">
+           <item row="7" column="1">
+            <widget class="QLabel" name="generationToolLabel">
              <property name="text">
               <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QLabel" name="label_7">
-             <property name="text">
-              <string>Event Indicators</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QLabel" name="variablesLabel">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="1">
-            <widget class="QLabel" name="eventIndicatorsLabel">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="1">
-            <widget class="QLabel" name="generationDateLabel">
-             <property name="text">
-              <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_6">
-             <property name="text">
-              <string>Continuous States</string>
              </property>
             </widget>
            </item>
            <item row="6" column="0">
-            <widget class="QLabel" name="label_3">
+            <widget class="QLabel" name="label_2">
              <property name="text">
-              <string>Generation Tool</string>
+              <string>Generation Date</string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="1">
+            <widget class="QLabel" name="descriptionLabel">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -329,20 +304,38 @@
              </property>
             </widget>
            </item>
-           <item row="7" column="1">
-            <widget class="QLabel" name="descriptionLabel">
+           <item row="7" column="0">
+            <widget class="QLabel" name="label_3">
              <property name="text">
-              <string/>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
+              <string>Generation Tool</string>
              </property>
             </widget>
            </item>
-           <item row="5" column="0">
-            <widget class="QLabel" name="label_2">
+           <item row="3" column="1">
+            <widget class="QLabel" name="variablesLabel">
              <property name="text">
-              <string>Generation Date</string>
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLabel" name="interfacesLabel">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1">
+            <widget class="QLabel" name="generationDateLabel">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0">
+            <widget class="QLabel" name="label_6">
+             <property name="text">
+              <string>Continuous States</string>
              </property>
             </widget>
            </item>
@@ -353,24 +346,24 @@
              </property>
             </widget>
            </item>
-           <item row="7" column="0">
+           <item row="5" column="0">
+            <widget class="QLabel" name="label_7">
+             <property name="text">
+              <string>Event Indicators</string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="0">
             <widget class="QLabel" name="label_4">
              <property name="text">
               <string>Description</string>
              </property>
             </widget>
            </item>
-           <item row="6" column="1">
-            <widget class="QLabel" name="generationToolLabel">
+           <item row="5" column="1">
+            <widget class="QLabel" name="eventIndicatorsLabel">
              <property name="text">
               <string/>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_5">
-             <property name="text">
-              <string>Variables</string>
              </property>
             </widget>
            </item>
@@ -381,8 +374,29 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="1">
-            <widget class="QLabel" name="interfacesLabel">
+           <item row="3" column="0">
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>Variables</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="1">
+            <widget class="QLabel" name="continuousStatesLabel">
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_12">
+             <property name="text">
+              <string>Platforms</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLabel" name="platformsLabel">
              <property name="text">
               <string/>
              </property>
