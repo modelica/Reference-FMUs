@@ -81,15 +81,15 @@ TERMINATE:
     return status;
 }
 
-FMIStatus FMISimulate(
-    FMIInstance* S,
-    const FMIModelDescription* modelDescription,
-    const char* unzipdir,
-    FMIRecorder* recorder,
-    const FMIStaticInput* input,
-    const FMISimulationSettings* settings) {
+FMIStatus FMISimulate(const FMISimulationSettings* settings) {
 
     FMIStatus status = FMIOK;
+
+    FMIInstance* S = settings->S;
+    FMIModelDescription* modelDescription = settings->modelDescription;
+    const char* unzipdir = settings->unzipdir;
+    FMIRecorder* recorder = settings->recorder;
+    FMIStaticInput* input = settings->input;
 
     char resourcePath[FMI_PATH_MAX] = "";
 

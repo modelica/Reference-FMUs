@@ -23,6 +23,7 @@ struct FMISimulationSettings;
 class ModelVariablesItemModel;
 class VariablesFilterModel;
 class SimulationThread;
+class QProgressDialog;
 
 class MainWindow : public QMainWindow
 {
@@ -55,7 +56,8 @@ private:
     VariablesFilterModel* variablesFilterModel = nullptr;
     FMIRecorder* recorder = nullptr;
     FMISimulationSettings* settings = nullptr;
-    SimulationThread* simulation = nullptr;
+    SimulationThread* simulationThread = nullptr;
+    QProgressDialog* progressDialog;
 
     static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message);
     static void logMessage(FMIInstance* instance, FMIStatus status, const char* category, const char* message);

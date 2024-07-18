@@ -13,16 +13,18 @@ class SimulationThread : public QThread
     Q_OBJECT
 
 public:
-    FMIInstance* S;
-    FMIModelDescription* modelDescripton;
-    const char* unzipdir;
-    FMIRecorder* recorder;
-    FMIStaticInput* input;
-    FMISimulationSettings* settings;
-    FMIStatus status;
+    FMISimulationSettings* settings = nullptr;
+    FMIStatus status = FMIOK;
+    double CPUTime = 0.0;
     SimulationThread();
-
     void run() override;
+
+public slots:
+    void stop();
+
+private:
+    static bool stepFinished(FMISimulationSettings* settings, double time);
+    bool continueSimulation = true;
 
 signals:
     void progressChanged(int progress);

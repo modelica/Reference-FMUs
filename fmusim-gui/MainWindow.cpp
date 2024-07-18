@@ -32,6 +32,28 @@ MainWindow::MainWindow(QWidget *parent)
 
     settings = (FMISimulationSettings*)calloc(1, sizeof(FMISimulationSettings));
 
+    simulationThread = new SimulationThread();
+
+    progressDialog = new QProgressDialog(this);
+
+    progressDialog->setWindowTitle("FMUSim");
+    progressDialog->setLabelText("Simulating...");
+    progressDialog->setMinimum(0);
+    progressDialog->setMaximum(100);
+    progressDialog->setMinimumDuration(1000);
+    progressDialog->setWindowModality(Qt::WindowModal);
+
+    Qt::WindowFlags flags = progressDialog->windowFlags();
+    Qt::WindowFlags closeFlag = Qt::WindowCloseButtonHint;
+    flags = flags & (~closeFlag);
+    progressDialog->setWindowFlags(flags);
+    progressDialog->reset();
+
+    connect(simulationThread, &SimulationThread::progressChanged, progressDialog, &QProgressDialog::setValue);
+    connect(simulationThread, &SimulationThread::finished, progressDialog, &QProgressDialog::reset);
+    connect(simulationThread, &SimulationThread::finished, this, &MainWindow::simulationFinished);
+    connect(progressDialog, &QProgressDialog::canceled, simulationThread, &SimulationThread::stop);
+
     ui->setupUi(this);
 
     setColorScheme(QGuiApplication::styleHints()->colorScheme());
@@ -432,6 +454,8 @@ void MainWindow::simulate() {
     FMIInterfaceType interfaceType;
     const char* modelIdentifier;
 
+    memset(settings, 0, sizeof(FMISimulationSettings));
+
     if (interfaceTypeComboBox->currentText() == "Co-Simulation") {
         interfaceType = FMICoSimulation;
         modelIdentifier = modelDescription->coSimulation->modelIdentifier;
@@ -525,37 +549,17 @@ void MainWindow::simulate() {
 
     recorder = FMICreateRecorder(S, recordedVariables.size(), (const FMIModelVariable**)recordedVariables.data());
 
-    if (!simulation) {
-        simulation = new SimulationThread();
-    }
+    settings->S = S;
+    settings->modelDescription = modelDescription;
+    settings->unzipdir = ba.data();
+    settings->recorder = recorder;
+    settings->input = input;
 
-    simulation->S = S;
-    simulation->modelDescripton = modelDescription;
-    simulation->unzipdir = ba.data();
-    simulation->recorder = recorder;
-    simulation->input = input;
-    simulation->settings = settings;
-
-    QProgressDialog* progressDialog = new QProgressDialog(this);
-
-    progressDialog->setLabelText("Label text");
-    progressDialog->setMinimum(0);
-    progressDialog->setMaximum(100);
-    progressDialog->setMinimumDuration(1000);
-    progressDialog->setCancelButton(nullptr);
-    progressDialog->setWindowModality(Qt::WindowModal);
-
-    Qt::WindowFlags flags = progressDialog->windowFlags();
-    Qt::WindowFlags closeFlag = Qt::WindowCloseButtonHint;
-    flags = flags & (~closeFlag);
-    progressDialog->setWindowFlags(flags);
-
-    connect(simulation, &SimulationThread::progressChanged, progressDialog, &QProgressDialog::setValue);
-    connect(simulation, &SimulationThread::finished, this, &MainWindow::simulationFinished);
+    simulationThread->settings = settings;
 
     // progressDialog->show();
 
-    simulation->start();
+    simulationThread->start();
 
     // const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
 
@@ -845,35 +849,33 @@ void MainWindow::setOptionalColumnsVisible(bool visible) {
     ui->treeView->setColumnHidden(ModelVariablesItemModel::MAX_COLUMN_INDEX, !visible);
 }
 
-static bool stepFinished(FMISimulationSettings* settings, double time) {
-    //qDebug() << settings->stopTime;
-    //qDebug() << time;
-    int progress = time / (settings->stopTime - settings->startTime) * 100;
-    qDebug() << progress;
-    return time < 2;
-}
+// static bool stepFinished(FMISimulationSettings* settings, double time) {
+//     //qDebug() << settings->stopTime;
+//     //qDebug() << time;
+//     int progress = time / (settings->stopTime - settings->startTime) * 100;
+//     qDebug() << progress;
+//     return time < 2;
+// }
 
 void MainWindow::simulationFinished()
 {
-    const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
+    // const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
 
-    const QByteArray ba = unzipdir.toLocal8Bit();
+    // settings->stepFinished = stepFinished;
 
-    settings->stepFinished = stepFinished;
-
-    const FMIStatus status = FMISimulate(simulation->S, modelDescription, ba.data(), recorder, simulation->input, simulation->settings);
+    // const FMIStatus status = FMISimulate(settings);
 
     // const FMIStatus status = simulation.status;
 
-    const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
+    // const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
 
-    ui->logPlainTextEdit->appendPlainText("Simulation took " + QString::number(endTime - startTime) + "  ms.");
+    ui->logPlainTextEdit->appendPlainText("Simulation took " + QString::number(simulationThread->CPUTime) + "  s.");
 
     updatePlot();
 
     ui->showPlotAction->setEnabled(true);
 
-    if (status == FMIOK) {
+    if (simulationThread->status == FMIOK) {
         setCurrentPage(ui->plotPage);
     } else {
         setCurrentPage(ui->logPage);

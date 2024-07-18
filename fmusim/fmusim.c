@@ -420,7 +420,7 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    FMISimulationSettings settings;
+    FMISimulationSettings settings = { NULL };
 
     settings.interfaceType            = interfaceType;
     settings.tolerance                = tolerance;
@@ -452,7 +452,13 @@ int main(int argc, const char* argv[]) {
         goto TERMINATE;
     }
 
-    status = FMISimulate(S, modelDescription, unzipdir, recorder, input, &settings);
+    settings.S = S;
+    settings.modelDescription = modelDescription;
+    settings.unzipdir = unzipdir;
+    settings.recorder = recorder;
+    settings.input = input;
+ 
+    status = FMISimulate(&settings);
 
     if (outputFile) {
         

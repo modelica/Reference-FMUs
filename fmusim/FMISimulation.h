@@ -12,6 +12,11 @@ typedef bool (*FMIStepFinished)(FMISimulationSettings* settings, double time);
 typedef struct FMISimulationSettings {
 
     // Common
+    FMIInstance* S;
+    const FMIModelDescription* modelDescription;
+    const char* unzipdir;
+    FMIRecorder* recorder;
+    FMIStaticInput* input;
     FMIInterfaceType interfaceType;
     size_t nStartValues;
     const FMIModelVariable** startVariables;
@@ -44,10 +49,4 @@ typedef struct FMISimulationSettings {
 
 FMIStatus FMIApplyStartValues(FMIInstance* S, const FMISimulationSettings* settings);
 
-FMIStatus FMISimulate(
-    FMIInstance* S,
-    const FMIModelDescription* modelDescription,
-    const char* unzipdir,
-    FMIRecorder* recorder,
-    const FMIStaticInput* input,
-    const FMISimulationSettings* settings);
+FMIStatus FMISimulate(const FMISimulationSettings* settings);
