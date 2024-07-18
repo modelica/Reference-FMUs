@@ -349,6 +349,7 @@ void MainWindow::setColorScheme(Qt::ColorScheme colorScheme) {
 
     const QString theme = colorScheme == Qt::ColorScheme::Dark ? "dark" : "light";
 
+    // toolbar
     ui->openFileAction->setIcon(QIcon(":/buttons/" + theme + "/folder-open.svg"));
     ui->showSettingsAction->setIcon(QIcon(":/buttons/" + theme + "/gear.svg"));
     ui->showFilesAction->setIcon(QIcon(":/buttons/" + theme + "/file-earmark-zip.svg"));
@@ -357,6 +358,13 @@ void MainWindow::setColorScheme(Qt::ColorScheme colorScheme) {
     ui->showPlotAction->setIcon(QIcon(":/buttons/" + theme + "/graph.svg"));
     ui->simulateAction->setIcon(QIcon(":/buttons/" + theme + "/play.svg"));
     ui->showSideBarAction->setIcon(QIcon(":/buttons/" + theme + "/side-bar.svg"));
+
+    // tool buttons
+    ui->filterParameterVariablesToolButton->setIcon(QIcon(":/buttons/" + theme + "/parameter.svg"));
+    ui->filterInputVariablesToolButton->setIcon(QIcon(":/buttons/" + theme + "/input-variable.svg"));
+    ui->filterOutputVariablesToolButton->setIcon(QIcon(":/buttons/" + theme + "/output-variable.svg"));
+    ui->filterLocalVariablesToolButton->setIcon(QIcon(":/buttons/" + theme + "/local-variable.svg"));
+    ui->showOptionalColumnsToolButton->setIcon(QIcon(":/buttons/" + theme + "/columns.svg"));
 
     this->colorScheme = colorScheme;
 

@@ -30,5 +30,10 @@
         <file>buttons/dark/output-variable.svg</file>
         <file>buttons/dark/input-variable.svg</file>
         <file>buttons/dark/local-variable.svg</file>
+        <file>buttons/light/columns.svg</file>
+        <file>buttons/light/output-variable.svg</file>
+        <file>buttons/light/input-variable.svg</file>
+        <file>buttons/light/local-variable.svg</file>
+        <file>buttons/light/parameter.svg</file>
     </qresource>
 </RCC>
