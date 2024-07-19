@@ -71,6 +71,9 @@ FMIStatus FMI2CSSimulate(
             CALL(doStepStatus);
         }
 
+        if (settings->stepFinished && !settings->stepFinished(settings, time)) {
+            break;
+        }
     }
 
     if (settings->finalFMUStateFile) {

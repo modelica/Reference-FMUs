@@ -66,7 +66,10 @@ FMIStatus FMI1CSSimulate(
         } else {
             CALL(doStepStatus);
         }
-        
+
+        if (settings->stepFinished && !settings->stepFinished(settings, time)) {
+            break;
+        }
     }
 
 TERMINATE:

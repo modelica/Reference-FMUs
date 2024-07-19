@@ -220,10 +220,8 @@ FMIStatus FMI3CSSimulate(FMIInstance* S,
             CALL(FMISample(S, time, recorder));
         }
 
-        if (settings->stepFinished) {
-            if (!settings->stepFinished(settings, time)) {
-                break;
-            }
+        if (settings->stepFinished && !settings->stepFinished(settings, time)) {
+            break;
         }
     }
 

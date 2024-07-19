@@ -167,6 +167,9 @@ FMIStatus FMI1MESimulate(
             }
         }
 
+        if (settings->stepFinished && !settings->stepFinished(settings, time)) {
+            break;
+        }
     }
 
 TERMINATE:

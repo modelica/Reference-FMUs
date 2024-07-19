@@ -216,6 +216,9 @@ FMIStatus FMI3MESimulate(
             }
         }
 
+        if (settings->stepFinished && !settings->stepFinished(settings, time)) {
+            break;
+        }
     }
 
     if (settings->finalFMUStateFile) {
