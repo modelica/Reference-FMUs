@@ -10,6 +10,9 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
+    QApplication::setOrganizationName("Modelica");
+    QApplication::setApplicationName("FMUSim");
+
     // QStyleHints *styleHints = QGuiApplication::styleHints();
 
     // qDebug() << styleHints->colorScheme();

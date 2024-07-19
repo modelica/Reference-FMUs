@@ -10,6 +10,7 @@
 #include <QStyleHints>
 #include <QDirIterator>
 #include <QProgressDialog>
+#include <QSettings>
 #include "ModelVariablesItemModel.h"
 #include "VariablesFilterModel.h"
 #include "SimulationThread.h"
@@ -57,6 +58,31 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     setColorScheme(QGuiApplication::styleHints()->colorScheme());
+
+    // recent files
+    QVBoxLayout* vbox = new QVBoxLayout();
+
+    ui->recentFilesGroupBox->setLayout(vbox);
+
+    QSettings settings;
+
+    // QVariantList recentFiles;
+
+    // recentFiles << "E:\\Development\\Reference-FMUs\\build\\fmi3-x86_64-windows\\fmus\\BouncingBall.fmu";
+
+    // settings.setValue("recentFiles", recentFiles);
+
+    // settings.sync();
+
+    QStringList recentFiles = settings.value("recentFiles").toStringList();
+
+    for (const QString& filename : recentFiles.mid(0, 5)) {
+        QFileInfo fileInfo(filename);
+        QLabel* link = new QLabel("<a href='" + QDir::toNativeSeparators(filename) + "' style='text-decoration: none; color: #248BD2'>" + fileInfo.fileName() +  "</a>");
+        link->setToolTip(QDir::toNativeSeparators(filename));
+        connect(link, &QLabel::linkActivated, this, &MainWindow::loadFMU);
+        vbox->addWidget(link);
+    }
 
     // load the web engine, so the window doesn't jump later
     ui->plotWebEngineView->setHtml("");
@@ -329,6 +355,16 @@ void MainWindow::loadFMU(const QString &filename) {
     interfaceTypeComboBox->setEnabled(modelDescription->modelExchange && modelDescription->coSimulation);
 
     setCurrentPage(ui->settingsPage);
+
+    QSettings settings;
+
+    QStringList recentFiles = settings.value("recentFiles").toStringList();
+
+    recentFiles.removeAll(filename);
+
+    recentFiles.prepend(filename);
+
+    settings.setValue("recentFiles", recentFiles.mid(0, 5));
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent *event) {
