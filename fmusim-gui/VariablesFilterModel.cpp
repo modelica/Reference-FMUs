@@ -2,7 +2,9 @@
 #include "FMIModelDescription.h"
 
 
-VariablesFilterModel::VariablesFilterModel() {}
+VariablesFilterModel::VariablesFilterModel() {
+    setSortCaseSensitivity(Qt::CaseInsensitive);
+}
 
 bool VariablesFilterModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const {
 
