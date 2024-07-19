@@ -203,7 +203,7 @@
            <item row="9" column="0" colspan="2">
             <widget class="QCheckBox" name="debugLoggingCheckBox">
              <property name="text">
-              <string>Logging On</string>
+              <string>Enable FMU Logging</string>
              </property>
             </widget>
            </item>
@@ -241,14 +241,14 @@
            <item row="6" column="0" colspan="2">
             <widget class="QCheckBox" name="eventModeUsedCheckBox">
              <property name="text">
-              <string>Event Mode Used</string>
+              <string>Use Event Mode</string>
              </property>
             </widget>
            </item>
            <item row="7" column="0" colspan="2">
             <widget class="QCheckBox" name="earlyReturnAllowedCheckBox">
              <property name="text">
-              <string>Early Return Allowed</string>
+              <string>Allow Early Return</string>
              </property>
             </widget>
            </item>
