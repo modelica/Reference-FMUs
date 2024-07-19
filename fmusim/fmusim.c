@@ -376,7 +376,7 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    recorder = FMICreateRecorder(S, nOutputVariables, (const FMIModelVariable**)outputVariables, outputFile);
+    recorder = FMICreateRecorder(S, nOutputVariables, (const FMIModelVariable**)outputVariables);
 
     if (!recorder) {
         printf("Failed to open result file %s for writing.\n", outputFile);
