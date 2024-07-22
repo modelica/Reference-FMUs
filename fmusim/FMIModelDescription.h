@@ -145,6 +145,7 @@ typedef struct {
 
     const char* startTime;
     const char* stopTime;
+    const char* tolerance;
     const char* stepSize;
 
 } FMIDefaultExperiment;

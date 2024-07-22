@@ -11,7 +11,7 @@
 FMIStatus FMI1MESimulate(
     FMIInstance* S, 
     const FMIModelDescription* modelDescription, 
-    FMIRecorder* result,
+    FMIRecorder* recorder,
     const FMIStaticInput * input,
     const FMISimulationSettings* settings) {
 
@@ -45,7 +45,7 @@ FMIStatus FMI1MESimulate(
     CALL(FMI1InstantiateModel(S,
         modelDescription->modelExchange->modelIdentifier,  // modelIdentifier
         modelDescription->instantiationToken,              // GUID
-        fmi1False                                          // loggingOn
+        settings->loggingOn                                // loggingOn
     ));
 
     // set start values
@@ -90,7 +90,7 @@ FMIStatus FMI1MESimulate(
 
     for (;;) {
 
-        CALL(FMISample(S, time, result));
+        CALL(FMISample(S, time, recorder));
 
         if (time >= settings->stopTime) {
             break;
@@ -133,7 +133,7 @@ FMIStatus FMI1MESimulate(
         if (inputEvent || timeEvent || stateEvent || stepEvent) {
 
             // record the values before the event
-            CALL(FMISample(S, time, result));
+            CALL(FMISample(S, time, recorder));
 
             if (inputEvent) {
                 CALL(FMIApplyInput(S, input, time,
@@ -150,7 +150,7 @@ FMIStatus FMI1MESimulate(
                 CALL(FMI1EventUpdate(S, fmi1True, &eventInfo));
 
                 if (eventInfo.terminateSimulation) {
-                    CALL(FMISample(S, time, result));
+                    CALL(FMISample(S, time, recorder));
                     goto TERMINATE;
                 }
 
@@ -167,6 +167,9 @@ FMIStatus FMI1MESimulate(
             }
         }
 
+        if (settings->stepFinished && !settings->stepFinished(settings, time)) {
+            break;
+        }
     }
 
 TERMINATE:

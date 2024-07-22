@@ -10,18 +10,18 @@ FMIStatus FMI2CSSimulate(
     FMIInstance* S,
     const FMIModelDescription* modelDescription,
     const char* resourceURI,
-    FMIRecorder* result,
+    FMIRecorder* recorder,
     const FMIStaticInput * input,
     const FMISimulationSettings * settings) {
 
     FMIStatus status = FMIOK;
 
     CALL(FMI2Instantiate(S,
-        resourceURI,                          // fmuResourceLocation
-        fmi2CoSimulation,                     // fmuType
-        modelDescription->instantiationToken, // fmuGUID
-        fmi2False,                            // visible
-        fmi2False                             // loggingOn
+        resourceURI,
+        fmi2CoSimulation,
+        modelDescription->instantiationToken,
+        settings->visible,
+        settings->loggingOn
     ));
 
     if (settings->initialFMUStateFile) {
@@ -41,7 +41,7 @@ FMIStatus FMI2CSSimulate(
         
         const fmi2Real time = settings->startTime + step * settings->outputInterval;
 
-        CALL(FMISample(S, time, result));
+        CALL(FMISample(S, time, recorder));
 
         CALL(FMIApplyInput(S, input, time, true, true, false));
 
@@ -62,7 +62,7 @@ FMIStatus FMI2CSSimulate(
 
                 CALL(FMI2GetRealStatus(S, fmi2LastSuccessfulTime, &lastSuccessfulTime));
 
-                CALL(FMISample(S, lastSuccessfulTime, result));
+                CALL(FMISample(S, lastSuccessfulTime, recorder));
 
                 break;
             }
@@ -71,6 +71,9 @@ FMIStatus FMI2CSSimulate(
             CALL(doStepStatus);
         }
 
+        if (settings->stepFinished && !settings->stepFinished(settings, time)) {
+            break;
+        }
     }
 
     if (settings->finalFMUStateFile) {

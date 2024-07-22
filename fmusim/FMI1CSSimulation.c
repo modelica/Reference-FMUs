@@ -8,7 +8,7 @@ FMIStatus FMI1CSSimulate(
     FMIInstance* S,
     const FMIModelDescription* modelDescription,
     const char* fmuLocation,
-    FMIRecorder* result,
+    FMIRecorder* recorder,
     const FMIStaticInput * input,
     const FMISimulationSettings * settings) {
 
@@ -20,9 +20,9 @@ FMIStatus FMI1CSSimulate(
         fmuLocation,                                      // fmuLocation
         "application/x-fmusim",                           // mimeType
         0.0,                                              // timeout
-        fmi1False,                                        // visible
+        settings->visible,                                // visible
         fmi1False,                                        // interactive
-        fmi1False                                         // loggingOn
+        settings->loggingOn                               // loggingOn
     ));
 
     // set start values
@@ -36,7 +36,7 @@ FMIStatus FMI1CSSimulate(
         
         const fmi1Real time = settings->startTime + step * settings->outputInterval;
 
-        CALL(FMISample(S, time, result));
+        CALL(FMISample(S, time, recorder));
 
         CALL(FMIApplyInput(S, input, time, true, true, false));
 
@@ -58,7 +58,7 @@ FMIStatus FMI1CSSimulate(
 
                 CALL(FMI1GetRealStatus(S, fmi1LastSuccessfulTime, &lastSuccessfulTime));
 
-                CALL(FMISample(S, time, result));
+                CALL(FMISample(S, time, recorder));
 
                 break;
             }
@@ -66,7 +66,10 @@ FMIStatus FMI1CSSimulate(
         } else {
             CALL(doStepStatus);
         }
-        
+
+        if (settings->stepFinished && !settings->stepFinished(settings, time)) {
+            break;
+        }
     }
 
 TERMINATE:
