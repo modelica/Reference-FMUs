@@ -132,6 +132,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->filesTreeView, &QAbstractItemView::doubleClicked, this, &MainWindow::openFileInDefaultApplication);
 
     connect(ui->openFileAction,          &QAction::triggered, this, &MainWindow::openFile);
+    connect(ui->showInfoAction,          &QAction::triggered, this, [this]() { setCurrentPage(ui->infoPage);         });
     connect(ui->showSettingsAction,      &QAction::triggered, this, [this]() { setCurrentPage(ui->settingsPage);     });
     connect(ui->showFilesAction,         &QAction::triggered, this, [this]() { setCurrentPage(ui->filesPage);        });
     connect(ui->showDocumentationAction, &QAction::triggered, this, [this]() { setCurrentPage(ui->documenationPage); });
@@ -177,6 +178,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // disable widgets
     ui->dockWidget->setHidden(true);
+    ui->showInfoAction->setEnabled(false);
     ui->showSettingsAction->setEnabled(false);
     ui->showFilesAction->setEnabled(false);
     ui->showDocumentationAction->setEnabled(false);
@@ -191,6 +193,7 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::setCurrentPage(QWidget *page) {
 
     // block the signals during the update
+    ui->showInfoAction->blockSignals(true);
     ui->showSettingsAction->blockSignals(true);
     ui->showFilesAction->blockSignals(true);
     ui->showDocumentationAction->blockSignals(true);
@@ -201,6 +204,7 @@ void MainWindow::setCurrentPage(QWidget *page) {
     ui->stackedWidget->setCurrentWidget(page);
 
     // toggle the actions
+    ui->showInfoAction->setChecked(page == ui->infoPage);
     ui->showSettingsAction->setChecked(page == ui->settingsPage);
     ui->showFilesAction->setChecked(page == ui->filesPage);
     ui->showDocumentationAction->setChecked(page == ui->documenationPage);
@@ -208,6 +212,7 @@ void MainWindow::setCurrentPage(QWidget *page) {
     ui->showPlotAction->setChecked(page == ui->plotPage);
 
     // un-block the signals during the update
+    ui->showInfoAction->blockSignals(false);
     ui->showSettingsAction->blockSignals(false);
     ui->showFilesAction->blockSignals(false);
     ui->showDocumentationAction->blockSignals(false);
@@ -343,6 +348,7 @@ void MainWindow::loadFMU(const QString &filename) {
     // ui->dockWidget->setHidden(false);
     ui->showSideBarAction->setEnabled(true);
     ui->showSideBarAction->setChecked(true);
+    ui->showInfoAction->setEnabled(true);
     ui->showSettingsAction->setEnabled(true);
     ui->showFilesAction->setEnabled(true);
     ui->showDocumentationAction->setEnabled(true);
@@ -354,7 +360,9 @@ void MainWindow::loadFMU(const QString &filename) {
     interfaceTypeComboBox->setCurrentText(modelDescription->coSimulation ? "Co-Simulation" : "Model Exchange");
     interfaceTypeComboBox->setEnabled(modelDescription->modelExchange && modelDescription->coSimulation);
 
-    setCurrentPage(ui->settingsPage);
+    ui->imageLabel->setPixmap(QPixmap("C:\\Users\\tsr2\\Documents\\Dymola\\CoupledClutches3\\terminalsAndIcons\\icon.png"));
+
+    setCurrentPage(ui->infoPage);
 
     QSettings settings;
 
