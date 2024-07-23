@@ -402,9 +402,9 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
             } else if (childNode->name && !strcmp(childNode->name, "DisplayUnit")) {
 
-                CALL(FMIRealloc(&unit->displayUnits, (unit->nDisplayUnits + 1) * sizeof(FMIDisplayUnit*)));
+                CALL(FMIRealloc((void**)&unit->displayUnits, (unit->nDisplayUnits + 1) * sizeof(FMIDisplayUnit*)));
 
-                FMIDisplayUnit* displayUnit;
+                FMIDisplayUnit* displayUnit = NULL;
 
                 CALL(FMICalloc(&displayUnit, 1, sizeof(FMIDisplayUnit)));
 
@@ -1213,12 +1213,12 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
         
         if (unit) {
 
-            xmlFree(unit->name);
+            xmlFree((void*)unit->name);
             FMIFree(&unit->baseUnit);
 
             for (size_t j = 0; j < unit->nDisplayUnits; j++) {
                 FMIDisplayUnit* displayUnit = unit->displayUnits[j];
-                xmlFree(displayUnit->name);
+                xmlFree((void*)displayUnit->name);
                 FMIFree(&displayUnit);
             }
 
@@ -1226,7 +1226,7 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
         }
     }
 
-    FMIFree(&modelDescription->units);
+    FMIFree((void**)&modelDescription->units);
 
     // type defintions
     for (size_t i = 0; i < modelDescription->nTypeDefinitions; i++) {
@@ -1235,17 +1235,17 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
 
         if (typeDefintion) {
 
-            xmlFree(typeDefintion->name);
-            xmlFree(typeDefintion->quantity);
-            xmlFree(typeDefintion->min);
-            xmlFree(typeDefintion->max);
-            xmlFree(typeDefintion->nominal);
+            xmlFree((void*)typeDefintion->name);
+            xmlFree((void*)typeDefintion->quantity);
+            xmlFree((void*)typeDefintion->min);
+            xmlFree((void*)typeDefintion->max);
+            xmlFree((void*)typeDefintion->nominal);
 
             FMIFree(&typeDefintion);
         }
     }
 
-    FMIFree(&modelDescription->typeDefinitions);
+    FMIFree((void**)&modelDescription->typeDefinitions);
 
     // model variables
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {

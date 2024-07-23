@@ -96,6 +96,8 @@ FMIStatus FMIGetValues(
 
         break;
     }
+
+    return FMIError;
 }
 
  FMIStatus FMIGetNumberOfVariableValues(
@@ -246,6 +248,7 @@ FMIStatus FMISetValues(
         break;
     }
 
+    return FMIError;
 }
 
 #define PARSE_VALUES(t, f, ...) \

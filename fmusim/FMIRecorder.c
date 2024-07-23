@@ -37,13 +37,13 @@ FMIRecorder* FMICreateRecorder(FMIInstance* instance, size_t nVariables, const F
 
         if (!info) {
             CALL(FMICalloc(&info, 1, sizeof(VariableInfo)));
-            CALL(FMICalloc(&info->variables, nVariables, sizeof(FMIModelVariable*)));
+            CALL(FMICalloc((void**)&info->variables, nVariables, sizeof(FMIModelVariable*)));
             CALL(FMICalloc(&info->sizes, nVariables, sizeof(size_t)));
             CALL(FMICalloc(&info->valueReferences, nVariables, sizeof(FMIValueReference)));
             recorder->variableInfos[variable->type] = info;
         }
 
-        info->variables[info->nVariables] = variable;
+        info->variables[info->nVariables] = (FMIModelVariable*)variable;
         info->sizes[info->nVariables] = 1;
         info->valueReferences[info->nVariables] = variable->valueReference;
         info->nValues++;
@@ -106,7 +106,7 @@ void FMIFreeRecorder(FMIRecorder* recorder) {
             continue;
         }
 
-        FMIFree(&info->variables);
+        FMIFree((void**)&info->variables);
         FMIFree(&info->sizes);
     }
 
@@ -214,7 +214,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder) {
         goto TERMINATE;
     }
 
-    CALL(FMIRealloc(&recorder->rows, (recorder->nRows + 1) * sizeof(Row*)));
+    CALL(FMIRealloc((void**)&recorder->rows, (recorder->nRows + 1) * sizeof(Row*)));
 
     Row* row = NULL;
 
@@ -253,7 +253,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder) {
         } else if (type == FMIStringType) {
 
             for (size_t j = 0; j < info->nValues; j++) {
-                CALL(FMIDuplicateString( ((void**)values)[j], &((void**)values)[j]));
+                CALL(FMIDuplicateString((char*)((void**)values)[j], (char**)&((void**)values)[j]));
             }
 
         }
@@ -402,4 +402,5 @@ FMIStatus FMIRecorderWriteCSV(FMIRecorder* recorder, FILE* file) {
         fputc('\n', file);
     }
 
+    return FMIOK;
 }
