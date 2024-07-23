@@ -675,7 +675,7 @@ FMIStatus FMIDuplicateString(const char* source, char** destination) {
 
     char* temp = NULL;
 
-    if (FMICalloc(&temp, length + 1, sizeof(char)) != FMIOK) {
+    if (FMICalloc((void**)&temp, length + 1, sizeof(char)) != FMIOK) {
         return FMIError;
     }
 

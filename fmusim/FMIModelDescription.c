@@ -370,7 +370,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
         FMIUnit* unit = NULL;
 
-        CALL(FMICalloc(&unit, 1, sizeof(FMIUnit)));
+        CALL(FMICalloc((void**)&unit, 1, sizeof(FMIUnit)));
             
         modelDescription->units[i] = unit;
 
@@ -384,7 +384,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
                 FMIBaseUnit* baseUnit = NULL;
                 
-                CALL(FMICalloc(&baseUnit, 1, sizeof(FMIBaseUnit)));
+                CALL(FMICalloc((void**)&baseUnit, 1, sizeof(FMIBaseUnit)));
 
                 baseUnit->kg  = getIntAttribute(childNode, "kg");
                 baseUnit->m   = getIntAttribute(childNode, "m");
@@ -406,7 +406,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
                 FMIDisplayUnit* displayUnit = NULL;
 
-                CALL(FMICalloc(&displayUnit, 1, sizeof(FMIDisplayUnit)));
+                CALL(FMICalloc((void**)&displayUnit, 1, sizeof(FMIDisplayUnit)));
 
                 displayUnit->name = (char*)xmlGetProp(childNode, (xmlChar*)"name");
                 displayUnit->factor = getDoubleAttribute(childNode, "factor", 1.0);
@@ -437,7 +437,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
             FMITypeDefinition* typeDefinition = NULL;
 
-            CALL(FMICalloc(&typeDefinition, 1, sizeof(FMITypeDefinition)));
+            CALL(FMICalloc((void**)&typeDefinition, 1, sizeof(FMITypeDefinition)));
 
             modelDescription->typeDefinitions[i] = typeDefinition;
 
@@ -1214,15 +1214,15 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
         if (unit) {
 
             xmlFree((void*)unit->name);
-            FMIFree(&unit->baseUnit);
+            FMIFree((void**)&unit->baseUnit);
 
             for (size_t j = 0; j < unit->nDisplayUnits; j++) {
                 FMIDisplayUnit* displayUnit = unit->displayUnits[j];
                 xmlFree((void*)displayUnit->name);
-                FMIFree(&displayUnit);
+                FMIFree((void**)&displayUnit);
             }
 
-            FMIFree(&unit);
+            FMIFree((void**)&unit);
         }
     }
 
@@ -1241,7 +1241,7 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
             xmlFree((void*)typeDefintion->max);
             xmlFree((void*)typeDefintion->nominal);
 
-            FMIFree(&typeDefintion);
+            FMIFree((void**)&typeDefintion);
         }
     }
 
@@ -1258,9 +1258,9 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
         xmlFree((void*)variable->description);
     }
 
-    FMIFree(&modelDescription->modelVariables);
+    FMIFree((void**)&modelDescription->modelVariables);
 
-    FMIFree(&modelDescription);
+    FMIFree((void**)&modelDescription);
 }
 
 FMIValueReference FMIValueReferenceForLiteral(const char* literal) {

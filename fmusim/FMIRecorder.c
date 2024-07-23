@@ -36,10 +36,10 @@ FMIRecorder* FMICreateRecorder(FMIInstance* instance, size_t nVariables, const F
         VariableInfo* info = recorder->variableInfos[variable->type];
 
         if (!info) {
-            CALL(FMICalloc(&info, 1, sizeof(VariableInfo)));
+            CALL(FMICalloc((void**)&info, 1, sizeof(VariableInfo)));
             CALL(FMICalloc((void**)&info->variables, nVariables, sizeof(FMIModelVariable*)));
-            CALL(FMICalloc(&info->sizes, nVariables, sizeof(size_t)));
-            CALL(FMICalloc(&info->valueReferences, nVariables, sizeof(FMIValueReference)));
+            CALL(FMICalloc((void**)&info->sizes, nVariables, sizeof(size_t)));
+            CALL(FMICalloc((void**)&info->valueReferences, nVariables, sizeof(FMIValueReference)));
             recorder->variableInfos[variable->type] = info;
         }
 
@@ -88,14 +88,14 @@ void FMIFreeRecorder(FMIRecorder* recorder) {
                 char** binaryValues = (char**)values;
 
                 for (size_t k = 0; k < info->nValues; k++) {
-                    FMIFree(&binaryValues[k]);
+                    FMIFree((void**)&binaryValues[k]);
                 }
             }
 
             FMIFree(&values);
         }
 
-        FMIFree(&row->sizes);
+        FMIFree((void**)&row->sizes);
     }
 
     for (size_t i = 0; i < N_VARIABLE_TYPES; i++) {
@@ -107,10 +107,10 @@ void FMIFreeRecorder(FMIRecorder* recorder) {
         }
 
         FMIFree((void**)&info->variables);
-        FMIFree(&info->sizes);
+        FMIFree((void**)&info->sizes);
     }
 
-    FMIFree(&recorder);
+    FMIFree((void**)&recorder);
 }
 
 FMIStatus FMIRecorderUpdateSizes(FMIRecorder* recorder) {
@@ -218,7 +218,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder) {
 
     Row* row = NULL;
 
-    CALL(FMICalloc(&row, 1, sizeof(Row)));
+    CALL(FMICalloc((void**)&row, 1, sizeof(Row)));
 
     row->time = time;
 
@@ -235,7 +235,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder) {
         }
 
         if (type == FMIBinaryType) {
-            CALL(FMICalloc(&row->sizes, info->nValues, sizeof(size_t)));
+            CALL(FMICalloc((void**)&row->sizes, info->nValues, sizeof(size_t)));
         }
 
         void* values = NULL;
