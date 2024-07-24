@@ -239,27 +239,15 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMIStaticInput* input, doub
 
 			size_t row = 0;
 
-			for (size_t i = 1; i < input->nRows; i++) {
+			while (row < input->nRows - 1) {
 
-				const double t = input->time[i];
+				const double nextTime = input->time[row + 1];
 
-				if (t >= time) {
+				if (afterEvent ? nextTime > time : nextTime >= time) {
 					break;
 				}
 
-				row = i;
-			}
-
-			if (afterEvent) {
-
-				while (row < input->nRows - 2) {
-
-					if (input->time[row + 1] > time) {
-						break;
-					}
-
-					row++;
-				}
+				row++;
 			}
 
 			const size_t j = row * input->nVariables + i;
