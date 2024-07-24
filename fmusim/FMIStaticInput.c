@@ -241,7 +241,9 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMIStaticInput* input, doub
 
 			while (row < input->nRows - 1) {
 
-				if (afterEvent ? input->time[row + 1] > time : input->time[row] >= time) {
+				const double nextTime = input->time[row + 1];
+
+				if (afterEvent ? nextTime > time : nextTime >= time) {
 					break;
 				}
 
