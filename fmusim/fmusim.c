@@ -484,7 +484,7 @@ TERMINATE:
 
     if (unzipdir) {
         FMIRemoveDirectory(unzipdir);
-        FMIFree(&unzipdir);
+        FMIFree((void**)&unzipdir);
     }
 
     if (s_fmiLogFile) {
@@ -492,9 +492,9 @@ TERMINATE:
         s_fmiLogFile = NULL;
     }
 
-    FMIFree(&startNames);
-    FMIFree(&startValues);
-    FMIFree(&outputVariableNames);
+    FMIFree((void**)&startNames);
+    FMIFree((void**)&startValues);
+    FMIFree((void**)&outputVariableNames);
 
     return (int)status;
 }

@@ -42,3 +42,7 @@ FMIStatus FMIHexToBinary(const char* hex, size_t size, unsigned char* binary);
 FMIStatus FMIRestoreFMUStateFromFile(FMIInstance* S, const char* filename);
 
 FMIStatus FMISaveFMUStateToFile(FMIInstance* S, const char* filename);
+
+FMIStatus FMIDuplicateString(const char* source, char** destination);
+
+FMIStatus FMIDuplicateBuffer(const void* source, void** destination, size_t size);

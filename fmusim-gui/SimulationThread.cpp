@@ -26,7 +26,7 @@ void SimulationThread::stop() {
     continueSimulation = false;
 }
 
-bool SimulationThread::stepFinished(FMISimulationSettings* settings, double time) {
+bool SimulationThread::stepFinished(const FMISimulationSettings* settings, double time) {
 
     SimulationThread* simulationThread = static_cast<SimulationThread*>(settings->userData);
 

@@ -8,8 +8,6 @@
 #include <assert.h>
 #include <math.h>
 
-#include <Windows.h>
-
 #include "config.h"
 #include "model.h"
 #include "cosimulation.h"
@@ -1319,8 +1317,6 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
     fmi3Boolean* terminateSimulation,
     fmi3Boolean* earlyReturn,
     fmi3Float64* lastSuccessfulTime) {
-
-    //Sleep(10);
 
     UNUSED(noSetFMUStatePriorToCurrentPoint);
 

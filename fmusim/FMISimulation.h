@@ -7,7 +7,7 @@
 
 typedef struct FMISimulationSettings FMISimulationSettings;
 
-typedef bool (*FMIStepFinished)(FMISimulationSettings* settings, double time);
+typedef bool (*FMIStepFinished)(const FMISimulationSettings* settings, double time);
 
 typedef struct FMISimulationSettings {
 

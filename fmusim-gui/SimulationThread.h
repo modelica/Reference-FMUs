@@ -23,7 +23,7 @@ public slots:
     void stop();
 
 private:
-    static bool stepFinished(FMISimulationSettings* settings, double time);
+    static bool stepFinished(const FMISimulationSettings* settings, double time);
     bool continueSimulation = true;
 
 signals:

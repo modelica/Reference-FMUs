@@ -76,47 +76,6 @@ FMIStatus FMIRealloc(void** memory, size_t size) {
     return FMIOK;
 }
 
-FMIStatus FMIDuplicateString(const char* source, char** destination) {
-
-    if (!source || !destination) {
-        return FMIError;
-    }
-
-    const size_t length = strlen(source);
-
-    char* temp = NULL;
-
-    if (FMICalloc(&temp, length + 1, sizeof(char)) != FMIOK) {
-        return FMIError;
-    }
-
-    memcpy(temp, source, length + 1);
-
-    *destination = temp;
-
-    return FMIOK;
-}
-
-FMIStatus FMIDuplicateBuffer(const void* source, void** destination, size_t size) {
-
-    if (!source || !destination) {
-        return FMIError;
-    }
-
-    void* temp = NULL;
-
-    if (FMICalloc(&temp, size, 1) != FMIOK) {
-        return FMIError;
-    }
-
-    memcpy(temp, source, size);
-
-    *destination = temp;
-
-    return FMIOK;
-}
-
-
 void FMIFree(void** memory) {
 
     if (*memory) {
