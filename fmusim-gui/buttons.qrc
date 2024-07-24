@@ -35,5 +35,7 @@
         <file>buttons/light/input-variable.svg</file>
         <file>buttons/light/local-variable.svg</file>
         <file>buttons/light/parameter.svg</file>
+        <file>buttons/dark/info.svg</file>
+        <file>buttons/light/info.svg</file>
     </qresource>
 </RCC>

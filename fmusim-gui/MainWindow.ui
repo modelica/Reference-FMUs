@@ -1168,6 +1168,13 @@
    </property>
   </action>
   <action name="showInfoAction">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="buttons.qrc">
+     <normaloff>:/buttons/dark/info.svg</normaloff>:/buttons/dark/info.svg</iconset>
+   </property>
    <property name="text">
     <string>Info</string>
    </property>

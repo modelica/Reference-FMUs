@@ -423,6 +423,7 @@ void MainWindow::setColorScheme(Qt::ColorScheme colorScheme) {
 
     // toolbar
     ui->openFileAction->setIcon(QIcon(":/buttons/" + theme + "/folder-open.svg"));
+    ui->showInfoAction->setIcon(QIcon(":/buttons/" + theme + "/info.svg"));
     ui->showSettingsAction->setIcon(QIcon(":/buttons/" + theme + "/gear.svg"));
     ui->showFilesAction->setIcon(QIcon(":/buttons/" + theme + "/file-earmark-zip.svg"));
     ui->showDocumentationAction->setIcon(QIcon(":/buttons/" + theme + "/book.svg"));
