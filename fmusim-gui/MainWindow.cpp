@@ -360,7 +360,9 @@ void MainWindow::loadFMU(const QString &filename) {
     interfaceTypeComboBox->setCurrentText(modelDescription->coSimulation ? "Co-Simulation" : "Model Exchange");
     interfaceTypeComboBox->setEnabled(modelDescription->modelExchange && modelDescription->coSimulation);
 
-    ui->imageLabel->setPixmap(QPixmap("C:\\Users\\tsr2\\Documents\\Dymola\\CoupledClutches3\\terminalsAndIcons\\icon.png"));
+    const QString modelImage = QString(unzipdir) + QDir::separator() + "model.png";
+
+    ui->imageLabel->setPixmap(QPixmap(modelImage));
 
     setCurrentPage(ui->infoPage);
 
