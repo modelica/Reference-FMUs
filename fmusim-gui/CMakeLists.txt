@@ -10,26 +10,32 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
+set(CVODE_DIR    ${CMAKE_SOURCE_DIR}/build/cvode-x86_64-windows/install)
+set(LIBXML2_DIR  ${CMAKE_SOURCE_DIR}/build/libxml2-x86_64-windows/install)
+set(ZLIB_DIR     ${CMAKE_SOURCE_DIR}/build/zlib-x86_64-windows/install)
+
+set(ZLIB_SRC_DIR ${CMAKE_SOURCE_DIR}/build/zlib-1.3)
+
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS WebEngineWidgets)
 
 set(PROJECT_SOURCES
-        main.cpp
-        MainWindow.cpp
-        MainWindow.h
-        MainWindow.ui
-        ../src/FMI.c
-        ../include/FMI.h
-        ../fmusim/FMIZip.c
-        ../fmusim/FMIZip.h
-        ../fmusim/miniunzip.c
-        ../build/zlib-1.3/contrib/minizip/unzip.c
-        ../build/zlib-1.3/contrib/minizip/ioapi.c
-        ../build/zlib-1.3/contrib/minizip/iowin32.c
-        ../fmusim/FMIModelDescription.c
-        ../fmusim/FMIModelDescription.h
-        ../src/structured_variable_name.tab.c
-        ../src/structured_variable_name.yy.c
+    main.cpp
+    MainWindow.cpp
+    MainWindow.h
+    MainWindow.ui
+    ../src/FMI.c
+    ../include/FMI.h
+    ../fmusim/FMIZip.c
+    ../fmusim/FMIZip.h
+    ../fmusim/miniunzip.c
+    ${ZLIB_SRC_DIR}/contrib/minizip/unzip.c
+    ${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c
+    ${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c
+    ../fmusim/FMIModelDescription.c
+    ../fmusim/FMIModelDescription.h
+    ../src/structured_variable_name.tab.c
+    ../src/structured_variable_name.yy.c
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -92,10 +98,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 target_include_directories(fmusim-gui PRIVATE
     ../include
     ../fmusim
-    ../build/libxml2-msvc2019-2-install/include/libxml2
-    ../build/zlib-1.3-msvc2019-install/zlib/include
-    ../build/zlib-1.3/contrib/minizip
-    ../build/cvode-x86_64-windows/install/include
+    ${LIBXML2_DIR}/include/libxml2
+    ${ZLIB_DIR}/include
+    ${ZLIB_SRC_DIR}/contrib/minizip
+    ${CVODE_DIR}/include
 )
 
 target_compile_definitions(fmusim-gui PRIVATE
@@ -104,11 +110,9 @@ target_compile_definitions(fmusim-gui PRIVATE
 
 target_link_libraries(fmusim-gui PRIVATE
     Qt6::WebEngineWidgets
-    "E:/Development/Reference-FMUs/build/libxml2-msvc2019-2-install/lib/libxml2.lib"
-    "E:/Development/Reference-FMUs/build/zlib-1.3-msvc2019-install/zlib/lib/zlib.lib"
-    "E:/Development/Reference-FMUs/build/cvode-x86_64-windows/install/lib/sundials_cvode.lib"
-    #../build/libxml2-msvc2019-2-install/lib/libxml2s.lib
-    #E:/Development/Reference-FMUs/build/libxml2-x86_64-windows/install/lib/libxml2s.lib
+    ${LIBXML2_DIR}/lib/libxml2.lib
+    ${ZLIB_DIR}/lib/zlib.lib
+    ${CVODE_DIR}/lib/sundials_cvode.lib
 )
 
 # Define target properties for Android with Qt 6 as:
