@@ -1002,6 +1002,9 @@
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
+   <property name="styleSheet">
+    <string notr="true">QToolBar::separator { width: 20px }</string>
+   </property>
    <property name="movable">
     <bool>false</bool>
    </property>
@@ -1021,6 +1024,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="openFileAction"/>
+   <addaction name="newWindowAction"/>
    <addaction name="separator"/>
    <addaction name="showInfoAction"/>
    <addaction name="showSettingsAction"/>
@@ -1180,6 +1184,21 @@
    </property>
    <property name="toolTip">
     <string>Show Info</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="newWindowAction">
+   <property name="icon">
+    <iconset resource="buttons.qrc">
+     <normaloff>:/buttons/dark/new-window.svg</normaloff>:/buttons/dark/new-window.svg</iconset>
+   </property>
+   <property name="text">
+    <string>New window</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+N</string>
    </property>
    <property name="menuRole">
     <enum>QAction::NoRole</enum>

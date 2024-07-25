@@ -132,6 +132,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->filesTreeView, &QAbstractItemView::doubleClicked, this, &MainWindow::openFileInDefaultApplication);
 
     connect(ui->openFileAction,          &QAction::triggered, this, &MainWindow::openFile);
+    connect(ui->newWindowAction,         &QAction::triggered, this, []()     { (new MainWindow())->show();           });
     connect(ui->showInfoAction,          &QAction::triggered, this, [this]() { setCurrentPage(ui->infoPage);         });
     connect(ui->showSettingsAction,      &QAction::triggered, this, [this]() { setCurrentPage(ui->settingsPage);     });
     connect(ui->showFilesAction,         &QAction::triggered, this, [this]() { setCurrentPage(ui->filesPage);        });
@@ -422,6 +423,7 @@ void MainWindow::setColorScheme(Qt::ColorScheme colorScheme) {
     const QString theme = colorScheme == Qt::ColorScheme::Dark ? "dark" : "light";
 
     // toolbar
+    ui->newWindowAction->setIcon(QIcon(":/buttons/" + theme + "/new-window.svg"));
     ui->openFileAction->setIcon(QIcon(":/buttons/" + theme + "/folder-open.svg"));
     ui->showInfoAction->setIcon(QIcon(":/buttons/" + theme + "/info.svg"));
     ui->showSettingsAction->setIcon(QIcon(":/buttons/" + theme + "/gear.svg"));
