@@ -1191,19 +1191,19 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
 
     if (modelDescription->modelExchange) {
         xmlFree((void*)modelDescription->modelExchange->modelIdentifier);
-        xmlFree(modelDescription->modelExchange);
+        FMIFree((void**)&modelDescription->modelExchange);
     }
 
     if (modelDescription->coSimulation) {
         xmlFree((void*)modelDescription->coSimulation->modelIdentifier);
-        xmlFree(modelDescription->coSimulation);
+        FMIFree((void**)&modelDescription->coSimulation);
     }
 
     if (modelDescription->defaultExperiment) {
         xmlFree((void*)modelDescription->defaultExperiment->startTime);
         xmlFree((void*)modelDescription->defaultExperiment->stopTime);
         xmlFree((void*)modelDescription->defaultExperiment->stepSize);
-        xmlFree(modelDescription->defaultExperiment);
+        FMIFree((void**)&modelDescription->defaultExperiment);
     }
 
     // units
