@@ -13,7 +13,7 @@ FMIStatus FMI2MESimulate(
     FMIInstance* S, 
     const FMIModelDescription* modelDescription, 
     const char* resourceURI,
-    FMIRecorder* result,
+    FMIRecorder* recorder,
     const FMIStaticInput * input,
     const FMISimulationSettings* settings) {
 
@@ -47,11 +47,11 @@ FMIStatus FMI2MESimulate(
     };
 
     CALL(FMI2Instantiate(S,
-        resourceURI,                          // fmuResourceLocation
-        fmi2ModelExchange,                    // fmuType
-        modelDescription->instantiationToken, // fmuGUID
-        fmi2False,                            // visible
-        fmi2False                             // loggingOn
+        resourceURI,
+        fmi2ModelExchange,
+        modelDescription->instantiationToken,
+        settings->visible,
+        settings->loggingOn
     ));
 
     time = settings->startTime;
@@ -118,7 +118,7 @@ FMIStatus FMI2MESimulate(
 
     for (;;) {
 
-        CALL(FMISample(S, time, result));
+        CALL(FMISample(S, time, recorder));
 
         if (time >= settings->stopTime) {
             break;
@@ -164,7 +164,7 @@ FMIStatus FMI2MESimulate(
         if (inputEvent || timeEvent || stateEvent || stepEvent) {
 
             // record the values before the event
-            CALL(FMISample(S, time, result));
+            CALL(FMISample(S, time, recorder));
 
             CALL(FMI2EnterEventMode(S));
 
@@ -183,7 +183,7 @@ FMIStatus FMI2MESimulate(
                 CALL(FMI2NewDiscreteStates(S, &eventInfo));
 
                 if (eventInfo.terminateSimulation) {
-                    CALL(FMISample(S, time, result));
+                    CALL(FMISample(S, time, recorder));
                     goto TERMINATE;
                 }
 
@@ -203,6 +203,9 @@ FMIStatus FMI2MESimulate(
             }
         }
 
+        if (settings->stepFinished && !settings->stepFinished(settings, time)) {
+            break;
+        }
     }
 
     if (settings->finalFMUStateFile) {

@@ -44,8 +44,7 @@ FMIStatus FMIApplyStartValues(FMIInstance* S, const FMISimulationSettings* setti
 
             CALL(FMI3SetUInt64(S, &vr, 1, (fmi3UInt64*)values, nValues));
 
-            free(values);
-            values = NULL;
+            FMIFree(&values);
         }
     }
 
@@ -67,44 +66,30 @@ FMIStatus FMIApplyStartValues(FMIInstance* S, const FMISimulationSettings* setti
 
         CALL(FMIParseValues(S->fmiMajorVersion, type, literal, &nValues, &values));
 
+        // only used for Binary variables
+        const size_t size = strlen(literal) / 2;
 
-        if (variable->type == FMIBinaryType) {
+        CALL(FMISetValues(S, type, &vr, 1, &size, values, nValues));
 
-            const size_t size = strlen(literal) / 2;
-            CALL(FMI3SetBinary(S, &vr, 1, &size, values, 1));
-
-        } else {
-
-            if (S->fmiMajorVersion == FMIMajorVersion1) {
-                CALL(FMI1SetValues(S, type, &vr, 1, values));
-            } else if (S->fmiMajorVersion == FMIMajorVersion2) {
-                CALL(FMI2SetValues(S, type, &vr, 1, values));
-            } else if (S->fmiMajorVersion == FMIMajorVersion3) {
-                CALL(FMI3SetValues(S, type, &vr, 1, values, nValues));
-            }
-        }
-
-        free(values);
-        values = NULL;
+        FMIFree(&values);
     }
 
 TERMINATE:
-    if (values) {
-        free(values);
-    }
+
+    FMIFree(&values);
 
     return status;
 }
 
-FMIStatus FMISimulate(
-    FMIInstance* S,
-    const FMIModelDescription* modelDescription,
-    const char* unzipdir,
-    FMIRecorder* recorder,
-    const FMIStaticInput* input,
-    const FMISimulationSettings* settings) {
+FMIStatus FMISimulate(const FMISimulationSettings* settings) {
 
     FMIStatus status = FMIOK;
+
+    FMIInstance* S = settings->S;
+    const FMIModelDescription* modelDescription = settings->modelDescription;
+    const char* unzipdir = settings->unzipdir;
+    FMIRecorder* recorder = settings->recorder;
+    FMIStaticInput* input = settings->input;
 
     char resourcePath[FMI_PATH_MAX] = "";
 

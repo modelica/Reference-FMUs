@@ -13,7 +13,7 @@ FMIStatus FMI3MESimulate(
     FMIInstance* S, 
     const FMIModelDescription* modelDescription, 
     const char* resourcePath,
-    FMIRecorder* result,
+    FMIRecorder* recorder,
     const FMIStaticInput * input,
     const FMISimulationSettings * settings) {
 
@@ -34,7 +34,6 @@ FMIStatus FMI3MESimulate(
     fmi3Boolean valuesOfContinuousStatesChanged   = fmi3False;
     fmi3Boolean nextEventTimeDefined              = fmi3False;
     fmi3Float64 nextEventTime                     = INFINITY;
-    fmi3Float64 nextInputEvent                    = INFINITY;
 
     size_t nSteps;
     fmi3Float64 nextRegularPoint;
@@ -46,10 +45,10 @@ FMIStatus FMI3MESimulate(
     FMISolver* solver = NULL;
 
     CALL(FMI3InstantiateModelExchange(S,
-        modelDescription->instantiationToken,  // instantiationToken
-        resourcePath,                          // resourcePath
-        fmi3False,                             // visible
-        fmi3False                              // loggingOn
+        modelDescription->instantiationToken,
+        resourcePath,
+        settings->visible,
+        settings->loggingOn
     ));
 
     time = settings->startTime;
@@ -97,6 +96,8 @@ FMIStatus FMI3MESimulate(
         CALL(FMI3EnterContinuousTimeMode(S));
     }
 
+    CALL(FMIRecorderUpdateSizes(recorder));
+
     FMISolverParameters solverFunctions = {
         .modelInstance = S,
         .input = input,
@@ -126,7 +127,7 @@ FMIStatus FMI3MESimulate(
 
     for (;;) {
 
-        CALL(FMISample(S, time, result));
+        CALL(FMISample(S, time, recorder));
 
         if (time >= settings->stopTime) {
             break;
@@ -171,7 +172,7 @@ FMIStatus FMI3MESimulate(
 
         if (inputEvent || timeEvent || stateEvent || stepEvent) {
 
-            CALL(FMISample(S, time, result));
+            CALL(FMISample(S, time, recorder));
 
             CALL(FMI3EnterEventMode(S));
 
@@ -196,7 +197,7 @@ FMIStatus FMI3MESimulate(
                     &nextEventTime));
                 
                 if (terminateSimulation) {
-                    CALL(FMISample(S, time, result));
+                    CALL(FMISample(S, time, recorder));
                     goto TERMINATE;
                 }
 
@@ -215,6 +216,9 @@ FMIStatus FMI3MESimulate(
             }
         }
 
+        if (settings->stepFinished && !settings->stepFinished(settings, time)) {
+            break;
+        }
     }
 
     if (settings->finalFMUStateFile) {

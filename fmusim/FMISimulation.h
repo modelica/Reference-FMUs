@@ -5,10 +5,18 @@
 #include "FMIRecorder.h"
 #include "FMIStaticInput.h"
 
+typedef struct FMISimulationSettings FMISimulationSettings;
 
-typedef struct {
+typedef bool (*FMIStepFinished)(const FMISimulationSettings* settings, double time);
+
+typedef struct FMISimulationSettings {
 
     // Common
+    FMIInstance* S;
+    const FMIModelDescription* modelDescription;
+    const char* unzipdir;
+    FMIRecorder* recorder;
+    FMIStaticInput* input;
     FMIInterfaceType interfaceType;
     size_t nStartValues;
     const FMIModelVariable** startVariables;
@@ -19,6 +27,8 @@ typedef struct {
     double outputInterval;
     const char* initialFMUStateFile;
     const char* finalFMUStateFile;
+    bool visible;
+    bool loggingOn;
 
     // Co-Simulation
     bool earlyReturnAllowed;
@@ -31,14 +41,12 @@ typedef struct {
     SolverStep solverStep;
     SolverReset solverReset;
 
+    // Callbacks
+    void* userData;
+    FMIStepFinished stepFinished;
+
 } FMISimulationSettings;
 
 FMIStatus FMIApplyStartValues(FMIInstance* S, const FMISimulationSettings* settings);
 
-FMIStatus FMISimulate(
-    FMIInstance* S,
-    const FMIModelDescription* modelDescription,
-    const char* unzipdir,
-    FMIRecorder* recorder,
-    const FMIStaticInput* input,
-    const FMISimulationSettings* settings);
+FMIStatus FMISimulate(const FMISimulationSettings* settings);
