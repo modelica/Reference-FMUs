@@ -31,12 +31,12 @@ check_call(
     '-D', 'LIBXML2_WITH_PYTHON=OFF',
     '-D', 'LIBXML2_WITH_ZLIB=OFF',
     '-D', 'LIBXML2_WITH_TESTS=OFF',
-    root / 'libxml2-2.11.5']
+    str(root / 'libxml2-2.11.5')]
 )
 
 check_call([
     'cmake',
-    '--build', build_dir,
+    '--build', str(build_dir),
     '--config', 'Release',
     '--target', 'install'
 ])

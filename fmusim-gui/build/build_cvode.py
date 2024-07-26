@@ -28,12 +28,12 @@ check_call(
     '-D', f'BUILD_TESTING=OFF',
     '-D', f'EXAMPLES_INSTALL=OFF',
     '-D', f'CMAKE_INSTALL_PREFIX={ install_prefix }',
-    root / 'cvode-6.4.1']
+    str(root / 'cvode-6.4.1')]
 )
 
 check_call([
     'cmake',
-    '--build', build_dir,
+    '--build', str(build_dir),
     '--config', 'Release',
     '--target', 'install'
 ])

@@ -26,12 +26,12 @@ check_call(
     cmake_args +
     ['-B', build_dir,
     '-D', f'CMAKE_INSTALL_PREFIX={ install_prefix }',
-    root / 'zlib-1.3']
+    str(root / 'zlib-1.3')]
 )
 
 check_call([
     'cmake',
-    '--build', build_dir,
+    '--build', str(build_dir),
     '--config', 'Release',
     '--target', 'install'
 ])
