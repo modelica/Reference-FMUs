@@ -14,16 +14,14 @@ class SimulationThread : public QThread
 
 public:
     bool logFMICalls = false;
-    // const char* unzipdir = nullptr;
     FMIInterfaceType interfaceType;
     const char* modelIdentifier = nullptr;
-    FMISimulationSettings settings;
+    FMISimulationSettings* settings = nullptr;
     QStringList messages;
     QString inputFilename;
-    // QStringList functionCalls;
     FMIStatus status = FMIOK;
-    // double CPUTime = 0.0;
-    SimulationThread();
+    SimulationThread(QObject *parent = nullptr);
+    ~SimulationThread();
     void run() override;
 
     static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message);

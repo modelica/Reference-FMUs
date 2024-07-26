@@ -2,18 +2,48 @@
 #include "SimulationThread.h"
 #include <Windows.h>
 
-SimulationThread::SimulationThread() {}
+
+SimulationThread::SimulationThread(QObject *parent) : QThread(parent) {
+    settings = (FMISimulationSettings*)calloc(1, sizeof(FMISimulationSettings));
+}
+
+SimulationThread::~SimulationThread()
+{
+    if (settings) {
+
+        if (settings->input) {
+            FMIFreeInput(settings->input);
+        }
+
+        if (settings->recorder) {
+            FMIFreeRecorder(settings->recorder);
+        }
+
+        free(settings);
+    }
+}
 
 void SimulationThread::run() {
 
+    // clean up data from previous simulation
     messages.clear();
 
-    const FMIModelDescription *modelDescription = settings.modelDescription;
+    if (settings->input) {
+        FMIFreeInput(settings->input);
+        settings->input = nullptr;
+    }
+
+    if (settings->recorder) {
+        FMIFreeRecorder(settings->recorder);
+        settings->recorder = nullptr;
+    }
+
+    const FMIModelDescription *modelDescription = settings->modelDescription;
 
     continueSimulation = true;
 
-    settings.stepFinished = stepFinished;
-    settings.userData = this;
+    settings->stepFinished = stepFinished;
+    settings->userData = this;
 
     emit progressChanged(0);
 
@@ -21,7 +51,7 @@ void SimulationThread::run() {
 
     char platformBinaryPath[2048] = "";
 
-    FMIPlatformBinaryPath(settings.unzipdir, modelIdentifier, settings.modelDescription->fmiMajorVersion, platformBinaryPath, 2048);
+    FMIPlatformBinaryPath(settings->unzipdir, modelIdentifier, settings->modelDescription->fmiMajorVersion, platformBinaryPath, 2048);
 
     FMIInstance *S = FMICreateInstance("instance1", SimulationThread::logMessage, logFMICalls ? SimulationThread::logFunctionCall : nullptr);
 
@@ -61,12 +91,12 @@ void SimulationThread::run() {
 
     FMIRecorder* recorder = FMICreateRecorder(S, recordedVariables.size(), (const FMIModelVariable**)recordedVariables.data());
 
-    settings.S = S;
-    settings.modelDescription = modelDescription;
-    settings.recorder = recorder;
-    settings.input = input;
+    settings->S = S;
+    settings->modelDescription = modelDescription;
+    settings->recorder = recorder;
+    settings->input = input;
 
-    status = FMISimulate(&settings);
+    status = FMISimulate(settings);
 
     const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
 

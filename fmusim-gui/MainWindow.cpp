@@ -29,7 +29,9 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-    simulationThread = new SimulationThread();
+    setAttribute(Qt::WA_DeleteOnClose);
+
+    simulationThread = new SimulationThread(this);
 
     progressDialog = new QProgressDialog(this);
 
@@ -449,7 +451,7 @@ void MainWindow::simulate() {
 
     simulationThread->logFMICalls = ui->logFMICallsCheckBox->isChecked();
 
-    FMISimulationSettings* settings = &simulationThread->settings;
+    FMISimulationSettings* settings = simulationThread->settings;
 
     memset(settings, 0, sizeof(FMISimulationSettings));
 
@@ -546,11 +548,11 @@ void MainWindow::openFileInDefaultApplication(const QModelIndex &index) {
 
 void MainWindow::updatePlot() {
 
-    if (!simulationThread || !simulationThread->settings.recorder) {
+    if (!simulationThread || !simulationThread->settings->recorder) {
         return;
     }
 
-    FMIRecorder* recorder = simulationThread->settings.recorder;
+    FMIRecorder* recorder = simulationThread->settings->recorder;
 
     QString data;
 
