@@ -31,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     // QIcon::setThemeName("light");
 
-    settings = (FMISimulationSettings*)calloc(1, sizeof(FMISimulationSettings));
+    //settings = (FMISimulationSettings*)calloc(1, sizeof(FMISimulationSettings));
 
     simulationThread = new SimulationThread();
 
@@ -446,47 +446,6 @@ void MainWindow::setColorScheme(Qt::ColorScheme colorScheme) {
     updatePlot();
 }
 
-void MainWindow::logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message) {
-
-    MainWindow *window = (MainWindow *)instance->userData;
-
-    QString item(message);
-
-    switch (status) {
-    case FMIOK:
-        item += " -> OK";
-        break;
-    case FMIWarning:
-        item += " -> Warning";
-        break;
-    case FMIDiscard:
-        item += " -> Discard";
-        break;
-    case FMIError:
-        item += " -> Error";
-        break;
-    case FMIFatal:
-        item += " -> Fatal";
-        break;
-    case FMIPending:
-        item += " -> Pending";
-        break;
-    default:
-        item += " -> Unknown status";
-        break;
-    }
-
-    window->ui->logPlainTextEdit->appendPlainText(item);
-}
-
-
-void MainWindow::logMessage(FMIInstance* instance, FMIStatus status, const char* category, const char* message) {
-
-    MainWindow *window = (MainWindow *)instance->userData;
-
-    window->ui->logPlainTextEdit->appendPlainText(message);
-}
-
 void MainWindow::simulate() {
 
     ui->logPlainTextEdit->clear();
@@ -500,20 +459,25 @@ void MainWindow::simulate() {
         outputInterval = stopTime / ui->maxSamplesLineEdit->text().toDouble();
     }
 
-    FMIInterfaceType interfaceType;
-    const char* modelIdentifier;
+    simulationThread->logFMICalls = ui->logFMICallsCheckBox->isChecked();
+
+    FMISimulationSettings* settings = &simulationThread->settings;
 
     memset(settings, 0, sizeof(FMISimulationSettings));
 
+    const QByteArray ba = unzipdir.toLocal8Bit();
+
+    settings->unzipdir = _strdup(ba.data());
+    settings->modelDescription = modelDescription;
+
     if (interfaceTypeComboBox->currentText() == "Co-Simulation") {
-        interfaceType = FMICoSimulation;
-        modelIdentifier = modelDescription->coSimulation->modelIdentifier;
+        settings->interfaceType = FMICoSimulation;
+        simulationThread->modelIdentifier = modelDescription->coSimulation->modelIdentifier;
     } else {
-        interfaceType = FMIModelExchange;
-        modelIdentifier = modelDescription->modelExchange->modelIdentifier;
+        settings->interfaceType = FMIModelExchange;
+        simulationThread->modelIdentifier = modelDescription->modelExchange->modelIdentifier;
     }
 
-    settings->interfaceType            = interfaceType;
     settings->visible                  = false;
     settings->loggingOn                = ui->debugLoggingCheckBox->isChecked();
     settings->tolerance                = ui->relativeToleranceLineEdit->text().toDouble();
@@ -556,79 +520,58 @@ void MainWindow::simulate() {
         i++;
     }
 
-    char platformBinaryPath[FMI_PATH_MAX] = "";
+    // char platformBinaryPath[FMI_PATH_MAX] = "";
 
-    const QByteArray ba = unzipdir.toLocal8Bit();
+    // const QByteArray ba = unzipdir.toLocal8Bit();
 
-    FMIPlatformBinaryPath(ba.data(), modelIdentifier, modelDescription->fmiMajorVersion, platformBinaryPath, FMI_PATH_MAX);
+    // FMIPlatformBinaryPath(ba.data(), modelIdentifier, modelDescription->fmiMajorVersion, platformBinaryPath, FMI_PATH_MAX);
 
-    FMIInstance *S = FMICreateInstance("instance1", logMessage, ui->logFMICallsCheckBox->isChecked() ? logFunctionCall : nullptr);
+    // FMIInstance *S = FMICreateInstance("instance1", SimulationThread::logMessage, ui->logFMICallsCheckBox->isChecked() ? SimulationThread::logFunctionCall : nullptr);
 
-    if (!S) {
-        printf("Failed to create FMU instance.\n");
-        return;
-    }
+    // if (!S) {
+    //     printf("Failed to create FMU instance.\n");
+    //     return;
+    // }
 
-    S->userData = this;
+    // S->userData = this;
 
-    FMILoadPlatformBinary(S, platformBinaryPath);
+    // FMILoadPlatformBinary(S, platformBinaryPath);
 
-    QList<FMIModelVariable*> recordedVariables;
+    // QList<FMIModelVariable*> recordedVariables;
 
-    for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+    // for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+    //     FMIModelVariable* variable = &modelDescription->modelVariables[i];
 
-        if (variable->variability == FMITunable || variable->variability == FMIContinuous || variable->variability == FMIDiscrete) {
-            recordedVariables << variable;
-        }
+    //     if (variable->variability == FMITunable || variable->variability == FMIContinuous || variable->variability == FMIDiscrete) {
+    //         recordedVariables << variable;
+    //     }
 
-    }
+    // }
 
-    FMIStaticInput* input = nullptr;
+    // FMIStaticInput* input = nullptr;
 
     if (ui->inputCheckBox->isChecked()) {
-        const QString inputPath = ui->inputLineEdit->text();
-        const std::wstring  wstr  = ui->inputLineEdit->text().toStdWString();
-        input = FMIReadInput(modelDescription, (char*)wstr.c_str());
-        if (!input) {
-            ui->logPlainTextEdit->appendPlainText("Failed to load " + inputPath + ".");
-        }
+        // const QString inputPath = ui->inputLineEdit->text();
+        // const std::wstring  wstr  = ui->inputLineEdit->text().toStdWString();
+        // input = FMIReadInput(modelDescription, (char*)wstr.c_str());
+        // if (!input) {
+        //     ui->logPlainTextEdit->appendPlainText("Failed to load " + inputPath + ".");
+        // }
+        simulationThread->inputFilename = ui->inputLineEdit->text();
+    } else {
+        simulationThread->inputFilename = "";
     }
 
-    recorder = FMICreateRecorder(S, recordedVariables.size(), (const FMIModelVariable**)recordedVariables.data());
+    // recorder = FMICreateRecorder(S, recordedVariables.size(), (const FMIModelVariable**)recordedVariables.data());
 
-    settings->S = S;
-    settings->modelDescription = modelDescription;
-    settings->unzipdir = ba.data();
-    settings->recorder = recorder;
-    settings->input = input;
-
-    simulationThread->settings = settings;
-
-    // progressDialog->show();
+    // settings->S = S;
+    // settings->modelDescription = modelDescription;
+    // settings->unzipdir = ba.data();
+    // settings->recorder = recorder;
+    // settings->input = input;
 
     simulationThread->start();
-
-    // const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
-
-    // const FMIStatus status = FMISimulate(S, modelDescription, ba.data(), recorder, input, &settings);
-
-    // // const FMIStatus status = simulation.status;
-
-    // const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
-
-    // ui->logPlainTextEdit->appendPlainText("Simulation took " + QString::number(endTime - startTime) + "  ms.");
-
-    // updatePlot();
-
-    // ui->showPlotAction->setEnabled(true);
-
-    // if (status == FMIOK) {
-    //     setCurrentPage(ui->plotPage);
-    // } else {
-    //     setCurrentPage(ui->logPage);
-    // }
 }
 
 void MainWindow::openFile() {
@@ -660,9 +603,11 @@ void MainWindow::openFileInDefaultApplication(const QModelIndex &index) {
 
 void MainWindow::updatePlot() {
 
-    if (!recorder) {
+    if (!simulationThread || !simulationThread->settings.recorder) {
         return;
     }
+
+    FMIRecorder* recorder = simulationThread->settings.recorder;
 
     QString data;
 
@@ -918,7 +863,10 @@ void MainWindow::simulationFinished()
 
     // const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
 
-    ui->logPlainTextEdit->appendPlainText("Simulation took " + QString::number(simulationThread->CPUTime) + "  s.");
+
+    // ui->logPlainTextEdit->appendPlainText("Simulation took " + QString::number(simulationThread->CPUTime) + "  s.");
+
+    ui->logPlainTextEdit->setPlainText(simulationThread->messages.join('\n'));
 
     updatePlot();
 

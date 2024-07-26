@@ -54,13 +54,9 @@ private:
     QList<const FMIModelVariable*> plotVariables;
     ModelVariablesItemModel* variablesListModel = nullptr;
     VariablesFilterModel* variablesFilterModel = nullptr;
-    FMIRecorder* recorder = nullptr;
-    FMISimulationSettings* settings = nullptr;
+    // FMIRecorder* recorder = nullptr;
     SimulationThread* simulationThread = nullptr;
     QProgressDialog* progressDialog;
-
-    static void logFunctionCall(FMIInstance* instance, FMIStatus status, const char* message);
-    static void logMessage(FMIInstance* instance, FMIStatus status, const char* category, const char* message);
 
     void setCurrentPage(QWidget *page);
     void updatePlot();
