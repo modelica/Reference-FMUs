@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-fmusim-gui:
-    runs-on: windows-2022
+    runs-on: windows-2019
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
