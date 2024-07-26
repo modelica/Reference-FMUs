@@ -19,11 +19,7 @@ void SimulationThread::run() {
 
     const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
 
-    // status = FMISimulate(settings);
-
     char platformBinaryPath[2048] = "";
-
-    // const QByteArray ba = unzipdir.toLocal8Bit();
 
     FMIPlatformBinaryPath(settings.unzipdir, modelIdentifier, settings.modelDescription->fmiMajorVersion, platformBinaryPath, 2048);
 
@@ -67,11 +63,8 @@ void SimulationThread::run() {
 
     settings.S = S;
     settings.modelDescription = modelDescription;
-    // settings.unzipdir = ba.data();
     settings.recorder = recorder;
     settings.input = input;
-
-    // simulationThread->start();
 
     status = FMISimulate(&settings);
 

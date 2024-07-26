@@ -29,10 +29,6 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-    // QIcon::setThemeName("light");
-
-    //settings = (FMISimulationSettings*)calloc(1, sizeof(FMISimulationSettings));
-
     simulationThread = new SimulationThread();
 
     progressDialog = new QProgressDialog(this);
@@ -65,14 +61,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->recentFilesGroupBox->setLayout(vbox);
 
     QSettings settings;
-
-    // QVariantList recentFiles;
-
-    // recentFiles << "E:\\Development\\Reference-FMUs\\build\\fmi3-x86_64-windows\\fmus\\BouncingBall.fmu";
-
-    // settings.setValue("recentFiles", recentFiles);
-
-    // settings.sync();
 
     QStringList recentFiles = settings.value("recentFiles").toStringList();
 
@@ -520,56 +508,11 @@ void MainWindow::simulate() {
         i++;
     }
 
-    // char platformBinaryPath[FMI_PATH_MAX] = "";
-
-    // const QByteArray ba = unzipdir.toLocal8Bit();
-
-    // FMIPlatformBinaryPath(ba.data(), modelIdentifier, modelDescription->fmiMajorVersion, platformBinaryPath, FMI_PATH_MAX);
-
-    // FMIInstance *S = FMICreateInstance("instance1", SimulationThread::logMessage, ui->logFMICallsCheckBox->isChecked() ? SimulationThread::logFunctionCall : nullptr);
-
-    // if (!S) {
-    //     printf("Failed to create FMU instance.\n");
-    //     return;
-    // }
-
-    // S->userData = this;
-
-    // FMILoadPlatformBinary(S, platformBinaryPath);
-
-    // QList<FMIModelVariable*> recordedVariables;
-
-    // for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
-
-    //     FMIModelVariable* variable = &modelDescription->modelVariables[i];
-
-    //     if (variable->variability == FMITunable || variable->variability == FMIContinuous || variable->variability == FMIDiscrete) {
-    //         recordedVariables << variable;
-    //     }
-
-    // }
-
-    // FMIStaticInput* input = nullptr;
-
     if (ui->inputCheckBox->isChecked()) {
-        // const QString inputPath = ui->inputLineEdit->text();
-        // const std::wstring  wstr  = ui->inputLineEdit->text().toStdWString();
-        // input = FMIReadInput(modelDescription, (char*)wstr.c_str());
-        // if (!input) {
-        //     ui->logPlainTextEdit->appendPlainText("Failed to load " + inputPath + ".");
-        // }
         simulationThread->inputFilename = ui->inputLineEdit->text();
     } else {
         simulationThread->inputFilename = "";
     }
-
-    // recorder = FMICreateRecorder(S, recordedVariables.size(), (const FMIModelVariable**)recordedVariables.data());
-
-    // settings->S = S;
-    // settings->modelDescription = modelDescription;
-    // settings->unzipdir = ba.data();
-    // settings->recorder = recorder;
-    // settings->input = input;
 
     simulationThread->start();
 }
@@ -843,28 +786,7 @@ void MainWindow::setOptionalColumnsVisible(bool visible) {
     ui->treeView->setColumnHidden(ModelVariablesItemModel::MAX_COLUMN_INDEX, !visible);
 }
 
-// static bool stepFinished(FMISimulationSettings* settings, double time) {
-//     //qDebug() << settings->stopTime;
-//     //qDebug() << time;
-//     int progress = time / (settings->stopTime - settings->startTime) * 100;
-//     qDebug() << progress;
-//     return time < 2;
-// }
-
-void MainWindow::simulationFinished()
-{
-    // const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
-
-    // settings->stepFinished = stepFinished;
-
-    // const FMIStatus status = FMISimulate(settings);
-
-    // const FMIStatus status = simulation.status;
-
-    // const qint64 endTime = QDateTime::currentMSecsSinceEpoch();
-
-
-    // ui->logPlainTextEdit->appendPlainText("Simulation took " + QString::number(simulationThread->CPUTime) + "  s.");
+void MainWindow::simulationFinished() {
 
     ui->logPlainTextEdit->setPlainText(simulationThread->messages.join('\n'));
 
