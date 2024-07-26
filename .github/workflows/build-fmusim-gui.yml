@@ -1,0 +1,26 @@
+name: Build the Reference FMUs
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+    - run: python -m pip install fmpy
+    - run: python fmusim-gui/build/build_cvode.py
+    - run: python fmusim-gui/build/build_libxml2.py
+    - run: python fmusim-gui/build/build_zlib.py
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.7.1'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2019_64'
