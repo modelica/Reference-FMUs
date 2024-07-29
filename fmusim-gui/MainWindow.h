@@ -39,7 +39,6 @@ protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
     void changeEvent(QEvent *event) override;
-    // void update
 
 private:
     Ui::MainWindow *ui;
@@ -54,7 +53,6 @@ private:
     QList<const FMIModelVariable*> plotVariables;
     ModelVariablesItemModel* variablesListModel = nullptr;
     VariablesFilterModel* variablesFilterModel = nullptr;
-    // FMIRecorder* recorder = nullptr;
     SimulationThread* simulationThread = nullptr;
     QProgressDialog* progressDialog;
 

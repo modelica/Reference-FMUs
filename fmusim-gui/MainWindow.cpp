@@ -119,8 +119,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->openButton, &QPushButton::clicked, this, &MainWindow::openFile);
 
-    //ui->filesTreeView->resizeColumnToContents(0);
-    //ui->filesTreeView->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
     connect(ui->filesTreeView, &QAbstractItemView::doubleClicked, this, &MainWindow::openFileInDefaultApplication);
 
     connect(ui->openFileAction,          &QAction::triggered, this, &MainWindow::openFile);
@@ -156,8 +154,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->filterLocalVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterLocalVariables);
     connect(ui->showOptionalColumnsToolButton, &QToolButton::clicked, this, &MainWindow::setOptionalColumnsVisible);
 
-    // ui->treeView->setColumnWidth(0, ModelVariablesItemModel::NAME_COLUMN_DEFAULT_WIDTH);
-    // ui->treeView->setColumnWidth(1, ModelVariablesItemModel::START_COLUMN_DEFAULT_WIDTH);
     const static int COLUMN_WIDTHS[] = {200, 50, 70, 100, 70, 70, 70, 70, 70, 70, 70, 40, 40};
 
     for (int i = 0; i < ModelVariablesItemModel::NUMBER_OF_COLUMNS - 1; i++) {
@@ -338,7 +334,6 @@ void MainWindow::loadFMU(const QString &filename) {
     ui->plotWebEngineView->load(QUrl("qrc:/plot.html"));
 
     // enable widgets
-    // ui->dockWidget->setHidden(false);
     ui->showSideBarAction->setEnabled(true);
     ui->showSideBarAction->setChecked(true);
     ui->showInfoAction->setEnabled(true);
@@ -748,20 +743,14 @@ void MainWindow::updatePlot() {
         "    autosize: true,"
         "    font: {family: 'Segoe UI', size: 12},"
         + plotColors +
-        // "    plot_bgcolor: '#1e1e1e',"
-        // "    paper_bgcolor: '#1e1e1e',"
         "    grid: {rows: " + QString::number(plotVariables.size()) + ", columns: 1, pattern: 'independent'},"
-        // "    template: 'plotly_dark',"
-                         + axes +
-        // "    color: '#0f0',"
+        + axes +
         "    margin: { l: 60, r: 20, b: 20, t: 20, pad: 0 }"
         "};"
         "var config = {"
         "    'responsive': true"
         "};"
         "Plotly.newPlot('gd', data, layout, config);";
-
-    // qDebug() << javaScript;
 
     ui->plotWebEngineView->page()->runJavaScript(javaScript);
 }
