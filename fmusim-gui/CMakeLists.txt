@@ -44,9 +44,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_SOURCES}
         ModelVariablesItemModel.h
         ModelVariablesItemModel.cpp
-        icons/icons.qrc
         plot.html
-
         ../src/FMI1.c
         ../src/FMI2.c
         ../include/FMI1.h
