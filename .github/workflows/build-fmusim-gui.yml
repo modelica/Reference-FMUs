@@ -29,6 +29,13 @@ jobs:
         arch: 'win64_msvc2019_64'
         modules: 'qtpositioning qtwebchannel qtwebengine'
     - run: "gci env:"
-    - run: |
-        cmake -D CMAKE_PREFIX_PATH=${{env.QT_ROOT_DIR}} -S fmusim-gui -B fmusim-gui/build/fmusim-gui
-        cmake --build fmusim-gui/build/fmusim-gui --config Release
+    - run: cmake -D CMAKE_PREFIX_PATH=${{env.QT_ROOT_DIR}} -S fmusim-gui -B fmusim-gui/build/fmusim-gui
+    - run: cmake --build fmusim-gui/build/fmusim-gui --config Release
+    - run: ${{env.QT_ROOT_DIR}}\bin\windeployqt.exe fmusim-gui\build\fmusim-gui\Release\fmusim-gui.exe
+    - run: Copy-Item -Path fmusim-gui\build\libxml2-x86_64-windows\install\bin\libxml2.dll -Destination fmusim-gui\build\fmusim-gui\Release\
+    - run: Copy-Item -Path fmusim-gui\build\zlib-x86_64-windows\install\bin\zlib.dll -Destination fmusim-gui\build\fmusim-gui\Release\
+    - uses: actions/upload-artifact@v4
+      with:
+        name: FMUSim GUI
+        path: fmusim-gui/build/fmusim-gui/Release
+        if-no-files-found: error
