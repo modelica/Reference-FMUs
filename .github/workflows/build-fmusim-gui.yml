@@ -28,3 +28,6 @@ jobs:
         target: 'desktop'
         arch: 'win64_msvc2019_64'
     - run: "gci env:"
+    - run: |
+        cmake -D CMAKE_PREFIX_PATH=${{env.QT_ROOT_DIR}} -S fmusim-gui -B fmusim-gui/build/fmusim-gui
+        cmake --build fmusim-gui/build/fmusim-gui --config Release
