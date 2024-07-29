@@ -341,6 +341,7 @@ void MainWindow::loadFMU(const QString &filename) {
     ui->showFilesAction->setEnabled(true);
     ui->showDocumentationAction->setEnabled(true);
     ui->showLogAction->setEnabled(true);
+    ui->showPlotAction->setEnabled(false);
     ui->simulateAction->setEnabled(true);
 
     stopTimeLineEdit->setEnabled(true);
