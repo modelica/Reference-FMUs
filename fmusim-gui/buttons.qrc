@@ -5,7 +5,6 @@
         <file>buttons/dark/folder-open.svg</file>
         <file>buttons/dark/gear.svg</file>
         <file>buttons/dark/graph.svg</file>
-        <file>buttons/dark/index.theme</file>
         <file>buttons/dark/list-task.svg</file>
         <file>buttons/dark/play.svg</file>
         <file>buttons/dark/stop.svg</file>
@@ -14,18 +13,12 @@
         <file>buttons/light/folder-open.svg</file>
         <file>buttons/light/gear.svg</file>
         <file>buttons/light/graph.svg</file>
-        <file>buttons/light/index.theme</file>
         <file>buttons/light/list-task.svg</file>
         <file>buttons/light/play.svg</file>
         <file>buttons/light/stop.svg</file>
         <file>buttons/dark/side-bar.svg</file>
         <file>buttons/light/side-bar.svg</file>
         <file>buttons/dark/columns.svg</file>
-        <file>buttons/dark/checkers.svg</file>
-        <file>buttons/dark/checkers-14x14.svg</file>
-        <file>buttons/dark/columns-14x14.svg</file>
-        <file>buttons/dark/columns-14x14.png</file>
-        <file>buttons/dark/checkers-14x14.png</file>
         <file>buttons/dark/parameter.svg</file>
         <file>buttons/dark/output-variable.svg</file>
         <file>buttons/dark/input-variable.svg</file>

@@ -979,7 +979,7 @@
           </property>
           <property name="icon">
            <iconset resource="buttons.qrc">
-            <normaloff>:/buttons/dark/columns-14x14.svg</normaloff>:/buttons/dark/columns-14x14.svg</iconset>
+            <normaloff>:/buttons/dark/columns.svg</normaloff>:/buttons/dark/columns.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
