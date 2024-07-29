@@ -55,6 +55,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
 
+    setWindowTitle("FMUSim " + QApplication::applicationVersion());
+
     setColorScheme(QGuiApplication::styleHints()->colorScheme());
 
     // recent files
@@ -280,7 +282,7 @@ void MainWindow::loadFMU(const QString &filename) {
         }
     }
 
-    setWindowTitle("FMUSim GUI - " + filename);
+    setWindowTitle("FMUSim " + QApplication::applicationVersion() + " - " + filename);
 
     if (modelDescription->defaultExperiment && modelDescription->defaultExperiment->stopTime) {
         stopTimeLineEdit->setText(modelDescription->defaultExperiment->stopTime);
