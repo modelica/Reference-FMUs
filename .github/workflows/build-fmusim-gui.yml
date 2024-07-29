@@ -19,6 +19,7 @@ jobs:
     - run: python fmusim-gui/build/build_cvode.py
     - run: python fmusim-gui/build/build_libxml2.py
     - run: python fmusim-gui/build/build_zlib.py
+    - run: set
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
       with:
@@ -26,3 +27,4 @@ jobs:
         host: 'windows'
         target: 'desktop'
         arch: 'win64_msvc2019_64'
+    - run: set
