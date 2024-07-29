@@ -27,7 +27,7 @@ jobs:
         host: 'windows'
         target: 'desktop'
         arch: 'win64_msvc2019_64'
-        modules: 'qtwebengine'
+        modules: 'qtwebchannel qtwebengine'
     - run: "gci env:"
     - run: |
         cmake -D CMAKE_PREFIX_PATH=${{env.QT_ROOT_DIR}} -S fmusim-gui -B fmusim-gui/build/fmusim-gui
