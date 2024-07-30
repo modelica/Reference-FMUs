@@ -738,10 +738,10 @@ void MainWindow::updatePlot() {
 
         if (k == 0) {
             axes += "xaxis: {" + colors + "},";
-            axes += "yaxis: {title: '" + name + "', " + colors + ", domain: " + domain + "},";
+            axes += "yaxis: {title: '" + name + "', titlefont: {size: 13}, " + colors + ", domain: " + domain + "},";
         } else {
             axes += "xaxis" + QString::number(k + 1) +  ": {" + colors + ", matches: 'x'},";
-            axes += "yaxis" + QString::number(k + 1) +  ": {title: '" + name + "', " + colors + ", domain: " + domain + "},";
+            axes += "yaxis" + QString::number(k + 1) +  ": {title: '" + name + "', titlefont: {size: 13}, " + colors + ", domain: " + domain + "},";
         }
 
         k++;
