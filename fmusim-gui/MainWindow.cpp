@@ -154,7 +154,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->filterLocalVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterLocalVariables);
     connect(ui->showOptionalColumnsToolButton, &QToolButton::clicked, this, &MainWindow::setOptionalColumnsVisible);
 
-    const static int COLUMN_WIDTHS[] = {200, 50, 70, 100, 70, 70, 70, 70, 70, 70, 70, 40, 40};
+    const static int COLUMN_WIDTHS[] = {200, 50, 70, 100, 70, 70, 70, 70, 70, 70, 70, 50, 40};
 
     for (int i = 0; i < ModelVariablesItemModel::NUMBER_OF_COLUMNS - 1; i++) {
         ui->treeView->setColumnWidth(i, COLUMN_WIDTHS[i]);
