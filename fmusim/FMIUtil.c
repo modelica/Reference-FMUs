@@ -688,7 +688,18 @@ FMIStatus FMIDuplicateString(const char* source, char** destination) {
 
 FMIStatus FMIDuplicateBuffer(const void* source, void** destination, size_t size) {
 
-    if (!source || !destination) {
+    if (!destination) {
+        FMILogError("Pointer to destination must not be NULL.");
+        return FMIError;
+    }
+
+    if (size == 0) {
+        *destination = NULL;
+        return FMIOK;
+    }
+
+    if (!source) {
+        FMILogError("Pointer to source must not be NULL.");
         return FMIError;
     }
 
