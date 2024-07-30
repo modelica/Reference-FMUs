@@ -63,7 +63,11 @@ void SimulationThread::run() {
 
     S->userData = this;
 
-    FMILoadPlatformBinary(S, platformBinaryPath);
+    if (FMILoadPlatformBinary(S, platformBinaryPath) != FMIOK) {
+        messages.append("Failed to load platfrom binary " + QString(platformBinaryPath)  + ".");
+        status = FMIError;
+        return;
+    }
 
     QList<FMIModelVariable*> recordedVariables;
 
