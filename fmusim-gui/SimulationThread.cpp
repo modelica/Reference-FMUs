@@ -3,6 +3,8 @@
 #include <Windows.h>
 
 
+SimulationThread* SimulationThread::currentSimulationThread = nullptr;
+
 SimulationThread::SimulationThread(QObject *parent) : QThread(parent) {
     settings = (FMISimulationSettings*)calloc(1, sizeof(FMISimulationSettings));
 }
@@ -23,7 +25,15 @@ SimulationThread::~SimulationThread()
     }
 }
 
+void SimulationThread::appendMessage(const char* message, va_list args) {
+    currentSimulationThread->messages << QString("Error: ") + message;
+}
+
 void SimulationThread::run() {
+
+    currentSimulationThread = this;
+
+    logErrorMessage = appendMessage;
 
     // clean up data from previous simulation
     messages.clear();

@@ -31,6 +31,8 @@ public slots:
     void stop();
 
 private:
+    static SimulationThread* currentSimulationThread;
+    static void appendMessage(const char* message, va_list args);
     static bool stepFinished(const FMISimulationSettings* settings, double time);
     bool continueSimulation = true;
 
