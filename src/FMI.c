@@ -37,6 +37,11 @@ FMIStatus FMICalloc(void** memory, size_t count, size_t size) {
         return FMIError;
     }
 
+    if (count == 0 || size == 0) {
+        *memory = NULL;
+        return FMIOK;
+    }
+
     *memory = calloc(count, size);
 
     if (!*memory) {
