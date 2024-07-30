@@ -269,12 +269,24 @@ void MainWindow::loadFMU(const QString &filename) {
 
     plotVariables.clear();
 
-    for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+    for (size_t i = 0; i < modelDescription->nModelVariables && plotVariables.size() < 5; i++) {
 
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        const FMIModelVariable* variable = &modelDescription->modelVariables[i];
 
         if (variable->causality == FMIOutput) {
             plotVariables << variable;
+        }
+    }
+
+    if (plotVariables.isEmpty()) {
+
+        for (size_t i = 0; i < modelDescription->nModelVariables && plotVariables.size() < 5; i++) {
+
+            const FMIModelVariable* variable = &modelDescription->modelVariables[i];
+
+            if (variable->variability == FMIContinuous) {
+                plotVariables << variable;
+            }
         }
     }
 
