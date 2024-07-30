@@ -40,3 +40,4 @@ jobs:
         name: FMUSim GUI
         path: fmusim-gui/build/fmusim-gui/Release
         if-no-files-found: error
+
