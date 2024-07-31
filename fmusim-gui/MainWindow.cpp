@@ -221,6 +221,8 @@ void MainWindow::loadFMU(const QString &filename) {
 
     this->unzipdir = unzipdir;
 
+    QDir::setCurrent(unzipdir);
+
     char modelDescriptionPath[FMI_PATH_MAX] = "";
 
     QByteArray bytes = filename.toLocal8Bit();
