@@ -56,8 +56,12 @@ private:
     SimulationThread* simulationThread = nullptr;
     QProgressDialog* progressDialog;
 
+    static MainWindow* currentMainWindow;
+    static void logMessage(const char* message, va_list args);
+
     void setCurrentPage(QWidget *page);
     void updatePlot();
+    void unloadFMU();
 
 private slots:
     void openFile();

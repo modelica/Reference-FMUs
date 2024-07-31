@@ -55,8 +55,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
 
-    setWindowTitle("FMUSim " + QApplication::applicationVersion());
-
     setColorScheme(QGuiApplication::styleHints()->colorScheme());
 
     // recent files
@@ -81,7 +79,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     // add the simulation controls to the toolbar
     stopTimeLineEdit = new QLineEdit(this);
-    // stopTimeLineEdit->setEnabled(false);
     stopTimeLineEdit->setText("10.0");
     stopTimeLineEdit->setToolTip("Stop time");
     stopTimeLineEdit->setFixedWidth(80);
@@ -133,8 +130,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->showLogAction,           &QAction::triggered, this, [this]() { setCurrentPage(ui->logPage);          });
     connect(ui->showPlotAction,          &QAction::triggered, this, [this]() { setCurrentPage(ui->plotPage);         });
 
-    ui->showPlotAction->setEnabled(false);
-
     setCurrentPage(ui->startPage);
 
     variablesListModel = new ModelVariablesItemModel(this);
@@ -157,29 +152,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->filterLocalVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterLocalVariables);
     connect(ui->showOptionalColumnsToolButton, &QToolButton::clicked, this, &MainWindow::setOptionalColumnsVisible);
 
-    const static int COLUMN_WIDTHS[] = {200, 55, 75, 100, 70, 80, 70, 70, 70, 70, 70, 50, 40};
-
-    for (int i = 0; i < ModelVariablesItemModel::NUMBER_OF_COLUMNS - 1; i++) {
-        ui->treeView->setColumnWidth(i, COLUMN_WIDTHS[i]);
-    }
-
-    // hide columns
-    setOptionalColumnsVisible(false);
-
     connect(ui->inputPushButton, &QPushButton::clicked, this, &MainWindow::selectInputFile);
 
-    // disable widgets
-    ui->dockWidget->setHidden(true);
-    ui->showInfoAction->setEnabled(false);
-    ui->showSettingsAction->setEnabled(false);
-    ui->showFilesAction->setEnabled(false);
-    ui->showDocumentationAction->setEnabled(false);
-    ui->showLogAction->setEnabled(false);
-    ui->showPlotAction->setEnabled(false);
-    ui->simulateAction->setEnabled(false);
-    ui->showSideBarAction->setEnabled(false);
-    stopTimeLineEdit->setEnabled(false);
-    interfaceTypeComboBox->setEnabled(false);
+    unloadFMU();
 }
 
 void MainWindow::setCurrentPage(QWidget *page) {
@@ -212,24 +187,37 @@ void MainWindow::setCurrentPage(QWidget *page) {
     ui->showPlotAction->blockSignals(false);
 }
 
-MainWindow::~MainWindow()
-{
+MainWindow::~MainWindow() {
+    unloadFMU();
     delete ui;
+}
 
-    if (modelDescription) {
-        FMIFreeModelDescription(modelDescription);
-    }
+void MainWindow::logMessage(const char* message, va_list args) {
 
-    if (!unzipdir.isEmpty()) {
-        QByteArray bytes = unzipdir.toLocal8Bit();
-        const char *cstr = bytes.data();
-        FMIRemoveDirectory(cstr);
+    const QString formatted = QString::vasprintf(message, args);
+
+    if (currentMainWindow) {
+        currentMainWindow->ui->logPlainTextEdit->appendPlainText(formatted);
+    } else {
+        qDebug() << formatted;
     }
 }
 
 void MainWindow::loadFMU(const QString &filename) {
 
+    currentMainWindow = this;
+
+    logErrorMessage = MainWindow::logMessage;
+
+    unloadFMU();
+
     const char* unzipdir = FMICreateTemporaryDirectory();
+
+    if (!unzipdir) {
+        ui->logPlainTextEdit->appendPlainText("Failed to create temporary directory.");
+        setCurrentPage(ui->logPage);
+        return;
+    }
 
     this->unzipdir = unzipdir;
 
@@ -240,8 +228,9 @@ void MainWindow::loadFMU(const QString &filename) {
 
     const int status = FMIExtractArchive(cstr, unzipdir);
 
-    if (status) {
-        QMessageBox::critical(this, "Failed to extract FMU", "Failed to extract FMU");
+    if (status != 0) {
+        ui->logPlainTextEdit->appendPlainText("Failed to extract FMU.");
+        setCurrentPage(ui->logPage);
         return;
     }
 
@@ -263,11 +252,12 @@ void MainWindow::loadFMU(const QString &filename) {
     modelDescription = FMIReadModelDescription(modelDescriptionPath);
 
     if (!modelDescription) {
-        QMessageBox::critical(this, "Failed to load Model Description", "Failed to load Model Description");
+        ui->logPlainTextEdit->appendPlainText("Failed to load Model Description.");
+        setCurrentPage(ui->logPage);
         return;
     }
 
-    // Loading finished. Update the GUI.
+    // update the GUI
     startValues.clear();
 
     plotVariables.clear();
@@ -416,6 +406,8 @@ void MainWindow::changeEvent(QEvent *event) {
 
     QMainWindow::changeEvent(event);
 }
+
+MainWindow* MainWindow::currentMainWindow = nullptr;
 
 void MainWindow::setColorScheme(Qt::ColorScheme colorScheme) {
 
@@ -769,6 +761,47 @@ void MainWindow::updatePlot() {
         "Plotly.newPlot('gd', data, layout, config);";
 
     ui->plotWebEngineView->page()->runJavaScript(javaScript);
+}
+
+void MainWindow::unloadFMU() {
+
+    if (modelDescription) {
+        FMIFreeModelDescription(modelDescription);
+        modelDescription = nullptr;
+    }
+
+    if (!unzipdir.isEmpty()) {
+        QByteArray bytes = unzipdir.toLocal8Bit();
+        const char *cstr = bytes.data();
+        FMIRemoveDirectory(cstr);
+        unzipdir = "";
+    }
+
+    setWindowTitle("FMUSim " + QApplication::applicationVersion());
+
+    ui->logPlainTextEdit->clear();
+
+    setOptionalColumnsVisible(false);
+
+    const static int COLUMN_WIDTHS[] = {200, 55, 75, 100, 70, 80, 70, 70, 70, 70, 70, 50, 40};
+
+    for (int i = 0; i < ModelVariablesItemModel::NUMBER_OF_COLUMNS - 1; i++) {
+        ui->treeView->setColumnWidth(i, COLUMN_WIDTHS[i]);
+    }
+
+    ui->dockWidget->setHidden(true);
+
+    ui->showInfoAction->setEnabled(false);
+    ui->showSettingsAction->setEnabled(false);
+    ui->showFilesAction->setEnabled(false);
+    ui->showDocumentationAction->setEnabled(false);
+    ui->showLogAction->setEnabled(false);
+    ui->showPlotAction->setEnabled(false);
+    ui->simulateAction->setEnabled(false);
+    ui->showSideBarAction->setEnabled(false);
+
+    stopTimeLineEdit->setEnabled(false);
+    interfaceTypeComboBox->setEnabled(false);
 }
 
 void MainWindow::addPlotVariable(const FMIModelVariable* variable) {
