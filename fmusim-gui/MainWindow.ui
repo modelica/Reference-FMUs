@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>FMUSim GUI</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/fmusim.svg</normaloff>:/fmusim.svg</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_7">
     <property name="leftMargin">
@@ -315,8 +319,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>631</width>
-             <height>377</height>
+             <width>68</width>
+             <height>34</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_13">
@@ -1242,6 +1246,7 @@
  </customwidgets>
  <resources>
   <include location="buttons.qrc"/>
+  <include location="resources.qrc"/>
  </resources>
  <connections>
   <connection>

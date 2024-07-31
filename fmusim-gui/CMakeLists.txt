@@ -91,6 +91,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         icons/variables/variables.qrc
         VariablesFilterModel.h VariablesFilterModel.cpp
         SimulationThread.h SimulationThread.cpp
+        resources.qrc
     )
 
 target_include_directories(fmusim-gui PRIVATE
