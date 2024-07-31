@@ -117,6 +117,9 @@ MainWindow::MainWindow(QWidget *parent)
     // hide the dock's title bar
     ui->dockWidget->setTitleBarWidget(new QWidget());
 
+    const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    ui->logPlainTextEdit->setFont(fixedFont);
+
     connect(ui->openButton, &QPushButton::clicked, this, &MainWindow::openFile);
 
     connect(ui->filesTreeView, &QAbstractItemView::doubleClicked, this, &MainWindow::openFileInDefaultApplication);
