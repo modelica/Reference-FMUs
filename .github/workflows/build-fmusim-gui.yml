@@ -35,6 +35,7 @@ jobs:
     - run: Copy-Item -Path fmusim-gui\build\libxml2-x86_64-windows\install\bin\libxml2.dll -Destination fmusim-gui\build\fmusim-gui\Release\
     - run: Copy-Item -Path fmusim-gui\build\zlib-x86_64-windows\install\bin\zlib.dll -Destination fmusim-gui\build\fmusim-gui\Release\
     - run: Copy-Item -Path fmusim-gui\LICENSE.txt -Destination fmusim-gui\build\fmusim-gui\Release\
+    - run: Copy-Item -Path fmusim-gui\LICENSE_QT.txt -Destination fmusim-gui\build\fmusim-gui\Release\
     - uses: actions/upload-artifact@v4
       with:
         name: FMUSim GUI
