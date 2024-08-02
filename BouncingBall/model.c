@@ -58,10 +58,26 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double value[], 
     switch (vr) {
 
         case vr_h:
+#if FMI_VERSION > 1
+            if (comp->state != Instantiated &&
+                comp->state != InitializationMode &&
+                comp->state != ContinuousTimeMode) {
+                logError(comp, "Variable \"h\" can only be set in Instantiated Mode, Initialization Mode, and Continuous Time Mode.");
+                return Error;
+            }
+#endif
             M(h) = value[(*index)++];
             return OK;
 
         case vr_v:
+#if FMI_VERSION > 1
+            if (comp->state != Instantiated &&
+                comp->state != InitializationMode &&
+                comp->state != ContinuousTimeMode) {
+                logError(comp, "Variable \"v\" can only be set in Instantiated Mode, Initialization Mode, and Continuous Time Mode.");
+                return Error;
+            }
+#endif
             M(v) = value[(*index)++];
             return OK;
 

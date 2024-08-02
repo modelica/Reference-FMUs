@@ -64,7 +64,7 @@
       <Real/>
     </ScalarVariable>
     <ScalarVariable name="h" valueReference="1" causality="output" variability="continuous" initial="exact" description="Position of the ball">
-      <Real start="1" declaredType="Position"/>
+      <Real start="1" reinit="true" declaredType="Position"/>
     </ScalarVariable>
     <ScalarVariable name="der(h)" valueReference="2" causality="local" variability="continuous" initial="calculated" description="Derivative of h">
       <Real derivative="2" declaredType="Velocity"/>

@@ -49,7 +49,7 @@
 
   <ModelVariables>
     <Float64 name="time" valueReference="0" causality="independent" variability="continuous" description="Simulation time"/>
-    <Float64 name="h" valueReference="1" causality="output" variability="continuous" initial="exact" declaredType="Position" start="1" description="Position of the ball" intermediateUpdate="true"/>
+    <Float64 name="h" valueReference="1" causality="output" variability="continuous" initial="exact" declaredType="Position" start="1" reinit="true" description="Position of the ball" intermediateUpdate="true"/>
     <Float64 name="der(h)" valueReference="2" causality="local" variability="continuous" initial="calculated" declaredType="Velocity" derivative="1" description="Derivative of h"/>
     <Float64 name="v" valueReference="3" causality="output" variability="continuous" initial="exact" declaredType="Velocity" start="0" reinit="true" description="Velocity of the ball" intermediateUpdate="true"/>
     <Float64 name="der(v)" valueReference="4" causality="local" variability="continuous" initial="calculated" declaredType="Acceleration" derivative="3" description="Derivative of v"/>
