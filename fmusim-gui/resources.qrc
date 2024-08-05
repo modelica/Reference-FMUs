@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>fmusim.svg</file>
+    </qresource>
+</RCC>

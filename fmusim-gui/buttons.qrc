@@ -1,0 +1,36 @@
+<RCC>
+    <qresource prefix="/">
+        <file>buttons/dark/book.svg</file>
+        <file>buttons/dark/file-earmark-zip.svg</file>
+        <file>buttons/dark/folder-open.svg</file>
+        <file>buttons/dark/gear.svg</file>
+        <file>buttons/dark/graph.svg</file>
+        <file>buttons/dark/list-task.svg</file>
+        <file>buttons/dark/play.svg</file>
+        <file>buttons/dark/stop.svg</file>
+        <file>buttons/light/book.svg</file>
+        <file>buttons/light/file-earmark-zip.svg</file>
+        <file>buttons/light/folder-open.svg</file>
+        <file>buttons/light/gear.svg</file>
+        <file>buttons/light/graph.svg</file>
+        <file>buttons/light/list-task.svg</file>
+        <file>buttons/light/play.svg</file>
+        <file>buttons/light/stop.svg</file>
+        <file>buttons/dark/side-bar.svg</file>
+        <file>buttons/light/side-bar.svg</file>
+        <file>buttons/dark/columns.svg</file>
+        <file>buttons/dark/parameter.svg</file>
+        <file>buttons/dark/output-variable.svg</file>
+        <file>buttons/dark/input-variable.svg</file>
+        <file>buttons/dark/local-variable.svg</file>
+        <file>buttons/light/columns.svg</file>
+        <file>buttons/light/output-variable.svg</file>
+        <file>buttons/light/input-variable.svg</file>
+        <file>buttons/light/local-variable.svg</file>
+        <file>buttons/light/parameter.svg</file>
+        <file>buttons/dark/info.svg</file>
+        <file>buttons/light/info.svg</file>
+        <file>buttons/dark/new-window.svg</file>
+        <file>buttons/light/new-window.svg</file>
+    </qresource>
+</RCC>

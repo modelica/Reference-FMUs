@@ -1,0 +1,42 @@
+name: Build the FMUSim GUI
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-fmusim-gui:
+    runs-on: windows-2019
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '6.7.1'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2019_64'
+        modules: 'qtpositioning qtwebchannel qtwebengine'
+    - run: python -m pip install fmpy requests
+    - run: python fmusim-gui/build/build_cvode.py
+    - run: python fmusim-gui/build/build_libxml2.py
+    - run: python fmusim-gui/build/build_zlib.py
+    - run: cmake -D CMAKE_PREFIX_PATH=${{env.QT_ROOT_DIR}} -S fmusim-gui -B fmusim-gui/build/fmusim-gui
+    - run: cmake --build fmusim-gui/build/fmusim-gui --config Release
+    - run: ${{env.QT_ROOT_DIR}}\bin\windeployqt.exe fmusim-gui\build\fmusim-gui\Release\fmusim-gui.exe
+    - run: Copy-Item -Path fmusim-gui\build\libxml2-x86_64-windows\install\bin\libxml2.dll -Destination fmusim-gui\build\fmusim-gui\Release\
+    - run: Copy-Item -Path fmusim-gui\build\zlib-x86_64-windows\install\bin\zlib.dll -Destination fmusim-gui\build\fmusim-gui\Release\
+    - run: Copy-Item -Path fmusim-gui\LICENSE.txt -Destination fmusim-gui\build\fmusim-gui\Release\
+    - run: Copy-Item -Path fmusim-gui\LICENSE_QT.txt -Destination fmusim-gui\build\fmusim-gui\Release\
+    - uses: actions/upload-artifact@v4
+      with:
+        name: fmusim-gui-x86_64-windows
+        path: fmusim-gui/build/fmusim-gui/Release
+        if-no-files-found: error
+
