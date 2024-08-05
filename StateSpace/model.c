@@ -198,7 +198,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
         break;
     case vr_x:
         if (comp->state != ContinuousTimeMode && comp->state != EventMode) {
-            logError(comp, "Variable \"x\" can only be set in Continuous Time Mode and Event Mode.", vr);
+            logError(comp, "Variable \"x\" can only be set in Continuous Time Mode and Event Mode.");
             return Error;
         }
         ASSERT_NVALUES((size_t)M(n));
