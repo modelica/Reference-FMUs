@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "FMI.h"
+#include "FMIBuildDescription.h"
 
 
 typedef enum {
@@ -192,6 +193,8 @@ typedef struct {
 
     size_t nEventIndicators;
     FMIUnknown* eventIndicators;
+
+    FMIBuildDescription* buildDescription;
 
 } FMIModelDescription;
 
