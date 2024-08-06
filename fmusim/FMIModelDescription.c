@@ -307,43 +307,28 @@ TERMINATE:
     ;
 }
 
-static FMIStatus readSourceFiles(xmlXPathContextPtr xpathCtx, const char* path, FMIBuildDescription** buildDescription) {
+static FMIStatus readSourceFiles(xmlXPathContextPtr xpathCtx, const char* path, size_t* nSourceFiles, char*** sourceFiles) {
 
     FMIStatus status = FMIOK;
 
-    xmlXPathObjectPtr xpathObj2 = xmlXPathEvalExpression((xmlChar*)path, xpathCtx);
+    xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)path, xpathCtx);
 
-    if (xpathObj2->nodesetval->nodeNr > 0) {
+    if (xpathObj->nodesetval->nodeNr > 0) {
 
-        if (!*buildDescription) {
-            CALL(FMICalloc((void**)buildDescription, 1, sizeof(FMIBuildDescription)));
-        }
+        *nSourceFiles = xpathObj->nodesetval->nodeNr;
 
-        CALL(FMIRealloc((void**)&(*buildDescription)->buildConfigurations, sizeof(FMIBuildConfiguration*) * ((*buildDescription)->nBuildConfigurations + 1)));
+        CALL(FMICalloc(sourceFiles, xpathObj->nodesetval->nodeNr, sizeof(char*)));
 
-        FMIBuildConfiguration* buildConfiguration;
-        CALL(FMICalloc((void**)&buildConfiguration, 1, sizeof(FMIBuildConfiguration)));
-        (*buildDescription)->buildConfigurations[(*buildDescription)->nBuildConfigurations] = buildConfiguration;
-        (*buildDescription)->nBuildConfigurations++;
-
-        FMISourceFileSet* sourceFileSet;
-        CALL(FMICalloc((void**)&sourceFileSet, 1, sizeof(FMISourceFileSet)));
-        CALL(FMICalloc((void**)&buildConfiguration->sourceFileSets, 1, sizeof(FMISourceFileSet*)));
-        buildConfiguration->sourceFileSets[0] = sourceFileSet;
-        buildConfiguration->nSourceFileSets = 1;
-
-        CALL(FMICalloc((void**)&sourceFileSet->sourceFiles, xpathObj2->nodesetval->nodeNr, sizeof(char*)));
-        sourceFileSet->nSourceFiles = xpathObj2->nodesetval->nodeNr;
-
-        for (int i = 0; i < xpathObj2->nodesetval->nodeNr; i++) {
-            xmlNodePtr fileNode = xpathObj2->nodesetval->nodeTab[i];
-            sourceFileSet->sourceFiles[i] = (char*)xmlGetProp(fileNode, (xmlChar*)"name");
+        for (int i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
+            xmlNodePtr fileNode = xpathObj->nodesetval->nodeTab[i];
+            (*sourceFiles)[i] = (char*)xmlGetProp(fileNode, (xmlChar*)"name");
         }
     }
 
-    xmlXPathFreeObject(xpathObj2);
+    xmlXPathFreeObject(xpathObj);
 
 TERMINATE:
+    
     return status;
 }
 
@@ -380,7 +365,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
         modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(node, (xmlChar*)"modelIdentifier");
         modelDescription->modelExchange->providesDirectionalDerivatives = getBooleanAttribute(node, "providesDirectionalDerivative");
         modelDescription->modelExchange->needsCompletedIntegratorStep = !getBooleanAttribute(node, "completedIntegratorStepNotNeeded");
-        CALL(readSourceFiles(xpathCtx, "/fmiModelDescription/ModelExchange/SourceFiles/File", &modelDescription->buildDescription));
+        CALL(readSourceFiles(xpathCtx, "/fmiModelDescription/ModelExchange/SourceFiles/File", &modelDescription->modelExchange->nSourceFiles, &modelDescription->modelExchange->sourceFiles));
     }
     xmlXPathFreeObject(xpathObj);
 
@@ -388,7 +373,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     if (xpathObj->nodesetval->nodeNr == 1) {
         CALL(FMICalloc((void**)&modelDescription->coSimulation, 1, sizeof(FMICoSimulationInterface)));
         modelDescription->coSimulation->modelIdentifier = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"modelIdentifier");
-        CALL(readSourceFiles(xpathCtx, "/fmiModelDescription/CoSimulation/SourceFiles/File", &modelDescription->buildDescription));
+        CALL(readSourceFiles(xpathCtx, "/fmiModelDescription/CoSimulation/SourceFiles/File", &modelDescription->coSimulation->nSourceFiles, &modelDescription->coSimulation->sourceFiles));
     }
     xmlXPathFreeObject(xpathObj);
 
@@ -1234,11 +1219,19 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
 
     if (modelDescription->modelExchange) {
         xmlFree((void*)modelDescription->modelExchange->modelIdentifier);
+        for (size_t i = 0; i < modelDescription->modelExchange->nSourceFiles; i++) {
+            xmlFree((void*)modelDescription->modelExchange->sourceFiles[i]);
+        }
+        FMIFree((void**)&modelDescription->modelExchange->sourceFiles);
         FMIFree((void**)&modelDescription->modelExchange);
     }
 
     if (modelDescription->coSimulation) {
         xmlFree((void*)modelDescription->coSimulation->modelIdentifier);
+        for (size_t i = 0; i < modelDescription->coSimulation->nSourceFiles; i++) {
+            xmlFree((void*)modelDescription->coSimulation->sourceFiles[i]);
+        }
+        FMIFree((void**)&modelDescription->coSimulation->sourceFiles);
         FMIFree((void**)&modelDescription->coSimulation);
     }
 

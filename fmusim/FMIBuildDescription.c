@@ -180,3 +180,52 @@ TERMINATE:
 
     return buildDescription;
 }
+
+void FMIFreeBuildDescription(FMIBuildDescription* buildDescription) {
+
+    if (!buildDescription) {
+        return;
+    }
+
+    for (size_t i = 0; i < buildDescription->nBuildConfigurations; i++) {
+
+        FMIBuildConfiguration* buildConfiguration = buildDescription->buildConfigurations[i];
+
+        for (size_t j = 0; j < buildConfiguration->nSourceFileSets; j++) {
+
+            FMISourceFileSet* sourceFileSet = buildConfiguration->sourceFileSets[j];
+
+            for (size_t k = 0; k < sourceFileSet->nPreprocessorDefinitions; k++) {
+                FMIPreprocessorDefinition* preprocessorDefinition = sourceFileSet->preprocessorDefinitions[k];
+                FMIFree(&preprocessorDefinition->name);
+                FMIFree(&preprocessorDefinition->value);
+                FMIFree(&preprocessorDefinition->description);
+                FMIFree(&preprocessorDefinition);
+            }
+
+            FMIFree((void**)&sourceFileSet->preprocessorDefinitions);
+
+            for (size_t k = 0; k < sourceFileSet->nSourceFiles; k++) {
+                FMIFree((void**)&sourceFileSet->sourceFiles[k]);
+            }
+            
+            FMIFree((void**)&sourceFileSet->sourceFiles);
+
+            for (size_t k = 0; k < sourceFileSet->nIncludeDirectories; k++) {
+                FMIFree((void**)&sourceFileSet->includeDirectories[k]);
+            }
+            
+            FMIFree((void**)&sourceFileSet->includeDirectories);
+
+            FMIFree(&sourceFileSet);
+        }
+
+        FMIFree((void**)&buildConfiguration->sourceFileSets);
+
+        FMIFree(&buildConfiguration);
+    }
+
+    FMIFree((void**)&buildDescription->buildConfigurations);
+
+    FMIFree((void**)&buildDescription);
+}

@@ -50,4 +50,4 @@ typedef struct {
 
 FMIBuildDescription* FMIReadBuildDescription(const char* filename);
 
-//void FMIFMIBuildDescription(FMIBuildDescription* buildDescription);
+void FMIFreeBuildDescription(FMIBuildDescription* buildDescription);
