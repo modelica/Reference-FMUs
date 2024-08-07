@@ -11,6 +11,7 @@
 #include <QDirIterator>
 #include <QProgressDialog>
 #include <QSettings>
+#include <QProcess>
 #include "ModelVariablesItemModel.h"
 #include "VariablesFilterModel.h"
 #include "SimulationThread.h"
@@ -129,6 +130,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->showDocumentationAction, &QAction::triggered, this, [this]() { setCurrentPage(ui->documenationPage); });
     connect(ui->showLogAction,           &QAction::triggered, this, [this]() { setCurrentPage(ui->logPage);          });
     connect(ui->showPlotAction,          &QAction::triggered, this, [this]() { setCurrentPage(ui->plotPage);         });
+
+    connect(ui->actionCompilePlatformBinary, &QAction::triggered, this, &MainWindow::compilePlatformBinary);
 
     setCurrentPage(ui->startPage);
 
@@ -843,4 +846,42 @@ void MainWindow::simulationFinished() {
     } else {
         setCurrentPage(ui->logPage);
     }
+}
+
+void MainWindow::compilePlatformBinary() {
+
+    QProcess process;
+
+    QString program = "C:\\Program Files\\CMake\\bin\\cmake.exe";
+    QString buildDirectory = "E:/Development/Reference-FMUs/build/fmi2-x86_64-windows/fmus/build/vs2";
+    QString sourcesDirectory = "E:/Development/Reference-FMUs/fmusim-gui/resources";
+    QString modelIdentifier = "BouncingBall";
+    QString unzipdir = "E:/Development/Reference-FMUs/build/fmi2-x86_64-windows/fmus/BouncingBall";
+    QString include = "E:/Development/Reference-FMUs/include;E:/Development/Reference-FMUs/build/fmi2-x86_64-windows/fmus/BouncingBall/sources";
+    QString sources = "E:/Development/Reference-FMUs/build/fmi2-x86_64-windows/fmus/BouncingBall/sources/all.c";
+
+    process.start(program, {
+        "-G", "Visual Studio 17 2022",
+        "-A", "x64",
+        "-B", buildDirectory,
+        "-D", "MODEL_IDENTIFIER=" + modelIdentifier,
+        "-D", "INCLUDE=" + include,
+        "-D", "SOURCES=" + sources,
+        "-D", "UNZIPDIR=" + unzipdir,
+        sourcesDirectory
+    });
+
+    qDebug() << process.waitForFinished();
+    qDebug() << process.readAllStandardError();
+    qDebug() << process.readAllStandardOutput();
+
+    process.start(program, {
+        "--build", buildDirectory,
+        "--config", "Debug",
+        "--target", "install"
+    });
+
+    qDebug() << process.waitForFinished();
+    qDebug() << process.readAllStandardError();
+    qDebug() << process.readAllStandardOutput();
 }

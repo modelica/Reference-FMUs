@@ -14,7 +14,7 @@
    <string>FMUSim GUI</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources.qrc">
+   <iconset>
     <normaloff>:/fmusim.svg</normaloff>:/fmusim.svg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
@@ -898,7 +898,7 @@
            <string>P</string>
           </property>
           <property name="icon">
-           <iconset resource="buttons.qrc">
+           <iconset>
             <normaloff>:/buttons/dark/parameter.svg</normaloff>:/buttons/dark/parameter.svg</iconset>
           </property>
           <property name="checkable">
@@ -921,7 +921,7 @@
            <string>O</string>
           </property>
           <property name="icon">
-           <iconset resource="buttons.qrc">
+           <iconset>
             <normaloff>:/buttons/dark/output-variable.svg</normaloff>:/buttons/dark/output-variable.svg</iconset>
           </property>
           <property name="checkable">
@@ -944,7 +944,7 @@
            <string>I</string>
           </property>
           <property name="icon">
-           <iconset resource="buttons.qrc">
+           <iconset>
             <normaloff>:/buttons/dark/input-variable.svg</normaloff>:/buttons/dark/input-variable.svg</iconset>
           </property>
           <property name="checkable">
@@ -967,7 +967,7 @@
            <string>L</string>
           </property>
           <property name="icon">
-           <iconset resource="buttons.qrc">
+           <iconset>
             <normaloff>:/buttons/dark/local-variable.svg</normaloff>:/buttons/dark/local-variable.svg</iconset>
           </property>
           <property name="iconSize">
@@ -1009,7 +1009,7 @@
            <string>C</string>
           </property>
           <property name="icon">
-           <iconset resource="buttons.qrc">
+           <iconset>
             <normaloff>:/buttons/dark/columns.svg</normaloff>:/buttons/dark/columns.svg</iconset>
           </property>
           <property name="checkable">
@@ -1065,6 +1065,7 @@
    <addaction name="showPlotAction"/>
    <addaction name="separator"/>
    <addaction name="simulateAction"/>
+   <addaction name="actionCompilePlatformBinary"/>
   </widget>
   <action name="closeAction">
    <property name="text">
@@ -1079,7 +1080,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/gear.svg</normaloff>:/buttons/dark/gear.svg</iconset>
    </property>
    <property name="text">
@@ -1094,7 +1095,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/file-earmark-zip.svg</normaloff>:/buttons/dark/file-earmark-zip.svg</iconset>
    </property>
    <property name="text">
@@ -1109,7 +1110,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/book.svg</normaloff>:/buttons/dark/book.svg</iconset>
    </property>
    <property name="text">
@@ -1124,7 +1125,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/graph.svg</normaloff>:/buttons/dark/graph.svg</iconset>
    </property>
    <property name="text">
@@ -1136,7 +1137,7 @@
   </action>
   <action name="openFileAction">
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/folder-open.svg</normaloff>:/buttons/dark/folder-open.svg</iconset>
    </property>
    <property name="text">
@@ -1151,7 +1152,7 @@
   </action>
   <action name="simulateAction">
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/play.svg</normaloff>:/buttons/dark/play.svg</iconset>
    </property>
    <property name="text">
@@ -1177,7 +1178,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/list-task.svg</normaloff>:/buttons/dark/list-task.svg</iconset>
    </property>
    <property name="text">
@@ -1192,7 +1193,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/side-bar.svg</normaloff>:/buttons/dark/side-bar.svg</iconset>
    </property>
    <property name="text">
@@ -1207,7 +1208,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/info.svg</normaloff>:/buttons/dark/info.svg</iconset>
    </property>
    <property name="text">
@@ -1222,7 +1223,7 @@
   </action>
   <action name="newWindowAction">
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset>
      <normaloff>:/buttons/dark/new-window.svg</normaloff>:/buttons/dark/new-window.svg</iconset>
    </property>
    <property name="text">
@@ -1230,6 +1231,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+N</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="actionCompilePlatformBinary">
+   <property name="text">
+    <string>CompilePlatformBinary</string>
    </property>
    <property name="menuRole">
     <enum>QAction::NoRole</enum>
@@ -1244,10 +1253,7 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="buttons.qrc"/>
-  <include location="resources.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>inputCheckBox</sender>
