@@ -12,9 +12,11 @@
 #include <QProgressDialog>
 #include <QSettings>
 #include <QProcess>
+#include <QTemporaryDir>
 #include "ModelVariablesItemModel.h"
 #include "VariablesFilterModel.h"
 #include "SimulationThread.h"
+#include "BuildWindowsBinaryDialog.h"
 
 extern "C" {
 #include "FMIZip.h"
@@ -850,38 +852,88 @@ void MainWindow::simulationFinished() {
 
 void MainWindow::compilePlatformBinary() {
 
+    BuildWindowsBinaryDialog dialog(this);
+
+    if (dialog.exec() != QDialog::Accepted) {
+        return;
+    }
+
+    const QString program = dialog.cmakeCommand();
+    QString modelIdentifier;
+
+    QTemporaryDir buildDirectory;
+
+    buildDirectory.setAutoRemove(dialog.removeBuilDirectory());
+
+    qDebug() << buildDirectory.path();
+
+    QFile::copy(":/resources/CMakeLists.txt", buildDirectory.filePath("CMakeLists.txt"));
+    QFile::copy(":/resources/fmi2Functions.h", buildDirectory.filePath("fmi2Functions.h"));
+    QFile::copy(":/resources/fmi2FunctionTypes.h", buildDirectory.filePath("fmi2FunctionTypes.h"));
+    QFile::copy(":/resources/fmi2TypesPlatform.h", buildDirectory.filePath("fmi2TypesPlatform.h"));
+
+    size_t nSourceFiles;
+    const char** sourceFiles;
+
+    if (modelDescription->coSimulation) {
+        modelIdentifier = modelDescription->coSimulation->modelIdentifier;
+        nSourceFiles = modelDescription->coSimulation->nSourceFiles;
+        sourceFiles = modelDescription->coSimulation->sourceFiles;
+    } else {
+        modelIdentifier = modelDescription->modelExchange->modelIdentifier;
+        nSourceFiles = modelDescription->modelExchange->nSourceFiles;
+        sourceFiles = modelDescription->modelExchange->sourceFiles;
+    }
+
+    QStringList sources;
+
+    for (size_t i = 0; i < nSourceFiles; i++) {
+        sources << QDir(unzipdir).filePath("sources/" + QString(sourceFiles[i]));
+    }
+
+    QStringList includeDirectories = {
+        buildDirectory.path(),
+        QDir(unzipdir).filePath("sources")
+    };
+
+    ui->logPlainTextEdit->clear();
+
+    setCurrentPage(ui->logPage);
+
+    ui->logPlainTextEdit->appendPlainText("Generating CMake project...\n");
+
     QProcess process;
 
-    QString program = "C:\\Program Files\\CMake\\bin\\cmake.exe";
-    QString buildDirectory = "E:/Development/Reference-FMUs/build/fmi2-x86_64-windows/fmus/build/vs2";
-    QString sourcesDirectory = "E:/Development/Reference-FMUs/fmusim-gui/resources";
-    QString modelIdentifier = "BouncingBall";
-    QString unzipdir = "E:/Development/Reference-FMUs/build/fmi2-x86_64-windows/fmus/BouncingBall";
-    QString include = "E:/Development/Reference-FMUs/include;E:/Development/Reference-FMUs/build/fmi2-x86_64-windows/fmus/BouncingBall/sources";
-    QString sources = "E:/Development/Reference-FMUs/build/fmi2-x86_64-windows/fmus/BouncingBall/sources/all.c";
-
     process.start(program, {
-        "-G", "Visual Studio 17 2022",
+        "-G", dialog.cmakeGenerator(),
         "-A", "x64",
-        "-B", buildDirectory,
+        "-B", buildDirectory.path(),
         "-D", "MODEL_IDENTIFIER=" + modelIdentifier,
-        "-D", "INCLUDE=" + include,
-        "-D", "SOURCES=" + sources,
+        "-D", "INCLUDE=" + includeDirectories.join(';'),
+        "-D", "SOURCES=" + sources.join(';'),
         "-D", "UNZIPDIR=" + unzipdir,
-        sourcesDirectory
+        buildDirectory.path()
     });
 
-    qDebug() << process.waitForFinished();
-    qDebug() << process.readAllStandardError();
-    qDebug() << process.readAllStandardOutput();
+    bool success = process.waitForFinished();
+
+    ui->logPlainTextEdit->appendPlainText(process.readAllStandardOutput());
+    ui->logPlainTextEdit->appendPlainText(process.readAllStandardError());
+
+    if (!success) {
+        return;
+    }
+
+    ui->logPlainTextEdit->appendPlainText("Building CMake project...\n");
 
     process.start(program, {
-        "--build", buildDirectory,
-        "--config", "Debug",
+        "--build", buildDirectory.path(),
+        "--config", dialog.buildConfiguration(),
         "--target", "install"
     });
 
-    qDebug() << process.waitForFinished();
-    qDebug() << process.readAllStandardError();
-    qDebug() << process.readAllStandardOutput();
+    success = process.waitForFinished();
+
+    ui->logPlainTextEdit->appendPlainText(process.readAllStandardOutput());
+    ui->logPlainTextEdit->appendPlainText(process.readAllStandardError());
 }
