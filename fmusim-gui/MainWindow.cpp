@@ -16,7 +16,7 @@
 #include "ModelVariablesItemModel.h"
 #include "VariablesFilterModel.h"
 #include "SimulationThread.h"
-#include "BuildWindowsBinaryDialog.h"
+#include "BuildPlatformBinaryDialog.h"
 
 extern "C" {
 #include "FMIZip.h"
@@ -852,7 +852,7 @@ void MainWindow::simulationFinished() {
 
 void MainWindow::compilePlatformBinary() {
 
-    BuildWindowsBinaryDialog dialog(this);
+    BuildPlatformBinaryDialog dialog(this);
 
     if (dialog.exec() != QDialog::Accepted) {
         return;
