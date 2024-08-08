@@ -850,7 +850,26 @@ void MainWindow::simulationFinished() {
     }
 }
 
+static QString wslPath(const QString& path) {
+
+    QString canonicalPath = path;
+
+    canonicalPath = canonicalPath.replace('\\', '/');
+
+    QProcess process;
+
+    process.start("wsl", {"wslpath", "-a", canonicalPath});
+
+    process.waitForFinished();
+
+    QString p(process.readAllStandardOutput());
+
+    return p.trimmed();
+}
+
 void MainWindow::compilePlatformBinary() {
+
+    bool wsl = true;
 
     BuildPlatformBinaryDialog dialog(this);
 
@@ -885,15 +904,18 @@ void MainWindow::compilePlatformBinary() {
         sourceFiles = modelDescription->modelExchange->sourceFiles;
     }
 
+    QString buildDirPath = wsl ? wslPath(buildDirectory.path()) : buildDirectory.path();
+    QString unzipdirPath = wsl ? wslPath(unzipdir) : unzipdir;
+
     QStringList sources;
 
     for (size_t i = 0; i < nSourceFiles; i++) {
-        sources << QDir(unzipdir).filePath("sources/" + QString(sourceFiles[i]));
+        sources << QDir(unzipdirPath).filePath("sources/" + QString(sourceFiles[i]));
     }
 
     QStringList includeDirectories = {
-        buildDirectory.path(),
-        QDir(unzipdir).filePath("sources")
+        buildDirPath,
+        QDir(unzipdirPath).filePath("sources")
     };
 
     ui->logPlainTextEdit->clear();
@@ -902,18 +924,51 @@ void MainWindow::compilePlatformBinary() {
 
     ui->logPlainTextEdit->appendPlainText("Generating CMake project...\n");
 
+
     QProcess process;
 
-    process.start(program, {
-        "-G", dialog.cmakeGenerator(),
-        "-A", "x64",
-        "-B", buildDirectory.path(),
-        "-D", "MODEL_IDENTIFIER=" + modelIdentifier,
-        "-D", "INCLUDE=" + includeDirectories.join(';'),
-        "-D", "SOURCES=" + sources.join(';'),
-        "-D", "UNZIPDIR=" + unzipdir,
-        buildDirectory.path()
-    });
+    process.start("wsl", {"which", "cmake"});
+    process.waitForFinished();
+    ui->logPlainTextEdit->appendPlainText(process.readAllStandardOutput());
+
+    process.start("wsl", {"cmake", "--version"});
+    process.waitForFinished();
+    ui->logPlainTextEdit->appendPlainText(process.readAllStandardOutput());
+
+    if (wsl) {
+
+        QStringList arguments = {
+            "cmake",
+            //"-G", dialog.cmakeGenerator(),
+            //"-A", "x64",
+            "-B" + buildDirPath,
+            "-S" + buildDirPath,
+            "-DMODEL_IDENTIFIER=" + modelIdentifier,
+            "-DINCLUDE='" + includeDirectories.join(';') + "'",
+            "-DSOURCES='" + sources.join(';') + "'",
+            "-DUNZIPDIR='" + unzipdirPath + "'",
+        };
+
+        ui->logPlainTextEdit->appendPlainText(arguments.join(' '));
+
+        qDebug() << arguments.join(' ');
+
+        process.start("wsl", arguments);
+
+    } else {
+
+        process.start(program, {
+                                   "-G", dialog.cmakeGenerator(),
+                                   "-A", "x64",
+                                   "-B", buildDirectory.path(),
+                                   "-D", "MODEL_IDENTIFIER=" + modelIdentifier,
+                                   "-D", "INCLUDE=" + includeDirectories.join(';'),
+                                   "-D", "SOURCES=" + sources.join(';'),
+                                   "-D", "UNZIPDIR=" + unzipdir,
+                                   buildDirectory.path()
+                               });
+    }
+
 
     bool success = process.waitForFinished();
 
@@ -926,11 +981,20 @@ void MainWindow::compilePlatformBinary() {
 
     ui->logPlainTextEdit->appendPlainText("Building CMake project...\n");
 
-    process.start(program, {
-        "--build", buildDirectory.path(),
-        "--config", dialog.buildConfiguration(),
-        "--target", "install"
-    });
+    if (wsl) {
+        process.start("wsl", {
+            "cmake",
+            "--build", buildDirPath,
+            //"--config", dialog.buildConfiguration(),
+            "--target", "install"
+        });
+    } else {
+        process.start(program, {
+                                   "--build", buildDirectory.path(),
+                                   "--config", dialog.buildConfiguration(),
+                                   "--target", "install"
+                               });
+    }
 
     success = process.waitForFinished();
 
