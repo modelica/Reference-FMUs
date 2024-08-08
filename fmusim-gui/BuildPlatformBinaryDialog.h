@@ -18,6 +18,7 @@ public:
     QString cmakeCommand() const;
     QString cmakeGenerator() const;
     QString buildConfiguration() const;
+    bool compileWithWSL() const;
     bool removeBuilDirectory() const;
 
 private:

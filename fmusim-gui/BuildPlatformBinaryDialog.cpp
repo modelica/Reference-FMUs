@@ -23,6 +23,10 @@ QString BuildPlatformBinaryDialog::buildConfiguration() const {
     return ui->buildConfigurationComboBox->currentText();
 }
 
+bool BuildPlatformBinaryDialog::compileWithWSL() const {
+    return ui->compileWithWSLCheckBox->isChecked();
+}
+
 bool BuildPlatformBinaryDialog::removeBuilDirectory() const {
     return ui->removeBuildDirectoryCheckBox->isChecked();
 }

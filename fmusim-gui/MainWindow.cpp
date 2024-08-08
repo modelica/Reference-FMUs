@@ -869,22 +869,19 @@ static QString wslPath(const QString& path) {
 
 void MainWindow::compilePlatformBinary() {
 
-    bool wsl = true;
-
     BuildPlatformBinaryDialog dialog(this);
 
     if (dialog.exec() != QDialog::Accepted) {
         return;
     }
 
-    const QString program = dialog.cmakeCommand();
+    const bool wsl = dialog.compileWithWSL();
+
     QString modelIdentifier;
 
     QTemporaryDir buildDirectory;
 
     buildDirectory.setAutoRemove(dialog.removeBuilDirectory());
-
-    qDebug() << buildDirectory.path();
 
     QFile::copy(":/resources/CMakeLists.txt", buildDirectory.filePath("CMakeLists.txt"));
     QFile::copy(":/resources/fmi2Functions.h", buildDirectory.filePath("fmi2Functions.h"));
@@ -924,51 +921,30 @@ void MainWindow::compilePlatformBinary() {
 
     ui->logPlainTextEdit->appendPlainText("Generating CMake project...\n");
 
+    QString program;
 
     QProcess process;
-
-    process.start("wsl", {"which", "cmake"});
-    process.waitForFinished();
-    ui->logPlainTextEdit->appendPlainText(process.readAllStandardOutput());
-
-    process.start("wsl", {"cmake", "--version"});
-    process.waitForFinished();
-    ui->logPlainTextEdit->appendPlainText(process.readAllStandardOutput());
+    QStringList arguments;
 
     if (wsl) {
-
-        QStringList arguments = {
-            "cmake",
-            //"-G", dialog.cmakeGenerator(),
-            //"-A", "x64",
-            "-B" + buildDirPath,
-            "-S" + buildDirPath,
-            "-DMODEL_IDENTIFIER=" + modelIdentifier,
-            "-DINCLUDE='" + includeDirectories.join(';') + "'",
-            "-DSOURCES='" + sources.join(';') + "'",
-            "-DUNZIPDIR='" + unzipdirPath + "'",
-        };
-
-        ui->logPlainTextEdit->appendPlainText(arguments.join(' '));
-
-        qDebug() << arguments.join(' ');
-
-        process.start("wsl", arguments);
-
+        program = "wsl";
+        arguments << dialog.cmakeCommand();
     } else {
-
-        process.start(program, {
-                                   "-G", dialog.cmakeGenerator(),
-                                   "-A", "x64",
-                                   "-B", buildDirectory.path(),
-                                   "-D", "MODEL_IDENTIFIER=" + modelIdentifier,
-                                   "-D", "INCLUDE=" + includeDirectories.join(';'),
-                                   "-D", "SOURCES=" + sources.join(';'),
-                                   "-D", "UNZIPDIR=" + unzipdir,
-                                   buildDirectory.path()
-                               });
+        program = dialog.cmakeCommand();
     }
 
+    if (!dialog.cmakeGenerator().isEmpty()) {
+        arguments << "-G" + dialog.cmakeGenerator();
+    }
+
+    arguments << "-S" + buildDirPath;
+    arguments << "-B" + buildDirPath;
+    arguments << "-DMODEL_IDENTIFIER=" + modelIdentifier;
+    arguments << "-DINCLUDE='" + includeDirectories.join(';') + "'";
+    arguments << "-DSOURCES='" + sources.join(';') + "'";
+    arguments << "-DUNZIPDIR='" + unzipdirPath + "'";
+
+    process.start(program, arguments);
 
     bool success = process.waitForFinished();
 
@@ -981,20 +957,17 @@ void MainWindow::compilePlatformBinary() {
 
     ui->logPlainTextEdit->appendPlainText("Building CMake project...\n");
 
+    arguments.clear();
+
     if (wsl) {
-        process.start("wsl", {
-            "cmake",
-            "--build", buildDirPath,
-            //"--config", dialog.buildConfiguration(),
-            "--target", "install"
-        });
-    } else {
-        process.start(program, {
-                                   "--build", buildDirectory.path(),
-                                   "--config", dialog.buildConfiguration(),
-                                   "--target", "install"
-                               });
+        arguments << dialog.cmakeCommand();
     }
+
+    arguments << "--build" << buildDirPath;
+    arguments << "--target" << "install";
+    arguments << "--config" << dialog.buildConfiguration();
+
+    process.start(program, arguments);
 
     success = process.waitForFinished();
 
