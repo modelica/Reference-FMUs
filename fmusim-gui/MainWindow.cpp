@@ -133,7 +133,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->showLogAction,           &QAction::triggered, this, [this]() { setCurrentPage(ui->logPage);          });
     connect(ui->showPlotAction,          &QAction::triggered, this, [this]() { setCurrentPage(ui->plotPage);         });
 
-    connect(ui->actionCompilePlatformBinary, &QAction::triggered, this, &MainWindow::compilePlatformBinary);
+    connect(ui->compilePlatformBinaryAction, &QAction::triggered, this, &MainWindow::compilePlatformBinary);
 
     setCurrentPage(ui->startPage);
 
@@ -426,6 +426,7 @@ void MainWindow::setColorScheme(Qt::ColorScheme colorScheme) {
 
     // toolbar
     ui->newWindowAction->setIcon(QIcon(":/buttons/" + theme + "/new-window.svg"));
+    ui->compilePlatformBinaryAction->setIcon(QIcon(":/buttons/" + theme + "/hammer.svg"));
     ui->openFileAction->setIcon(QIcon(":/buttons/" + theme + "/folder-open.svg"));
     ui->showInfoAction->setIcon(QIcon(":/buttons/" + theme + "/info.svg"));
     ui->showSettingsAction->setIcon(QIcon(":/buttons/" + theme + "/gear.svg"));
