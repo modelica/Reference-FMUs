@@ -264,6 +264,13 @@ void MainWindow::loadFMU(const QString &filename) {
         return;
     }
 
+    const QString buildDescriptionPath = QDir(unzipdir).filePath("sources/buildDescription.xml");
+
+    if (QFileInfo::exists(buildDescriptionPath)) {
+        QByteArray ba = buildDescriptionPath.toLocal8Bit();
+        buildDescription = FMIReadBuildDescription(ba.data());
+    }
+
     // update the GUI
     startValues.clear();
 
@@ -348,6 +355,17 @@ void MainWindow::loadFMU(const QString &filename) {
     // enable widgets
     ui->showSideBarAction->setEnabled(true);
     ui->showSideBarAction->setChecked(true);
+
+    bool hasSourceCode = false;
+
+    if ((modelDescription->coSimulation && modelDescription->coSimulation->nSourceFiles > 0) ||
+        (modelDescription->modelExchange && modelDescription->modelExchange->nSourceFiles > 0) ||
+        buildDescription) {
+        hasSourceCode = true;
+    }
+
+    ui->compilePlatformBinaryAction->setEnabled(hasSourceCode);
+
     ui->showInfoAction->setEnabled(true);
     ui->showSettingsAction->setEnabled(true);
     ui->showFilesAction->setEnabled(true);
@@ -778,6 +796,11 @@ void MainWindow::unloadFMU() {
         modelDescription = nullptr;
     }
 
+    if (buildDescription) {
+        FMIFreeBuildDescription(buildDescription);
+        buildDescription = nullptr;
+    }
+
     if (!unzipdir.isEmpty()) {
         QByteArray bytes = unzipdir.toLocal8Bit();
         const char *cstr = bytes.data();
@@ -799,6 +822,7 @@ void MainWindow::unloadFMU() {
 
     ui->dockWidget->setHidden(true);
 
+    ui->compilePlatformBinaryAction->setEnabled(false);
     ui->showInfoAction->setEnabled(false);
     ui->showSettingsAction->setEnabled(false);
     ui->showFilesAction->setEnabled(false);
@@ -885,9 +909,16 @@ void MainWindow::compilePlatformBinary() {
     buildDirectory.setAutoRemove(dialog.removeBuilDirectory());
 
     QFile::copy(":/resources/CMakeLists.txt", buildDirectory.filePath("CMakeLists.txt"));
-    QFile::copy(":/resources/fmi2Functions.h", buildDirectory.filePath("fmi2Functions.h"));
-    QFile::copy(":/resources/fmi2FunctionTypes.h", buildDirectory.filePath("fmi2FunctionTypes.h"));
-    QFile::copy(":/resources/fmi2TypesPlatform.h", buildDirectory.filePath("fmi2TypesPlatform.h"));
+
+    if (modelDescription->fmiMajorVersion == 2) {
+        QFile::copy(":/resources/fmi2Functions.h", buildDirectory.filePath("fmi2Functions.h"));
+        QFile::copy(":/resources/fmi2FunctionTypes.h", buildDirectory.filePath("fmi2FunctionTypes.h"));
+        QFile::copy(":/resources/fmi2TypesPlatform.h", buildDirectory.filePath("fmi2TypesPlatform.h"));
+    } else {
+        QFile::copy(":/resources/fmi3Functions.h", buildDirectory.filePath("fmi3Functions.h"));
+        QFile::copy(":/resources/fmi3FunctionTypes.h", buildDirectory.filePath("fmi3FunctionTypes.h"));
+        QFile::copy(":/resources/fmi3PlatformTypes.h", buildDirectory.filePath("fmi3PlatformTypes.h"));
+    }
 
     size_t nSourceFiles;
     const char** sourceFiles;
@@ -900,6 +931,46 @@ void MainWindow::compilePlatformBinary() {
         modelIdentifier = modelDescription->modelExchange->modelIdentifier;
         nSourceFiles = modelDescription->modelExchange->nSourceFiles;
         sourceFiles = modelDescription->modelExchange->sourceFiles;
+    }
+
+    QStringList definitions;
+
+    if (modelDescription->fmiMajorVersion == 3) {
+        definitions << "FMI3_OVERRIDE_FUNCTION_PREFIX";
+    }
+
+    if (buildDescription) {
+
+        if (buildDescription->nBuildConfigurations > 1) {
+            ui->logPlainTextEdit->appendPlainText("Multiple Build Configurations are not supported.\n");
+            return;
+        }
+
+        const FMIBuildConfiguration* buildConfiguration = buildDescription->buildConfigurations[0];
+
+        if (buildConfiguration->nSourceFileSets > 1) {
+            ui->logPlainTextEdit->appendPlainText("Multiple Source File Sets are not supported.\n");
+            return;
+        }
+
+        const FMISourceFileSet* sourceFileSet = buildConfiguration->sourceFileSets[0];
+
+        nSourceFiles = sourceFileSet->nSourceFiles;
+        sourceFiles = sourceFileSet->sourceFiles;
+
+        for (size_t i = 0; i < sourceFileSet->nPreprocessorDefinitions; i++) {
+
+            FMIPreprocessorDefinition* preprocessorDefinition = sourceFileSet->preprocessorDefinitions[i];
+
+            QString definition = preprocessorDefinition->name;
+
+            if (preprocessorDefinition->value) {
+                definition += "=";
+                definition += preprocessorDefinition->value;
+            }
+
+            definitions << definition;
+        }
     }
 
     QString buildDirPath = wsl ? wslPath(buildDirectory.path()) : buildDirectory.path();
@@ -940,8 +1011,10 @@ void MainWindow::compilePlatformBinary() {
 
     arguments << "-S" + buildDirPath;
     arguments << "-B" + buildDirPath;
+    arguments << "-DFMI_MAJOR_VERSION=" + QString::number(modelDescription->fmiMajorVersion);
     arguments << "-DMODEL_IDENTIFIER=" + modelIdentifier;
     arguments << "-DINCLUDE='" + includeDirectories.join(';') + "'";
+    arguments << "-DDEFINITIONS='" + definitions.join(';') + "'";
     arguments << "-DSOURCES='" + sources.join(';') + "'";
     arguments << "-DUNZIPDIR='" + unzipdirPath + "'";
 

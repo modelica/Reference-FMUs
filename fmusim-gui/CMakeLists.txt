@@ -34,6 +34,8 @@ set(PROJECT_SOURCES
     ${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c
     ../fmusim/FMIModelDescription.c
     ../fmusim/FMIModelDescription.h
+    ../fmusim/FMIBuildDescription.c
+    ../fmusim/FMIBuildDescription.h
     ../src/structured_variable_name.tab.c
     ../src/structured_variable_name.yy.c
 )

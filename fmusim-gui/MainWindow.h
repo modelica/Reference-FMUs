@@ -16,8 +16,7 @@ QT_END_NAMESPACE
 
 extern "C" {
 #include "FMIModelDescription.h"
-struct FMIRecorder;
-struct FMISimulationSettings;
+#include "FMIBuildDescription.h"
 }
 
 class ModelVariablesItemModel;
@@ -48,6 +47,7 @@ private:
     QFileSystemModel filesModel;
     QComboBox* interfaceTypeComboBox;
     FMIModelDescription* modelDescription = nullptr;
+    FMIBuildDescription* buildDescription = nullptr;
     QString unzipdir;
     QMap<const FMIModelVariable*, QString> startValues;
     QList<const FMIModelVariable*> plotVariables;

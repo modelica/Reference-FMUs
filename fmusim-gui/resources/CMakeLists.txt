@@ -2,20 +2,16 @@ cmake_minimum_required (VERSION 3.15)
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-set(FMI_VERSION 2 CACHE STRING "FMI Version")
-set_property(CACHE FMI_VERSION PROPERTY STRINGS 2 3)
+set(FMI_MAJOR_VERSION 2 CACHE STRING "FMI Major Version")
+set_property(CACHE FMI_MAJOR_VERSION PROPERTY STRINGS 2 3)
 
 set (MODEL_IDENTIFIER CACHE STRING "Model Identifier")
 set (INCLUDE CACHE STRING "Include directories")
+set (DEFINITIONS CACHE STRING "Precompiler definitions")
 set (SOURCES CACHE STRING "Source files")
 set (UNZIPDIR CACHE STRING "Unzip directory")
 
 project (${MODEL_IDENTIFIER})
-
-#message(STATUS "MODEL_IDENTIFIER: ${MODEL_IDENTIFIER}")
-#message(STATUS "INCLUDE: ${INCLUDE}")
-#message(STATUS "SOURCES: ${SOURCES}")
-#message(STATUS "UNZIPDIR: ${UNZIPDIR}")
 
 if (${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
   set(FMI_ARCHITECTURE "x86_64")
@@ -25,7 +21,7 @@ else ()
   message(FATAL_ERROR "Unknown system architecture: ${CMAKE_SYSTEM_PROCESSOR}")
 endif ()
 
-if (${FMI_VERSION} GREATER 2)
+if (${FMI_MAJOR_VERSION} GREATER 2)
 
   if (WIN32)
     set(FMI_PLATFORM "${FMI_ARCHITECTURE}-windows")
@@ -58,6 +54,8 @@ endif ()
 add_library(${MODEL_IDENTIFIER} SHARED ${SOURCES})
 
 target_include_directories(${MODEL_IDENTIFIER} PUBLIC ${INCLUDE})
+
+target_compile_definitions(${MODEL_IDENTIFIER} PUBLIC ${DEFINITIONS})
 
 set_target_properties(${MODEL_IDENTIFIER} PROPERTIES PREFIX "")
 
