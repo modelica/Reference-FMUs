@@ -73,7 +73,7 @@ private slots:
     void removePlotVariable(const FMIModelVariable* variable);
     void setOptionalColumnsVisible(bool visible);
     void simulationFinished();
-    void compilePlatformBinary();
+    void buildPlatformBinary();
 
 };
 #endif // MAINWINDOW_H

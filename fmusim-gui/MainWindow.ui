@@ -1056,7 +1056,7 @@
    </attribute>
    <addaction name="openFileAction"/>
    <addaction name="newWindowAction"/>
-   <addaction name="compilePlatformBinaryAction"/>
+   <addaction name="buildPlatformBinaryAction"/>
    <addaction name="separator"/>
    <addaction name="showInfoAction"/>
    <addaction name="showSettingsAction"/>
@@ -1236,16 +1236,16 @@
     <enum>QAction::NoRole</enum>
    </property>
   </action>
-  <action name="compilePlatformBinaryAction">
+  <action name="buildPlatformBinaryAction">
    <property name="icon">
     <iconset resource="buttons.qrc">
      <normaloff>:/buttons/dark/hammer.svg</normaloff>:/buttons/dark/hammer.svg</iconset>
    </property>
    <property name="text">
-    <string>Compile platform binary</string>
+    <string>Build platform binary</string>
    </property>
    <property name="toolTip">
-    <string>Compile platform binary</string>
+    <string>Build platform binary</string>
    </property>
    <property name="menuRole">
     <enum>QAction::NoRole</enum>

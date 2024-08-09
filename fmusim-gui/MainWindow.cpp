@@ -133,7 +133,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->showLogAction,           &QAction::triggered, this, [this]() { setCurrentPage(ui->logPage);          });
     connect(ui->showPlotAction,          &QAction::triggered, this, [this]() { setCurrentPage(ui->plotPage);         });
 
-    connect(ui->compilePlatformBinaryAction, &QAction::triggered, this, &MainWindow::compilePlatformBinary);
+    connect(ui->buildPlatformBinaryAction, &QAction::triggered, this, &MainWindow::buildPlatformBinary);
 
     setCurrentPage(ui->startPage);
 
@@ -364,7 +364,7 @@ void MainWindow::loadFMU(const QString &filename) {
         hasSourceCode = true;
     }
 
-    ui->compilePlatformBinaryAction->setEnabled(hasSourceCode);
+    ui->buildPlatformBinaryAction->setEnabled(hasSourceCode);
 
     ui->showInfoAction->setEnabled(true);
     ui->showSettingsAction->setEnabled(true);
@@ -444,7 +444,7 @@ void MainWindow::setColorScheme(Qt::ColorScheme colorScheme) {
 
     // toolbar
     ui->newWindowAction->setIcon(QIcon(":/buttons/" + theme + "/new-window.svg"));
-    ui->compilePlatformBinaryAction->setIcon(QIcon(":/buttons/" + theme + "/hammer.svg"));
+    ui->buildPlatformBinaryAction->setIcon(QIcon(":/buttons/" + theme + "/hammer.svg"));
     ui->openFileAction->setIcon(QIcon(":/buttons/" + theme + "/folder-open.svg"));
     ui->showInfoAction->setIcon(QIcon(":/buttons/" + theme + "/info.svg"));
     ui->showSettingsAction->setIcon(QIcon(":/buttons/" + theme + "/gear.svg"));
@@ -822,7 +822,7 @@ void MainWindow::unloadFMU() {
 
     ui->dockWidget->setHidden(true);
 
-    ui->compilePlatformBinaryAction->setEnabled(false);
+    ui->buildPlatformBinaryAction->setEnabled(false);
     ui->showInfoAction->setEnabled(false);
     ui->showSettingsAction->setEnabled(false);
     ui->showFilesAction->setEnabled(false);
@@ -892,7 +892,7 @@ static QString wslPath(const QString& path) {
     return p.trimmed();
 }
 
-void MainWindow::compilePlatformBinary() {
+void MainWindow::buildPlatformBinary() {
 
     BuildPlatformBinaryDialog dialog(this);
 
