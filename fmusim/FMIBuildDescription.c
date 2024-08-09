@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include <libxml/parser.h>
 #include <libxml/xmlschemas.h>
 #include <libxml/xpath.h>
@@ -197,10 +199,10 @@ void FMIFreeBuildDescription(FMIBuildDescription* buildDescription) {
 
             for (size_t k = 0; k < sourceFileSet->nPreprocessorDefinitions; k++) {
                 FMIPreprocessorDefinition* preprocessorDefinition = sourceFileSet->preprocessorDefinitions[k];
-                FMIFree(&preprocessorDefinition->name);
-                FMIFree(&preprocessorDefinition->value);
-                FMIFree(&preprocessorDefinition->description);
-                FMIFree(&preprocessorDefinition);
+                FMIFree((void**)&preprocessorDefinition->name);
+                FMIFree((void**)&preprocessorDefinition->value);
+                FMIFree((void**)&preprocessorDefinition->description);
+                FMIFree((void**)&preprocessorDefinition);
             }
 
             FMIFree((void**)&sourceFileSet->preprocessorDefinitions);
@@ -217,12 +219,12 @@ void FMIFreeBuildDescription(FMIBuildDescription* buildDescription) {
             
             FMIFree((void**)&sourceFileSet->includeDirectories);
 
-            FMIFree(&sourceFileSet);
+            FMIFree((void**)&sourceFileSet);
         }
 
         FMIFree((void**)&buildConfiguration->sourceFileSets);
 
-        FMIFree(&buildConfiguration);
+        FMIFree((void**)&buildConfiguration);
     }
 
     FMIFree((void**)&buildDescription->buildConfigurations);
