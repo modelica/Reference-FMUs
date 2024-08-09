@@ -11,9 +11,12 @@
 #include <QDirIterator>
 #include <QProgressDialog>
 #include <QSettings>
+#include <QProcess>
+#include <QTemporaryDir>
 #include "ModelVariablesItemModel.h"
 #include "VariablesFilterModel.h"
 #include "SimulationThread.h"
+#include "BuildPlatformBinaryDialog.h"
 
 extern "C" {
 #include "FMIZip.h"
@@ -129,6 +132,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->showDocumentationAction, &QAction::triggered, this, [this]() { setCurrentPage(ui->documenationPage); });
     connect(ui->showLogAction,           &QAction::triggered, this, [this]() { setCurrentPage(ui->logPage);          });
     connect(ui->showPlotAction,          &QAction::triggered, this, [this]() { setCurrentPage(ui->plotPage);         });
+
+    connect(ui->buildPlatformBinaryAction, &QAction::triggered, this, &MainWindow::buildPlatformBinary);
 
     setCurrentPage(ui->startPage);
 
@@ -259,6 +264,13 @@ void MainWindow::loadFMU(const QString &filename) {
         return;
     }
 
+    const QString buildDescriptionPath = QDir(unzipdir).filePath("sources/buildDescription.xml");
+
+    if (QFileInfo::exists(buildDescriptionPath)) {
+        QByteArray ba = buildDescriptionPath.toLocal8Bit();
+        buildDescription = FMIReadBuildDescription(ba.data());
+    }
+
     // update the GUI
     startValues.clear();
 
@@ -343,6 +355,17 @@ void MainWindow::loadFMU(const QString &filename) {
     // enable widgets
     ui->showSideBarAction->setEnabled(true);
     ui->showSideBarAction->setChecked(true);
+
+    bool hasSourceCode = false;
+
+    if ((modelDescription->coSimulation && modelDescription->coSimulation->nSourceFiles > 0) ||
+        (modelDescription->modelExchange && modelDescription->modelExchange->nSourceFiles > 0) ||
+        buildDescription) {
+        hasSourceCode = true;
+    }
+
+    ui->buildPlatformBinaryAction->setEnabled(hasSourceCode);
+
     ui->showInfoAction->setEnabled(true);
     ui->showSettingsAction->setEnabled(true);
     ui->showFilesAction->setEnabled(true);
@@ -421,6 +444,7 @@ void MainWindow::setColorScheme(Qt::ColorScheme colorScheme) {
 
     // toolbar
     ui->newWindowAction->setIcon(QIcon(":/buttons/" + theme + "/new-window.svg"));
+    ui->buildPlatformBinaryAction->setIcon(QIcon(":/buttons/" + theme + "/hammer.svg"));
     ui->openFileAction->setIcon(QIcon(":/buttons/" + theme + "/folder-open.svg"));
     ui->showInfoAction->setIcon(QIcon(":/buttons/" + theme + "/info.svg"));
     ui->showSettingsAction->setIcon(QIcon(":/buttons/" + theme + "/gear.svg"));
@@ -772,6 +796,11 @@ void MainWindow::unloadFMU() {
         modelDescription = nullptr;
     }
 
+    if (buildDescription) {
+        FMIFreeBuildDescription(buildDescription);
+        buildDescription = nullptr;
+    }
+
     if (!unzipdir.isEmpty()) {
         QByteArray bytes = unzipdir.toLocal8Bit();
         const char *cstr = bytes.data();
@@ -793,6 +822,7 @@ void MainWindow::unloadFMU() {
 
     ui->dockWidget->setHidden(true);
 
+    ui->buildPlatformBinaryAction->setEnabled(false);
     ui->showInfoAction->setEnabled(false);
     ui->showSettingsAction->setEnabled(false);
     ui->showFilesAction->setEnabled(false);
@@ -843,4 +873,178 @@ void MainWindow::simulationFinished() {
     } else {
         setCurrentPage(ui->logPage);
     }
+}
+
+static QString wslPath(const QString& path) {
+
+    QString canonicalPath = path;
+
+    canonicalPath = canonicalPath.replace('\\', '/');
+
+    QProcess process;
+
+    process.start("wsl", {"wslpath", "-a", canonicalPath});
+
+    process.waitForFinished();
+
+    QString p(process.readAllStandardOutput());
+
+    return p.trimmed();
+}
+
+void MainWindow::buildPlatformBinary() {
+
+    BuildPlatformBinaryDialog dialog(this);
+
+    if (dialog.exec() != QDialog::Accepted) {
+        return;
+    }
+
+    const bool wsl = dialog.compileWithWSL();
+
+    QString modelIdentifier;
+
+    QTemporaryDir buildDirectory;
+
+    buildDirectory.setAutoRemove(dialog.removeBuilDirectory());
+
+    QFile::copy(":/resources/CMakeLists.txt", buildDirectory.filePath("CMakeLists.txt"));
+
+    if (modelDescription->fmiMajorVersion == 2) {
+        QFile::copy(":/resources/fmi2Functions.h", buildDirectory.filePath("fmi2Functions.h"));
+        QFile::copy(":/resources/fmi2FunctionTypes.h", buildDirectory.filePath("fmi2FunctionTypes.h"));
+        QFile::copy(":/resources/fmi2TypesPlatform.h", buildDirectory.filePath("fmi2TypesPlatform.h"));
+    } else {
+        QFile::copy(":/resources/fmi3Functions.h", buildDirectory.filePath("fmi3Functions.h"));
+        QFile::copy(":/resources/fmi3FunctionTypes.h", buildDirectory.filePath("fmi3FunctionTypes.h"));
+        QFile::copy(":/resources/fmi3PlatformTypes.h", buildDirectory.filePath("fmi3PlatformTypes.h"));
+    }
+
+    size_t nSourceFiles;
+    const char** sourceFiles;
+
+    if (modelDescription->coSimulation) {
+        modelIdentifier = modelDescription->coSimulation->modelIdentifier;
+        nSourceFiles = modelDescription->coSimulation->nSourceFiles;
+        sourceFiles = modelDescription->coSimulation->sourceFiles;
+    } else {
+        modelIdentifier = modelDescription->modelExchange->modelIdentifier;
+        nSourceFiles = modelDescription->modelExchange->nSourceFiles;
+        sourceFiles = modelDescription->modelExchange->sourceFiles;
+    }
+
+    QStringList definitions;
+
+    if (modelDescription->fmiMajorVersion == 3) {
+        definitions << "FMI3_OVERRIDE_FUNCTION_PREFIX";
+    }
+
+    if (buildDescription) {
+
+        if (buildDescription->nBuildConfigurations > 1) {
+            ui->logPlainTextEdit->appendPlainText("Multiple Build Configurations are not supported.\n");
+            return;
+        }
+
+        const FMIBuildConfiguration* buildConfiguration = buildDescription->buildConfigurations[0];
+
+        if (buildConfiguration->nSourceFileSets > 1) {
+            ui->logPlainTextEdit->appendPlainText("Multiple Source File Sets are not supported.\n");
+            return;
+        }
+
+        const FMISourceFileSet* sourceFileSet = buildConfiguration->sourceFileSets[0];
+
+        nSourceFiles = sourceFileSet->nSourceFiles;
+        sourceFiles = sourceFileSet->sourceFiles;
+
+        for (size_t i = 0; i < sourceFileSet->nPreprocessorDefinitions; i++) {
+
+            FMIPreprocessorDefinition* preprocessorDefinition = sourceFileSet->preprocessorDefinitions[i];
+
+            QString definition = preprocessorDefinition->name;
+
+            if (preprocessorDefinition->value) {
+                definition += "=";
+                definition += preprocessorDefinition->value;
+            }
+
+            definitions << definition;
+        }
+    }
+
+    QString buildDirPath = wsl ? wslPath(buildDirectory.path()) : buildDirectory.path();
+    QString unzipdirPath = wsl ? wslPath(unzipdir) : unzipdir;
+
+    QStringList sources;
+
+    for (size_t i = 0; i < nSourceFiles; i++) {
+        sources << QDir(unzipdirPath).filePath("sources/" + QString(sourceFiles[i]));
+    }
+
+    QStringList includeDirectories = {
+        buildDirPath,
+        QDir(unzipdirPath).filePath("sources")
+    };
+
+    ui->logPlainTextEdit->clear();
+
+    setCurrentPage(ui->logPage);
+
+    ui->logPlainTextEdit->appendPlainText("Generating CMake project...\n");
+
+    QString program;
+
+    QProcess process;
+    QStringList arguments;
+
+    if (wsl) {
+        program = "wsl";
+        arguments << dialog.cmakeCommand();
+    } else {
+        program = dialog.cmakeCommand();
+    }
+
+    if (!dialog.cmakeGenerator().isEmpty()) {
+        arguments << "-G" + dialog.cmakeGenerator();
+    }
+
+    arguments << "-S" + buildDirPath;
+    arguments << "-B" + buildDirPath;
+    arguments << "-DFMI_MAJOR_VERSION=" + QString::number(modelDescription->fmiMajorVersion);
+    arguments << "-DMODEL_IDENTIFIER=" + modelIdentifier;
+    arguments << "-DINCLUDE='" + includeDirectories.join(';') + "'";
+    arguments << "-DDEFINITIONS='" + definitions.join(';') + "'";
+    arguments << "-DSOURCES='" + sources.join(';') + "'";
+    arguments << "-DUNZIPDIR='" + unzipdirPath + "'";
+
+    process.start(program, arguments);
+
+    bool success = process.waitForFinished();
+
+    ui->logPlainTextEdit->appendPlainText(process.readAllStandardOutput());
+    ui->logPlainTextEdit->appendPlainText(process.readAllStandardError());
+
+    if (!success) {
+        return;
+    }
+
+    ui->logPlainTextEdit->appendPlainText("Building CMake project...\n");
+
+    arguments.clear();
+
+    if (wsl) {
+        arguments << dialog.cmakeCommand();
+    }
+
+    arguments << "--build" << buildDirPath;
+    arguments << "--target" << "install";
+    arguments << "--config" << dialog.buildConfiguration();
+
+    process.start(program, arguments);
+
+    success = process.waitForFinished();
+
+    ui->logPlainTextEdit->appendPlainText(process.readAllStandardOutput());
+    ui->logPlainTextEdit->appendPlainText(process.readAllStandardError());
 }

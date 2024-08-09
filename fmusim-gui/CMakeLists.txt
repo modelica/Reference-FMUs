@@ -34,6 +34,8 @@ set(PROJECT_SOURCES
     ${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c
     ../fmusim/FMIModelDescription.c
     ../fmusim/FMIModelDescription.h
+    ../fmusim/FMIBuildDescription.c
+    ../fmusim/FMIBuildDescription.h
     ../src/structured_variable_name.tab.c
     ../src/structured_variable_name.yy.c
 )
@@ -92,6 +94,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         VariablesFilterModel.h VariablesFilterModel.cpp
         SimulationThread.h SimulationThread.cpp
         resources.qrc
+        BuildPlatformBinaryDialog.h BuildPlatformBinaryDialog.cpp BuildPlatformBinaryDialog.ui
+
+
     )
 
 target_include_directories(fmusim-gui PRIVATE

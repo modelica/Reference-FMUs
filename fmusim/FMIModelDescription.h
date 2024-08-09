@@ -131,6 +131,8 @@ typedef struct {
     const char* modelIdentifier;
     bool providesDirectionalDerivatives;
     bool needsCompletedIntegratorStep;
+    size_t nSourceFiles;
+    const char** sourceFiles;
 
 } FMIModelExchangeInterface;
 
@@ -138,6 +140,8 @@ typedef struct {
 
     const char* modelIdentifier;
     bool hasEventMode;
+    size_t nSourceFiles;
+    const char** sourceFiles;
 
 } FMICoSimulationInterface;
 

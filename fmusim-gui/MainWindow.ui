@@ -1056,6 +1056,7 @@
    </attribute>
    <addaction name="openFileAction"/>
    <addaction name="newWindowAction"/>
+   <addaction name="buildPlatformBinaryAction"/>
    <addaction name="separator"/>
    <addaction name="showInfoAction"/>
    <addaction name="showSettingsAction"/>
@@ -1230,6 +1231,21 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+N</string>
+   </property>
+   <property name="menuRole">
+    <enum>QAction::NoRole</enum>
+   </property>
+  </action>
+  <action name="buildPlatformBinaryAction">
+   <property name="icon">
+    <iconset resource="buttons.qrc">
+     <normaloff>:/buttons/dark/hammer.svg</normaloff>:/buttons/dark/hammer.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Build platform binary</string>
+   </property>
+   <property name="toolTip">
+    <string>Build platform binary</string>
    </property>
    <property name="menuRole">
     <enum>QAction::NoRole</enum>
