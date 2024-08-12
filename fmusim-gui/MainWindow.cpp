@@ -12,6 +12,7 @@
 #include <QProgressDialog>
 #include <QSettings>
 #include "ModelVariablesItemModel.h"
+#include "ModelVariablesTreeModel.h"
 #include "VariablesFilterModel.h"
 #include "SimulationThread.h"
 #include "BuildPlatformBinaryThread.h"
@@ -163,6 +164,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->treeView->setModel(variablesFilterModel);
     ui->treeView->sortByColumn(0, Qt::SortOrder::AscendingOrder);
+
+    modelVariablesTreeModel = new ModelVariablesTreeModel(this);
+
+    ui->modelVariablesTreeView->setModel(modelVariablesTreeModel);
 
     connect(ui->filterLineEdit, &QLineEdit::textChanged, variablesFilterModel, &VariablesFilterModel::setFilterFixedString);
     connect(ui->filterParameterVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterParamterVariables);
@@ -319,6 +324,8 @@ void MainWindow::loadFMU(const QString &filename) {
 
     variablesListModel->setModelDescription(modelDescription);
     variablesListModel->setPlotVariables(&plotVariables);
+
+    modelVariablesTreeModel->setModelDescription(modelDescription);
 
     ui->FMIVersionLabel->setText(modelDescription->fmiVersion);
 

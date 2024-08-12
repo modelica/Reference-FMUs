@@ -20,6 +20,7 @@ extern "C" {
 }
 
 class ModelVariablesItemModel;
+class ModelVariablesTreeModel;
 class VariablesFilterModel;
 class SimulationThread;
 class BuildPlatformBinaryThread;
@@ -54,6 +55,7 @@ private:
     QList<const FMIModelVariable*> plotVariables;
     ModelVariablesItemModel* variablesListModel = nullptr;
     VariablesFilterModel* variablesFilterModel = nullptr;
+    ModelVariablesTreeModel* modelVariablesTreeModel = nullptr;
     SimulationThread* simulationThread = nullptr;
     BuildPlatformBinaryThread* buildPlatformBinaryThread = nullptr;
     QProgressDialog* progressDialog;

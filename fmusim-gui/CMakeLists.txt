@@ -97,7 +97,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         BuildPlatformBinaryDialog.h BuildPlatformBinaryDialog.cpp BuildPlatformBinaryDialog.ui
         BuildPlatformBinaryThread.h BuildPlatformBinaryThread.cpp
 
-
+        ModelVariablesTreeModel.h ModelVariablesTreeModel.cpp
     )
 
 target_include_directories(fmusim-gui PRIVATE

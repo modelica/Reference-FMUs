@@ -830,7 +830,7 @@
    <property name="minimumSize">
     <size>
      <width>500</width>
-     <height>116</height>
+     <height>161</height>
     </size>
    </property>
    <property name="styleSheet">
@@ -1022,6 +1022,9 @@
         </item>
        </layout>
       </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QTreeView" name="modelVariablesTreeView"/>
      </item>
     </layout>
    </widget>
