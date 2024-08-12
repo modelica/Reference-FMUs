@@ -16,7 +16,6 @@
 
 #include "FMIZip.h"
 #include "FMIModelDescription.h"
-#include "FMIBuildDescription.h"
 #include "FMIRecorder.h"
 #include "FMIUtil.h"
 
@@ -124,10 +123,6 @@ void printUsage() {
 }
 
 int main(int argc, const char* argv[]) {
-
-    FMIBuildDescription* buildDescription = FMIReadBuildDescription("E:\\Development\\Reference-FMUs\\BouncingBall\\buildDescription.xml");
-
-    FMIFreeBuildDescription(buildDescription);
 
     bool logFMICalls = false;
 
