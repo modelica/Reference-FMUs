@@ -49,8 +49,6 @@ set(sources
   FMICVode.c
   FMIModelDescription.h
   FMIModelDescription.c
-  FMIBuildDescription.h
-  FMIBuildDescription.c
   FMIRecorder.h
   FMIRecorder.c
   FMIZip.h

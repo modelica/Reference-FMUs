@@ -1,5 +1,4 @@
 #include "FMIModelDescription.h"
-#include "FMIBuildDescription.h"
 
 #include <string.h>
 #include <stdint.h>
@@ -317,7 +316,7 @@ static FMIStatus readSourceFiles(xmlXPathContextPtr xpathCtx, const char* path, 
 
         *nSourceFiles = xpathObj->nodesetval->nodeNr;
 
-        CALL(FMICalloc(sourceFiles, xpathObj->nodesetval->nodeNr, sizeof(char*)));
+        CALL(FMICalloc((void**)sourceFiles, xpathObj->nodesetval->nodeNr, sizeof(char*)));
 
         for (int i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
             xmlNodePtr fileNode = xpathObj->nodesetval->nodeTab[i];
