@@ -22,6 +22,7 @@ extern "C" {
 class ModelVariablesItemModel;
 class VariablesFilterModel;
 class SimulationThread;
+class BuildPlatformBinaryThread;
 class QProgressDialog;
 
 class MainWindow : public QMainWindow
@@ -54,7 +55,9 @@ private:
     ModelVariablesItemModel* variablesListModel = nullptr;
     VariablesFilterModel* variablesFilterModel = nullptr;
     SimulationThread* simulationThread = nullptr;
+    BuildPlatformBinaryThread* buildPlatformBinaryThread = nullptr;
     QProgressDialog* progressDialog;
+    QProgressDialog* buildPlatformBinaryProgressDialog;
 
     static MainWindow* currentMainWindow;
     static void logMessage(const char* message, va_list args);

@@ -95,6 +95,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         SimulationThread.h SimulationThread.cpp
         resources.qrc
         BuildPlatformBinaryDialog.h BuildPlatformBinaryDialog.cpp BuildPlatformBinaryDialog.ui
+        BuildPlatformBinaryThread.h BuildPlatformBinaryThread.cpp
 
 
     )

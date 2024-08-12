@@ -11,11 +11,10 @@
 #include <QDirIterator>
 #include <QProgressDialog>
 #include <QSettings>
-#include <QProcess>
-#include <QTemporaryDir>
 #include "ModelVariablesItemModel.h"
 #include "VariablesFilterModel.h"
 #include "SimulationThread.h"
+#include "BuildPlatformBinaryThread.h"
 #include "BuildPlatformBinaryDialog.h"
 
 extern "C" {
@@ -31,7 +30,9 @@ extern "C" {
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-{
+{    
+    ui->setupUi(this);
+
     setAttribute(Qt::WA_DeleteOnClose);
 
     simulationThread = new SimulationThread(this);
@@ -40,8 +41,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     progressDialog->setWindowTitle("FMUSim");
     progressDialog->setLabelText("Simulating...");
-    progressDialog->setMinimum(0);
-    progressDialog->setMaximum(100);
+    progressDialog->setRange(0, 100);
     progressDialog->setMinimumDuration(1000);
     progressDialog->setWindowModality(Qt::WindowModal);
 
@@ -56,7 +56,21 @@ MainWindow::MainWindow(QWidget *parent)
     connect(simulationThread, &SimulationThread::finished, this, &MainWindow::simulationFinished);
     connect(progressDialog, &QProgressDialog::canceled, simulationThread, &SimulationThread::stop);
 
-    ui->setupUi(this);
+    buildPlatformBinaryThread = new BuildPlatformBinaryThread(this);
+
+    buildPlatformBinaryProgressDialog = new QProgressDialog(this);
+
+    buildPlatformBinaryProgressDialog->setWindowTitle("FMUSim");
+    buildPlatformBinaryProgressDialog->setLabelText("Building Platform Binary...");
+    buildPlatformBinaryProgressDialog->setRange(0, 0);
+    buildPlatformBinaryProgressDialog->setWindowModality(Qt::WindowModal);
+    buildPlatformBinaryProgressDialog->setCancelButton(nullptr);
+
+    buildPlatformBinaryProgressDialog->setWindowFlags(flags);
+    buildPlatformBinaryProgressDialog->reset();
+
+    connect(buildPlatformBinaryThread, &BuildPlatformBinaryThread::newMessage, ui->logPlainTextEdit, &QPlainTextEdit::appendPlainText);
+    connect(buildPlatformBinaryThread, &BuildPlatformBinaryThread::finished, buildPlatformBinaryProgressDialog, &QProgressDialog::reset);
 
     setColorScheme(QGuiApplication::styleHints()->colorScheme());
 
@@ -875,23 +889,6 @@ void MainWindow::simulationFinished() {
     }
 }
 
-static QString wslPath(const QString& path) {
-
-    QString canonicalPath = path;
-
-    canonicalPath = canonicalPath.replace('\\', '/');
-
-    QProcess process;
-
-    process.start("wsl", {"wslpath", "-a", canonicalPath});
-
-    process.waitForFinished();
-
-    QString p(process.readAllStandardOutput());
-
-    return p.trimmed();
-}
-
 void MainWindow::buildPlatformBinary() {
 
     BuildPlatformBinaryDialog dialog(this);
@@ -900,151 +897,20 @@ void MainWindow::buildPlatformBinary() {
         return;
     }
 
-    const bool wsl = dialog.compileWithWSL();
-
-    QString modelIdentifier;
-
-    QTemporaryDir buildDirectory;
-
-    buildDirectory.setAutoRemove(dialog.removeBuilDirectory());
-
-    QFile::copy(":/resources/CMakeLists.txt", buildDirectory.filePath("CMakeLists.txt"));
-
-    if (modelDescription->fmiMajorVersion == 2) {
-        QFile::copy(":/resources/fmi2Functions.h", buildDirectory.filePath("fmi2Functions.h"));
-        QFile::copy(":/resources/fmi2FunctionTypes.h", buildDirectory.filePath("fmi2FunctionTypes.h"));
-        QFile::copy(":/resources/fmi2TypesPlatform.h", buildDirectory.filePath("fmi2TypesPlatform.h"));
-    } else {
-        QFile::copy(":/resources/fmi3Functions.h", buildDirectory.filePath("fmi3Functions.h"));
-        QFile::copy(":/resources/fmi3FunctionTypes.h", buildDirectory.filePath("fmi3FunctionTypes.h"));
-        QFile::copy(":/resources/fmi3PlatformTypes.h", buildDirectory.filePath("fmi3PlatformTypes.h"));
-    }
-
-    size_t nSourceFiles;
-    const char** sourceFiles;
-
-    if (modelDescription->coSimulation) {
-        modelIdentifier = modelDescription->coSimulation->modelIdentifier;
-        nSourceFiles = modelDescription->coSimulation->nSourceFiles;
-        sourceFiles = modelDescription->coSimulation->sourceFiles;
-    } else {
-        modelIdentifier = modelDescription->modelExchange->modelIdentifier;
-        nSourceFiles = modelDescription->modelExchange->nSourceFiles;
-        sourceFiles = modelDescription->modelExchange->sourceFiles;
-    }
-
-    QStringList definitions;
-
-    if (modelDescription->fmiMajorVersion == 3) {
-        definitions << "FMI3_OVERRIDE_FUNCTION_PREFIX";
-    }
-
-    if (buildDescription) {
-
-        if (buildDescription->nBuildConfigurations > 1) {
-            ui->logPlainTextEdit->appendPlainText("Multiple Build Configurations are not supported.\n");
-            return;
-        }
-
-        const FMIBuildConfiguration* buildConfiguration = buildDescription->buildConfigurations[0];
-
-        if (buildConfiguration->nSourceFileSets > 1) {
-            ui->logPlainTextEdit->appendPlainText("Multiple Source File Sets are not supported.\n");
-            return;
-        }
-
-        const FMISourceFileSet* sourceFileSet = buildConfiguration->sourceFileSets[0];
-
-        nSourceFiles = sourceFileSet->nSourceFiles;
-        sourceFiles = sourceFileSet->sourceFiles;
-
-        for (size_t i = 0; i < sourceFileSet->nPreprocessorDefinitions; i++) {
-
-            FMIPreprocessorDefinition* preprocessorDefinition = sourceFileSet->preprocessorDefinitions[i];
-
-            QString definition = preprocessorDefinition->name;
-
-            if (preprocessorDefinition->value) {
-                definition += "=";
-                definition += preprocessorDefinition->value;
-            }
-
-            definitions << definition;
-        }
-    }
-
-    QString buildDirPath = wsl ? wslPath(buildDirectory.path()) : buildDirectory.path();
-    QString unzipdirPath = wsl ? wslPath(unzipdir) : unzipdir;
-
-    QStringList sources;
-
-    for (size_t i = 0; i < nSourceFiles; i++) {
-        sources << QDir(unzipdirPath).filePath("sources/" + QString(sourceFiles[i]));
-    }
-
-    QStringList includeDirectories = {
-        buildDirPath,
-        QDir(unzipdirPath).filePath("sources")
-    };
-
     ui->logPlainTextEdit->clear();
 
     setCurrentPage(ui->logPage);
 
-    ui->logPlainTextEdit->appendPlainText("Generating CMake project...\n");
+    buildPlatformBinaryProgressDialog->show();
 
-    QString program;
+    buildPlatformBinaryThread->unzipdir = unzipdir;
+    buildPlatformBinaryThread->modelDescription = modelDescription;
+    buildPlatformBinaryThread->buildDescription = buildDescription;
+    buildPlatformBinaryThread->cmakeCommand = dialog.cmakeCommand();
+    buildPlatformBinaryThread->cmakeGenerator = dialog.cmakeGenerator();
+    buildPlatformBinaryThread->buildConfiguration = dialog.buildConfiguration();
+    buildPlatformBinaryThread->compileWithWSL = dialog.compileWithWSL();
+    buildPlatformBinaryThread->removeBuilDirectory = dialog.removeBuilDirectory();
 
-    QProcess process;
-    QStringList arguments;
-
-    if (wsl) {
-        program = "wsl";
-        arguments << dialog.cmakeCommand();
-    } else {
-        program = dialog.cmakeCommand();
-    }
-
-    if (!dialog.cmakeGenerator().isEmpty()) {
-        arguments << "-G" + dialog.cmakeGenerator();
-    }
-
-    arguments << "-S" + buildDirPath;
-    arguments << "-B" + buildDirPath;
-    arguments << "-DFMI_MAJOR_VERSION=" + QString::number(modelDescription->fmiMajorVersion);
-    arguments << "-DMODEL_IDENTIFIER=" + modelIdentifier;
-    arguments << "-DINCLUDE='" + includeDirectories.join(';') + "'";
-    arguments << "-DDEFINITIONS='" + definitions.join(';') + "'";
-    arguments << "-DSOURCES='" + sources.join(';') + "'";
-    arguments << "-DUNZIPDIR='" + unzipdirPath + "'";
-
-    process.start(program, arguments);
-
-    bool success = process.waitForFinished();
-
-    ui->logPlainTextEdit->appendPlainText(process.readAllStandardOutput());
-    ui->logPlainTextEdit->appendPlainText(process.readAllStandardError());
-
-    if (!success) {
-        return;
-    }
-
-    ui->logPlainTextEdit->appendPlainText("Building CMake project...\n");
-
-    arguments.clear();
-
-    if (wsl) {
-        arguments << dialog.cmakeCommand();
-    }
-
-    arguments << "--build" << buildDirPath;
-    arguments << "--target" << "install";
-    arguments << "--config" << dialog.buildConfiguration();
-
-    process.start(program, arguments);
-
-    success = process.waitForFinished();
-
-    ui->logPlainTextEdit->appendPlainText(process.readAllStandardOutput());
-    ui->logPlainTextEdit->appendPlainText(process.readAllStandardError());
+    buildPlatformBinaryThread->start();
 }
