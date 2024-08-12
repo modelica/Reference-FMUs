@@ -14,6 +14,8 @@
 #include "ModelVariablesItemModel.h"
 #include "VariablesFilterModel.h"
 #include "SimulationThread.h"
+#include "BuildPlatformBinaryThread.h"
+#include "BuildPlatformBinaryDialog.h"
 
 extern "C" {
 #include "FMIZip.h"
@@ -28,7 +30,9 @@ extern "C" {
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-{
+{    
+    ui->setupUi(this);
+
     setAttribute(Qt::WA_DeleteOnClose);
 
     simulationThread = new SimulationThread(this);
@@ -37,8 +41,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     progressDialog->setWindowTitle("FMUSim");
     progressDialog->setLabelText("Simulating...");
-    progressDialog->setMinimum(0);
-    progressDialog->setMaximum(100);
+    progressDialog->setRange(0, 100);
     progressDialog->setMinimumDuration(1000);
     progressDialog->setWindowModality(Qt::WindowModal);
 
@@ -53,7 +56,21 @@ MainWindow::MainWindow(QWidget *parent)
     connect(simulationThread, &SimulationThread::finished, this, &MainWindow::simulationFinished);
     connect(progressDialog, &QProgressDialog::canceled, simulationThread, &SimulationThread::stop);
 
-    ui->setupUi(this);
+    buildPlatformBinaryThread = new BuildPlatformBinaryThread(this);
+
+    buildPlatformBinaryProgressDialog = new QProgressDialog(this);
+
+    buildPlatformBinaryProgressDialog->setWindowTitle("FMUSim");
+    buildPlatformBinaryProgressDialog->setLabelText("Building Platform Binary...");
+    buildPlatformBinaryProgressDialog->setRange(0, 0);
+    buildPlatformBinaryProgressDialog->setWindowModality(Qt::WindowModal);
+    buildPlatformBinaryProgressDialog->setCancelButton(nullptr);
+
+    buildPlatformBinaryProgressDialog->setWindowFlags(flags);
+    buildPlatformBinaryProgressDialog->reset();
+
+    connect(buildPlatformBinaryThread, &BuildPlatformBinaryThread::newMessage, ui->logPlainTextEdit, &QPlainTextEdit::appendPlainText);
+    connect(buildPlatformBinaryThread, &BuildPlatformBinaryThread::finished, buildPlatformBinaryProgressDialog, &QProgressDialog::reset);
 
     setColorScheme(QGuiApplication::styleHints()->colorScheme());
 
@@ -129,6 +146,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->showDocumentationAction, &QAction::triggered, this, [this]() { setCurrentPage(ui->documenationPage); });
     connect(ui->showLogAction,           &QAction::triggered, this, [this]() { setCurrentPage(ui->logPage);          });
     connect(ui->showPlotAction,          &QAction::triggered, this, [this]() { setCurrentPage(ui->plotPage);         });
+
+    connect(ui->buildPlatformBinaryAction, &QAction::triggered, this, &MainWindow::buildPlatformBinary);
 
     setCurrentPage(ui->startPage);
 
@@ -259,6 +278,13 @@ void MainWindow::loadFMU(const QString &filename) {
         return;
     }
 
+    const QString buildDescriptionPath = QDir(unzipdir).filePath("sources/buildDescription.xml");
+
+    if (QFileInfo::exists(buildDescriptionPath)) {
+        QByteArray ba = buildDescriptionPath.toLocal8Bit();
+        buildDescription = FMIReadBuildDescription(ba.data());
+    }
+
     // update the GUI
     startValues.clear();
 
@@ -343,6 +369,17 @@ void MainWindow::loadFMU(const QString &filename) {
     // enable widgets
     ui->showSideBarAction->setEnabled(true);
     ui->showSideBarAction->setChecked(true);
+
+    bool hasSourceCode = false;
+
+    if ((modelDescription->coSimulation && modelDescription->coSimulation->nSourceFiles > 0) ||
+        (modelDescription->modelExchange && modelDescription->modelExchange->nSourceFiles > 0) ||
+        buildDescription) {
+        hasSourceCode = true;
+    }
+
+    ui->buildPlatformBinaryAction->setEnabled(hasSourceCode);
+
     ui->showInfoAction->setEnabled(true);
     ui->showSettingsAction->setEnabled(true);
     ui->showFilesAction->setEnabled(true);
@@ -421,6 +458,7 @@ void MainWindow::setColorScheme(Qt::ColorScheme colorScheme) {
 
     // toolbar
     ui->newWindowAction->setIcon(QIcon(":/buttons/" + theme + "/new-window.svg"));
+    ui->buildPlatformBinaryAction->setIcon(QIcon(":/buttons/" + theme + "/hammer.svg"));
     ui->openFileAction->setIcon(QIcon(":/buttons/" + theme + "/folder-open.svg"));
     ui->showInfoAction->setIcon(QIcon(":/buttons/" + theme + "/info.svg"));
     ui->showSettingsAction->setIcon(QIcon(":/buttons/" + theme + "/gear.svg"));
@@ -772,6 +810,11 @@ void MainWindow::unloadFMU() {
         modelDescription = nullptr;
     }
 
+    if (buildDescription) {
+        FMIFreeBuildDescription(buildDescription);
+        buildDescription = nullptr;
+    }
+
     if (!unzipdir.isEmpty()) {
         QByteArray bytes = unzipdir.toLocal8Bit();
         const char *cstr = bytes.data();
@@ -793,6 +836,7 @@ void MainWindow::unloadFMU() {
 
     ui->dockWidget->setHidden(true);
 
+    ui->buildPlatformBinaryAction->setEnabled(false);
     ui->showInfoAction->setEnabled(false);
     ui->showSettingsAction->setEnabled(false);
     ui->showFilesAction->setEnabled(false);
@@ -843,4 +887,30 @@ void MainWindow::simulationFinished() {
     } else {
         setCurrentPage(ui->logPage);
     }
+}
+
+void MainWindow::buildPlatformBinary() {
+
+    BuildPlatformBinaryDialog dialog(this);
+
+    if (dialog.exec() != QDialog::Accepted) {
+        return;
+    }
+
+    ui->logPlainTextEdit->clear();
+
+    setCurrentPage(ui->logPage);
+
+    buildPlatformBinaryProgressDialog->show();
+
+    buildPlatformBinaryThread->unzipdir = unzipdir;
+    buildPlatformBinaryThread->modelDescription = modelDescription;
+    buildPlatformBinaryThread->buildDescription = buildDescription;
+    buildPlatformBinaryThread->cmakeCommand = dialog.cmakeCommand();
+    buildPlatformBinaryThread->cmakeGenerator = dialog.cmakeGenerator();
+    buildPlatformBinaryThread->buildConfiguration = dialog.buildConfiguration();
+    buildPlatformBinaryThread->compileWithWSL = dialog.compileWithWSL();
+    buildPlatformBinaryThread->removeBuilDirectory = dialog.removeBuilDirectory();
+
+    buildPlatformBinaryThread->start();
 }

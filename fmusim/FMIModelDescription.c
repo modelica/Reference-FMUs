@@ -20,7 +20,7 @@
 //
 // and
 //
-// xxd -i xxd -i fmi3Merged.xsd > fmi3schema.h
+// xxd -i fmi3Merged.xsd > fmi3schema.h
 #include "fmi1schema.h"
 #include "fmi2schema.h"
 #include "fmi3schema.h"
@@ -306,6 +306,31 @@ TERMINATE:
     ;
 }
 
+static FMIStatus readSourceFiles(xmlXPathContextPtr xpathCtx, const char* path, size_t* nSourceFiles, char*** sourceFiles) {
+
+    FMIStatus status = FMIOK;
+
+    xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)path, xpathCtx);
+
+    if (xpathObj->nodesetval->nodeNr > 0) {
+
+        *nSourceFiles = xpathObj->nodesetval->nodeNr;
+
+        CALL(FMICalloc((void**)sourceFiles, xpathObj->nodesetval->nodeNr, sizeof(char*)));
+
+        for (int i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
+            xmlNodePtr fileNode = xpathObj->nodesetval->nodeTab[i];
+            (*sourceFiles)[i] = (char*)xmlGetProp(fileNode, (xmlChar*)"name");
+        }
+    }
+
+    xmlXPathFreeObject(xpathObj);
+
+TERMINATE:
+    
+    return status;
+}
+
 static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
     FMIStatus status = FMIOK;
@@ -332,20 +357,22 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(root->doc);
 
-    xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/CoSimulation", xpathCtx);
-    if (xpathObj->nodesetval->nodeNr == 1) {
-        CALL(FMICalloc((void**)&modelDescription->coSimulation, 1, sizeof(FMICoSimulationInterface)));
-        modelDescription->coSimulation->modelIdentifier = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"modelIdentifier");
-    }
-    xmlXPathFreeObject(xpathObj);
-
-    xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelExchange", xpathCtx);
+    xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelExchange", xpathCtx);
     if (xpathObj->nodesetval->nodeNr == 1) {
         CALL(FMICalloc((void**)&modelDescription->modelExchange, 1, sizeof(FMIModelExchangeInterface)));
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
         modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(node, (xmlChar*)"modelIdentifier");
         modelDescription->modelExchange->providesDirectionalDerivatives = getBooleanAttribute(node, "providesDirectionalDerivative");
         modelDescription->modelExchange->needsCompletedIntegratorStep = !getBooleanAttribute(node, "completedIntegratorStepNotNeeded");
+        CALL(readSourceFiles(xpathCtx, "/fmiModelDescription/ModelExchange/SourceFiles/File", &modelDescription->modelExchange->nSourceFiles, &modelDescription->modelExchange->sourceFiles));
+    }
+    xmlXPathFreeObject(xpathObj);
+
+    xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/CoSimulation", xpathCtx);
+    if (xpathObj->nodesetval->nodeNr == 1) {
+        CALL(FMICalloc((void**)&modelDescription->coSimulation, 1, sizeof(FMICoSimulationInterface)));
+        modelDescription->coSimulation->modelIdentifier = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"modelIdentifier");
+        CALL(readSourceFiles(xpathCtx, "/fmiModelDescription/CoSimulation/SourceFiles/File", &modelDescription->coSimulation->nSourceFiles, &modelDescription->coSimulation->sourceFiles));
     }
     xmlXPathFreeObject(xpathObj);
 
@@ -1191,11 +1218,19 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
 
     if (modelDescription->modelExchange) {
         xmlFree((void*)modelDescription->modelExchange->modelIdentifier);
+        for (size_t i = 0; i < modelDescription->modelExchange->nSourceFiles; i++) {
+            xmlFree((void*)modelDescription->modelExchange->sourceFiles[i]);
+        }
+        FMIFree((void**)&modelDescription->modelExchange->sourceFiles);
         FMIFree((void**)&modelDescription->modelExchange);
     }
 
     if (modelDescription->coSimulation) {
         xmlFree((void*)modelDescription->coSimulation->modelIdentifier);
+        for (size_t i = 0; i < modelDescription->coSimulation->nSourceFiles; i++) {
+            xmlFree((void*)modelDescription->coSimulation->sourceFiles[i]);
+        }
+        FMIFree((void**)&modelDescription->coSimulation->sourceFiles);
         FMIFree((void**)&modelDescription->coSimulation);
     }
 

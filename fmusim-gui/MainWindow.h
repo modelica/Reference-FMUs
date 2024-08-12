@@ -16,13 +16,13 @@ QT_END_NAMESPACE
 
 extern "C" {
 #include "FMIModelDescription.h"
-struct FMIRecorder;
-struct FMISimulationSettings;
+#include "FMIBuildDescription.h"
 }
 
 class ModelVariablesItemModel;
 class VariablesFilterModel;
 class SimulationThread;
+class BuildPlatformBinaryThread;
 class QProgressDialog;
 
 class MainWindow : public QMainWindow
@@ -48,13 +48,16 @@ private:
     QFileSystemModel filesModel;
     QComboBox* interfaceTypeComboBox;
     FMIModelDescription* modelDescription = nullptr;
+    FMIBuildDescription* buildDescription = nullptr;
     QString unzipdir;
     QMap<const FMIModelVariable*, QString> startValues;
     QList<const FMIModelVariable*> plotVariables;
     ModelVariablesItemModel* variablesListModel = nullptr;
     VariablesFilterModel* variablesFilterModel = nullptr;
     SimulationThread* simulationThread = nullptr;
+    BuildPlatformBinaryThread* buildPlatformBinaryThread = nullptr;
     QProgressDialog* progressDialog;
+    QProgressDialog* buildPlatformBinaryProgressDialog;
 
     static MainWindow* currentMainWindow;
     static void logMessage(const char* message, va_list args);
@@ -73,6 +76,7 @@ private slots:
     void removePlotVariable(const FMIModelVariable* variable);
     void setOptionalColumnsVisible(bool visible);
     void simulationFinished();
+    void buildPlatformBinary();
 
 };
 #endif // MAINWINDOW_H
