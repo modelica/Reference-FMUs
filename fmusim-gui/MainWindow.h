@@ -19,7 +19,7 @@ extern "C" {
 #include "FMIBuildDescription.h"
 }
 
-class ModelVariablesItemModel;
+class ModelVariablesTableModel;
 class ModelVariablesTreeModel;
 class VariablesFilterModel;
 class SimulationThread;
@@ -53,7 +53,7 @@ private:
     QString unzipdir;
     QMap<const FMIModelVariable*, QString> startValues;
     QList<const FMIModelVariable*> plotVariables;
-    ModelVariablesItemModel* variablesListModel = nullptr;
+    ModelVariablesTableModel* variablesListModel = nullptr;
     VariablesFilterModel* variablesFilterModel = nullptr;
     ModelVariablesTreeModel* modelVariablesTreeModel = nullptr;
     SimulationThread* simulationThread = nullptr;

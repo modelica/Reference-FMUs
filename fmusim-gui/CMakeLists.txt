@@ -44,8 +44,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(fmusim-gui
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        ModelVariablesItemModel.h
-        ModelVariablesItemModel.cpp
+        ModelVariablesTableModel.h
+        ModelVariablesTableModel.cpp
         plot.html
         ../src/FMI1.c
         ../src/FMI2.c
@@ -98,6 +98,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         BuildPlatformBinaryThread.h BuildPlatformBinaryThread.cpp
 
         ModelVariablesTreeModel.h ModelVariablesTreeModel.cpp
+        AbstractModelVariablesModel.h AbstractModelVariablesModel.cpp
     )
 
 target_include_directories(fmusim-gui PRIVATE

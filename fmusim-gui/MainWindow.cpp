@@ -11,7 +11,7 @@
 #include <QDirIterator>
 #include <QProgressDialog>
 #include <QSettings>
-#include "ModelVariablesItemModel.h"
+#include "ModelVariablesTableModel.h"
 #include "ModelVariablesTreeModel.h"
 #include "VariablesFilterModel.h"
 #include "SimulationThread.h"
@@ -152,11 +152,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     setCurrentPage(ui->startPage);
 
-    variablesListModel = new ModelVariablesItemModel(this);
+    variablesListModel = new ModelVariablesTableModel(this);
     variablesListModel->setStartValues(&startValues);
 
-    connect(variablesListModel, &ModelVariablesItemModel::plotVariableSelected, this, &MainWindow::addPlotVariable);
-    connect(variablesListModel, &ModelVariablesItemModel::plotVariableDeselected, this, &MainWindow::removePlotVariable);
+    connect(variablesListModel, &ModelVariablesTableModel::plotVariableSelected, this, &MainWindow::addPlotVariable);
+    connect(variablesListModel, &ModelVariablesTableModel::plotVariableDeselected, this, &MainWindow::removePlotVariable);
 
     variablesFilterModel = new VariablesFilterModel();
 
@@ -837,7 +837,7 @@ void MainWindow::unloadFMU() {
 
     const static int COLUMN_WIDTHS[] = {200, 55, 75, 100, 70, 80, 70, 70, 70, 70, 70, 50, 40};
 
-    for (int i = 0; i < ModelVariablesItemModel::NUMBER_OF_COLUMNS - 1; i++) {
+    for (int i = 0; i < ModelVariablesTableModel::NUMBER_OF_COLUMNS - 1; i++) {
         ui->treeView->setColumnWidth(i, COLUMN_WIDTHS[i]);
     }
 
@@ -870,15 +870,15 @@ void MainWindow::removePlotVariable(const FMIModelVariable* variable) {
 }
 
 void MainWindow::setOptionalColumnsVisible(bool visible) {
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::TYPE_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::DIMENSION_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::VALUE_REFERENCE_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::INITIAL_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::CAUSALITY_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::VARIABITLITY_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::NOMINAL_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::MIN_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::MAX_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesTableModel::TYPE_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesTableModel::DIMENSION_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesTableModel::VALUE_REFERENCE_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesTableModel::INITIAL_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesTableModel::CAUSALITY_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesTableModel::VARIABITLITY_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesTableModel::NOMINAL_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesTableModel::MIN_COLUMN_INDEX, !visible);
+    ui->treeView->setColumnHidden(ModelVariablesTableModel::MAX_COLUMN_INDEX, !visible);
 }
 
 void MainWindow::simulationFinished() {

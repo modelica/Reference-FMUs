@@ -3,19 +3,10 @@
 
 
 ModelVariablesTreeModel::ModelVariablesTreeModel(QObject *parent)
-    : QAbstractItemModel(parent)
+    : AbstractModelVariablesModel(parent)
 {
     rootItem = new TreeItem();
     rootItem->name = "root";
-}
-
-QVariant ModelVariablesTreeModel::headerData(int section, Qt::Orientation orientation, int role) const {
-
-    if (role == Qt::DisplayRole) {
-        return "Name";
-    }
-
-    return QVariant();
 }
 
 QModelIndex ModelVariablesTreeModel::index(int row, int column, const QModelIndex &parent) const {
@@ -54,27 +45,24 @@ int ModelVariablesTreeModel::rowCount(const QModelIndex &parent) const {
     return parentItem->children.length();
 }
 
-int ModelVariablesTreeModel::columnCount(const QModelIndex &parent) const {
-
-    // if (!parent.isValid())
-    //     return 0;
-
-    return 1;
-}
-
 QVariant ModelVariablesTreeModel::data(const QModelIndex &index, int role) const {
 
-    if (!index.isValid())
+    if (!index.isValid()) {
         return QVariant();
+    }
 
-    const TreeItem* treeItem = (TreeItem*)index.internalPointer();
+    const TreeItem* treeItem = static_cast<TreeItem*>(index.internalPointer());
 
-    if (role == Qt::DisplayRole) {
+    if (index.column() == NAME_COLUMN_INDEX && role == Qt::DisplayRole) {
         return treeItem->name;
     }
 
-    if (role == Qt::DecorationRole) {
-        return QIcon(":/variables/dark/float-variable.svg");
+    if (treeItem->modelVariable) {
+        return columnData(treeItem->modelVariable, index.column(), role);
+    }
+
+    if (index.column() == NAME_COLUMN_INDEX && role == Qt::DecorationRole) {
+        return QIcon(":/variables/dark/float-parameter.svg");
     }
 
     return QVariant();
