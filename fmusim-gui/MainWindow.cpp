@@ -384,7 +384,13 @@ void MainWindow::loadFMU(const QString &filename) {
     ui->filesTreeView->setColumnWidth(0, 250);
 
     const QString doc = QDir::cleanPath(this->unzipdir + QDir::separator() + "documentation" + QDir::separator() + "index.html");
-    ui->documentationWebEngineView->load(QUrl::fromLocalFile(doc));
+
+    if (QFileInfo::exists(doc)) {
+        ui->showDocumentationAction->setEnabled(true);
+        ui->documentationWebEngineView->load(QUrl::fromLocalFile(doc));
+    } else {
+        ui->showDocumentationAction->setEnabled(false);
+    }
 
     ui->plotWebEngineView->load(QUrl("qrc:/plot.html"));
 
@@ -405,7 +411,6 @@ void MainWindow::loadFMU(const QString &filename) {
     ui->showInfoAction->setEnabled(true);
     ui->showSettingsAction->setEnabled(true);
     ui->showFilesAction->setEnabled(true);
-    ui->showDocumentationAction->setEnabled(true);
     ui->showLogAction->setEnabled(true);
     ui->showPlotAction->setEnabled(false);
     ui->simulateAction->setEnabled(true);
