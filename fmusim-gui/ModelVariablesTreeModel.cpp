@@ -53,7 +53,7 @@ QVariant ModelVariablesTreeModel::data(const QModelIndex &index, int role) const
 
     const TreeItem* treeItem = static_cast<TreeItem*>(index.internalPointer());
 
-    if (index.column() == NAME_COLUMN_INDEX && role == Qt::DisplayRole) {
+    if (index.column() == NameColumn && role == Qt::DisplayRole) {
         return treeItem->name;
     }
 
@@ -61,7 +61,7 @@ QVariant ModelVariablesTreeModel::data(const QModelIndex &index, int role) const
         return columnData(treeItem->modelVariable, index.column(), role);
     }
 
-    if (index.column() == NAME_COLUMN_INDEX && role == Qt::DecorationRole) {
+    if (index.column() == NameColumn && role == Qt::DecorationRole) {
         return QIcon(":/variables/dark/float-parameter.svg");
     }
 
@@ -112,6 +112,13 @@ void ModelVariablesTreeModel::setModelDescription(const FMIModelDescription *mod
     }
 
     endResetModel();
+}
+
+const FMIModelVariable *ModelVariablesTreeModel::variableForIndex(const QModelIndex &index) const {
+
+    const TreeItem* treeItem = static_cast<TreeItem*>(index.internalPointer());
+
+    return treeItem->modelVariable;
 }
 
 TreeItem *TreeItem::find(const QString &name) const {

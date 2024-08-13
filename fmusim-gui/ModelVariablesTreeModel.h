@@ -17,12 +17,11 @@ public:
     void addChild(TreeItem* treeItem);
 };
 
-class ModelVariablesTreeModel : public AbstractModelVariablesModel
-{
+class ModelVariablesTreeModel : public AbstractModelVariablesModel {
+
     Q_OBJECT
 
 public:
-
     TreeItem* rootItem = nullptr;
 
     explicit ModelVariablesTreeModel(QObject *parent = nullptr);
@@ -36,7 +35,9 @@ public:
 
     void setModelDescription(const FMIModelDescription* modelDescription);
 
-private:
+protected:
+    const FMIModelVariable* variableForIndex(const QModelIndex &index) const override;
+
 };
 
 #endif // MODELVARIABLESTREEMODEL_H

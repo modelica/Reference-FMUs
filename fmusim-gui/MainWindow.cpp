@@ -152,6 +152,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     setCurrentPage(ui->startPage);
 
+    // table model
     variablesListModel = new ModelVariablesTableModel(this);
     variablesListModel->setStartValues(&startValues);
 
@@ -165,10 +166,16 @@ MainWindow::MainWindow(QWidget *parent)
     ui->treeView->setModel(variablesFilterModel);
     ui->treeView->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
+    // tree model
     modelVariablesTreeModel = new ModelVariablesTreeModel(this);
+    modelVariablesTreeModel->setStartValues(&startValues);
+
+    connect(modelVariablesTreeModel, &ModelVariablesTreeModel::plotVariableSelected, this, &MainWindow::addPlotVariable);
+    connect(modelVariablesTreeModel, &ModelVariablesTreeModel::plotVariableDeselected, this, &MainWindow::removePlotVariable);
 
     ui->modelVariablesTreeView->setModel(modelVariablesTreeModel);
 
+    // variable tool buttons
     connect(ui->filterLineEdit, &QLineEdit::textChanged, variablesFilterModel, &VariablesFilterModel::setFilterFixedString);
     connect(ui->filterParameterVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterParamterVariables);
     connect(ui->filterInputVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterInputVariables);
@@ -326,6 +333,7 @@ void MainWindow::loadFMU(const QString &filename) {
     variablesListModel->setPlotVariables(&plotVariables);
 
     modelVariablesTreeModel->setModelDescription(modelDescription);
+    modelVariablesTreeModel->setPlotVariables(&plotVariables);
 
     ui->FMIVersionLabel->setText(modelDescription->fmiVersion);
 
@@ -835,10 +843,25 @@ void MainWindow::unloadFMU() {
 
     setOptionalColumnsVisible(false);
 
-    const static int COLUMN_WIDTHS[] = {200, 55, 75, 100, 70, 80, 70, 70, 70, 70, 70, 50, 40};
+    const QMap<AbstractModelVariablesModel::ColumnIndex, int> columnWidths = {
+        {AbstractModelVariablesModel::NameColumn, 200},
+        {AbstractModelVariablesModel::TypeColumn, 55},
+        {AbstractModelVariablesModel::DimensionColumn, 75},
+        {AbstractModelVariablesModel::ValueReferenceColumn, 100},
+        {AbstractModelVariablesModel::InitialColumn, 70},
+        {AbstractModelVariablesModel::CausalityColumn, 80},
+        {AbstractModelVariablesModel::VariabilityColumn, 70},
+        {AbstractModelVariablesModel::StartColumn, 70},
+        {AbstractModelVariablesModel::NominalColumn, 70},
+        {AbstractModelVariablesModel::MinColumn, 70},
+        {AbstractModelVariablesModel::MaxColumn, 70},
+        {AbstractModelVariablesModel::UnitColumn, 50},
+        {AbstractModelVariablesModel::PlotColumn, 40}
+    };
 
-    for (int i = 0; i < ModelVariablesTableModel::NUMBER_OF_COLUMNS - 1; i++) {
-        ui->treeView->setColumnWidth(i, COLUMN_WIDTHS[i]);
+    for (auto i : columnWidths.asKeyValueRange()) {
+        ui->treeView->setColumnWidth(i.first, i.second);
+        ui->modelVariablesTreeView->setColumnWidth(i.first, i.second);
     }
 
     ui->dockWidget->setHidden(true);
@@ -870,15 +893,21 @@ void MainWindow::removePlotVariable(const FMIModelVariable* variable) {
 }
 
 void MainWindow::setOptionalColumnsVisible(bool visible) {
-    ui->treeView->setColumnHidden(ModelVariablesTableModel::TYPE_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesTableModel::DIMENSION_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesTableModel::VALUE_REFERENCE_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesTableModel::INITIAL_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesTableModel::CAUSALITY_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesTableModel::VARIABITLITY_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesTableModel::NOMINAL_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesTableModel::MIN_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesTableModel::MAX_COLUMN_INDEX, !visible);
+
+    for (AbstractModelVariablesModel::ColumnIndex i : {
+            AbstractModelVariablesModel::TypeColumn,
+            AbstractModelVariablesModel::DimensionColumn,
+            AbstractModelVariablesModel::ValueReferenceColumn,
+            AbstractModelVariablesModel::InitialColumn,
+            AbstractModelVariablesModel::CausalityColumn,
+            AbstractModelVariablesModel::VariabilityColumn,
+            AbstractModelVariablesModel::NominalColumn,
+            AbstractModelVariablesModel::MinColumn,
+            AbstractModelVariablesModel::MaxColumn,
+    }) {
+        ui->treeView->setColumnHidden(i, !visible);
+        ui->modelVariablesTreeView->setColumnHidden(i, !visible);
+    }
 }
 
 void MainWindow::simulationFinished() {

@@ -8,23 +8,101 @@ AbstractModelVariablesModel::AbstractModelVariablesModel(QObject *parent)
 {
 }
 
-int AbstractModelVariablesModel::columnCount(const QModelIndex &parent) const
-{
-    return NUMBER_OF_COLUMNS;
+void AbstractModelVariablesModel::setModelDescription(const FMIModelDescription* modelDescription) {
+    beginResetModel();
+    this->modelDescription = modelDescription;
+    endResetModel();
+}
+
+void AbstractModelVariablesModel::setStartValues(QMap<const FMIModelVariable*, QString> *startValues) {
+    beginResetModel();
+    this->startValues = startValues;
+    endResetModel();
+}
+
+void AbstractModelVariablesModel::setPlotVariables(QList<const FMIModelVariable*> *plotVariables) {
+    beginResetModel();
+    this->plotVariables = plotVariables;
+    endResetModel();
+}
+
+int AbstractModelVariablesModel::columnCount(const QModelIndex &parent) const {
+    return NumberOfColumns;
 }
 
 QVariant AbstractModelVariablesModel::headerData(int section, Qt::Orientation orientation, int role) const {
 
-    Q_ASSERT(section < NUMBER_OF_COLUMNS);
+    Q_ASSERT(section < NumberOfColumns);
 
-    const char* columnNames[] = {"Name", "Type", "Dimensions", "Value Reference", "Initial", "Causality", "Variabitliy", "Start", "Nominal", "Min", "Max", "Unit", "Plot", "Description"};
+    if (role == Qt::DisplayRole) {
 
-    switch (role) {
-    case Qt::DisplayRole:
-        return columnNames[section];
+        switch (section) {
+        case NameColumn:
+            return "Name";
+        case TypeColumn:
+            return "Type";
+        case DimensionColumn:
+            return "Dimensions";
+        case ValueReferenceColumn:
+            return "Value Reference";
+        case InitialColumn:
+            return "Initial";
+        case CausalityColumn:
+            return "Causality";
+        case VariabilityColumn:
+            return "Variabitliy";
+        case StartColumn:
+            return "Start";
+        case NominalColumn:
+            return "Nominal";
+        case MinColumn:
+            return "Min";
+        case MaxColumn:
+            return "Max";
+        case UnitColumn:
+            return "Unit";
+        case PlotColumn:
+            return "Plot";
+        case DescriptionColumn:
+            return "Description";
+        default:
+            break;
+        }
     }
 
     return QVariant();
+}
+
+bool AbstractModelVariablesModel::setData(const QModelIndex &index, const QVariant &value, int role) {
+
+    if (!index.isValid()) {
+        return false;
+    }
+
+    const FMIModelVariable* variable = variableForIndex(index);
+
+    if (index.column() == StartColumn) {
+
+        if (value.toString().isEmpty()) {
+            startValues->remove(variable);
+        } else {
+            startValues->insert(variable, value.toString());
+        }
+
+        return true;
+
+    } else if (index.column() == PlotColumn && role == Qt::CheckStateRole) {
+
+        if (value == Qt::Checked) {
+            emit plotVariableSelected(variable);
+        } else {
+            emit plotVariableDeselected(variable);
+        }
+
+        return true;
+    }
+
+    return false;
 }
 
 Qt::ItemFlags AbstractModelVariablesModel::flags(const QModelIndex &index) const {
@@ -33,9 +111,9 @@ Qt::ItemFlags AbstractModelVariablesModel::flags(const QModelIndex &index) const
         return Qt::NoItemFlags;
     }
 
-    if (index.column() == START_COLUMN_INDEX && startValues) {
+    if (index.column() == StartColumn && startValues) {
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
-    } else if (index.column() == PLOT_COLUMN_INDEX) {
+    } else if (index.column() == PlotColumn) {
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable;
     } else {
         return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
@@ -47,7 +125,7 @@ QVariant AbstractModelVariablesModel::columnData(const FMIModelVariable *variabl
     switch (role) {
     case Qt::DecorationRole:
         switch (column) {
-        case NAME_COLUMN_INDEX:
+        case NameColumn:
             switch (variable->causality) {
             case FMIParameter:
             case FMIStructuralParameter:
@@ -66,9 +144,9 @@ QVariant AbstractModelVariablesModel::columnData(const FMIModelVariable *variabl
     case Qt::DisplayRole:
     case Qt::EditRole:
         switch (column) {
-        case NAME_COLUMN_INDEX:
+        case NameColumn:
             return variable->name;
-        case TYPE_COLUMN_INDEX:
+        case TypeColumn:
             switch (variable->type) {
             case FMIFloat32Type:
             case FMIDiscreteFloat32Type: return "Float32";
@@ -87,7 +165,7 @@ QVariant AbstractModelVariablesModel::columnData(const FMIModelVariable *variabl
             case FMIBinaryType: return "Binary";
             case FMIClockType: return "Clock";
             }
-        case DIMENSION_COLUMN_INDEX:
+        case DimensionColumn:
             if (variable->nDimensions > 0) {
 
                 QString dimensions;
@@ -109,16 +187,16 @@ QVariant AbstractModelVariablesModel::columnData(const FMIModelVariable *variabl
                 return dimensions;
             }
             break;
-        case VALUE_REFERENCE_COLUMN_INDEX:
+        case ValueReferenceColumn:
             return variable->valueReference;
-        case INITIAL_COLUMN_INDEX:
+        case InitialColumn:
             switch(variable->initial) {
             case FMIUndefined: return "undefined";
             case FMIExact: return "exact";
             case FMIApprox: return "approx";
             case FMICalculated: return "calculated";
             }
-        case CAUSALITY_COLUMN_INDEX:
+        case CausalityColumn:
             switch(variable->causality) {
             case FMIParameter: return "parameter";
             case FMICalculatedParameter: return "calculatedParameter";
@@ -128,7 +206,7 @@ QVariant AbstractModelVariablesModel::columnData(const FMIModelVariable *variabl
             case FMILocal: return "local";
             case FMIIndependent: return "independent";
             }
-        case VARIABITLITY_COLUMN_INDEX:
+        case VariabilityColumn:
             switch(variable->variability) {
             case FMIConstant: return "constant";
             case FMIFixed: return "fixed";
@@ -136,43 +214,43 @@ QVariant AbstractModelVariablesModel::columnData(const FMIModelVariable *variabl
             case FMIDiscrete: return "discrete";
             case FMIContinuous: return "continuous";
             }
-        case START_COLUMN_INDEX:
+        case StartColumn:
             if (startValues && startValues->contains(variable)) {
                 return startValues->value(variable);
             } else {
                 return variable->start;
             }
-        case NOMINAL_COLUMN_INDEX:
+        case NominalColumn:
             return variable->nominal;
-        case MIN_COLUMN_INDEX:
+        case MinColumn:
             return variable->min;
-        case MAX_COLUMN_INDEX:
+        case MaxColumn:
             return variable->max;
-        case UNIT_COLUMN_INDEX:
+        case UnitColumn:
             if (variable->declaredType && variable->declaredType->unit) {
                 return variable->declaredType->unit->name;
             }
             break;
-        case DESCRIPTION_COLUMN_INDEX:
+        case DescriptionColumn:
             return variable->description;
         default: break;
         }
     case Qt::TextAlignmentRole:
         switch (column) {
-        case START_COLUMN_INDEX:
-        case VALUE_REFERENCE_COLUMN_INDEX:
+        case StartColumn:
+        case ValueReferenceColumn:
             return int(Qt::AlignRight | Qt::AlignVCenter);
         default: break;
         }
     case Qt::FontRole:
-        if (column == START_COLUMN_INDEX && startValues && startValues->contains(variable)) {
+        if (column == StartColumn && startValues && startValues->contains(variable)) {
             QFont font;
             font.setBold(true);
             return font;
         }
         break;
     case Qt::CheckStateRole:
-        if (column == PLOT_COLUMN_INDEX) {
+        if (column == PlotColumn) {
             return (plotVariables && plotVariables->contains(variable)) ? Qt::Checked : Qt::Unchecked;
         }
         break;
