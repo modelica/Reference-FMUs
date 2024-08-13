@@ -11,7 +11,8 @@
 #include <QDirIterator>
 #include <QProgressDialog>
 #include <QSettings>
-#include "ModelVariablesItemModel.h"
+#include "ModelVariablesTableModel.h"
+#include "ModelVariablesTreeModel.h"
 #include "VariablesFilterModel.h"
 #include "SimulationThread.h"
 #include "BuildPlatformBinaryThread.h"
@@ -151,25 +152,37 @@ MainWindow::MainWindow(QWidget *parent)
 
     setCurrentPage(ui->startPage);
 
-    variablesListModel = new ModelVariablesItemModel(this);
+    // table model
+    variablesListModel = new ModelVariablesTableModel(this);
     variablesListModel->setStartValues(&startValues);
 
-    connect(variablesListModel, &ModelVariablesItemModel::plotVariableSelected, this, &MainWindow::addPlotVariable);
-    connect(variablesListModel, &ModelVariablesItemModel::plotVariableDeselected, this, &MainWindow::removePlotVariable);
+    connect(variablesListModel, &ModelVariablesTableModel::plotVariableSelected, this, &MainWindow::addPlotVariable);
+    connect(variablesListModel, &ModelVariablesTableModel::plotVariableDeselected, this, &MainWindow::removePlotVariable);
 
     variablesFilterModel = new VariablesFilterModel();
 
     variablesFilterModel->setSourceModel(variablesListModel);
 
-    ui->treeView->setModel(variablesFilterModel);
-    ui->treeView->sortByColumn(0, Qt::SortOrder::AscendingOrder);
+    ui->modelVariablesListView->setModel(variablesFilterModel);
+    ui->modelVariablesListView->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
+    // tree model
+    modelVariablesTreeModel = new ModelVariablesTreeModel(this);
+    modelVariablesTreeModel->setStartValues(&startValues);
+
+    connect(modelVariablesTreeModel, &ModelVariablesTreeModel::plotVariableSelected, this, &MainWindow::addPlotVariable);
+    connect(modelVariablesTreeModel, &ModelVariablesTreeModel::plotVariableDeselected, this, &MainWindow::removePlotVariable);
+
+    ui->modelVariablesTreeView->setModel(modelVariablesTreeModel);
+
+    // variable tool buttons
     connect(ui->filterLineEdit, &QLineEdit::textChanged, variablesFilterModel, &VariablesFilterModel::setFilterFixedString);
     connect(ui->filterParameterVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterParamterVariables);
     connect(ui->filterInputVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterInputVariables);
     connect(ui->filterOutputVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterOutputVariables);
     connect(ui->filterLocalVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterLocalVariables);
     connect(ui->showOptionalColumnsToolButton, &QToolButton::clicked, this, &MainWindow::setOptionalColumnsVisible);
+    connect(ui->showListViewToolButton, &QToolButton::clicked, this, &MainWindow::showModelVariablesListView);
 
     connect(ui->inputPushButton, &QPushButton::clicked, this, &MainWindow::selectInputFile);
 
@@ -313,12 +326,21 @@ void MainWindow::loadFMU(const QString &filename) {
 
     setWindowTitle("FMUSim " + QApplication::applicationVersion() + " - " + filename);
 
+    const bool structured = modelDescription->variableNamingConvention == FMIStructured;
+
+    ui->showListViewToolButton->setEnabled(structured);
+    ui->showListViewToolButton->setChecked(!structured);
+    showModelVariablesListView(!structured);
+
     if (modelDescription->defaultExperiment && modelDescription->defaultExperiment->stopTime) {
         stopTimeLineEdit->setText(modelDescription->defaultExperiment->stopTime);
     }
 
     variablesListModel->setModelDescription(modelDescription);
     variablesListModel->setPlotVariables(&plotVariables);
+
+    modelVariablesTreeModel->setModelDescription(modelDescription);
+    modelVariablesTreeModel->setPlotVariables(&plotVariables);
 
     ui->FMIVersionLabel->setText(modelDescription->fmiVersion);
 
@@ -475,6 +497,7 @@ void MainWindow::setColorScheme(Qt::ColorScheme colorScheme) {
     ui->filterOutputVariablesToolButton->setIcon(QIcon(":/buttons/" + theme + "/output-variable.svg"));
     ui->filterLocalVariablesToolButton->setIcon(QIcon(":/buttons/" + theme + "/local-variable.svg"));
     ui->showOptionalColumnsToolButton->setIcon(QIcon(":/buttons/" + theme + "/columns.svg"));
+    ui->showListViewToolButton->setIcon(QIcon(":/buttons/" + theme + "/list.svg"));
 
     this->colorScheme = colorScheme;
 
@@ -828,10 +851,25 @@ void MainWindow::unloadFMU() {
 
     setOptionalColumnsVisible(false);
 
-    const static int COLUMN_WIDTHS[] = {200, 55, 75, 100, 70, 80, 70, 70, 70, 70, 70, 50, 40};
+    const QMap<AbstractModelVariablesModel::ColumnIndex, int> columnWidths = {
+        {AbstractModelVariablesModel::NameColumn, 200},
+        {AbstractModelVariablesModel::TypeColumn, 55},
+        {AbstractModelVariablesModel::DimensionColumn, 75},
+        {AbstractModelVariablesModel::ValueReferenceColumn, 100},
+        {AbstractModelVariablesModel::InitialColumn, 70},
+        {AbstractModelVariablesModel::CausalityColumn, 80},
+        {AbstractModelVariablesModel::VariabilityColumn, 70},
+        {AbstractModelVariablesModel::StartColumn, 70},
+        {AbstractModelVariablesModel::NominalColumn, 70},
+        {AbstractModelVariablesModel::MinColumn, 70},
+        {AbstractModelVariablesModel::MaxColumn, 70},
+        {AbstractModelVariablesModel::UnitColumn, 50},
+        {AbstractModelVariablesModel::PlotColumn, 40}
+    };
 
-    for (int i = 0; i < ModelVariablesItemModel::NUMBER_OF_COLUMNS - 1; i++) {
-        ui->treeView->setColumnWidth(i, COLUMN_WIDTHS[i]);
+    for (auto i : columnWidths.asKeyValueRange()) {
+        ui->modelVariablesListView->setColumnWidth(i.first, i.second);
+        ui->modelVariablesTreeView->setColumnWidth(i.first, i.second);
     }
 
     ui->dockWidget->setHidden(true);
@@ -863,15 +901,21 @@ void MainWindow::removePlotVariable(const FMIModelVariable* variable) {
 }
 
 void MainWindow::setOptionalColumnsVisible(bool visible) {
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::TYPE_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::DIMENSION_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::VALUE_REFERENCE_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::INITIAL_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::CAUSALITY_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::VARIABITLITY_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::NOMINAL_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::MIN_COLUMN_INDEX, !visible);
-    ui->treeView->setColumnHidden(ModelVariablesItemModel::MAX_COLUMN_INDEX, !visible);
+
+    for (AbstractModelVariablesModel::ColumnIndex i : {
+            AbstractModelVariablesModel::TypeColumn,
+            AbstractModelVariablesModel::DimensionColumn,
+            AbstractModelVariablesModel::ValueReferenceColumn,
+            AbstractModelVariablesModel::InitialColumn,
+            AbstractModelVariablesModel::CausalityColumn,
+            AbstractModelVariablesModel::VariabilityColumn,
+            AbstractModelVariablesModel::NominalColumn,
+            AbstractModelVariablesModel::MinColumn,
+            AbstractModelVariablesModel::MaxColumn,
+    }) {
+        ui->modelVariablesListView->setColumnHidden(i, !visible);
+        ui->modelVariablesTreeView->setColumnHidden(i, !visible);
+    }
 }
 
 void MainWindow::simulationFinished() {
@@ -913,4 +957,8 @@ void MainWindow::buildPlatformBinary() {
     buildPlatformBinaryThread->removeBuilDirectory = dialog.removeBuilDirectory();
 
     buildPlatformBinaryThread->start();
+}
+
+void MainWindow::showModelVariablesListView(bool show) {
+    ui->modelVariablesStackedWidget->setCurrentWidget(show ? ui->listViewPage : ui->treeViewPage);
 }

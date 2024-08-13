@@ -19,7 +19,8 @@ extern "C" {
 #include "FMIBuildDescription.h"
 }
 
-class ModelVariablesItemModel;
+class ModelVariablesTableModel;
+class ModelVariablesTreeModel;
 class VariablesFilterModel;
 class SimulationThread;
 class BuildPlatformBinaryThread;
@@ -52,8 +53,9 @@ private:
     QString unzipdir;
     QMap<const FMIModelVariable*, QString> startValues;
     QList<const FMIModelVariable*> plotVariables;
-    ModelVariablesItemModel* variablesListModel = nullptr;
+    ModelVariablesTableModel* variablesListModel = nullptr;
     VariablesFilterModel* variablesFilterModel = nullptr;
+    ModelVariablesTreeModel* modelVariablesTreeModel = nullptr;
     SimulationThread* simulationThread = nullptr;
     BuildPlatformBinaryThread* buildPlatformBinaryThread = nullptr;
     QProgressDialog* progressDialog;
@@ -77,6 +79,6 @@ private slots:
     void setOptionalColumnsVisible(bool visible);
     void simulationFinished();
     void buildPlatformBinary();
-
+    void showModelVariablesListView(bool show);
 };
 #endif // MAINWINDOW_H
