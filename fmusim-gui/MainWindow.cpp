@@ -82,7 +82,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     QSettings settings;
 
-    QStringList recentFiles = settings.value("recentFiles").toStringList();
+    const QStringList recentFiles = settings.value("recentFiles").toStringList();
 
     for (const QString& filename : recentFiles.mid(0, 5)) {
         QFileInfo fileInfo(filename);
@@ -91,6 +91,8 @@ MainWindow::MainWindow(QWidget *parent)
         connect(link, &QLabel::linkActivated, this, &MainWindow::loadFMU);
         vbox->addWidget(link);
     }
+
+    ui->recentFilesGroupBox->setVisible(!recentFiles.isEmpty());
 
     // load the web engine, so the window doesn't jump later
     ui->plotWebEngineView->setHtml("");
