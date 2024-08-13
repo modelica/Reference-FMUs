@@ -34,5 +34,7 @@
         <file>buttons/light/new-window.svg</file>
         <file>buttons/dark/hammer.svg</file>
         <file>buttons/light/hammer.svg</file>
+        <file>buttons/dark/list.svg</file>
+        <file>buttons/light/list.svg</file>
     </qresource>
 </RCC>

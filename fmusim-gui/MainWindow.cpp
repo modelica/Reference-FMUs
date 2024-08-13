@@ -163,8 +163,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     variablesFilterModel->setSourceModel(variablesListModel);
 
-    ui->treeView->setModel(variablesFilterModel);
-    ui->treeView->sortByColumn(0, Qt::SortOrder::AscendingOrder);
+    ui->modelVariablesListView->setModel(variablesFilterModel);
+    ui->modelVariablesListView->sortByColumn(0, Qt::SortOrder::AscendingOrder);
 
     // tree model
     modelVariablesTreeModel = new ModelVariablesTreeModel(this);
@@ -182,6 +182,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->filterOutputVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterOutputVariables);
     connect(ui->filterLocalVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterLocalVariables);
     connect(ui->showOptionalColumnsToolButton, &QToolButton::clicked, this, &MainWindow::setOptionalColumnsVisible);
+    connect(ui->showListViewToolButton, &QToolButton::clicked, this, &MainWindow::showModelVariablesListView);
 
     connect(ui->inputPushButton, &QPushButton::clicked, this, &MainWindow::selectInputFile);
 
@@ -324,6 +325,12 @@ void MainWindow::loadFMU(const QString &filename) {
     }
 
     setWindowTitle("FMUSim " + QApplication::applicationVersion() + " - " + filename);
+
+    const bool structured = modelDescription->variableNamingConvention == FMIStructured;
+
+    ui->showListViewToolButton->setEnabled(structured);
+    ui->showListViewToolButton->setChecked(!structured);
+    showModelVariablesListView(!structured);
 
     if (modelDescription->defaultExperiment && modelDescription->defaultExperiment->stopTime) {
         stopTimeLineEdit->setText(modelDescription->defaultExperiment->stopTime);
@@ -490,6 +497,7 @@ void MainWindow::setColorScheme(Qt::ColorScheme colorScheme) {
     ui->filterOutputVariablesToolButton->setIcon(QIcon(":/buttons/" + theme + "/output-variable.svg"));
     ui->filterLocalVariablesToolButton->setIcon(QIcon(":/buttons/" + theme + "/local-variable.svg"));
     ui->showOptionalColumnsToolButton->setIcon(QIcon(":/buttons/" + theme + "/columns.svg"));
+    ui->showListViewToolButton->setIcon(QIcon(":/buttons/" + theme + "/list.svg"));
 
     this->colorScheme = colorScheme;
 
@@ -860,7 +868,7 @@ void MainWindow::unloadFMU() {
     };
 
     for (auto i : columnWidths.asKeyValueRange()) {
-        ui->treeView->setColumnWidth(i.first, i.second);
+        ui->modelVariablesListView->setColumnWidth(i.first, i.second);
         ui->modelVariablesTreeView->setColumnWidth(i.first, i.second);
     }
 
@@ -905,7 +913,7 @@ void MainWindow::setOptionalColumnsVisible(bool visible) {
             AbstractModelVariablesModel::MinColumn,
             AbstractModelVariablesModel::MaxColumn,
     }) {
-        ui->treeView->setColumnHidden(i, !visible);
+        ui->modelVariablesListView->setColumnHidden(i, !visible);
         ui->modelVariablesTreeView->setColumnHidden(i, !visible);
     }
 }
@@ -949,4 +957,8 @@ void MainWindow::buildPlatformBinary() {
     buildPlatformBinaryThread->removeBuilDirectory = dialog.removeBuilDirectory();
 
     buildPlatformBinaryThread->start();
+}
+
+void MainWindow::showModelVariablesListView(bool show) {
+    ui->modelVariablesStackedWidget->setCurrentWidget(show ? ui->listViewPage : ui->treeViewPage);
 }

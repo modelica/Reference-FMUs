@@ -79,6 +79,6 @@ private slots:
     void setOptionalColumnsVisible(bool visible);
     void simulationFinished();
     void buildPlatformBinary();
-
+    void showModelVariablesListView(bool show);
 };
 #endif // MAINWINDOW_H

@@ -62,7 +62,7 @@ QVariant ModelVariablesTreeModel::data(const QModelIndex &index, int role) const
     }
 
     if (index.column() == NameColumn && role == Qt::DecorationRole) {
-        return QIcon(":/variables/dark/float-parameter.svg");
+        return QIcon(":/variables/dark/subsystem.svg");
     }
 
     return QVariant();
