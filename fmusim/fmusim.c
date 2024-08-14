@@ -107,6 +107,7 @@ void printUsage() {
         "  --output-variable [name]         record a specific variable\n"
         "  --input-file [FILE]              read input from a CSV file\n"
         "  --output-file [FILE]             write output to a CSV file\n"
+        "  --logging-on                     enable FMU logging\n"
         "  --log-fmi-calls                  log FMI calls\n"
         "  --fmi-log-file [FILE]            set the FMI log file\n"
         "  --solver [euler|cvode]           the solver to use\n"
@@ -124,6 +125,7 @@ void printUsage() {
 
 int main(int argc, const char* argv[]) {
 
+    bool loggingOn = false;
     bool logFMICalls = false;
 
     FMIInterfaceType interfaceType = -1;
@@ -180,7 +182,9 @@ int main(int argc, const char* argv[]) {
 
         const char* v = argv[i];
 
-        if (!strcmp(v, "--log-fmi-calls")) {
+        if (!strcmp(v, "--logging-on")) {
+            loggingOn = true;
+        } else if (!strcmp(v, "--log-fmi-calls")) {
             logFMICalls = true;
         } else if (!strcmp(v, "--interface-type")) {
             if (!strcmp(argv[i + 1], "cs")) {
@@ -435,6 +439,8 @@ int main(int argc, const char* argv[]) {
     settings.recordIntermediateValues = recordIntermediateValues;
     settings.initialFMUStateFile      = initialFMUStateFile;
     settings.finalFMUStateFile        = finalFMUStateFile;
+    settings.visible                  = false;
+    settings.loggingOn                = loggingOn;
 
     if (!strcmp("euler", solver)) {
         settings.solverCreate = FMIEulerCreate;
