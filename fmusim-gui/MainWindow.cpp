@@ -75,6 +75,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     setColorScheme(QGuiApplication::styleHints()->colorScheme());
 
+    // context menu
+    contextMenu = new QMenu(this);
+
+    QAction* expandAllAction = contextMenu->addAction("Expand All");
+    connect(expandAllAction, &QAction::triggered, ui->modelVariablesTreeView, &QTreeView::expandAll);
+
+    QAction* collapseAllAction = contextMenu->addAction("Collapse All");
+    connect(collapseAllAction, &QAction::triggered, ui->modelVariablesTreeView, &QTreeView::collapseAll);
+
     // recent files
     QVBoxLayout* vbox = new QVBoxLayout();
 
@@ -176,6 +185,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(modelVariablesTreeModel, &ModelVariablesTreeModel::plotVariableDeselected, this, &MainWindow::removePlotVariable);
 
     ui->modelVariablesTreeView->setModel(modelVariablesTreeModel);
+
+    connect(ui->modelVariablesTreeView, &QTreeView::customContextMenuRequested, this, [this](const QPoint &pos) {
+        contextMenu->exec(ui->modelVariablesTreeView->mapToGlobal(pos));
+    });
 
     // variable tool buttons
     connect(ui->filterLineEdit, &QLineEdit::textChanged, variablesFilterModel, &VariablesFilterModel::setFilterFixedString);
