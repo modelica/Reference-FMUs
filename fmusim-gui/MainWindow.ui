@@ -861,7 +861,7 @@
      <item row="1" column="0">
       <widget class="QStackedWidget" name="modelVariablesStackedWidget">
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="treeViewPage">
         <layout class="QGridLayout" name="gridLayout_17">
@@ -879,6 +879,9 @@
          </property>
          <item row="0" column="0">
           <widget class="QTreeView" name="modelVariablesTreeView">
+           <property name="contextMenuPolicy">
+            <enum>Qt::CustomContextMenu</enum>
+           </property>
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
            </property>

@@ -7,6 +7,7 @@
 #include <QComboBox>
 #include <QFileSystemModel>
 #include <QMap>
+#include <QMenu>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -48,6 +49,7 @@ private:
     QDoubleValidator *stopTimeValidator;
     QFileSystemModel filesModel;
     QComboBox* interfaceTypeComboBox;
+    QMenu* contextMenu;
     FMIModelDescription* modelDescription = nullptr;
     FMIBuildDescription* buildDescription = nullptr;
     QString unzipdir;
@@ -80,5 +82,6 @@ private slots:
     void simulationFinished();
     void buildPlatformBinary();
     void showModelVariablesListView(bool show);
+
 };
 #endif // MAINWINDOW_H
