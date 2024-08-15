@@ -327,8 +327,8 @@ int main(int argc, const char* argv[]) {
         const char* name = startNames[i];
 
         for (size_t j = 0; j < modelDescription->nModelVariables; j++) {
-            if (!strcmp(name, modelDescription->modelVariables[j].name)) {
-                startVariables[i] = &modelDescription->modelVariables[j];
+            if (!strcmp(name, modelDescription->modelVariables[j]->name)) {
+                startVariables[i] = modelDescription->modelVariables[j];
                 break;
             }
         }
@@ -362,7 +362,7 @@ int main(int argc, const char* argv[]) {
 
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        FMIModelVariable* variable = modelDescription->modelVariables[i];
 
         if (nOutputVariableNames) {
 

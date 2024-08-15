@@ -183,7 +183,7 @@ typedef struct {
     FMITypeDefinition** typeDefinitions;
 
     size_t nModelVariables;
-    FMIModelVariable* modelVariables;
+    FMIModelVariable** modelVariables;
 
     size_t nOutputs;
     FMIUnknown* outputs;

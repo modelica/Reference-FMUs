@@ -137,14 +137,18 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 
     modelDescription->nModelVariables = xpathObj->nodesetval->nodeNr;
 
-    CALL(FMICalloc((void**)&modelDescription->modelVariables, xpathObj->nodesetval->nodeNr, sizeof(FMIModelVariable)));
+    CALL(FMICalloc((void**)&modelDescription->modelVariables, xpathObj->nodesetval->nodeNr, sizeof(FMIModelVariable*)));
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
         xmlNodePtr typeNode = xpathObj->nodesetval->nodeTab[i];
         xmlNodePtr variableNode = typeNode->parent;
 
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        FMIModelVariable* variable;
+        
+        CALL(FMICalloc((void**)&variable, 1, sizeof(FMIModelVariable)));
+
+        modelDescription->modelVariables[i] = variable;
 
         variable->line = variableNode->line;
 
@@ -219,7 +223,7 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 
     // check variabilities
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
-        const FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        const FMIModelVariable* variable = modelDescription->modelVariables[i];
         if (variable->type != FMIRealType && variable->type != FMIDiscreteRealType && variable->variability == FMIContinuous) {
             FMILogError("Variable \"%s\" is not of type Real but has variability = continuous.\n", variable->name);
             nProblems++;
@@ -290,7 +294,7 @@ static void readUnknownsFMI3(xmlXPathContextPtr xpathCtx, FMIModelDescription* m
         FMIValueReference valueReference = getUInt32Attribute(unknownNode, "valueReference");
 
         for (size_t j = 0; j < modelDescription->nModelVariables; j++) {
-            FMIModelVariable* variable = &modelDescription->modelVariables[j];
+            FMIModelVariable* variable = modelDescription->modelVariables[j];
             if (variable->valueReference == valueReference) {
                 (*unknowns)[i].modelVariable = variable;
                 break;
@@ -508,14 +512,18 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/ModelVariables/ScalarVariable/*[self::Real or self::Integer or self::Enumeration or self::Boolean or self::String]", xpathCtx);
 
     modelDescription->nModelVariables = xpathObj->nodesetval->nodeNr;
-    CALL(FMICalloc((void**)&modelDescription->modelVariables, modelDescription->nModelVariables, sizeof(FMIModelVariable)));
+    CALL(FMICalloc((void**)&modelDescription->modelVariables, modelDescription->nModelVariables, sizeof(FMIModelVariable*)));
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
         const xmlNodePtr typeNode = xpathObj->nodesetval->nodeTab[i];
         const xmlNodePtr variableNode = typeNode->parent;
 
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        FMIModelVariable* variable;
+        
+        CALL(FMICalloc((void**)&variable, 1, sizeof(FMIModelVariable)));
+
+        modelDescription->modelVariables[i] = variable;
 
         variable->name        = (char*)xmlGetProp(variableNode, (xmlChar*)"name");        
         variable->description = (char*)xmlGetProp(variableNode, (xmlChar*)"description");
@@ -618,7 +626,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
     // resolve derivatives
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        FMIModelVariable* variable = modelDescription->modelVariables[i];
         if (variable->derivative) {
             char* literal = (char*)variable->derivative;
             variable->derivative = FMIModelVariableForIndexLiteral(modelDescription, literal);
@@ -632,7 +640,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
     // check variabilities
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        FMIModelVariable* variable = modelDescription->modelVariables[i];
         if (variable->type != FMIRealType && variable->type != FMIDiscreteRealType && variable->variability == FMIContinuous) {
             FMILogError("Variable \"%s\" is not of type Real but has variability = continuous.\n", variable->name);
             nProblems++;
@@ -854,11 +862,16 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         xpathCtx);
 
     modelDescription->nModelVariables = xpathObj->nodesetval->nodeNr;
-    CALL(FMICalloc((void**)&modelDescription->modelVariables, xpathObj->nodesetval->nodeNr, sizeof(FMIModelVariable)));
+
+    CALL(FMICalloc((void**)&modelDescription->modelVariables, xpathObj->nodesetval->nodeNr, sizeof(FMIModelVariable*)));
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        FMIModelVariable* variable;
+
+        CALL(FMICalloc((void**)&variable, 1, sizeof(FMIModelVariable)));
+
+        modelDescription->modelVariables[i] = variable;
 
         xmlNodePtr variableNode = xpathObj->nodesetval->nodeTab[i];
 
@@ -1053,7 +1066,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
     // check variabilities
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        FMIModelVariable* variable = modelDescription->modelVariables[i];
         
         if (variable->type != FMIFloat32Type && variable->type != FMIFloat64Type && variable->variability == FMIContinuous) {
             FMILogError("Variable \"%s\" is not of type Float{32|64} but has variability = continuous.\n", variable->name);
@@ -1064,7 +1077,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
     // resolve derivatives
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        FMIModelVariable* variable = modelDescription->modelVariables[i];
         
         if (variable->derivative) {
             char* literal = (char*)variable->derivative;
@@ -1284,13 +1297,19 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
 
     // model variables
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
-        xmlFree((void*)variable->name);
-        xmlFree((void*)variable->min);
-        xmlFree((void*)variable->max);
-        xmlFree((void*)variable->nominal);
-        xmlFree((void*)variable->start);
-        xmlFree((void*)variable->description);
+
+        FMIModelVariable* variable = modelDescription->modelVariables[i];
+
+        if (variable) {
+            xmlFree((void*)variable->name);
+            xmlFree((void*)variable->min);
+            xmlFree((void*)variable->max);
+            xmlFree((void*)variable->nominal);
+            xmlFree((void*)variable->start);
+            xmlFree((void*)variable->description);
+
+            FMIFree(&variable);
+        }
     }
 
     FMIFree((void**)&modelDescription->modelVariables);
@@ -1360,7 +1379,7 @@ FMIModelVariable* FMIModelVariableForName(const FMIModelDescription* modelDescri
 
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        FMIModelVariable* variable = modelDescription->modelVariables[i];
         
         if (!strcmp(variable->name, name)) {
             return variable;
@@ -1374,7 +1393,7 @@ FMIModelVariable* FMIModelVariableForValueReference(const FMIModelDescription* m
 
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        FMIModelVariable* variable = modelDescription->modelVariables[i];
 
         if (variable->valueReference == valueReference) {
             return variable;
@@ -1392,7 +1411,7 @@ FMIModelVariable* FMIModelVariableForIndexLiteral(const FMIModelDescription* mod
         return NULL;
     }
 
-    return &modelDescription->modelVariables[i - 1];
+    return modelDescription->modelVariables[i - 1];
 }
 
 static bool isLegalCombination(FMIModelVariable* variable) {
@@ -1529,7 +1548,7 @@ size_t FMIValidateModelDescription(const FMIModelDescription* modelDescription) 
 
         for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-            const FMIModelVariable* variable = &modelDescription->modelVariables[i];
+            const FMIModelVariable* variable = modelDescription->modelVariables[i];
 
             set_input_string(variable->name);
 
@@ -1544,7 +1563,7 @@ size_t FMIValidateModelDescription(const FMIModelDescription* modelDescription) 
     // check combinations of causality, variability, and initial
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        FMIModelVariable* variable = modelDescription->modelVariables[i];
 
         if (!isLegalCombination(variable)) {
             nProblems++;
@@ -1556,7 +1575,7 @@ size_t FMIValidateModelDescription(const FMIModelDescription* modelDescription) 
 
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        FMIModelVariable* variable = modelDescription->modelVariables[i];
 
         if (variable->causality == FMIOutput) {
             nOutputs++;
@@ -1588,7 +1607,7 @@ void FMIDumpModelDescription(FMIModelDescription* modelDescription, FILE* file) 
     fprintf(file, "Name                           Description\n");
     fprintf(file, "\n");
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
-        fprintf(file, "%-30s %s\n", modelDescription->modelVariables[i].name, modelDescription->modelVariables[i].description);
+        fprintf(file, "%-30s %s\n", modelDescription->modelVariables[i]->name, modelDescription->modelVariables[i]->description);
     }
 
 }
