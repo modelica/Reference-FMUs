@@ -83,7 +83,7 @@ void SimulationThread::run() {
 
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-        FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        FMIModelVariable* variable = modelDescription->modelVariables[i];
 
         if (variable->variability == FMITunable || variable->variability == FMIContinuous || variable->variability == FMIDiscrete) {
             recordedVariables << variable;

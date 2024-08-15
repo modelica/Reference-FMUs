@@ -183,19 +183,19 @@ typedef struct {
     FMITypeDefinition** typeDefinitions;
 
     size_t nModelVariables;
-    FMIModelVariable* modelVariables;
+    FMIModelVariable** modelVariables;
 
     size_t nOutputs;
-    FMIUnknown* outputs;
+    FMIUnknown** outputs;
 
     size_t nContinuousStates;
-    FMIUnknown* derivatives;
+    FMIUnknown** derivatives;
 
     size_t nInitialUnknowns;
-    FMIUnknown* initialUnknowns;
+    FMIUnknown** initialUnknowns;
 
     size_t nEventIndicators;
-    FMIUnknown* eventIndicators;
+    FMIUnknown** eventIndicators;
 
 } FMIModelDescription;
 
