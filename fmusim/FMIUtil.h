@@ -30,7 +30,7 @@ FMIStatus FMIGetNumberOfVariableValues(
 FMIStatus FMIGetNumberOfUnkownValues(
     FMIInstance* instance,
     size_t nUnknowns,
-    const FMIUnknown unknowns[],
+    const FMIUnknown* unknowns[],
     size_t* nValues);
 
 FMIStatus FMIParseValues(FMIMajorVersion fmiMajorVersion, FMIVariableType type, const char* literal, size_t* nValues, void** values);

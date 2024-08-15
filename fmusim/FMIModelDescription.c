@@ -248,7 +248,7 @@ TERMINATE:
     return modelDescription;
 }
 
-static void readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescription* modelDescription, const char* path, size_t* nUnkonwns, FMIUnknown** unknowns) {
+static FMIStatus readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescription* modelDescription, const char* path, size_t* nUnkonwns, FMIUnknown*** unknowns) {
 
     FMIStatus status = FMIOK;
 
@@ -256,15 +256,21 @@ static void readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescription* m
     
     *nUnkonwns = xpathObj->nodesetval->nodeNr;
 
-    CALL(FMICalloc((void**)unknowns, *nUnkonwns, sizeof(FMIUnknown)));
+    CALL(FMICalloc((void**)unknowns, *nUnkonwns, sizeof(FMIUnknown*)));
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
         xmlNodePtr unkownNode = xpathObj->nodesetval->nodeTab[i];
 
+        FMIUnknown* unknown;
+
+        CALL(FMICalloc((void**)&unknown, 1, sizeof(FMIUnknown)));
+
+        (*unknowns)[i] = unknown;
+
         const char* indexLiteral = (char*)xmlGetProp(unkownNode, (xmlChar*)"index");
 
-        (*unknowns)[i].modelVariable = FMIModelVariableForIndexLiteral(modelDescription, indexLiteral);
+        unknown->modelVariable = FMIModelVariableForIndexLiteral(modelDescription, indexLiteral);
 
         xmlFree((void*)indexLiteral);
     }
@@ -273,11 +279,10 @@ static void readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescription* m
 
 TERMINATE:
 
-    // TODO
-    ;
+    return status;
 }
 
-static void readUnknownsFMI3(xmlXPathContextPtr xpathCtx, FMIModelDescription* modelDescription, const char* path, size_t* nUnkonwns, FMIUnknown** unknowns) {
+static FMIStatus readUnknownsFMI3(xmlXPathContextPtr xpathCtx, FMIModelDescription* modelDescription, const char* path, size_t* nUnkonwns, FMIUnknown*** unknowns) {
 
     FMIStatus status = FMIOK;
 
@@ -285,18 +290,26 @@ static void readUnknownsFMI3(xmlXPathContextPtr xpathCtx, FMIModelDescription* m
 
     *nUnkonwns = xpathObj->nodesetval->nodeNr;
 
-    CALL(FMICalloc((void**)unknowns, *nUnkonwns, sizeof(FMIUnknown)));
+    CALL(FMICalloc((void**)unknowns, *nUnkonwns, sizeof(FMIUnknown*)));
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
         xmlNodePtr unknownNode = xpathObj->nodesetval->nodeTab[i];
 
+        FMIUnknown* unknown;
+
+        CALL(FMICalloc((void**)&unknown, 1, sizeof(FMIUnknown)));
+
+        (*unknowns)[i] = unknown;
+
         FMIValueReference valueReference = getUInt32Attribute(unknownNode, "valueReference");
 
         for (size_t j = 0; j < modelDescription->nModelVariables; j++) {
+
             FMIModelVariable* variable = modelDescription->modelVariables[j];
+            
             if (variable->valueReference == valueReference) {
-                (*unknowns)[i].modelVariable = variable;
+                unknown->modelVariable = variable;
                 break;
             }
         }
@@ -306,8 +319,7 @@ static void readUnknownsFMI3(xmlXPathContextPtr xpathCtx, FMIModelDescription* m
 
 TERMINATE:
 
-    // TODO
-    ;
+    return status;
 }
 
 static FMIStatus readSourceFiles(xmlXPathContextPtr xpathCtx, const char* path, size_t* nSourceFiles, char*** sourceFiles) {
@@ -618,9 +630,9 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
     xmlXPathFreeObject(xpathObj);
 
-    readUnknownsFMI2(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/Outputs/Unknown", &modelDescription->nOutputs, &modelDescription->outputs);
-    readUnknownsFMI2(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/Derivatives/Unknown", &modelDescription->nContinuousStates, &modelDescription->derivatives);
-    readUnknownsFMI2(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/InitialUnknowns/Unknown", &modelDescription->nInitialUnknowns, &modelDescription->initialUnknowns);
+    CALL(readUnknownsFMI2(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/Outputs/Unknown", &modelDescription->nOutputs, &modelDescription->outputs));
+    CALL(readUnknownsFMI2(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/Derivatives/Unknown", &modelDescription->nContinuousStates, &modelDescription->derivatives));
+    CALL(readUnknownsFMI2(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/InitialUnknowns/Unknown", &modelDescription->nInitialUnknowns, &modelDescription->initialUnknowns));
 
     xmlXPathFreeContext(xpathCtx);
 
@@ -1056,10 +1068,10 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
     xmlXPathFreeObject(xpathObj);
 
-    readUnknownsFMI3(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/Output", &modelDescription->nOutputs, &modelDescription->outputs);
-    readUnknownsFMI3(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/ContinuousStateDerivative", &modelDescription->nContinuousStates, &modelDescription->derivatives);
-    readUnknownsFMI3(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/InitialUnknown", &modelDescription->nInitialUnknowns, &modelDescription->initialUnknowns);
-    readUnknownsFMI3(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/EventIndicator", &modelDescription->nEventIndicators, &modelDescription->eventIndicators);
+    CALL(readUnknownsFMI3(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/Output", &modelDescription->nOutputs, &modelDescription->outputs));
+    CALL(readUnknownsFMI3(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/ContinuousStateDerivative", &modelDescription->nContinuousStates, &modelDescription->derivatives));
+    CALL(readUnknownsFMI3(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/InitialUnknown", &modelDescription->nInitialUnknowns, &modelDescription->initialUnknowns));
+    CALL(readUnknownsFMI3(xpathCtx, modelDescription, "/fmiModelDescription/ModelStructure/EventIndicator", &modelDescription->nEventIndicators, &modelDescription->eventIndicators));
 
     xmlXPathFreeContext(xpathCtx);
 

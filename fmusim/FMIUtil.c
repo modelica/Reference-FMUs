@@ -140,7 +140,7 @@ TERMINATE:
 FMIStatus FMIGetNumberOfUnkownValues(
     FMIInstance* instance,
     size_t nUnknowns,
-    const FMIUnknown unknowns[],
+    const FMIUnknown* unknowns[],
     size_t* nValues) {
 
      FMIStatus status = FMIOK;
@@ -149,7 +149,7 @@ FMIStatus FMIGetNumberOfUnkownValues(
 
      for (size_t i = 0; i < nUnknowns; i++) {
 
-         const FMIUnknown* unknown = &unknowns[i];
+         const FMIUnknown* unknown = unknowns[i];
 
          size_t n;
 
