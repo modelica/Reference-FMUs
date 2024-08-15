@@ -74,7 +74,7 @@ void ModelVariablesTreeModel::setModelDescription(const FMIModelDescription *mod
 
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-        const FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        const FMIModelVariable* variable = modelDescription->modelVariables[i];
 
         QString name = variable->name;
         QString prefix;

@@ -8,7 +8,7 @@ ModelVariablesTableModel::ModelVariablesTableModel(QObject *parent)
 }
 
 QModelIndex ModelVariablesTableModel::index(int row, int column, const QModelIndex &parent) const {
-    FMIModelVariable* variable = &modelDescription->modelVariables[row];
+    FMIModelVariable* variable = modelDescription->modelVariables[row];
     return createIndex(row, column, variable);
 }
 

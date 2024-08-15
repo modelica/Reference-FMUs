@@ -235,8 +235,9 @@ void MainWindow::setCurrentPage(QWidget *page) {
 }
 
 MainWindow::~MainWindow() {
-    unloadFMU();
     delete ui;
+    ui = nullptr;
+    unloadFMU();
 }
 
 void MainWindow::logMessage(const char* message, va_list args) {
@@ -320,7 +321,7 @@ void MainWindow::loadFMU(const QString &filename) {
 
     for (size_t i = 0; i < modelDescription->nModelVariables && plotVariables.size() < 5; i++) {
 
-        const FMIModelVariable* variable = &modelDescription->modelVariables[i];
+        const FMIModelVariable* variable = modelDescription->modelVariables[i];
 
         if (variable->causality == FMIOutput) {
             plotVariables << variable;
@@ -331,7 +332,7 @@ void MainWindow::loadFMU(const QString &filename) {
 
         for (size_t i = 0; i < modelDescription->nModelVariables && plotVariables.size() < 5; i++) {
 
-            const FMIModelVariable* variable = &modelDescription->modelVariables[i];
+            const FMIModelVariable* variable = modelDescription->modelVariables[i];
 
             if (variable->variability == FMIContinuous) {
                 plotVariables << variable;
@@ -866,6 +867,10 @@ void MainWindow::unloadFMU() {
     }
 
     setWindowTitle("FMUSim " + QApplication::applicationVersion());
+
+    if (!ui) {
+        return;
+    }
 
     ui->logPlainTextEdit->clear();
 
