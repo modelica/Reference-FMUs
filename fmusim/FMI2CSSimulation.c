@@ -18,7 +18,7 @@ FMIStatus FMI2CSSimulate(const FMISimulationSettings* s) {
 #ifdef _WIN32
     snprintf(resourceURI, FMI_PATH_MAX, "%s\\resources\\", s->unzipdir);
 #else
-    snprintf(fmuResourceLocation, FMI_PATH_MAX, "%s/resources/", s->unzipdir);
+    snprintf(resourceURI, FMI_PATH_MAX, "%s/resources/", s->unzipdir);
 #endif
 
     CALL(FMIPathToURI(resourceURI, resourceURI, FMI_PATH_MAX));
