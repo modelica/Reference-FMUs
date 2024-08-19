@@ -3,4 +3,4 @@
 #include "FMISimulation.h"
 
 
-FMIStatus FMI2MESimulate(const char* resourceURI, const FMISimulationSettings* s);
+FMIStatus FMI2MESimulate(const FMISimulationSettings* s);

@@ -72,43 +72,49 @@ void ModelVariablesTreeModel::setModelDescription(const FMIModelDescription *mod
 
     beginResetModel();
 
-    for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
+    this->modelDescription = modelDescription;
 
-        const FMIModelVariable* variable = modelDescription->modelVariables[i];
+    if (modelDescription) {
 
-        QString name = variable->name;
-        QString prefix;
-        QString suffix;
+        for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
 
-        if (name.startsWith("der(") && name.endsWith(")")) {
-            prefix = "der(";
-            suffix = ")";
-            name = name.sliced(4, name.length() - 5);
-        }
+            const FMIModelVariable* variable = modelDescription->modelVariables[i];
 
-        const QStringList segments = QString(name).split('.');
+            QString name = variable->name;
+            QString prefix;
+            QString suffix;
 
-        TreeItem* parentItem = rootItem;
-
-        for (const QString& segment : segments.sliced(0, segments.length() - 1)) {
-
-            TreeItem* p = parentItem->find(segment);
-
-            if (!p) {
-                p = new TreeItem();
-                p->name = segment;
-                parentItem->addChild(p);
+            if (name.startsWith("der(") && name.endsWith(")")) {
+                prefix = "der(";
+                suffix = ")";
+                name = name.sliced(4, name.length() - 5);
             }
 
-            parentItem = p;
+            const QStringList segments = QString(name).split('.');
+
+            TreeItem* parentItem = rootItem;
+
+            for (const QString& segment : segments.sliced(0, segments.length() - 1)) {
+
+                TreeItem* p = parentItem->find(segment);
+
+                if (!p) {
+                    p = new TreeItem();
+                    p->name = segment;
+                    parentItem->addChild(p);
+                }
+
+                parentItem = p;
+            }
+
+            TreeItem* treeItem = new TreeItem();
+
+            treeItem->name = prefix + segments.last() + suffix;
+            treeItem->modelVariable = variable;
+
+            parentItem->addChild(treeItem);
         }
 
-        TreeItem* treeItem = new TreeItem();
-
-        treeItem->name = prefix + segments.last() + suffix;
-        treeItem->modelVariable = variable;
-
-        parentItem->addChild(treeItem);
     }
 
     endResetModel();

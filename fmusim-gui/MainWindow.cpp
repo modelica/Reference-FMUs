@@ -412,6 +412,7 @@ void MainWindow::loadFMU(const QString &filename) {
     ui->plotWebEngineView->load(QUrl("qrc:/plot.html"));
 
     // enable widgets
+    ui->dockWidget->show();
     ui->showSideBarAction->setEnabled(true);
     ui->showSideBarAction->setChecked(true);
 
@@ -642,6 +643,10 @@ void MainWindow::updatePlot() {
         return;
     }
 
+    std::sort(plotVariables.begin(), plotVariables.end(), [](const FMIModelVariable* a, const FMIModelVariable* b) {
+        return QString(a->name) > QString(b->name);
+    });
+
     const QString javaScript = PlotUtil::createPlot(
         simulationThread->settings->initialRecorder,
         simulationThread->settings->recorder,
@@ -654,6 +659,9 @@ void MainWindow::updatePlot() {
 }
 
 void MainWindow::unloadFMU() {
+
+    variablesListModel->setModelDescription(nullptr);
+    modelVariablesTreeModel->setModelDescription(nullptr);
 
     if (modelDescription) {
         FMIFreeModelDescription(modelDescription);

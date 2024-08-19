@@ -11,10 +11,8 @@
 #include "FMI3MESimulation.h"
 #include "FMIUtil.h"
 
-#define FMI_PATH_MAX 4096
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
-
 
 FMIStatus FMIApplyStartValues(FMIInstance* S, const FMISimulationSettings* settings) {
 
@@ -85,46 +83,30 @@ FMIStatus FMISimulate(const FMISimulationSettings* settings) {
 
     FMIStatus status = FMIOK;
 
-    const FMIModelDescription* modelDescription = settings->modelDescription;
-    const char* unzipdir = settings->unzipdir;
+    const bool cs = settings->interfaceType == FMICoSimulation;
 
-    char resourcePath[FMI_PATH_MAX] = "";
-
-#ifdef _WIN32
-    snprintf(resourcePath, FMI_PATH_MAX, "%s\\resources\\", unzipdir);
-#else
-    snprintf(resourcePath, FMI_PATH_MAX, "%s/resources/", unzipdir);
-#endif
-
-    if (modelDescription->fmiMajorVersion == FMIMajorVersion1) {
-
-        if (settings->interfaceType == FMICoSimulation) {
-            char fmuLocation[FMI_PATH_MAX] = "";
-            CALL(FMIPathToURI(unzipdir, fmuLocation, FMI_PATH_MAX));
-            CALL(FMI1CSSimulate(fmuLocation, settings));
+    switch (settings->modelDescription->fmiMajorVersion) {
+    case FMIMajorVersion1:
+        if (cs) {
+            CALL(FMI1CSSimulate(settings));
         } else {
             CALL(FMI1MESimulate(settings));
         }
-
-    } else if (modelDescription->fmiMajorVersion == FMIMajorVersion2) {
-
-        char resourceURI[FMI_PATH_MAX] = "";
-        CALL(FMIPathToURI(resourcePath, resourceURI, FMI_PATH_MAX));
-
-        if (settings->interfaceType == FMICoSimulation) {
-            CALL(FMI2CSSimulate(resourceURI, settings));
+        break;
+    case FMIMajorVersion2:
+        if (cs) {
+            CALL(FMI2CSSimulate(settings));
         } else {
-            CALL(FMI2MESimulate(resourceURI, settings));
+            CALL(FMI2MESimulate(settings));
         }
-
-    } else {
-
-        if (settings->interfaceType == FMICoSimulation) {
-            CALL(FMI3CSSimulate(resourcePath, settings));
+        break;
+    case FMIMajorVersion3:
+        if (cs) {
+            CALL(FMI3CSSimulate(settings));
         } else {
-            CALL(FMI3MESimulate(resourcePath, settings));
+            CALL(FMI3MESimulate(settings));
         }
-
+        break;
     }
 
 TERMINATE:

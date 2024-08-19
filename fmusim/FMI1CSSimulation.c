@@ -1,14 +1,20 @@
 #include "FMI1.h"
 #include "FMI1CSSimulation.h"
 
+#define FMI_PATH_MAX 4096
+
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMIStatus FMI1CSSimulate(const char* fmuLocation, const FMISimulationSettings * s) {
+FMIStatus FMI1CSSimulate(const FMISimulationSettings * s) {
 
     FMIStatus status = FMIOK;
 
     FMIInstance* S = s->S;
+
+    char fmuLocation[FMI_PATH_MAX] = "";
+
+    CALL(FMIPathToURI(s->unzipdir, fmuLocation, FMI_PATH_MAX));
 
     CALL(FMI1InstantiateSlave(S,
         s->modelDescription->coSimulation->modelIdentifier,  // modelIdentifier

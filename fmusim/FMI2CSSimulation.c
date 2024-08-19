@@ -3,13 +3,25 @@
 #include "FMI2CSSimulation.h"
 
 
+#define FMI_PATH_MAX 4096
+
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
-FMIStatus FMI2CSSimulate(const char* resourceURI, const FMISimulationSettings* s) {
+FMIStatus FMI2CSSimulate(const FMISimulationSettings* s) {
 
     FMIStatus status = FMIOK;
 
     FMIInstance* S = s->S;
+
+    char resourceURI[FMI_PATH_MAX] = "";
+
+#ifdef _WIN32
+    snprintf(resourceURI, FMI_PATH_MAX, "%s\\resources\\", s->unzipdir);
+#else
+    snprintf(fmuResourceLocation, FMI_PATH_MAX, "%s/resources/", s->unzipdir);
+#endif
+
+    CALL(FMIPathToURI(resourceURI, resourceURI, FMI_PATH_MAX));
 
     CALL(FMI2Instantiate(S,
         resourceURI,

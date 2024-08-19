@@ -6,6 +6,8 @@
 #include "FMI3CSSimulation.h"
 
 
+#define FMI_PATH_MAX 4096
+
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
@@ -30,7 +32,7 @@ static void recordIntermediateValues(
     *earlyReturnRequested = fmi3False;
 }
 
-FMIStatus FMI3CSSimulate(const char* resourcePath, const FMISimulationSettings* s) {
+FMIStatus FMI3CSSimulate(const FMISimulationSettings* s) {
 
     FMIStatus status = FMIOK;
 
@@ -55,6 +57,14 @@ FMIStatus FMI3CSSimulate(const char* resourcePath, const FMISimulationSettings* 
     fmi3ValueReference* requiredIntermediateVariables = NULL;
     size_t nRequiredIntermediateVariables = 0;
     fmi3IntermediateUpdateCallback intermediateUpdate = NULL;
+
+    char resourcePath[FMI_PATH_MAX] = "";
+
+#ifdef _WIN32
+    snprintf(resourcePath, FMI_PATH_MAX, "%s\\resources\\", s->unzipdir);
+#else
+    snprintf(resourcePath, FMI_PATH_MAX, "%s/resources/", s->unzipdir);
+#endif
 
     if (s->recordIntermediateValues) {
         requiredIntermediateVariables = (fmi3ValueReference*)s->recorder->valueReferences;

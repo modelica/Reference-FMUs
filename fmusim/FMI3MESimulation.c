@@ -6,10 +6,12 @@
 #include "FMI3MESimulation.h"
 
 
+#define FMI_PATH_MAX 4096
+
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMIStatus FMI3MESimulate(const char* resourcePath, const FMISimulationSettings * s) {
+FMIStatus FMI3MESimulate(const FMISimulationSettings * s) {
 
     FMIStatus status = FMIOK;
 
@@ -39,6 +41,14 @@ FMIStatus FMI3MESimulate(const char* resourcePath, const FMISimulationSettings *
     fmi3Boolean resetSolver;
 
     FMISolver* solver = NULL;
+
+    char resourcePath[FMI_PATH_MAX] = "";
+
+#ifdef _WIN32
+    snprintf(resourcePath, FMI_PATH_MAX, "%s\\resources\\", s->unzipdir);
+#else
+    snprintf(resourcePath, FMI_PATH_MAX, "%s/resources/", s->unzipdir);
+#endif
 
     CALL(FMI3InstantiateModelExchange(S,
         s->modelDescription->instantiationToken,
@@ -92,6 +102,7 @@ FMIStatus FMI3MESimulate(const char* resourcePath, const FMISimulationSettings *
         CALL(FMI3EnterContinuousTimeMode(S));
     }
 
+    CALL(FMIRecorderUpdateSizes(s->initialRecorder));
     CALL(FMIRecorderUpdateSizes(s->recorder));
 
     FMISolverParameters solverFunctions = {

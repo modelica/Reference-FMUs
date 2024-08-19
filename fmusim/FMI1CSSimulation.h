@@ -3,4 +3,4 @@
 #include "FMISimulation.h"
 
 
-FMIStatus FMI1CSSimulate(const char* fmuLocation, const FMISimulationSettings* s);
+FMIStatus FMI1CSSimulate(const FMISimulationSettings* s);

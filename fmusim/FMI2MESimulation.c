@@ -6,15 +6,25 @@
 #include "FMI2MESimulation.h"
 
 
+#define FMI_PATH_MAX 4096
+
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
-FMIStatus FMI2MESimulate(const char* resourceURI, const FMISimulationSettings* s) {
+FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
     FMIStatus status = FMIOK;
 
     FMIInstance* S = s->S;
 
     const bool needsCompletedIntegratorStep = s->modelDescription->modelExchange->needsCompletedIntegratorStep;
+
+    char resourceURI[FMI_PATH_MAX] = "";
+
+#ifdef _WIN32
+    snprintf(resourceURI, FMI_PATH_MAX, "%s\\resources\\", s->unzipdir);
+#else
+    snprintf(fmuResourceLocation, FMI_PATH_MAX, "%s/resources/", s->unzipdir);
+#endif
 
     fmi2Real time;
 

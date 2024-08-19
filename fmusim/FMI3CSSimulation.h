@@ -3,8 +3,4 @@
 #include "FMISimulation.h"
 
 
-FMIStatus FMI3CSSimulate(
-    //FMIInstance* S, 
-    //const FMIModelDescription* modelDescription,
-    const char* resourcePath,
-    const FMISimulationSettings* settings);
+FMIStatus FMI3CSSimulate(const FMISimulationSettings* settings);
