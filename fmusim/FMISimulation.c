@@ -88,6 +88,7 @@ FMIStatus FMISimulate(const FMISimulationSettings* settings) {
     FMIInstance* S = settings->S;
     const FMIModelDescription* modelDescription = settings->modelDescription;
     const char* unzipdir = settings->unzipdir;
+    FMIRecorder* initialRecorder = settings->initialRecorder;
     FMIRecorder* recorder = settings->recorder;
     FMIStaticInput* input = settings->input;
 
@@ -123,7 +124,7 @@ FMIStatus FMISimulate(const FMISimulationSettings* settings) {
     } else {
 
         if (settings->interfaceType == FMICoSimulation) {
-            CALL(FMI3CSSimulate(S, modelDescription, resourcePath, recorder, input, settings));
+            CALL(FMI3CSSimulate(/*S, modelDescription,*/ resourcePath, settings));
         } else {
             CALL(FMI3MESimulate(S, modelDescription, resourcePath, recorder, input, settings));
         }

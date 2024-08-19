@@ -30,14 +30,20 @@ static void recordIntermediateValues(
     *earlyReturnRequested = fmi3False;
 }
 
-FMIStatus FMI3CSSimulate(FMIInstance* S,
-    const FMIModelDescription * modelDescription,
+FMIStatus FMI3CSSimulate(//FMIInstance* S,
     const char* resourcePath,
-    FMIRecorder* recorder,
-    const FMIStaticInput * input,
+    //FMIRecorder* initialRecorder,
+    //FMIRecorder* recorder,
+    //const FMIStaticInput * input,
     const FMISimulationSettings * settings) {
 
     FMIStatus status = FMIOK;
+
+    FMIInstance* S = settings->S;
+    const FMIModelDescription* modelDescription = settings->modelDescription;
+    FMIRecorder* initialRecorder = settings->initialRecorder;
+    FMIRecorder* recorder = settings->recorder;
+    FMIStaticInput* input = settings->input;
 
     fmi3Boolean inputEvent = fmi3False;
     fmi3Boolean eventEncountered = fmi3False;
@@ -118,8 +124,10 @@ FMIStatus FMI3CSSimulate(FMIInstance* S,
         }
     }
 
+    CALL(FMIRecorderUpdateSizes(initialRecorder));
     CALL(FMIRecorderUpdateSizes(recorder));
 
+    CALL(FMISample(S, time, initialRecorder));
     CALL(FMISample(S, time, recorder));
 
     size_t nSteps = 0;

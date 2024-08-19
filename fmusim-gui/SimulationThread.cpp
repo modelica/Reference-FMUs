@@ -103,10 +103,13 @@ void SimulationThread::run() {
         }
     }
 
+    FMIRecorder* initialRecorder = FMICreateRecorder(S, modelDescription->nModelVariables, (const FMIModelVariable**)modelDescription->modelVariables);
+
     FMIRecorder* recorder = FMICreateRecorder(S, recordedVariables.size(), (const FMIModelVariable**)recordedVariables.data());
 
     settings->S = S;
     settings->modelDescription = modelDescription;
+    settings->initialRecorder = initialRecorder;
     settings->recorder = recorder;
     settings->input = input;
 

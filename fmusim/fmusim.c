@@ -153,6 +153,7 @@ int main(int argc, const char* argv[]) {
     FMIModelDescription* modelDescription = NULL;
     FMIInstance* S = NULL;
     FMIStaticInput* input = NULL;
+    FMIRecorder* initialRecorder = NULL;
     FMIRecorder* recorder = NULL;
     const char* unzipdir = NULL;
     FMIStatus status = FMIFatal;
@@ -352,10 +353,18 @@ int main(int argc, const char* argv[]) {
 
     CALL(FMILoadPlatformBinary(S, platformBinaryPath));
 
+    initialRecorder = FMICreateRecorder(S, modelDescription->nModelVariables, modelDescription->modelVariables);
+
+    if (!initialRecorder) {
+        printf("Failed to create initial variable recorder.\n");
+        status = FMIError;
+        goto TERMINATE;
+    }
+
     size_t nOutputVariables = 0;
 
     void* outputVariablesMemory = NULL;
-    
+
     CALL(FMICalloc(&outputVariablesMemory, modelDescription->nModelVariables, sizeof(FMIModelVariable*)));
 
     FMIModelVariable** outputVariables = outputVariablesMemory;
@@ -383,7 +392,7 @@ int main(int argc, const char* argv[]) {
     recorder = FMICreateRecorder(S, nOutputVariables, (const FMIModelVariable**)outputVariables);
 
     if (!recorder) {
-        printf("Failed to open result file %s for writing.\n", outputFile);
+        printf("Failed to create output variable recorder.\n");
         status = FMIError;
         goto TERMINATE;
     }
@@ -458,11 +467,12 @@ int main(int argc, const char* argv[]) {
         goto TERMINATE;
     }
 
-    settings.S = S;
+    settings.S                = S;
     settings.modelDescription = modelDescription;
-    settings.unzipdir = unzipdir;
-    settings.recorder = recorder;
-    settings.input = input;
+    settings.unzipdir         = unzipdir;
+    settings.initialRecorder  = initialRecorder;
+    settings.recorder         = recorder;
+    settings.input            = input;
  
     status = FMISimulate(&settings);
 
@@ -484,6 +494,7 @@ int main(int argc, const char* argv[]) {
 TERMINATE:
 
     FMIFreeInput(input);
+    FMIFreeRecorder(initialRecorder);
     FMIFreeRecorder(recorder);
     FMIFreeModelDescription(modelDescription);
     FMIFreeInstance(S);

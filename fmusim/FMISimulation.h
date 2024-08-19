@@ -15,6 +15,7 @@ typedef struct FMISimulationSettings {
     FMIInstance* S;
     const FMIModelDescription* modelDescription;
     const char* unzipdir;
+    FMIRecorder* initialRecorder;
     FMIRecorder* recorder;
     FMIStaticInput* input;
     FMIInterfaceType interfaceType;

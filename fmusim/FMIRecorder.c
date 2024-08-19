@@ -117,6 +117,10 @@ FMIStatus FMIRecorderUpdateSizes(FMIRecorder* recorder) {
 
     FMIStatus status = FMIOK;
 
+    if (!recorder) {
+        goto TERMINATE;
+    }
+
     for (size_t i = 0; i < N_VARIABLE_TYPES; i++) {
 
         VariableInfo* info = recorder->variableInfos[i];
