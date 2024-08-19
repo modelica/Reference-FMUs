@@ -14,10 +14,6 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
     FMIStatus status = FMIOK;
 
-    FMIInstance* S = s->S;
-
-    const bool needsCompletedIntegratorStep = s->modelDescription->modelExchange->needsCompletedIntegratorStep;
-
     char resourceURI[FMI_PATH_MAX] = "";
 
 #ifdef _WIN32
@@ -25,6 +21,12 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 #else
     snprintf(resourceURI, FMI_PATH_MAX, "%s/resources/", s->unzipdir);
 #endif
+
+    CALL(FMIPathToURI(resourceURI, resourceURI, FMI_PATH_MAX));
+
+    FMIInstance* S = s->S;
+
+    const bool needsCompletedIntegratorStep = s->modelDescription->modelExchange->needsCompletedIntegratorStep;
 
     fmi2Real time;
 
