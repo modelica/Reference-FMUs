@@ -85,12 +85,8 @@ FMIStatus FMISimulate(const FMISimulationSettings* settings) {
 
     FMIStatus status = FMIOK;
 
-    FMIInstance* S = settings->S;
     const FMIModelDescription* modelDescription = settings->modelDescription;
     const char* unzipdir = settings->unzipdir;
-    FMIRecorder* initialRecorder = settings->initialRecorder;
-    FMIRecorder* recorder = settings->recorder;
-    FMIStaticInput* input = settings->input;
 
     char resourcePath[FMI_PATH_MAX] = "";
 
@@ -105,9 +101,9 @@ FMIStatus FMISimulate(const FMISimulationSettings* settings) {
         if (settings->interfaceType == FMICoSimulation) {
             char fmuLocation[FMI_PATH_MAX] = "";
             CALL(FMIPathToURI(unzipdir, fmuLocation, FMI_PATH_MAX));
-            CALL(FMI1CSSimulate(S, modelDescription, fmuLocation, recorder, input, settings));
+            CALL(FMI1CSSimulate(fmuLocation, settings));
         } else {
-            CALL(FMI1MESimulate(S, modelDescription, recorder, input, settings));
+            CALL(FMI1MESimulate(settings));
         }
 
     } else if (modelDescription->fmiMajorVersion == FMIMajorVersion2) {
@@ -116,17 +112,17 @@ FMIStatus FMISimulate(const FMISimulationSettings* settings) {
         CALL(FMIPathToURI(resourcePath, resourceURI, FMI_PATH_MAX));
 
         if (settings->interfaceType == FMICoSimulation) {
-            CALL(FMI2CSSimulate(S, modelDescription, resourceURI, recorder, input, settings));
+            CALL(FMI2CSSimulate(resourceURI, settings));
         } else {
-            CALL(FMI2MESimulate(S, modelDescription, resourceURI, recorder, input, settings));
+            CALL(FMI2MESimulate(resourceURI, settings));
         }
 
     } else {
 
         if (settings->interfaceType == FMICoSimulation) {
-            CALL(FMI3CSSimulate(/*S, modelDescription,*/ resourcePath, settings));
+            CALL(FMI3CSSimulate(resourcePath, settings));
         } else {
-            CALL(FMI3MESimulate(S, modelDescription, resourcePath, recorder, input, settings));
+            CALL(FMI3MESimulate(resourcePath, settings));
         }
 
     }

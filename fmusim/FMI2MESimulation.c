@@ -8,18 +8,13 @@
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
-
-FMIStatus FMI2MESimulate(
-    FMIInstance* S, 
-    const FMIModelDescription* modelDescription, 
-    const char* resourceURI,
-    FMIRecorder* recorder,
-    const FMIStaticInput * input,
-    const FMISimulationSettings* settings) {
-
-    const bool needsCompletedIntegratorStep = modelDescription->modelExchange->needsCompletedIntegratorStep;
+FMIStatus FMI2MESimulate(const char* resourceURI, const FMISimulationSettings* s) {
 
     FMIStatus status = FMIOK;
+
+    FMIInstance* S = s->S;
+
+    const bool needsCompletedIntegratorStep = s->modelDescription->modelExchange->needsCompletedIntegratorStep;
 
     fmi2Real time;
 
@@ -49,24 +44,24 @@ FMIStatus FMI2MESimulate(
     CALL(FMI2Instantiate(S,
         resourceURI,
         fmi2ModelExchange,
-        modelDescription->instantiationToken,
-        settings->visible,
-        settings->loggingOn
+        s->modelDescription->instantiationToken,
+        s->visible,
+        s->loggingOn
     ));
 
-    time = settings->startTime;
+    time = s->startTime;
 
-    if (settings->initialFMUStateFile) {
-        CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
+    if (s->initialFMUStateFile) {
+        CALL(FMIRestoreFMUStateFromFile(S, s->initialFMUStateFile));
     }
 
-    CALL(FMIApplyStartValues(S, settings));
+    CALL(FMIApplyStartValues(S, s));
 
-    if (!settings->initialFMUStateFile) {
+    if (!s->initialFMUStateFile) {
 
-        CALL(FMI2SetupExperiment(S, settings->tolerance > 0, settings->tolerance, time, fmi2False, 0));
+        CALL(FMI2SetupExperiment(S, s->tolerance > 0, s->tolerance, time, fmi2False, 0));
         CALL(FMI2EnterInitializationMode(S));
-        CALL(FMIApplyInput(S, input, time,
+        CALL(FMIApplyInput(S, s->input, time,
             true,  // discrete
             true,  // continous
             false  // after event
@@ -92,11 +87,11 @@ FMIStatus FMI2MESimulate(
 
     const FMISolverParameters solverFunctions = {
         .modelInstance                 = S,
-        .input                         = input,
+        .input                         = s->input,
         .startTime                     = time,
-        .tolerance                     = settings->tolerance,
-        .nx                            = modelDescription->nContinuousStates,
-        .nz                            = modelDescription->nEventIndicators,
+        .tolerance                     = s->tolerance,
+        .nx                            = s->modelDescription->nContinuousStates,
+        .nz                            = s->modelDescription->nEventIndicators,
         .setTime                       = (FMISolverSetTime)FMI2SetTime,
         .applyInput                    = (FMISolverApplyInput)FMIApplyInput,
         .getContinuousStates           = (FMISolverGetContinuousStates)FMI2GetContinuousStates,
@@ -107,7 +102,7 @@ FMIStatus FMI2MESimulate(
         .logError                      = (FMISolverLogError)FMILogError
     };
 
-    solver = settings->solverCreate(&solverFunctions);
+    solver = s->solverCreate(&solverFunctions);
 
     if (!solver) {
         status = FMIError;
@@ -116,19 +111,21 @@ FMIStatus FMI2MESimulate(
 
     nSteps = 0;
 
+    CALL(FMISample(S, time, s->initialRecorder));
+
     for (;;) {
 
-        CALL(FMISample(S, time, recorder));
+        CALL(FMISample(S, time, s->recorder));
 
-        if (time >= settings->stopTime) {
+        if (time >= s->stopTime) {
             break;
         }
     
-        nextRegularPoint = settings->startTime + (nSteps + 1) * settings->outputInterval;
+        nextRegularPoint = s->startTime + (nSteps + 1) * s->outputInterval;
 
         nextCommunicationPoint = nextRegularPoint;
 
-        nextInputEventTime = FMINextInputEvent(input, time);
+        nextInputEventTime = FMINextInputEvent(s->input, time);
 
         inputEvent = nextCommunicationPoint >= nextInputEventTime;
 
@@ -138,11 +135,11 @@ FMIStatus FMI2MESimulate(
             nextCommunicationPoint = fmin(nextInputEventTime, eventInfo.nextEventTime);
         }
 
-        CALL(settings->solverStep(solver, nextCommunicationPoint, &time, &stateEvent));
+        CALL(s->solverStep(solver, nextCommunicationPoint, &time, &stateEvent));
 
         CALL(FMI2SetTime(S, time));
 
-        CALL(FMIApplyInput(S, input, time,
+        CALL(FMIApplyInput(S, s->input, time,
             false,  // discrete
             true,   // continous
             false   // after event
@@ -164,12 +161,12 @@ FMIStatus FMI2MESimulate(
         if (inputEvent || timeEvent || stateEvent || stepEvent) {
 
             // record the values before the event
-            CALL(FMISample(S, time, recorder));
+            CALL(FMISample(S, time, s->recorder));
 
             CALL(FMI2EnterEventMode(S));
 
             if (inputEvent) {
-                CALL(FMIApplyInput(S, input, time,
+                CALL(FMIApplyInput(S, s->input, time,
                     true,  // discrete
                     true,  // continous
                     true   // after event
@@ -183,7 +180,7 @@ FMIStatus FMI2MESimulate(
                 CALL(FMI2NewDiscreteStates(S, &eventInfo));
 
                 if (eventInfo.terminateSimulation) {
-                    CALL(FMISample(S, time, recorder));
+                    CALL(FMISample(S, time, s->recorder));
                     goto TERMINATE;
                 }
 
@@ -199,17 +196,17 @@ FMIStatus FMI2MESimulate(
             CALL(FMI2EnterContinuousTimeMode(S));
 
             if (resetSolver) {
-                settings->solverReset(solver, time);
+                s->solverReset(solver, time);
             }
         }
 
-        if (settings->stepFinished && !settings->stepFinished(settings, time)) {
+        if (s->stepFinished && !s->stepFinished(s, time)) {
             break;
         }
     }
 
-    if (settings->finalFMUStateFile) {
-        CALL(FMISaveFMUStateToFile(S, settings->finalFMUStateFile));
+    if (s->finalFMUStateFile) {
+        CALL(FMISaveFMUStateToFile(S, s->finalFMUStateFile));
     }
 
 TERMINATE:
@@ -228,7 +225,7 @@ TERMINATE:
     }
 
     if (solver) {
-        settings->solverFree(solver);
+        s->solverFree(solver);
     }
 
     return status;

@@ -5,51 +5,48 @@
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
-
-FMIStatus FMI2CSSimulate(
-    FMIInstance* S,
-    const FMIModelDescription* modelDescription,
-    const char* resourceURI,
-    FMIRecorder* recorder,
-    const FMIStaticInput * input,
-    const FMISimulationSettings * settings) {
+FMIStatus FMI2CSSimulate(const char* resourceURI, const FMISimulationSettings* s) {
 
     FMIStatus status = FMIOK;
+
+    FMIInstance* S = s->S;
 
     CALL(FMI2Instantiate(S,
         resourceURI,
         fmi2CoSimulation,
-        modelDescription->instantiationToken,
-        settings->visible,
-        settings->loggingOn
+        s->modelDescription->instantiationToken,
+        s->visible,
+        s->loggingOn
     ));
 
-    if (settings->initialFMUStateFile) {
-        CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
+    if (s->initialFMUStateFile) {
+        CALL(FMIRestoreFMUStateFromFile(S, s->initialFMUStateFile));
     }
 
-    CALL(FMIApplyStartValues(S, settings));
+    CALL(FMIApplyStartValues(S, s));
 
-    if (!settings->initialFMUStateFile) {
-        CALL(FMI2SetupExperiment(S, settings->tolerance > 0, settings->tolerance, settings->startTime, fmi2False, 0));
+    if (!s->initialFMUStateFile) {
+        CALL(FMI2SetupExperiment(S, s->tolerance > 0, s->tolerance, s->startTime, fmi2False, 0));
         CALL(FMI2EnterInitializationMode(S));
-        CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
+        CALL(FMIApplyInput(S, s->input, s->startTime, true, true, false));
         CALL(FMI2ExitInitializationMode(S));
     }
 
+    CALL(FMISample(S, s->startTime, s->initialRecorder));
+
     for (unsigned long step = 0;; step++) {
         
-        const fmi2Real time = settings->startTime + step * settings->outputInterval;
+        const fmi2Real time = s->startTime + step * s->outputInterval;
 
-        CALL(FMISample(S, time, recorder));
+        CALL(FMISample(S, time, s->recorder));
 
-        CALL(FMIApplyInput(S, input, time, true, true, false));
+        CALL(FMIApplyInput(S, s->input, time, true, true, false));
 
-        if (time >= settings->stopTime) {
+        if (time >= s->stopTime) {
             break;
         }
 
-        const FMIStatus doStepStatus = FMI2DoStep(S, time, settings->outputInterval, fmi2True);
+        const FMIStatus doStepStatus = FMI2DoStep(S, time, s->outputInterval, fmi2True);
 
         if (doStepStatus == fmi2Discard) {
 
@@ -62,7 +59,7 @@ FMIStatus FMI2CSSimulate(
 
                 CALL(FMI2GetRealStatus(S, fmi2LastSuccessfulTime, &lastSuccessfulTime));
 
-                CALL(FMISample(S, lastSuccessfulTime, recorder));
+                CALL(FMISample(S, lastSuccessfulTime, s->recorder));
 
                 break;
             }
@@ -71,13 +68,13 @@ FMIStatus FMI2CSSimulate(
             CALL(doStepStatus);
         }
 
-        if (settings->stepFinished && !settings->stepFinished(settings, time)) {
+        if (s->stepFinished && !s->stepFinished(s, time)) {
             break;
         }
     }
 
-    if (settings->finalFMUStateFile) {
-        CALL(FMISaveFMUStateToFile(S, settings->finalFMUStateFile));
+    if (s->finalFMUStateFile) {
+        CALL(FMISaveFMUStateToFile(S, s->finalFMUStateFile));
     }
 
 TERMINATE:

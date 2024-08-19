@@ -9,17 +9,13 @@
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMIStatus FMI3MESimulate(
-    FMIInstance* S, 
-    const FMIModelDescription* modelDescription, 
-    const char* resourcePath,
-    FMIRecorder* recorder,
-    const FMIStaticInput * input,
-    const FMISimulationSettings * settings) {
-
-    const bool needsCompletedIntegratorStep = modelDescription->modelExchange->needsCompletedIntegratorStep;
+FMIStatus FMI3MESimulate(const char* resourcePath, const FMISimulationSettings * s) {
 
     FMIStatus status = FMIOK;
+
+    const bool needsCompletedIntegratorStep = s->modelDescription->modelExchange->needsCompletedIntegratorStep;
+
+    FMIInstance* S = s->S;
 
     fmi3Float64 time;
 
@@ -45,26 +41,26 @@ FMIStatus FMI3MESimulate(
     FMISolver* solver = NULL;
 
     CALL(FMI3InstantiateModelExchange(S,
-        modelDescription->instantiationToken,
+        s->modelDescription->instantiationToken,
         resourcePath,
-        settings->visible,
-        settings->loggingOn
+        s->visible,
+        s->loggingOn
     ));
 
-    time = settings->startTime;
+    time = s->startTime;
 
-    if (settings->initialFMUStateFile) {
-        CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
+    if (s->initialFMUStateFile) {
+        CALL(FMIRestoreFMUStateFromFile(S, s->initialFMUStateFile));
     }
 
-    CALL(FMIApplyStartValues(S, settings));
+    CALL(FMIApplyStartValues(S, s));
 
-    if (!settings->initialFMUStateFile) {
+    if (!s->initialFMUStateFile) {
 
         // initialize
-        CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, time, fmi3False, 0));
+        CALL(FMI3EnterInitializationMode(S, s->tolerance > 0, s->tolerance, time, fmi3False, 0));
         
-        CALL(FMIApplyInput(S, input, time,
+        CALL(FMIApplyInput(S, s->input, time,
             true,  // discrete
             true,  // continous
             false  // after event
@@ -96,13 +92,13 @@ FMIStatus FMI3MESimulate(
         CALL(FMI3EnterContinuousTimeMode(S));
     }
 
-    CALL(FMIRecorderUpdateSizes(recorder));
+    CALL(FMIRecorderUpdateSizes(s->recorder));
 
     FMISolverParameters solverFunctions = {
         .modelInstance = S,
-        .input = input,
+        .input = s->input,
         .startTime = time,
-        .tolerance = settings->tolerance,
+        .tolerance = s->tolerance,
         .setTime = (FMISolverSetTime)FMI3SetTime,
         .applyInput = (FMISolverApplyInput)FMIApplyInput,
         .getContinuousStates = (FMISolverGetContinuousStates)FMI3GetContinuousStates,
@@ -113,10 +109,10 @@ FMIStatus FMI3MESimulate(
         .logError = (FMISolverLogError)FMILogError
     };
 
-    CALL(FMIGetNumberOfUnkownValues(S, modelDescription->nContinuousStates, modelDescription->derivatives, &solverFunctions.nx));
-    CALL(FMIGetNumberOfUnkownValues(S, modelDescription->nEventIndicators, modelDescription->eventIndicators, &solverFunctions.nz));
+    CALL(FMIGetNumberOfUnkownValues(S, s->modelDescription->nContinuousStates, s->modelDescription->derivatives, &solverFunctions.nx));
+    CALL(FMIGetNumberOfUnkownValues(S, s->modelDescription->nEventIndicators, s->modelDescription->eventIndicators, &solverFunctions.nz));
 
-    solver = settings->solverCreate(&solverFunctions);
+    solver = s->solverCreate(&solverFunctions);
     
     if (!solver) {
         status = FMIError;
@@ -125,19 +121,21 @@ FMIStatus FMI3MESimulate(
 
     nSteps = 0;
 
+    CALL(FMISample(S, time, s->initialRecorder));
+
     for (;;) {
 
-        CALL(FMISample(S, time, recorder));
+        CALL(FMISample(S, time, s->recorder));
 
-        if (time >= settings->stopTime) {
+        if (time >= s->stopTime) {
             break;
         }
 
-        nextRegularPoint = settings->startTime + (nSteps + 1) * settings->outputInterval;
+        nextRegularPoint = s->startTime + (nSteps + 1) * s->outputInterval;
 
         nextCommunicationPoint = nextRegularPoint;
 
-        nextInputEventTime = FMINextInputEvent(input, time);
+        nextInputEventTime = FMINextInputEvent(s->input, time);
 
         inputEvent = nextCommunicationPoint >= nextInputEventTime;
 
@@ -147,11 +145,11 @@ FMIStatus FMI3MESimulate(
             nextCommunicationPoint = fmin(nextInputEventTime, nextEventTime);
         }
 
-        CALL(settings->solverStep(solver, nextCommunicationPoint, &time, &stateEvent));
+        CALL(s->solverStep(solver, nextCommunicationPoint, &time, &stateEvent));
 
         CALL(FMI3SetTime(S, time));
 
-        CALL(FMIApplyInput(S, input, time,
+        CALL(FMIApplyInput(S, s->input, time,
             false, // discrete
             true,  // continous
             false  // after event
@@ -172,12 +170,12 @@ FMIStatus FMI3MESimulate(
 
         if (inputEvent || timeEvent || stateEvent || stepEvent) {
 
-            CALL(FMISample(S, time, recorder));
+            CALL(FMISample(S, time, s->recorder));
 
             CALL(FMI3EnterEventMode(S));
 
             if (inputEvent) {
-                CALL(FMIApplyInput(S, input, time,
+                CALL(FMIApplyInput(S, s->input, time,
                     true,  // discrete
                     true,  // continous
                     true   // after event
@@ -197,7 +195,7 @@ FMIStatus FMI3MESimulate(
                     &nextEventTime));
                 
                 if (terminateSimulation) {
-                    CALL(FMISample(S, time, recorder));
+                    CALL(FMISample(S, time, s->recorder));
                     goto TERMINATE;
                 }
 
@@ -212,17 +210,17 @@ FMIStatus FMI3MESimulate(
             CALL(FMI3EnterContinuousTimeMode(S));
 
             if (resetSolver) {
-                settings->solverReset(solver, time);
+                s->solverReset(solver, time);
             }
         }
 
-        if (settings->stepFinished && !settings->stepFinished(settings, time)) {
+        if (s->stepFinished && !s->stepFinished(s, time)) {
             break;
         }
     }
 
-    if (settings->finalFMUStateFile) {
-        CALL(FMISaveFMUStateToFile(S, settings->finalFMUStateFile));
+    if (s->finalFMUStateFile) {
+        CALL(FMISaveFMUStateToFile(S, s->finalFMUStateFile));
     }
 
 TERMINATE:
@@ -241,7 +239,7 @@ TERMINATE:
     }
 
     if (solver) {
-        settings->solverFree(solver);
+        s->solverFree(solver);
     }
 
     return status;

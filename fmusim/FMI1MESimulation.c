@@ -8,16 +8,13 @@
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMIStatus FMI1MESimulate(
-    FMIInstance* S, 
-    const FMIModelDescription* modelDescription, 
-    FMIRecorder* recorder,
-    const FMIStaticInput * input,
-    const FMISimulationSettings* settings) {
+FMIStatus FMI1MESimulate(const FMISimulationSettings* s) {
 
     FMIStatus status = FMIOK;
 
-    fmi1Real time = settings->startTime;
+    FMIInstance* S = s->S;
+
+    fmi1Real time = s->startTime;
 
     bool stateEvent = false;
     fmi1Boolean inputEvent = fmi1False;
@@ -43,22 +40,22 @@ FMIStatus FMI1MESimulate(
     };
 
     CALL(FMI1InstantiateModel(S,
-        modelDescription->modelExchange->modelIdentifier,  // modelIdentifier
-        modelDescription->instantiationToken,              // GUID
-        settings->loggingOn                                // loggingOn
+        s->modelDescription->modelExchange->modelIdentifier,  // modelIdentifier
+        s->modelDescription->instantiationToken,              // GUID
+        s->loggingOn                                          // loggingOn
     ));
 
     // set start values
-    CALL(FMIApplyStartValues(S, settings));
+    CALL(FMIApplyStartValues(S, s));
 
-    CALL(FMIApplyInput(S, input, time,
+    CALL(FMIApplyInput(S, s->input, time,
         true,  // discrete
         true,  // continous
         false  // after event
     ));
 
     // initialize
-    CALL(FMI1Initialize(S, settings->tolerance > 0, settings->tolerance, &eventInfo));
+    CALL(FMI1Initialize(S, s->tolerance > 0, s->tolerance, &eventInfo));
 
     if (!eventInfo.upcomingTimeEvent) {
         eventInfo.nextEventTime = INFINITY;
@@ -66,11 +63,11 @@ FMIStatus FMI1MESimulate(
 
     const FMISolverParameters solverFunctions = {
         .modelInstance = S,
-        .input = input,
+        .input = s->input,
         .startTime = time,
-        .tolerance = settings->tolerance,
-        .nx = modelDescription->nContinuousStates,
-        .nz = modelDescription->nEventIndicators,
+        .tolerance = s->tolerance,
+        .nx = s->modelDescription->nContinuousStates,
+        .nz = s->modelDescription->nEventIndicators,
         .setTime = (FMISolverSetTime)FMI1SetTime,
         .applyInput = (FMISolverApplyInput)FMIApplyInput,
         .getContinuousStates = (FMISolverGetContinuousStates)FMI1GetContinuousStates,
@@ -81,26 +78,28 @@ FMIStatus FMI1MESimulate(
         .logError = (FMISolverLogError)FMILogError
     };
 
-    solver = settings->solverCreate(&solverFunctions);
+    solver = s->solverCreate(&solverFunctions);
 
     if (!solver) {
         status = FMIError;
         goto TERMINATE;
     }
 
+    CALL(FMISample(S, time, s->initialRecorder));
+
     for (;;) {
 
-        CALL(FMISample(S, time, recorder));
+        CALL(FMISample(S, time, s->recorder));
 
-        if (time >= settings->stopTime) {
+        if (time >= s->stopTime) {
             break;
         }
     
-        nextRegularPoint = settings->startTime + (nSteps + 1) * settings->outputInterval;
+        nextRegularPoint = s->startTime + (nSteps + 1) * s->outputInterval;
 
         nextCommunicationPoint = nextRegularPoint;
 
-        nextInputEventTime = FMINextInputEvent(input, time);
+        nextInputEventTime = FMINextInputEvent(s->input, time);
 
         inputEvent = nextCommunicationPoint >= nextInputEventTime;
 
@@ -110,11 +109,11 @@ FMIStatus FMI1MESimulate(
             nextCommunicationPoint = fmin(nextInputEventTime, eventInfo.nextEventTime);
         }
 
-        CALL(settings->solverStep(solver, nextCommunicationPoint, &time, &stateEvent));
+        CALL(s->solverStep(solver, nextCommunicationPoint, &time, &stateEvent));
 
         CALL(FMI1SetTime(S, time));
 
-        CALL(FMIApplyInput(S, input, time,
+        CALL(FMIApplyInput(S, s->input, time,
             false,  // discrete
             true,   // continous
             false   // after event
@@ -133,10 +132,10 @@ FMIStatus FMI1MESimulate(
         if (inputEvent || timeEvent || stateEvent || stepEvent) {
 
             // record the values before the event
-            CALL(FMISample(S, time, recorder));
+            CALL(FMISample(S, time, s->recorder));
 
             if (inputEvent) {
-                CALL(FMIApplyInput(S, input, time,
+                CALL(FMIApplyInput(S, s->input, time,
                     true,  // discrete
                     true,  // continous
                     true   // after event
@@ -150,7 +149,7 @@ FMIStatus FMI1MESimulate(
                 CALL(FMI1EventUpdate(S, fmi1True, &eventInfo));
 
                 if (eventInfo.terminateSimulation) {
-                    CALL(FMISample(S, time, recorder));
+                    CALL(FMISample(S, time, s->recorder));
                     goto TERMINATE;
                 }
 
@@ -163,11 +162,11 @@ FMIStatus FMI1MESimulate(
             }
 
             if (resetSolver) {
-                settings->solverReset(solver, time);
+                s->solverReset(solver, time);
             }
         }
 
-        if (settings->stepFinished && !settings->stepFinished(settings, time)) {
+        if (s->stepFinished && !s->stepFinished(s, time)) {
             break;
         }
     }
@@ -188,7 +187,7 @@ TERMINATE:
     }
 
     if (solver) {
-        settings->solverFree(solver);
+        s->solverFree(solver);
     }
 
     return status;
