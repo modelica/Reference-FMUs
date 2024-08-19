@@ -6,7 +6,7 @@
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMIStatus FMI1CSSimulate(const FMISimulationSettings * s) {
+FMIStatus FMI1CSSimulate(const FMISimulationSettings* s) {
 
     FMIStatus status = FMIOK;
 

@@ -11,7 +11,7 @@
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
-FMIStatus FMI3MESimulate(const FMISimulationSettings * s) {
+FMIStatus FMI3MESimulate(const FMISimulationSettings* s) {
 
     FMIStatus status = FMIOK;
 
