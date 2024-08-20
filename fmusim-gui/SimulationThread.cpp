@@ -1,6 +1,5 @@
 #include <QDateTime>
 #include "SimulationThread.h"
-#include <Windows.h>
 
 
 SimulationThread* SimulationThread::currentSimulationThread = nullptr;
@@ -15,6 +14,10 @@ SimulationThread::~SimulationThread()
 
         if (settings->input) {
             FMIFreeInput(settings->input);
+        }
+
+        if (settings->initialRecorder) {
+            FMIFreeRecorder(settings->initialRecorder);
         }
 
         if (settings->recorder) {
