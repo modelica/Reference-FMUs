@@ -6,6 +6,8 @@
 #include "FMI3CSSimulation.h"
 
 
+#define FMI_PATH_MAX 4096
+
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
 
@@ -30,21 +32,18 @@ static void recordIntermediateValues(
     *earlyReturnRequested = fmi3False;
 }
 
-FMIStatus FMI3CSSimulate(FMIInstance* S,
-    const FMIModelDescription * modelDescription,
-    const char* resourcePath,
-    FMIRecorder* recorder,
-    const FMIStaticInput * input,
-    const FMISimulationSettings * settings) {
+FMIStatus FMI3CSSimulate(const FMISimulationSettings* s) {
 
     FMIStatus status = FMIOK;
+
+    FMIInstance* S = s->S;
 
     fmi3Boolean inputEvent = fmi3False;
     fmi3Boolean eventEncountered = fmi3False;
     fmi3Boolean terminateSimulation = fmi3False;
     fmi3Boolean earlyReturn = fmi3False;
-    fmi3Float64 lastSuccessfulTime = settings->startTime;
-    fmi3Float64 time = settings->startTime;
+    fmi3Float64 lastSuccessfulTime = s->startTime;
+    fmi3Float64 time = s->startTime;
     fmi3Float64 nextCommunicationPoint = 0.0;
     fmi3Float64 nextRegularPoint = 0.0;
     fmi3Float64 stepSize = 0.0;
@@ -59,40 +58,48 @@ FMIStatus FMI3CSSimulate(FMIInstance* S,
     size_t nRequiredIntermediateVariables = 0;
     fmi3IntermediateUpdateCallback intermediateUpdate = NULL;
 
-    if (settings->recordIntermediateValues) {
-        requiredIntermediateVariables = (fmi3ValueReference*)recorder->valueReferences;
-        nRequiredIntermediateVariables = recorder->nVariables;
+    char resourcePath[FMI_PATH_MAX] = "";
+
+#ifdef _WIN32
+    snprintf(resourcePath, FMI_PATH_MAX, "%s\\resources\\", s->unzipdir);
+#else
+    snprintf(resourcePath, FMI_PATH_MAX, "%s/resources/", s->unzipdir);
+#endif
+
+    if (s->recordIntermediateValues) {
+        requiredIntermediateVariables = (fmi3ValueReference*)s->recorder->valueReferences;
+        nRequiredIntermediateVariables = s->recorder->nVariables;
         intermediateUpdate = recordIntermediateValues;
-        S->userData = recorder;
+        S->userData = s->recorder;
     }
 
     CALL(FMI3InstantiateCoSimulation(S,
-        modelDescription->instantiationToken,
+        s->modelDescription->instantiationToken,
         resourcePath,
-        settings->visible,
-        settings->loggingOn,
-        settings->eventModeUsed,
-        settings->earlyReturnAllowed,
+        s->visible,
+        s->loggingOn,
+        s->eventModeUsed,
+        s->earlyReturnAllowed,
         requiredIntermediateVariables,
         nRequiredIntermediateVariables,
         intermediateUpdate
     ));
 
-    if (settings->initialFMUStateFile) {
-        CALL(FMIRestoreFMUStateFromFile(S, settings->initialFMUStateFile));
+    if (s->initialFMUStateFile) {
+        CALL(FMIRestoreFMUStateFromFile(S, s->initialFMUStateFile));
     }
 
-    CALL(FMIApplyStartValues(S, settings));
+    CALL(FMIApplyStartValues(S, s));
 
-    if (!settings->initialFMUStateFile) {
+    if (!s->initialFMUStateFile) {
 
-        CALL(FMI3EnterInitializationMode(S, settings->tolerance > 0, settings->tolerance, settings->startTime, fmi3False, 0));
+        CALL(FMI3EnterInitializationMode(S, s->tolerance > 0, s->tolerance, s->startTime, fmi3False, 0));
 
-        CALL(FMIApplyInput(S, input, settings->startTime, true, true, false));
+        CALL(FMIApplyInput(S, s->input, s->startTime, true, true, false));
 
         CALL(FMI3ExitInitializationMode(S));
 
-        if (settings->eventModeUsed) {
+        if (s->eventModeUsed) {
      
             do {
 
@@ -118,23 +125,25 @@ FMIStatus FMI3CSSimulate(FMIInstance* S,
         }
     }
 
-    CALL(FMIRecorderUpdateSizes(recorder));
+    CALL(FMIRecorderUpdateSizes(s->initialRecorder));
+    CALL(FMIRecorderUpdateSizes(s->recorder));
 
-    CALL(FMISample(S, time, recorder));
+    CALL(FMISample(S, time, s->initialRecorder));
+    CALL(FMISample(S, time, s->recorder));
 
     size_t nSteps = 0;
 
     for (;;) {
 
-        if (time >= settings->stopTime) {
+        if (time >= s->stopTime) {
             break;
         }
 
-        nextRegularPoint = settings->startTime + (nSteps + 1) * settings->outputInterval;
+        nextRegularPoint = s->startTime + (nSteps + 1) * s->outputInterval;
 
         nextCommunicationPoint = nextRegularPoint;
 
-        nextInputEventTime = FMINextInputEvent(input, time);
+        nextInputEventTime = FMINextInputEvent(s->input, time);
 
         inputEvent = nextCommunicationPoint >= nextInputEventTime;
 
@@ -144,10 +153,10 @@ FMIStatus FMI3CSSimulate(FMIInstance* S,
 
         stepSize = nextCommunicationPoint - time;
 
-        CALL(FMIApplyInput(S, input, time,
-            !settings->eventModeUsed,  // discrete
-            true,                      // continuous
-            !settings->eventModeUsed   // afterEvent
+        CALL(FMIApplyInput(S, s->input, time,
+            !s->eventModeUsed,  // discrete
+            true,               // continuous
+            !s->eventModeUsed   // afterEvent
         ));
 
         CALL(FMI3DoStep(S, 
@@ -160,7 +169,7 @@ FMIStatus FMI3CSSimulate(FMIInstance* S,
             &lastSuccessfulTime    // lastSuccessfulTime
         ));
 
-        if (earlyReturn && !settings->earlyReturnAllowed) {
+        if (earlyReturn && !s->earlyReturnAllowed) {
             FMILogError("The FMU returned early from fmi3DoStep() but early return is not allowed.");
             status = FMIError;
             goto TERMINATE;
@@ -176,18 +185,18 @@ FMIStatus FMI3CSSimulate(FMIInstance* S,
             nSteps++;
         }
 
-        CALL(FMISample(S, time, recorder));
+        CALL(FMISample(S, time, s->recorder));
 
         if (terminateSimulation) {
             goto TERMINATE;
         }
 
-        if (settings->eventModeUsed && (inputEvent || eventEncountered)) {
+        if (s->eventModeUsed && (inputEvent || eventEncountered)) {
 
             CALL(FMI3EnterEventMode(S));
 
             if (inputEvent) {
-                CALL(FMIApplyInput(S, input, time,
+                CALL(FMIApplyInput(S, s->input, time,
                     true,  // discrete
                     true,  // continous
                     true   // after event
@@ -205,7 +214,7 @@ FMIStatus FMI3CSSimulate(FMIInstance* S,
                     &nextEventTime));
 
                 if (terminateSimulation) {
-                    CALL(FMISample(S, time, recorder));
+                    CALL(FMISample(S, time, s->recorder));
                     goto TERMINATE;
                 }
 
@@ -217,16 +226,16 @@ FMIStatus FMI3CSSimulate(FMIInstance* S,
 
             CALL(FMI3EnterStepMode(S));
 
-            CALL(FMISample(S, time, recorder));
+            CALL(FMISample(S, time, s->recorder));
         }
 
-        if (settings->stepFinished && !settings->stepFinished(settings, time)) {
+        if (s->stepFinished && !s->stepFinished(s, time)) {
             break;
         }
     }
 
-    if (settings->finalFMUStateFile) {
-        CALL(FMISaveFMUStateToFile(S, settings->finalFMUStateFile));
+    if (s->finalFMUStateFile) {
+        CALL(FMISaveFMUStateToFile(S, s->finalFMUStateFile));
     }
 
 TERMINATE:

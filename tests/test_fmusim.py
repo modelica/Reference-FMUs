@@ -1,5 +1,4 @@
 import os
-import subprocess
 from itertools import product
 from pathlib import Path
 from subprocess import check_call
