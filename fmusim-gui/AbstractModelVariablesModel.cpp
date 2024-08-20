@@ -122,6 +122,8 @@ Qt::ItemFlags AbstractModelVariablesModel::flags(const QModelIndex &index) const
 
 QVariant AbstractModelVariablesModel::columnData(const FMIModelVariable *variable, int column, int role) const {
 
+    const bool isFMI3 = modelDescription->fmiMajorVersion == FMIMajorVersion3;
+
     switch (role) {
     case Qt::DecorationRole:
         switch (column) {
@@ -148,20 +150,34 @@ QVariant AbstractModelVariablesModel::columnData(const FMIModelVariable *variabl
             return variable->name;
         case TypeColumn:
             switch (variable->type) {
-            case FMIFloat32Type: return "Float32";
-            case FMIFloat64Type: return "Float64";
-            case FMIInt8Type: return "Int8";
-            case FMIUInt8Type: return "UInt8";
-            case FMIInt16Type: return "Int16";
-            case FMIUInt16Type: return "UInt16";
-            case FMIInt32Type: return "Int32";
-            case FMIUInt32Type: return "UInt32";
-            case FMIInt64Type: return "Int64";
-            case FMIUInt64Type: return "UInt64";
-            case FMIBooleanType: return "Boolean";
-            case FMIStringType: return "String";
-            case FMIBinaryType: return "Binary";
-            case FMIClockType: return "Clock";
+            case FMIFloat32Type:
+                return "Float32";
+            case FMIFloat64Type:
+                return isFMI3 ? "Float64" : "Real";
+            case FMIInt8Type:
+                return "Int8";
+            case FMIUInt8Type:
+                return "UInt8";
+            case FMIInt16Type:
+                return "Int16";
+            case FMIUInt16Type:
+                return "UInt16";
+            case FMIInt32Type:
+                return isFMI3 ? "Int32" : "Integer";
+            case FMIUInt32Type:
+                return "UInt32";
+            case FMIInt64Type:
+                return "Int64";
+            case FMIUInt64Type:
+                return "UInt64";
+            case FMIBooleanType:
+                return "Boolean";
+            case FMIStringType:
+                return "String";
+            case FMIBinaryType:
+                return "Binary";
+            case FMIClockType:
+                return "Clock";
             }
         case DimensionColumn:
             if (variable->nDimensions > 0) {
