@@ -11,17 +11,18 @@ FMIStatus FMI2CSSimulate(const FMISimulationSettings* s) {
 
     FMIStatus status = FMIOK;
 
-    FMIInstance* S = s->S;
-
+    char resourcePath[FMI_PATH_MAX] = "";
     char resourceURI[FMI_PATH_MAX] = "";
 
 #ifdef _WIN32
-    snprintf(resourceURI, FMI_PATH_MAX, "%s\\resources\\", s->unzipdir);
+    snprintf(resourcePath, FMI_PATH_MAX, "%s\\resources\\", s->unzipdir);
 #else
-    snprintf(resourceURI, FMI_PATH_MAX, "%s/resources/", s->unzipdir);
+    snprintf(resourcePath, FMI_PATH_MAX, "%s/resources/", s->unzipdir);
 #endif
 
-    CALL(FMIPathToURI(resourceURI, resourceURI, FMI_PATH_MAX));
+    CALL(FMIPathToURI(resourcePath, resourceURI, FMI_PATH_MAX));
+
+    FMIInstance* S = s->S;
 
     CALL(FMI2Instantiate(S,
         resourceURI,
