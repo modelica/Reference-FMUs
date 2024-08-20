@@ -383,17 +383,17 @@
            <property name="horizontalSpacing">
             <number>10</number>
            </property>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_9">
+           <item row="7" column="0" colspan="2">
+            <widget class="QCheckBox" name="logFMICallsCheckBox">
              <property name="text">
-              <string>Start Time</string>
+              <string>Log FMI Calls</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="relativeToleranceLineEdit">
+           <item row="4" column="1">
+            <widget class="QLineEdit" name="maxSamplesLineEdit">
              <property name="text">
-              <string>1e-5</string>
+              <string>500</string>
              </property>
             </widget>
            </item>
@@ -404,10 +404,17 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_13">
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_9">
              <property name="text">
-              <string>Relative Tolerance</string>
+              <string>Start Time</string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="0" colspan="2">
+            <widget class="QCheckBox" name="debugLoggingCheckBox">
+             <property name="text">
+              <string>Enable FMU Logging</string>
              </property>
             </widget>
            </item>
@@ -418,6 +425,16 @@
              </property>
             </widget>
            </item>
+           <item row="4" column="0">
+            <widget class="QRadioButton" name="maxSamplesRadioButton">
+             <property name="text">
+              <string>Max. Samples</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
            <item row="3" column="1">
             <widget class="QLineEdit" name="outputIntervalLineEdit">
              <property name="enabled">
@@ -425,6 +442,20 @@
              </property>
              <property name="text">
               <string>0.01</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="relativeToleranceLineEdit">
+             <property name="text">
+              <string>1e-5</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="label_13">
+             <property name="text">
+              <string>Relative Tolerance</string>
              </property>
             </widget>
            </item>
@@ -472,30 +503,6 @@
              </layout>
             </widget>
            </item>
-           <item row="4" column="1">
-            <widget class="QLineEdit" name="maxSamplesLineEdit">
-             <property name="text">
-              <string>500</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QRadioButton" name="maxSamplesRadioButton">
-             <property name="text">
-              <string>Max. Samples</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="7" column="0" colspan="2">
-            <widget class="QCheckBox" name="logFMICallsCheckBox">
-             <property name="text">
-              <string>Log FMI Calls</string>
-             </property>
-            </widget>
-           </item>
            <item row="2" column="1">
             <widget class="QLineEdit" name="startTimeLineEdit">
              <property name="text">
@@ -503,11 +510,30 @@
              </property>
             </widget>
            </item>
-           <item row="8" column="0" colspan="2">
-            <widget class="QCheckBox" name="debugLoggingCheckBox">
+           <item row="9" column="0">
+            <widget class="QLabel" name="label_14">
              <property name="text">
-              <string>Enable FMU Logging</string>
+              <string>Log Level</string>
              </property>
+            </widget>
+           </item>
+           <item row="9" column="1">
+            <widget class="QComboBox" name="logLevelComboBox">
+             <item>
+              <property name="text">
+               <string>OK</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Warning</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Error</string>
+              </property>
+             </item>
             </widget>
            </item>
           </layout>
