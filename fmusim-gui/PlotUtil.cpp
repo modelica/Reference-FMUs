@@ -36,14 +36,12 @@ static QString getData(const FMIRecorder* recorder, const FMIModelVariable* vari
 
         switch (type) {
         case FMIFloat32Type:
-        case FMIDiscreteFloat32Type:
         {
             const float* values = (float*)row->values[type];
             y += QString::number(values[index]);
         }
         break;
         case FMIFloat64Type:
-        case FMIDiscreteFloat64Type:
         {
             const double* values = (double*)row->values[type];
             y += QString::number(values[index]);

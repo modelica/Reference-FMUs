@@ -145,71 +145,6 @@ TERMINATE:
     return status;
 }
 
-static size_t FMISizeOfVariableType(FMIMajorVersion majorVersion, FMIVariableType type) {
-    
-    switch (type) {
-    case FMIFloat32Type:
-    case FMIDiscreteFloat32Type:
-        return sizeof(fmi3Float32);
-
-    case FMIFloat64Type:
-    case FMIDiscreteFloat64Type:
-        return sizeof(fmi3Float64);
-
-    case FMIInt8Type:
-        return sizeof(fmi3Int8);
-
-    case FMIUInt8Type:
-        return sizeof(fmi3UInt8);
-
-    case FMIInt16Type:
-        return sizeof(fmi3Int16);
-
-    case FMIUInt16Type:
-        return sizeof(fmi3UInt16);
-
-    case FMIInt32Type:
-        return sizeof(fmi3Int32);
-
-    case FMIUInt32Type:
-        return sizeof(fmi3UInt32);
-
-    case FMIInt64Type:
-        return sizeof(fmi3Int64);
-
-    case FMIUInt64Type:
-        return sizeof(fmi3UInt64);
-
-    case FMIBooleanType:
-        switch (majorVersion) {
-        case FMIMajorVersion1:
-            return sizeof(fmi1Boolean);
-        case FMIMajorVersion2:
-            return sizeof(fmi2Boolean);
-        case FMIMajorVersion3:
-            return sizeof(fmi3Boolean);
-        }
-
-    case FMIStringType:
-        return sizeof(fmi3String);
-
-    case FMIBinaryType:
-        return sizeof(fmi3Binary);
-
-    case FMIClockType:
-        return sizeof(fmi3Clock);
-
-    case FMIValueReferenceType:
-        return sizeof(FMIValueReference);
-
-    case FMISizeTType:
-        return sizeof(size_t);
-
-    default:
-        return 0;
-    }
-}
-
 FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder) {
 
     FMIStatus status = FMIOK;
@@ -244,7 +179,7 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder) {
 
         void* values = NULL;
 
-        CALL(FMICalloc(&values, info->nValues, FMISizeOfVariableType(recorder->instance->fmiMajorVersion, type)));
+        CALL(FMICalloc(&values, info->nValues, FMISizeOfVariableType(type, recorder->instance->fmiMajorVersion)));
 
         CALL(FMIGetValues(recorder->instance, type, info->valueReferences, info->nVariables, row->sizes, values, info->nValues));
 
@@ -282,11 +217,9 @@ static void print_value(FILE* file, FMIVariableType type, void* value) {
 
     switch (type) {
     case FMIFloat32Type:
-    case FMIDiscreteFloat32Type:
         fprintf(file, "%.7g", *((fmi3Float32*)value));
         break;
     case FMIFloat64Type:
-    case FMIDiscreteFloat64Type:
         fprintf(file, "%.16g", *((fmi3Float64*)value));
         break;
     case FMIInt8Type:
@@ -383,7 +316,7 @@ FMIStatus FMIRecorderWriteCSV(FMIRecorder* recorder, FILE* file) {
             }
 
             const FMIVariableType type = (FMIVariableType)j;
-            const size_t size = FMISizeOfVariableType(FMIMajorVersion3, type);
+            const size_t size = FMISizeOfVariableType(type, FMIMajorVersion3);
             char* value = (char*)row->values[j];
 
             for (size_t k = 0; k < info->nVariables; k++) {
