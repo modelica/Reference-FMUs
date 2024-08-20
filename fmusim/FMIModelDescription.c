@@ -198,13 +198,7 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
         xmlFree((void*)variability);
 
         if (!strcmp(typeName, "Real")) {
-            const char* variability = (char*)xmlGetProp(variableNode, (xmlChar*)"variability");
-            if (variability && !strcmp(variability, "discrete")) {
-                variable->type = FMIDiscreteRealType;
-            } else {
-                variable->type = FMIRealType;
-            }
-            xmlFree((void*)variability);
+            variable->type = FMIRealType;
         } else if (!strcmp(typeName, "Integer") || !strcmp(typeName, "Enumeration")) {
             variable->type = FMIIntegerType;
         } else if (!strcmp(typeName, "Boolean")) {
@@ -224,7 +218,7 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
     // check variabilities
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
         const FMIModelVariable* variable = modelDescription->modelVariables[i];
-        if (variable->type != FMIRealType && variable->type != FMIDiscreteRealType && variable->variability == FMIContinuous) {
+        if (variable->type != FMIRealType && variable->variability == FMIContinuous) {
             FMILogError("Variable \"%s\" is not of type Real but has variability = continuous.\n", variable->name);
             nProblems++;
         }
@@ -592,7 +586,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
         xmlFree((void*)variability);
 
         if (!strcmp(typeName, "Real")) {
-            variable->type = variable->variability == FMIDiscrete ? FMIDiscreteRealType : FMIRealType;
+            variable->type =  FMIRealType;
         } else if (!strcmp(typeName, "Integer") || !strcmp(typeName, "Enumeration")) {
             variable->type = FMIIntegerType;
         } else if (!strcmp(typeName, "Boolean")) {
@@ -653,7 +647,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     // check variabilities
     for (size_t i = 0; i < modelDescription->nModelVariables; i++) {
         FMIModelVariable* variable = modelDescription->modelVariables[i];
-        if (variable->type != FMIRealType && variable->type != FMIDiscreteRealType && variable->variability == FMIContinuous) {
+        if (variable->type != FMIRealType && variable->variability == FMIContinuous) {
             FMILogError("Variable \"%s\" is not of type Real but has variability = continuous.\n", variable->name);
             nProblems++;
         }
@@ -939,25 +933,9 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         xmlFree((void*)variability);
 
         if (!strcmp(name, "Float32")) {
-            switch (variable->variability) {
-            case -1:
-            case FMIContinuous:
-                type = FMIFloat32Type;
-                break;
-            default:
-                type = FMIDiscreteFloat32Type;
-                break;
-            }
+            type = FMIFloat32Type;
         } else if (!strcmp(name, "Float64")) {
-            switch (variable->variability) {
-            case -1:
-            case FMIContinuous:
-                type = FMIFloat64Type;
-                break;
-            default:
-                type = FMIDiscreteFloat64Type;
-                break;
-            }
+            type = FMIFloat64Type;
         } else if (!strcmp(name, "Int8")) {
             type = FMIInt8Type;
         } else if (!strcmp(name, "UInt8")) {

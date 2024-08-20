@@ -72,9 +72,9 @@ typedef enum {
 
     // FMI 3.0 variable types
     FMIFloat32Type,
-    FMIDiscreteFloat32Type,
+    //FMIDiscreteFloat32Type,
     FMIFloat64Type,
-    FMIDiscreteFloat64Type,
+    //FMIDiscreteFloat64Type,
     FMIInt8Type,
     FMIUInt8Type,
     FMIInt16Type,
@@ -94,7 +94,7 @@ typedef enum {
 
     // aliases for FMI 1.0 and 2.0 variable types
     FMIRealType         = FMIFloat64Type,
-    FMIDiscreteRealType = FMIDiscreteFloat64Type,
+    //FMIDiscreteRealType = FMIDiscreteFloat64Type,
     FMIIntegerType      = FMIInt32Type,
 
 } FMIVariableType;

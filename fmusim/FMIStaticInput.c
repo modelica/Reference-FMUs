@@ -115,67 +115,6 @@ void FMIFreeInput(FMIStaticInput* input) {
 	FMIFree((void**)&input);
 }
 
-static size_t FMISizeOf(FMIVariableType type, FMIMajorVersion fmiMajorVersion) {
-
-	switch (type) {
-
-	case FMIFloat32Type:
-	case FMIDiscreteFloat32Type:
-		return sizeof(fmi3Float32);
-	
-	case FMIFloat64Type:
-	case FMIDiscreteFloat64Type:
-		return sizeof(fmi3Float64);
-	
-	case FMIInt8Type:
-		return sizeof(fmi3Int8);
-	
-	case FMIUInt8Type:
-		return sizeof(fmi3UInt8);
-	
-	case FMIInt16Type:
-		return sizeof(fmi3Int16);
-	
-	case FMIUInt16Type:
-		return sizeof(fmi3UInt16);
-	
-	case FMIInt32Type:
-		return sizeof(fmi3Int32);
-	
-	case FMIUInt32Type:
-		return sizeof(fmi3UInt32);
-	
-	case FMIInt64Type:
-		return sizeof(fmi3Int64);
-	
-	case FMIUInt64Type:
-		return sizeof(fmi3UInt64);
-	
-	case FMIBooleanType:
-		switch (fmiMajorVersion) {
-		case FMIMajorVersion1:
-			return sizeof(fmi1Boolean);
-		case FMIMajorVersion2:
-			return sizeof(fmi2Boolean);
-		case FMIMajorVersion3:
-			return sizeof(fmi3Boolean);
-		}
-	
-	case FMIClockType:
-		return sizeof(fmi3Clock);
-	
-	case FMIValueReferenceType:
-		return sizeof(FMIValueReference);
-	
-	case FMISizeTType:
-		return sizeof(size_t);
-	
-	default:
-		return 0;
-	}
-
-}
-
 double FMINextInputEvent(const FMIStaticInput* input, double time) {
 
 	if (!input) {
@@ -201,13 +140,13 @@ double FMINextInputEvent(const FMIStaticInput* input, double time) {
 			const FMIVariableType   type     = variable->type;
 			const size_t            nValues = input->nValues[j];
 
-			if (type == FMIFloat32Type || type == FMIFloat64Type) {
+			if (variable->variability == FMIContinuous) {
 				continue;  // skip continuous variables
 			}
 
 			const void* values0 = input->values[i * input->nVariables + j];
 			const void* values1 = input->values[(i + 1) * input->nVariables + j];
-			const size_t size = FMISizeOf(type, input->fmiMajorVersion) * nValues;
+			const size_t size = FMISizeOfVariableType(type, input->fmiMajorVersion) * nValues;
 
 			if (memcmp(values0, values1, size)) {
 				return t1;

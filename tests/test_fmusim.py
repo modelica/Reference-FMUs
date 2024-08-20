@@ -351,7 +351,6 @@ def test_event_mode_input_events(platform):
             '--stop-time', '5',
             '--output-interval', '2.5',
             '--input-file', input_file,
-            '--event-mode-used'
         ],
         model='Feedthrough.fmu'
     )

@@ -235,11 +235,9 @@ void FMIAppendArrayToLogMessageBuffer(FMIInstance* instance, const void* values,
 
         switch (variableType) {
         case FMIFloat32Type:
-        case FMIDiscreteFloat32Type:
             length = snprintf(s, n, "%.7g", ((float*)values)[i]);
             break;
         case FMIFloat64Type:
-        case FMIDiscreteFloat64Type:
             length = snprintf(s, n, "%.16g", ((double*)values)[i]);
             break;
         case FMIInt8Type:

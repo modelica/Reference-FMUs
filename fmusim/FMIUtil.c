@@ -25,7 +25,6 @@ FMIStatus FMIGetValues(
 
         switch (type) {
         case FMIRealType:
-        case FMIDiscreteRealType:
             return FMI1GetReal(instance, valueReferences, nValueReferences, (fmi1Real*)values);
         case FMIIntegerType:
             return FMI1GetInteger(instance, valueReferences, nValueReferences, (fmi1Integer*)values);
@@ -43,7 +42,6 @@ FMIStatus FMIGetValues(
 
         switch (type) {
         case FMIRealType:
-        case FMIDiscreteRealType:
             return FMI2GetReal(instance, valueReferences, nValueReferences, (fmi2Real*)values);
         case FMIIntegerType:
             return FMI2GetInteger(instance, valueReferences, nValueReferences, (fmi2Integer*)values);
@@ -61,10 +59,8 @@ FMIStatus FMIGetValues(
 
         switch (type) {
         case FMIFloat32Type:
-        case FMIDiscreteFloat32Type:
             return FMI3GetFloat32(instance, valueReferences, nValueReferences, (fmi3Float32*)values, nValues);
         case FMIFloat64Type:
-        case FMIDiscreteFloat64Type:
             return FMI3GetFloat64(instance, valueReferences, nValueReferences, (fmi3Float64*)values, nValues);
         case FMIInt8Type:
             return FMI3GetInt8(instance, valueReferences, nValueReferences, (fmi3Int8*)values, nValues);
@@ -176,7 +172,6 @@ FMIStatus FMISetValues(
 
         switch (type) {
         case FMIRealType:
-        case FMIDiscreteRealType:
             return FMI1SetReal(instance, valueReferences, nValueReferences, (fmi1Real*)values);
         case FMIIntegerType:
             return FMI1SetInteger(instance, valueReferences, nValueReferences, (fmi1Integer*)values);
@@ -194,7 +189,6 @@ FMIStatus FMISetValues(
 
         switch (type) {
         case FMIRealType:
-        case FMIDiscreteRealType:
             return FMI2SetReal(instance, valueReferences, nValueReferences, (fmi2Real*)values);
         case FMIIntegerType:
             return FMI2SetInteger(instance, valueReferences, nValueReferences, (fmi2Integer*)values);
@@ -212,10 +206,8 @@ FMIStatus FMISetValues(
 
         switch (type) {
         case FMIFloat32Type:
-        case FMIDiscreteFloat32Type:
             return FMI3SetFloat32(instance, valueReferences, nValueReferences, (fmi3Float32*)values, nValues);
         case FMIFloat64Type:
-        case FMIDiscreteFloat64Type:
             return FMI3SetFloat64(instance, valueReferences, nValueReferences, (fmi3Float64*)values, nValues);
         case FMIInt8Type:
             return FMI3SetInt8(instance, valueReferences, nValueReferences, (fmi3Int8*)values, nValues);
@@ -265,6 +257,34 @@ FMIStatus FMISetValues(
         (*nValues)++; \
     }
 
+size_t FMISizeOfVariableType(FMIVariableType type, FMIMajorVersion majorVersion) {
+
+    switch (type) {
+    case FMIFloat32Type:        return sizeof(fmi3Float32);
+    case FMIFloat64Type:        return sizeof(fmi3Float64);
+    case FMIInt8Type:           return sizeof(fmi3Int8);
+    case FMIUInt8Type:          return sizeof(fmi3UInt8);
+    case FMIInt16Type:          return sizeof(fmi3Int16);
+    case FMIUInt16Type:         return sizeof(fmi3UInt16);
+    case FMIInt32Type:          return sizeof(fmi3Int32);
+    case FMIUInt32Type:         return sizeof(fmi3UInt32);
+    case FMIInt64Type:          return sizeof(fmi3Int64);
+    case FMIUInt64Type:         return sizeof(fmi3UInt64);
+    case FMIBooleanType:
+        switch (majorVersion) {
+        case FMIMajorVersion1:  return sizeof(fmi1Boolean);
+        case FMIMajorVersion2:  return sizeof(fmi2Boolean);
+        case FMIMajorVersion3:  return sizeof(fmi3Boolean);
+        }
+    case FMIStringType:         return sizeof(fmi3String);
+    case FMIBinaryType:         return sizeof(fmi3Binary);
+    case FMIClockType:          return sizeof(fmi3Clock);
+    case FMIValueReferenceType: return sizeof(FMIValueReference);
+    case FMISizeTType:          return sizeof(size_t);
+    default:                    return 0;
+    }
+}
+
 FMIStatus FMIParseValues(FMIMajorVersion fmiMajorVersion, FMIVariableType type, const char* literal, size_t* nValues, void** values) {
 
     FMIStatus status = FMIOK;
@@ -281,11 +301,9 @@ FMIStatus FMIParseValues(FMIMajorVersion fmiMajorVersion, FMIVariableType type, 
 
     switch (type) {
     case FMIFloat32Type:
-    case FMIDiscreteFloat32Type:
         PARSE_VALUES(fmi3Float32, strtof);
         break;
     case FMIFloat64Type:
-    case FMIDiscreteFloat64Type:
         PARSE_VALUES(fmi3Float64, strtod);
         break;
     case FMIInt8Type:
@@ -397,7 +415,7 @@ TERMINATE:
 
      char* next = (char*)literal;
 
-     if (type == FMIFloat32Type || type == FMIDiscreteFloat32Type) {
+     if (type == FMIFloat32Type) {
 
          fmi3Float32* v = (fmi3Float32*)values;
 
@@ -405,7 +423,7 @@ TERMINATE:
              v[i] = strtof(next, &next);
          }
 
-     } else if (type == FMIFloat64Type || type == FMIDiscreteFloat64Type) {
+     } else if (type == FMIFloat64Type) {
 
          fmi3Float64* v = (fmi3Float64*)values;
 

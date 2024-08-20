@@ -148,10 +148,8 @@ QVariant AbstractModelVariablesModel::columnData(const FMIModelVariable *variabl
             return variable->name;
         case TypeColumn:
             switch (variable->type) {
-            case FMIFloat32Type:
-            case FMIDiscreteFloat32Type: return "Float32";
-            case FMIFloat64Type:
-            case FMIDiscreteFloat64Type: return "Float64";
+            case FMIFloat32Type: return "Float32";
+            case FMIFloat64Type: return "Float64";
             case FMIInt8Type: return "Int8";
             case FMIUInt8Type: return "UInt8";
             case FMIInt16Type: return "Int16";
