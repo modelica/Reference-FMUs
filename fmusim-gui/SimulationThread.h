@@ -13,6 +13,7 @@ class SimulationThread : public QThread
     Q_OBJECT
 
 public:
+    FMIStatus logLevel = FMIOK;
     bool logFMICalls = false;
     FMIInterfaceType interfaceType;
     const char* modelIdentifier = nullptr;

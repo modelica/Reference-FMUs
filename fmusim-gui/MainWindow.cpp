@@ -542,6 +542,16 @@ void MainWindow::simulate() {
 
     simulationThread->logFMICalls = ui->logFMICallsCheckBox->isChecked();
 
+    const QString logLevel = ui->logLevelComboBox->currentText();
+
+    if (logLevel == "Warning") {
+        simulationThread->logLevel = FMIWarning;
+    } else if (logLevel == "Error") {
+        simulationThread->logLevel = FMIError;
+    } else {
+        simulationThread->logLevel = FMIOK;
+    }
+
     FMISimulationSettings* settings = simulationThread->settings;
 
     memset(settings, 0, sizeof(FMISimulationSettings));

@@ -176,5 +176,7 @@ void SimulationThread::logMessage(FMIInstance* instance, FMIStatus status, const
 
     SimulationThread *simulationThread = (SimulationThread*)instance->userData;
 
-    simulationThread->messages.append(message);
+    if (status >= simulationThread->logLevel) {
+        simulationThread->messages.append(message);
+    }
 }

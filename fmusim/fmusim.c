@@ -28,11 +28,15 @@
 
 #define PROGNAME "fmusim"
 
-
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
+static FMIStatus logLevel = FMIOK;
 
 static void logMessage(FMIInstance* instance, FMIStatus status, const char* category, const char* message) {
+
+    if (status < logLevel) {
+        return;
+    }
 
     switch (status) {
     case FMIOK:
@@ -108,6 +112,7 @@ void printUsage() {
         "  --input-file [FILE]              read input from a CSV file\n"
         "  --output-file [FILE]             write output to a CSV file\n"
         "  --logging-on                     enable FMU logging\n"
+        "  --log-level [ok|warning|error]   set the log level\n"
         "  --log-fmi-calls                  log FMI calls\n"
         "  --fmi-log-file [FILE]            set the FMI log file\n"
         "  --solver [euler|cvode]           the solver to use\n"
@@ -185,6 +190,20 @@ int main(int argc, const char* argv[]) {
 
         if (!strcmp(v, "--logging-on")) {
             loggingOn = true;
+        } else if (!strcmp(v, "--log-level")) {
+            if (!strcmp(argv[i + 1], "ok")) {
+                logLevel = FMIOK;
+            } else if (!strcmp(argv[i + 1], "warning")) {
+                logLevel = FMIWarning;
+            } else if (!strcmp(argv[i + 1], "error")) {
+                logLevel = FMIError;
+            } else {
+                printf(PROGNAME ": unrecognized log level '%s'\n", argv[i + 1]);
+                printf("Log level must be one of 'ok', 'warning', or 'error'.\n");
+                status = FMIError;
+                goto TERMINATE;
+            }
+            i++;
         } else if (!strcmp(v, "--log-fmi-calls")) {
             logFMICalls = true;
         } else if (!strcmp(v, "--interface-type")) {
