@@ -100,6 +100,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ModelVariablesTreeModel.h ModelVariablesTreeModel.cpp
         AbstractModelVariablesModel.h AbstractModelVariablesModel.cpp
         PlotUtil.h PlotUtil.cpp
+
+        resources/app-icon.rc
     )
 
 target_include_directories(fmusim-gui PRIVATE
