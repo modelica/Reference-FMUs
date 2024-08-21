@@ -36,5 +36,7 @@
         <file>buttons/light/hammer.svg</file>
         <file>buttons/dark/list.svg</file>
         <file>buttons/light/list.svg</file>
+        <file>buttons/dark/broom.svg</file>
+        <file>buttons/light/broom.svg</file>
     </qresource>
 </RCC>

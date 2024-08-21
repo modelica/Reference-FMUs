@@ -197,6 +197,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->filterInputVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterInputVariables);
     connect(ui->filterOutputVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterOutputVariables);
     connect(ui->filterLocalVariablesToolButton, &QToolButton::clicked, variablesFilterModel, &VariablesFilterModel::setFilterLocalVariables);
+    connect(ui->clearPlotsToolButton, &QToolButton::clicked, this, [this]() {
+        plotVariables.clear();
+        variablesListModel->setPlotVariables(&plotVariables);
+        modelVariablesTreeModel->setPlotVariables(&plotVariables);
+        updatePlot();
+    });
     connect(ui->showOptionalColumnsToolButton, &QToolButton::clicked, this, &MainWindow::setOptionalColumnsVisible);
     connect(ui->showListViewToolButton, &QToolButton::clicked, this, &MainWindow::showModelVariablesListView);
 
@@ -519,6 +525,7 @@ void MainWindow::setColorScheme(Qt::ColorScheme colorScheme) {
     ui->filterInputVariablesToolButton->setIcon(QIcon(":/buttons/" + theme + "/input-variable.svg"));
     ui->filterOutputVariablesToolButton->setIcon(QIcon(":/buttons/" + theme + "/output-variable.svg"));
     ui->filterLocalVariablesToolButton->setIcon(QIcon(":/buttons/" + theme + "/local-variable.svg"));
+    ui->clearPlotsToolButton->setIcon(QIcon(":/buttons/" + theme + "/broom.svg"));
     ui->showOptionalColumnsToolButton->setIcon(QIcon(":/buttons/" + theme + "/columns.svg"));
     ui->showListViewToolButton->setIcon(QIcon(":/buttons/" + theme + "/list.svg"));
 
