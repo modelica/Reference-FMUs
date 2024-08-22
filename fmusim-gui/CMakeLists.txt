@@ -46,7 +46,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_SOURCES}
         ModelVariablesTableModel.h
         ModelVariablesTableModel.cpp
-        plot.html
         ../src/FMI1.c
         ../src/FMI2.c
         ../include/FMI1.h
@@ -89,7 +88,10 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ../fmusim/FMICVode.c
 
         buttons.qrc
-        plot.qrc
+
+        resources/plot/plot.html
+        resources/plot/plot.qrc
+
         icons/variables/variables.qrc
         VariablesFilterModel.h VariablesFilterModel.cpp
         SimulationThread.h SimulationThread.cpp
