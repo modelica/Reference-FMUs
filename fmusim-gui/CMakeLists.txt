@@ -92,7 +92,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         resources/plot/plot.html
         resources/plot/plot.qrc
 
-        icons/variables/variables.qrc
+        resources/variables/variables.qrc
+
         VariablesFilterModel.h VariablesFilterModel.cpp
         SimulationThread.h SimulationThread.cpp
         resources.qrc
