@@ -104,6 +104,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         PlotUtil.h PlotUtil.cpp
 
         resources/app-icon.rc
+        resources/build/build.qrc
     )
 
 target_include_directories(fmusim-gui PRIVATE
