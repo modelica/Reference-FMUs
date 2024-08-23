@@ -96,7 +96,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 
         VariablesFilterModel.h VariablesFilterModel.cpp
         SimulationThread.h SimulationThread.cpp
-        resources.qrc
         BuildPlatformBinaryDialog.h BuildPlatformBinaryDialog.cpp BuildPlatformBinaryDialog.ui
         BuildPlatformBinaryThread.h BuildPlatformBinaryThread.cpp
 
@@ -104,7 +103,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         AbstractModelVariablesModel.h AbstractModelVariablesModel.cpp
         PlotUtil.h PlotUtil.cpp
 
-        resources/app-icon.rc
+        resources/icon/icon.qrc
+        resources/icon/icon.rc
         resources/build/build.qrc
     )
 

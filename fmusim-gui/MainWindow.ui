@@ -11,11 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>FMUSim GUI</string>
+   <string>FMUSim</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources.qrc">
-    <normaloff>:/fmusim.svg</normaloff>:/fmusim.svg</iconset>
+   <iconset resource="resources/icon/icon.qrc">
+    <normaloff>:/icon/icon.svg</normaloff>:/icon/icon.svg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_7">
@@ -1398,7 +1398,7 @@
  </customwidgets>
  <resources>
   <include location="buttons.qrc"/>
-  <include location="resources.qrc"/>
+  <include location="resources/icon/icon.qrc"/>
  </resources>
  <connections>
   <connection>
