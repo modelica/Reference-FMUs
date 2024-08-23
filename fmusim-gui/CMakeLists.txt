@@ -87,7 +87,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ../fmusim/FMICVode.h
         ../fmusim/FMICVode.c
 
-        buttons.qrc
+        resources/buttons/buttons.qrc
+        resources/tools/tools.qrc
 
         resources/plot/plot.html
         resources/plot/plot.qrc
