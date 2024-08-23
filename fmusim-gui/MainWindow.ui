@@ -11,11 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>FMUSim GUI</string>
+   <string>FMUSim</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources.qrc">
-    <normaloff>:/fmusim.svg</normaloff>:/fmusim.svg</iconset>
+   <iconset resource="resources/icon/icon.qrc">
+    <normaloff>:/icon/icon.svg</normaloff>:/icon/icon.svg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_7">
@@ -34,7 +34,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="startPage">
        <layout class="QGridLayout" name="gridLayout_9">
@@ -183,6 +183,9 @@
           <property name="text">
            <string/>
           </property>
+          <property name="textInteractionFlags">
+           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+          </property>
          </widget>
         </item>
         <item row="4" column="0">
@@ -218,6 +221,9 @@
           <property name="text">
            <string/>
           </property>
+          <property name="textInteractionFlags">
+           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+          </property>
          </widget>
         </item>
         <item row="5" column="1">
@@ -225,12 +231,18 @@
           <property name="text">
            <string/>
           </property>
+          <property name="textInteractionFlags">
+           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+          </property>
          </widget>
         </item>
         <item row="4" column="1">
          <widget class="QLabel" name="continuousStatesLabel">
           <property name="text">
            <string/>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
           </property>
          </widget>
         </item>
@@ -245,6 +257,9 @@
           <property name="text">
            <string/>
           </property>
+          <property name="textInteractionFlags">
+           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+          </property>
          </widget>
         </item>
         <item row="7" column="0">
@@ -258,6 +273,9 @@
          <widget class="QLabel" name="generationDateLabel">
           <property name="text">
            <string/>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
           </property>
          </widget>
         </item>
@@ -283,6 +301,9 @@
           <property name="wordWrap">
            <bool>true</bool>
           </property>
+          <property name="textInteractionFlags">
+           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+          </property>
          </widget>
         </item>
         <item row="3" column="1">
@@ -290,12 +311,18 @@
           <property name="text">
            <string/>
           </property>
+          <property name="textInteractionFlags">
+           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
+          </property>
          </widget>
         </item>
         <item row="7" column="1">
          <widget class="QLabel" name="generationToolLabel">
           <property name="text">
            <string/>
+          </property>
+          <property name="textInteractionFlags">
+           <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByMouse</set>
           </property>
          </widget>
         </item>
@@ -319,8 +346,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>68</width>
-             <height>34</height>
+             <width>631</width>
+             <height>377</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_13">
@@ -969,12 +996,9 @@
           <property name="toolTip">
            <string>Filter parameter variables</string>
           </property>
-          <property name="text">
-           <string>P</string>
-          </property>
           <property name="icon">
-           <iconset resource="buttons.qrc">
-            <normaloff>:/buttons/dark/parameter.svg</normaloff>:/buttons/dark/parameter.svg</iconset>
+           <iconset resource="resources/tools/tools.qrc">
+            <normaloff>:/tools/dark/parameter.svg</normaloff>:/tools/dark/parameter.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -992,12 +1016,9 @@
           <property name="toolTip">
            <string>Show optional columns</string>
           </property>
-          <property name="text">
-           <string>C</string>
-          </property>
           <property name="icon">
-           <iconset resource="buttons.qrc">
-            <normaloff>:/buttons/dark/columns.svg</normaloff>:/buttons/dark/columns.svg</iconset>
+           <iconset resource="resources/tools/tools.qrc">
+            <normaloff>:/tools/dark/columns.svg</normaloff>:/tools/dark/columns.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -1012,12 +1033,9 @@
           <property name="toolTip">
            <string>Filter local variables</string>
           </property>
-          <property name="text">
-           <string>L</string>
-          </property>
           <property name="icon">
-           <iconset resource="buttons.qrc">
-            <normaloff>:/buttons/dark/local-variable.svg</normaloff>:/buttons/dark/local-variable.svg</iconset>
+           <iconset resource="resources/tools/tools.qrc">
+            <normaloff>:/tools/dark/local-variable.svg</normaloff>:/tools/dark/local-variable.svg</iconset>
           </property>
           <property name="iconSize">
            <size>
@@ -1041,12 +1059,9 @@
           <property name="toolTip">
            <string>Show list view</string>
           </property>
-          <property name="text">
-           <string>...</string>
-          </property>
           <property name="icon">
-           <iconset resource="buttons.qrc">
-            <normaloff>:/buttons/dark/list.svg</normaloff>:/buttons/dark/list.svg</iconset>
+           <iconset resource="resources/tools/tools.qrc">
+            <normaloff>:/tools/dark/list.svg</normaloff>:/tools/dark/list.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -1074,12 +1089,9 @@
           <property name="toolTip">
            <string>Filter output variables</string>
           </property>
-          <property name="text">
-           <string>O</string>
-          </property>
           <property name="icon">
-           <iconset resource="buttons.qrc">
-            <normaloff>:/buttons/dark/output-variable.svg</normaloff>:/buttons/dark/output-variable.svg</iconset>
+           <iconset resource="resources/tools/tools.qrc">
+            <normaloff>:/tools/dark/output-variable.svg</normaloff>:/tools/dark/output-variable.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -1097,12 +1109,9 @@
           <property name="toolTip">
            <string>Filter input variables</string>
           </property>
-          <property name="text">
-           <string>I</string>
-          </property>
           <property name="icon">
-           <iconset resource="buttons.qrc">
-            <normaloff>:/buttons/dark/input-variable.svg</normaloff>:/buttons/dark/input-variable.svg</iconset>
+           <iconset resource="resources/tools/tools.qrc">
+            <normaloff>:/tools/dark/input-variable.svg</normaloff>:/tools/dark/input-variable.svg</iconset>
           </property>
           <property name="checkable">
            <bool>true</bool>
@@ -1121,8 +1130,8 @@
            <string>Clear all plots</string>
           </property>
           <property name="icon">
-           <iconset resource="buttons.qrc">
-            <normaloff>:/buttons/dark/broom.svg</normaloff>:/buttons/dark/broom.svg</iconset>
+           <iconset resource="resources/tools/tools.qrc">
+            <normaloff>:/tools/dark/broom.svg</normaloff>:/tools/dark/broom.svg</iconset>
           </property>
           <property name="autoRaise">
            <bool>true</bool>
@@ -1189,7 +1198,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset resource="resources/buttons/buttons.qrc">
      <normaloff>:/buttons/dark/gear.svg</normaloff>:/buttons/dark/gear.svg</iconset>
    </property>
    <property name="text">
@@ -1204,7 +1213,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset resource="resources/buttons/buttons.qrc">
      <normaloff>:/buttons/dark/file-earmark-zip.svg</normaloff>:/buttons/dark/file-earmark-zip.svg</iconset>
    </property>
    <property name="text">
@@ -1219,7 +1228,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset resource="resources/buttons/buttons.qrc">
      <normaloff>:/buttons/dark/book.svg</normaloff>:/buttons/dark/book.svg</iconset>
    </property>
    <property name="text">
@@ -1234,7 +1243,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset resource="resources/buttons/buttons.qrc">
      <normaloff>:/buttons/dark/graph.svg</normaloff>:/buttons/dark/graph.svg</iconset>
    </property>
    <property name="text">
@@ -1246,7 +1255,7 @@
   </action>
   <action name="openFileAction">
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset resource="resources/buttons/buttons.qrc">
      <normaloff>:/buttons/dark/folder-open.svg</normaloff>:/buttons/dark/folder-open.svg</iconset>
    </property>
    <property name="text">
@@ -1261,7 +1270,7 @@
   </action>
   <action name="simulateAction">
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset resource="resources/buttons/buttons.qrc">
      <normaloff>:/buttons/dark/play.svg</normaloff>:/buttons/dark/play.svg</iconset>
    </property>
    <property name="text">
@@ -1287,7 +1296,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset resource="resources/buttons/buttons.qrc">
      <normaloff>:/buttons/dark/list-task.svg</normaloff>:/buttons/dark/list-task.svg</iconset>
    </property>
    <property name="text">
@@ -1302,7 +1311,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset resource="resources/buttons/buttons.qrc">
      <normaloff>:/buttons/dark/side-bar.svg</normaloff>:/buttons/dark/side-bar.svg</iconset>
    </property>
    <property name="text">
@@ -1317,7 +1326,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset resource="resources/buttons/buttons.qrc">
      <normaloff>:/buttons/dark/info.svg</normaloff>:/buttons/dark/info.svg</iconset>
    </property>
    <property name="text">
@@ -1332,7 +1341,7 @@
   </action>
   <action name="newWindowAction">
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset resource="resources/buttons/buttons.qrc">
      <normaloff>:/buttons/dark/new-window.svg</normaloff>:/buttons/dark/new-window.svg</iconset>
    </property>
    <property name="text">
@@ -1347,7 +1356,7 @@
   </action>
   <action name="buildPlatformBinaryAction">
    <property name="icon">
-    <iconset resource="buttons.qrc">
+    <iconset resource="resources/buttons/buttons.qrc">
      <normaloff>:/buttons/dark/hammer.svg</normaloff>:/buttons/dark/hammer.svg</iconset>
    </property>
    <property name="text">
@@ -1370,8 +1379,9 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="buttons.qrc"/>
-  <include location="resources.qrc"/>
+  <include location="resources/buttons/buttons.qrc"/>
+  <include location="resources/icon/icon.qrc"/>
+  <include location="resources/tools/tools.qrc"/>
  </resources>
  <connections>
   <connection>

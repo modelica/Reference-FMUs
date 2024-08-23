@@ -46,7 +46,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_SOURCES}
         ModelVariablesTableModel.h
         ModelVariablesTableModel.cpp
-        plot.html
         ../src/FMI1.c
         ../src/FMI2.c
         ../include/FMI1.h
@@ -88,12 +87,16 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ../fmusim/FMICVode.h
         ../fmusim/FMICVode.c
 
-        buttons.qrc
-        plot.qrc
-        icons/variables/variables.qrc
+        resources/buttons/buttons.qrc
+        resources/tools/tools.qrc
+
+        resources/plot/plot.html
+        resources/plot/plot.qrc
+
+        resources/variables/variables.qrc
+
         VariablesFilterModel.h VariablesFilterModel.cpp
         SimulationThread.h SimulationThread.cpp
-        resources.qrc
         BuildPlatformBinaryDialog.h BuildPlatformBinaryDialog.cpp BuildPlatformBinaryDialog.ui
         BuildPlatformBinaryThread.h BuildPlatformBinaryThread.cpp
 
@@ -101,7 +104,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         AbstractModelVariablesModel.h AbstractModelVariablesModel.cpp
         PlotUtil.h PlotUtil.cpp
 
-        resources/app-icon.rc
+        resources/icon/icon.qrc
+        resources/icon/icon.rc
+        resources/build/build.qrc
     )
 
 target_include_directories(fmusim-gui PRIVATE

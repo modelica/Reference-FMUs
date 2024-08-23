@@ -132,13 +132,13 @@ QVariant AbstractModelVariablesModel::columnData(const FMIModelVariable *variabl
             case FMIParameter:
             case FMIStructuralParameter:
             case FMICalculatedParameter:
-                return QIcon(":/variables/dark/float-parameter.svg");
+                return QIcon(":/variables/float-parameter.svg");
             case FMIInput:
-                return QIcon(":/variables/dark/float-input.svg");
+                return QIcon(":/variables/float-input.svg");
             case FMIOutput:
-                return QIcon(":/variables/dark/float-output.svg");
+                return QIcon(":/variables/float-output.svg");
             default:
-                return QIcon(":/variables/dark/float-variable.svg");
+                return QIcon(":/variables/float-variable.svg");
             }
         default:
             return QVariant();

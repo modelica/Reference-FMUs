@@ -32,16 +32,16 @@ void BuildPlatformBinaryThread::run() {
 
     buildDirectory.setAutoRemove(removeBuilDirectory);
 
-    QFile::copy(":/resources/CMakeLists.txt", buildDirectory.filePath("CMakeLists.txt"));
+    QFile::copy(":/build/CMakeLists.txt", buildDirectory.filePath("CMakeLists.txt"));
 
     if (modelDescription->fmiMajorVersion == 2) {
-        QFile::copy(":/resources/fmi2Functions.h", buildDirectory.filePath("fmi2Functions.h"));
-        QFile::copy(":/resources/fmi2FunctionTypes.h", buildDirectory.filePath("fmi2FunctionTypes.h"));
-        QFile::copy(":/resources/fmi2TypesPlatform.h", buildDirectory.filePath("fmi2TypesPlatform.h"));
+        QFile::copy(":/build/fmi2Functions.h", buildDirectory.filePath("fmi2Functions.h"));
+        QFile::copy(":/build/fmi2FunctionTypes.h", buildDirectory.filePath("fmi2FunctionTypes.h"));
+        QFile::copy(":/build/fmi2TypesPlatform.h", buildDirectory.filePath("fmi2TypesPlatform.h"));
     } else {
-        QFile::copy(":/resources/fmi3Functions.h", buildDirectory.filePath("fmi3Functions.h"));
-        QFile::copy(":/resources/fmi3FunctionTypes.h", buildDirectory.filePath("fmi3FunctionTypes.h"));
-        QFile::copy(":/resources/fmi3PlatformTypes.h", buildDirectory.filePath("fmi3PlatformTypes.h"));
+        QFile::copy(":/build/fmi3Functions.h", buildDirectory.filePath("fmi3Functions.h"));
+        QFile::copy(":/build/fmi3FunctionTypes.h", buildDirectory.filePath("fmi3FunctionTypes.h"));
+        QFile::copy(":/build/fmi3PlatformTypes.h", buildDirectory.filePath("fmi3PlatformTypes.h"));
     }
 
     size_t nSourceFiles;
