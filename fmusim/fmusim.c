@@ -32,7 +32,11 @@
 
 static FMIStatus logLevel = FMIOK;
 
+static FILE* s_logFile = NULL;
+
 static void logMessage(FMIInstance* instance, FMIStatus status, const char* category, const char* message) {
+
+    FILE* const stream = s_logFile ? s_logFile : stdout;
 
     if (status < logLevel) {
         return;
@@ -40,26 +44,28 @@ static void logMessage(FMIInstance* instance, FMIStatus status, const char* cate
 
     switch (status) {
     case FMIOK:
-        printf("[OK] ");
+        fputs("[OK] ", stream);
         break;
     case FMIWarning:
-        printf("[Warning] ");
+        fputs("[Warning] ", stream);
         break;
     case FMIDiscard:
-        printf("[Discard] ");
+        fputs("[Discard] ", stream);
         break;
     case FMIError:
-        printf("[Error] ");
+        fputs("[Error] ", stream);
         break;
     case FMIFatal:
-        printf("[Fatal] ");
+        fputs("[Fatal] ", stream);
         break;
     case FMIPending:
-        printf("[Pending] ");
+        fputs("[Pending] ", stream);
         break;
     }
 
-    puts(message);
+    fputs(message, stream);
+
+    fputc('\n', stream);
 }
 
 static FILE* s_fmiLogFile = NULL;
@@ -112,6 +118,7 @@ void printUsage() {
         "  --input-file [FILE]              read input from a CSV file\n"
         "  --output-file [FILE]             write output to a CSV file\n"
         "  --logging-on                     enable FMU logging\n"
+        "  --log-file [FILE]                set the log file\n"
         "  --log-level [ok|warning|error]   set the log level\n"
         "  --log-fmi-calls                  log FMI calls\n"
         "  --fmi-log-file [FILE]            set the FMI log file\n"
@@ -137,6 +144,7 @@ int main(int argc, const char* argv[]) {
 
     const char* inputFile = NULL;
     const char* outputFile = NULL;
+    const char* logFile = NULL;
     const char* fmiLogFile = NULL;
     const char* initialFMUStateFile = NULL;
     const char* finalFMUStateFile = NULL;
@@ -232,6 +240,8 @@ int main(int argc, const char* argv[]) {
             inputFile = argv[++i];
         } else if (!strcmp(v, "--output-file")) {
             outputFile = argv[++i];
+        } else if (!strcmp(v, "--log-file")) {
+            logFile = argv[++i];
         } else if (!strcmp(v, "--fmi-log-file")) {
             fmiLogFile = argv[++i];
         } else if (!strcmp(v, "--tolerance")) {
@@ -265,6 +275,14 @@ int main(int argc, const char* argv[]) {
     }
 
     const char* fmuPath = argv[argc - 1];
+
+    if (logFile) {
+        s_logFile = fopen(logFile, "w");
+        if (!s_logFile) {
+            printf("Failed to open log file %s for writing.\n", logFile);
+            goto TERMINATE;
+        }
+    }
 
     if (fmiLogFile) {
         s_fmiLogFile = fopen(fmiLogFile, "w");
@@ -521,6 +539,11 @@ TERMINATE:
     if (unzipdir) {
         FMIRemoveDirectory(unzipdir);
         FMIFree((void**)&unzipdir);
+    }
+
+    if (s_logFile) {
+        fclose(s_logFile);
+        s_logFile = NULL;
     }
 
     if (s_fmiLogFile) {
