@@ -245,7 +245,7 @@ FMIStatus FMISetValues(
 
 #define PARSE_VALUES(t, f, ...) \
     while (strlen(next) > 0) { \
-        CALL(FMIRealloc(values, sizeof(t)* ((*nValues) + 1))); \
+        CALL(FMIRealloc(values, sizeof(t) * ((*nValues) + 1))); \
         t* v = (t*)*values; \
         char* end; \
         v[*nValues] = f(next, &end, ##__VA_ARGS__); \
@@ -342,36 +342,35 @@ FMIStatus FMIParseValues(FMIMajorVersion fmiMajorVersion, FMIVariableType type, 
     case FMIBooleanType:
     case FMIClockType: {
 
-        size_t size = 0;
-
-        switch (fmiMajorVersion) {
-        case FMIMajorVersion1:
-            size = sizeof(fmi1Boolean);
-            break;
-        case FMIMajorVersion2:
-            size = sizeof(fmi2Boolean);
-            break;
-        case FMIMajorVersion3:
-            size = sizeof(fmi2Boolean);
-            break;
-        }
+        const size_t size = FMISizeOfVariableType(FMIBooleanType, fmiMajorVersion);
 
         while (strlen(next) > 0) {
 
-            CALL(FMIRealloc(values, size * ((*nValues) + 1)));
-            
-            fmi3Boolean* v = (fmi3Boolean*)*values;
+            bool value;
 
             size_t delimiter = strcspn(next, " ");
 
             if (!strncmp(next, "0", delimiter) || !strncmp(next, "false", delimiter)) {
-                v[*nValues] = fmi3False;
+                value = false;
             } else if (!strncmp(next, "1", delimiter) || !strncmp(next, "true", delimiter)) {
-                v[*nValues] = fmi3True;
+                value = true;
             } else {
-                FMILogError("Values for Boolean must be one of 0, false, 1, or true.\n");
+                FMILogError("Values for Boolean must be one of 0, 1, false, or true.\n");
                 status = FMIError;
                 goto TERMINATE;
+            }
+
+            CALL(FMIRealloc(values, size * ((*nValues) + 1)));
+
+            if (fmiMajorVersion == FMIMajorVersion1) {
+                fmi1Boolean* v = (fmi1Boolean*)*values;
+                v[*nValues] = value ? fmi1True : fmi1False;
+            } else if (fmiMajorVersion == FMIMajorVersion2) {
+                fmi2Boolean* v = (fmi2Boolean*)*values;
+                v[*nValues] = value ? fmi2True : fmi2False;
+            } else if (fmiMajorVersion == FMIMajorVersion3) {
+                fmi3Boolean* v = (fmi3Boolean*)*values;
+                v[*nValues] = value ? fmi3True : fmi3False;
             }
 
             (*nValues)++;
