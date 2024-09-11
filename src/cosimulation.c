@@ -15,6 +15,10 @@
 #define strdup _strdup
 #endif
 
+#ifdef CALL
+#undef CALL
+#endif
+
 #define CALL(f) do { const Status status = f; if (status != OK) return status; } while (false)
 
 
