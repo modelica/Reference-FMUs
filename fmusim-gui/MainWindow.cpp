@@ -521,13 +521,13 @@ void MainWindow::setColorScheme(Qt::ColorScheme colorScheme) {
     ui->showSideBarAction->setIcon(QIcon(":/buttons/" + theme + "/side-bar.svg"));
 
     // tool buttons
-    ui->filterParameterVariablesToolButton->setIcon(QIcon(":/buttons/" + theme + "/parameter.svg"));
-    ui->filterInputVariablesToolButton->setIcon(QIcon(":/buttons/" + theme + "/input-variable.svg"));
-    ui->filterOutputVariablesToolButton->setIcon(QIcon(":/buttons/" + theme + "/output-variable.svg"));
-    ui->filterLocalVariablesToolButton->setIcon(QIcon(":/buttons/" + theme + "/local-variable.svg"));
-    ui->clearPlotsToolButton->setIcon(QIcon(":/buttons/" + theme + "/broom.svg"));
-    ui->showOptionalColumnsToolButton->setIcon(QIcon(":/buttons/" + theme + "/columns.svg"));
-    ui->showListViewToolButton->setIcon(QIcon(":/buttons/" + theme + "/list.svg"));
+    ui->filterParameterVariablesToolButton->setIcon(QIcon(":/tools/" + theme + "/parameter.svg"));
+    ui->filterInputVariablesToolButton->setIcon(QIcon(":/tools/" + theme + "/input-variable.svg"));
+    ui->filterOutputVariablesToolButton->setIcon(QIcon(":/tools/" + theme + "/output-variable.svg"));
+    ui->filterLocalVariablesToolButton->setIcon(QIcon(":/tools/" + theme + "/local-variable.svg"));
+    ui->clearPlotsToolButton->setIcon(QIcon(":/tools/" + theme + "/broom.svg"));
+    ui->showOptionalColumnsToolButton->setIcon(QIcon(":/tools/" + theme + "/columns.svg"));
+    ui->showListViewToolButton->setIcon(QIcon(":/tools/" + theme + "/list.svg"));
 
     this->colorScheme = colorScheme;
 
