@@ -9,7 +9,7 @@
 int main(int argc, char *argv[]) {
 
     QApplication app(argc, argv);
-    QApplication::setApplicationVersion("0.0.33");
+    QApplication::setApplicationVersion("0.0.34");
     QApplication::setOrganizationName("Modelica Association");
     QApplication::setApplicationName("FMUSim");
 
