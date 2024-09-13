@@ -1,10 +1,8 @@
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
 #include "csv.h"
-#include "FMI1.h"
-#include "FMI2.h"
-#include "FMI3.h"
 #include "FMIUtil.h"
 #include "FMIStaticInput.h"
 
@@ -29,9 +27,9 @@ FMIStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
     handle = CsvOpen(filename);
 
 	if (!handle) {
-		status = FMIError;
 		FMILogError("Failed to read input file %s.\n", filename);
-		goto TERMINATE;
+        status = FMIError;
+        goto TERMINATE;
 	}
 
 	// variable names
@@ -44,9 +42,10 @@ FMIStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 		const FMIModelVariable* variable = FMIModelVariableForName(modelDescription, col);
 
 		if (!variable) {
-			FMILogError("Variable %s not found.\n", col);
-			return NULL;
-		}
+            FMILogError("Variable %s not found.\n", col);
+            status = FMIError;
+            goto TERMINATE;
+        }
 
 		CALL(FMIRealloc((void**)&input->variables, (input->nVariables + 1) * sizeof(FMIModelVariable*)));
 		input->variables[input->nVariables] = variable;
@@ -56,7 +55,7 @@ FMIStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 	// data
     while ((row = CsvReadNextRow(handle))) {
 
-		CALL(FMIRealloc((void**)&input->time,    (input->nRows + 1) * sizeof(double)));
+        CALL(FMIRealloc((void**)&input->time, (input->nRows + 1) * sizeof(double)));
 		CALL(FMIRealloc((void**)&input->nValues, (input->nRows + 1) * input->nVariables * sizeof(size_t)));
 		CALL(FMIRealloc((void**)&input->values, (input->nRows + 1) * input->nVariables * sizeof(void*)));
 		
@@ -71,14 +70,21 @@ FMIStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 		input->time[input->nRows] = strtod(col, &eptr);
 
+        if (input->nRows > 0 && input->time[input->nRows - 1] > input->time[input->nRows]) {
+            FMILogError("Values in first column (time) must be monotonically increasing.\n");
+            status = FMIError;
+            goto TERMINATE;
+        }
+
 		size_t i = 0; // variable index
 
         while ((col = CsvReadNextCol(row, handle))) {
 			
 			if (i >= input->nVariables) {
-				FMILogError("The number of columns must be equal to the number of variables.\n");
-				return NULL;
-			}
+                FMILogError("The number of columns must be equal to the number of variables.\n");
+                status = FMIError;
+                goto TERMINATE;
+            }
 
 			const FMIModelVariable* variable = input->variables[i];
 
@@ -195,11 +201,10 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMIStaticInput* input, doub
 			const size_t j = row * input->nVariables + i;
 
 			const size_t nValues = input->nValues[j];
-			const void* values = input->values[j];
 
 			if (nValues == 0) continue;
 
-			const size_t requiredBufferSize = nValues * sizeof(fmi3Float64);
+            const size_t requiredBufferSize = nValues * sizeof(double);
 
 			if (input->bufferSize < requiredBufferSize) {
 				// TODO: allocate in FMIReadInput()
@@ -225,7 +230,7 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMIStaticInput* input, doub
 						const double x0 = values0[k];
 						const double x1 = values1[k];
 
-						buffer[k] = x0 + (time - t0) * (x1 - x0) / (t1 - t0);
+                        buffer[k] = (float)(x0 + (time - t0) * (x1 - x0) / (t1 - t0));
 					}
 
 				}
