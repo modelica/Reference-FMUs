@@ -18,14 +18,15 @@ FMIStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 	FMIStaticInput* input = NULL;
 
+    CsvHandle handle = NULL;
+
 	CALL(FMICalloc((void**)&input, 1, sizeof(FMIStaticInput)));
 	
 	input->fmiMajorVersion = modelDescription->fmiMajorVersion;
 
 	char* row = NULL;
-	int cols = 0;
 
-	CsvHandle handle = CsvOpen(filename);
+    handle = CsvOpen(filename);
 
 	if (!handle) {
 		status = FMIError;
@@ -36,9 +37,9 @@ FMIStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 	// variable names
 	row = CsvReadNextRow(handle);
 
-	const char* col = CsvReadNextCol(row, handle);
+    const char* col = CsvReadNextCol(row, handle);
 
-	while (col = CsvReadNextCol(row, handle)) {
+    while ((col = CsvReadNextCol(row, handle))) {
 
 		const FMIModelVariable* variable = FMIModelVariableForName(modelDescription, col);
 
@@ -53,7 +54,7 @@ FMIStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 	}
 
 	// data
-	while (row = CsvReadNextRow(handle)) {
+    while ((row = CsvReadNextRow(handle))) {
 
 		CALL(FMIRealloc((void**)&input->time,    (input->nRows + 1) * sizeof(double)));
 		CALL(FMIRealloc((void**)&input->nValues, (input->nRows + 1) * input->nVariables * sizeof(size_t)));
@@ -72,7 +73,7 @@ FMIStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 		size_t i = 0; // variable index
 
-		while (col = CsvReadNextCol(row, handle)) {
+        while ((col = CsvReadNextCol(row, handle))) {
 			
 			if (i >= input->nVariables) {
 				FMILogError("The number of columns must be equal to the number of variables.\n");
@@ -92,6 +93,10 @@ FMIStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 	}
 
 TERMINATE:
+
+    if (handle) {
+        CsvClose(handle);
+    }
 
 	if (status == FMIOK) {
 		return input;
