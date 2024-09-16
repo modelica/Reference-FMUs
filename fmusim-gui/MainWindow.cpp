@@ -39,28 +39,18 @@ MainWindow::MainWindow(QWidget *parent)
 
     simulationThread = new SimulationThread(this);
 
-    progressDialog = new QProgressDialog(this);
-
-    progressDialog->setWindowTitle("FMUSim");
-    progressDialog->setLabelText("Simulating...");
-    progressDialog->setRange(0, 100);
-    progressDialog->setMinimumDuration(1000);
-    progressDialog->setWindowModality(Qt::WindowModal);
-
-    Qt::WindowFlags flags = progressDialog->windowFlags();
-    Qt::WindowFlags closeFlag = Qt::WindowCloseButtonHint;
-    flags = flags & (~closeFlag);
-    progressDialog->setWindowFlags(flags);
-    progressDialog->reset();
-
-    connect(simulationThread, &SimulationThread::progressChanged, progressDialog, &QProgressDialog::setValue);
-    connect(simulationThread, &SimulationThread::finished, progressDialog, &QProgressDialog::reset);
+    connect(simulationThread, &SimulationThread::plotChanged, this, &MainWindow::runPlotScript);
     connect(simulationThread, &SimulationThread::finished, this, &MainWindow::simulationFinished);
-    connect(progressDialog, &QProgressDialog::canceled, simulationThread, &SimulationThread::stop);
+    connect(this, &MainWindow::stopSimulationRequested, simulationThread, &SimulationThread::stop);
+    connect(this, &MainWindow::plotVariablesChanged, simulationThread, &SimulationThread::setPlotVariables);
 
     buildPlatformBinaryThread = new BuildPlatformBinaryThread(this);
 
     buildPlatformBinaryProgressDialog = new QProgressDialog(this);
+
+    Qt::WindowFlags flags = buildPlatformBinaryProgressDialog->windowFlags();
+    Qt::WindowFlags closeFlag = Qt::WindowCloseButtonHint;
+    flags = flags & (~closeFlag);
 
     buildPlatformBinaryProgressDialog->setWindowTitle("FMUSim");
     buildPlatformBinaryProgressDialog->setLabelText("Building Platform Binary...");
@@ -536,6 +526,11 @@ void MainWindow::setColorScheme(Qt::ColorScheme colorScheme) {
 
 void MainWindow::simulate() {
 
+    if (simulationThread->isRunning()) {
+        emit stopSimulationRequested();
+        return;
+    }
+
     ui->logPlainTextEdit->clear();
 
     double stopTime = stopTimeLineEdit->text().toDouble();
@@ -547,6 +542,7 @@ void MainWindow::simulate() {
         outputInterval = stopTime / ui->maxSamplesLineEdit->text().toDouble();
     }
 
+    simulationThread->setPlotVariables(plotVariables);
     simulationThread->logFMICalls = ui->logFMICallsCheckBox->isChecked();
 
     const QString logLevel = ui->logLevelComboBox->currentText();
@@ -623,6 +619,10 @@ void MainWindow::simulate() {
     } else {
         simulationThread->inputFilename = "";
     }
+
+    ui->simulateAction->setIcon(QIcon(":/buttons/dark/stop.svg"));
+
+    setCurrentPage(ui->plotPage);
 
     simulationThread->start();
 }
@@ -744,16 +744,34 @@ void MainWindow::unloadFMU() {
     interfaceTypeComboBox->setEnabled(false);
 }
 
+void MainWindow::runPlotScript(QString javaScript) {
+    ui->plotWebEngineView->page()->runJavaScript(javaScript);
+}
+
 void MainWindow::addPlotVariable(const FMIModelVariable* variable) {
+
     plotVariables.append(variable);
+
     variablesListModel->setPlotVariables(&plotVariables);
-    updatePlot();
+
+    emit plotVariablesChanged(plotVariables);
+
+    if (!simulationThread->isRunning()) {
+        updatePlot();
+    }
 }
 
 void MainWindow::removePlotVariable(const FMIModelVariable* variable) {
+
     plotVariables.removeAll(variable);
+
     variablesListModel->setPlotVariables(&plotVariables);
-    updatePlot();
+
+    emit plotVariablesChanged(plotVariables);
+
+    if (!simulationThread->isRunning()) {
+        updatePlot();
+    }
 }
 
 void MainWindow::setOptionalColumnsVisible(bool visible) {
@@ -775,6 +793,8 @@ void MainWindow::setOptionalColumnsVisible(bool visible) {
 }
 
 void MainWindow::simulationFinished() {
+
+    ui->simulateAction->setIcon(QIcon(":/buttons/dark/play.svg"));
 
     ui->logPlainTextEdit->setPlainText(simulationThread->messages.join('\n'));
 

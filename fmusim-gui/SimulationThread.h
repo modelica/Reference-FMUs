@@ -13,6 +13,7 @@ class SimulationThread : public QThread
     Q_OBJECT
 
 public:
+    qint64 plotInterval = 1000;
     FMIStatus logLevel = FMIOK;
     bool logFMICalls = false;
     FMIInterfaceType interfaceType;
@@ -30,8 +31,12 @@ public:
 
 public slots:
     void stop();
+    void setPlotVariables(QList<const FMIModelVariable*> plotVariables);
 
 private:
+    qint64 startTime;
+    qint64 nextPlotTime;
+    QList<const FMIModelVariable*> plotVariables;
     static SimulationThread* currentSimulationThread;
     static void appendMessage(const char* message, va_list args);
     static bool stepFinished(const FMISimulationSettings* settings, double time);
@@ -39,6 +44,7 @@ private:
 
 signals:
     void progressChanged(int progress);
+    void plotChanged(QString);
 
 };
 

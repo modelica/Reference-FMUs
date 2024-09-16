@@ -1,5 +1,6 @@
 #include <QDateTime>
 #include "SimulationThread.h"
+#include "PlotUtil.h"
 
 
 SimulationThread* SimulationThread::currentSimulationThread = nullptr;
@@ -60,7 +61,8 @@ void SimulationThread::run() {
 
     emit progressChanged(0);
 
-    const qint64 startTime = QDateTime::currentMSecsSinceEpoch();
+    startTime = QDateTime::currentMSecsSinceEpoch();
+    nextPlotTime = startTime;
 
     char platformBinaryPath[2048] = "";
 
@@ -106,14 +108,12 @@ void SimulationThread::run() {
         }
     }
 
-    FMIRecorder* initialRecorder = FMICreateRecorder(S, modelDescription->nModelVariables, (const FMIModelVariable**)modelDescription->modelVariables);
+    settings->initialRecorder = FMICreateRecorder(S, modelDescription->nModelVariables, (const FMIModelVariable**)modelDescription->modelVariables);
 
-    FMIRecorder* recorder = FMICreateRecorder(S, recordedVariables.size(), (const FMIModelVariable**)recordedVariables.data());
+    settings->recorder = FMICreateRecorder(S, recordedVariables.size(), (const FMIModelVariable**)recordedVariables.data());
 
     settings->S = S;
     settings->modelDescription = modelDescription;
-    settings->initialRecorder = initialRecorder;
-    settings->recorder = recorder;
     settings->input = input;
 
     status = FMISimulate(settings);
@@ -127,6 +127,10 @@ void SimulationThread::stop() {
     continueSimulation = false;
 }
 
+void SimulationThread::setPlotVariables(QList<const FMIModelVariable *> plotVariables) {
+    this->plotVariables = plotVariables;
+}
+
 bool SimulationThread::stepFinished(const FMISimulationSettings* settings, double time) {
 
     SimulationThread* simulationThread = static_cast<SimulationThread*>(settings->userData);
@@ -134,6 +138,14 @@ bool SimulationThread::stepFinished(const FMISimulationSettings* settings, doubl
     int progress = ((time - settings->startTime) / (settings->stopTime - settings->startTime)) * 100;
 
     emit simulationThread->progressChanged(progress);
+
+    const qint64 currentTime = QDateTime::currentMSecsSinceEpoch();
+
+    if (currentTime >= simulationThread->nextPlotTime) {
+        const QString plot = PlotUtil::createPlot(settings->initialRecorder, settings->recorder, simulationThread->plotVariables, Qt::ColorScheme::Dark);
+        emit simulationThread->plotChanged(plot);
+        simulationThread->nextPlotTime = currentTime + simulationThread->plotInterval;
+    }
 
     return simulationThread->continueSimulation;
 }

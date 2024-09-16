@@ -60,7 +60,6 @@ private:
     ModelVariablesTreeModel* modelVariablesTreeModel = nullptr;
     SimulationThread* simulationThread = nullptr;
     BuildPlatformBinaryThread* buildPlatformBinaryThread = nullptr;
-    QProgressDialog* progressDialog;
     QProgressDialog* buildPlatformBinaryProgressDialog;
 
     static MainWindow* currentMainWindow;
@@ -69,6 +68,9 @@ private:
     void setCurrentPage(QWidget *page);
     void updatePlot();
     void unloadFMU();
+
+public slots:
+    void runPlotScript(QString javaScript);
 
 private slots:
     void openFile();
@@ -82,6 +84,10 @@ private slots:
     void simulationFinished();
     void buildPlatformBinary();
     void showModelVariablesListView(bool show);
+
+signals:
+    void stopSimulationRequested();
+    void plotVariablesChanged(QList<const FMIModelVariable*> plotVariables);
 
 };
 #endif // MAINWINDOW_H
