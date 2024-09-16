@@ -24,6 +24,7 @@ extern "C" {
 #include "FMISimulation.h"
 #include "FMIEuler.h"
 #include "FMICVode.h"
+#include <string.h>
 }
 
 #define FMI_PATH_MAX 4096
@@ -561,7 +562,7 @@ void MainWindow::simulate() {
 
     const QByteArray ba = unzipdir.toLocal8Bit();
 
-    settings->unzipdir = _strdup(ba.data());
+    settings->unzipdir = strdup(ba.data());
     settings->modelDescription = modelDescription;
 
     if (interfaceTypeComboBox->currentText() == "Co-Simulation") {
@@ -610,7 +611,7 @@ void MainWindow::simulate() {
     for (auto [variable, value] : startValues.asKeyValueRange()) {
         settings->startVariables[i] = (FMIModelVariable*)variable;
         QByteArray buffer = value.toLocal8Bit();
-        settings->startValues[i] = _strdup(buffer.data());
+        settings->startValues[i] = strdup(buffer.data());
         i++;
     }
 
