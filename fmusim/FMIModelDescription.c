@@ -487,7 +487,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
             if (unit) {
                 typeDefinition->unit = FMIUnitForName(modelDescription, unit);
                 if (!typeDefinition->unit) {
-                    FMILogError("Unit \"%s\" of type defintion \"%s\" is not defined.", unit, typeDefinition->name);
+                    FMILogError("Unit \"%s\" of type defintion \"%s\" (line %hu) is not defined.", unit, typeDefinition->name, typeNode->line);
                     nProblems++;
                 }
                 xmlFree((void*)unit);
@@ -498,7 +498,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
             if (displayUnit) {
                 typeDefinition->displayUnit = FMIDisplayUnitForName(typeDefinition->unit, displayUnit);
                 if (!typeDefinition->displayUnit) {
-                    FMILogError("Display unit \"%s\" of type defintion \"%s\" is not defined.", displayUnit, typeDefinition->name);
+                    FMILogError("Display unit \"%s\" of type defintion \"%s\" (line %hu) is not defined.", displayUnit, typeDefinition->name, typeNode->line);
                     nProblems++;
                 }
                 xmlFree((void*)displayUnit);
@@ -823,7 +823,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             if (unit) {
                 typeDefinition->unit = FMIUnitForName(modelDescription, unit);
                 if (!typeDefinition->unit) {
-                    FMILogError("Unit \"%s\" of type defintion \"%s\" is not defined.", unit, typeDefinition->name);
+                    FMILogError("Unit \"%s\" of type defintion \"%s\" (line %hu) is not defined.", unit, typeDefinition->name, typeDefinitionNode->line);
                     nProblems++;
                 }
                 xmlFree((void*)unit);
@@ -834,7 +834,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             if (displayUnit) {
                 typeDefinition->displayUnit = FMIDisplayUnitForName(typeDefinition->unit, displayUnit);
                 if (!typeDefinition->displayUnit) {
-                    FMILogError("Display unit \"%s\" of type defintion \"%s\" is not defined.", displayUnit, typeDefinition->name);
+                    FMILogError("Display unit \"%s\" of type defintion \"%s\" (line %hu) is not defined.", displayUnit, typeDefinition->name, typeDefinitionNode->line);
                     nProblems++;
                 }
                 xmlFree((void*)displayUnit);
