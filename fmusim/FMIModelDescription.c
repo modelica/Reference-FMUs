@@ -228,15 +228,11 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 
     xmlXPathFreeContext(xpathCtx);
 
-    if (nProblems > 0) {
-        FMIFreeModelDescription(modelDescription);
-        modelDescription = NULL;
-    }
-
 TERMINATE:
 
-    if (status != FMIOK) {
-        FMIFree((void**)&modelDescription);
+    if (status != FMIOK || nProblems > 0) {
+        FMIFreeModelDescription(modelDescription);
+        modelDescription = NULL;
     }
 
     return modelDescription;
@@ -655,14 +651,12 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
     nProblems += FMIValidateModelDescription(modelDescription);
 
-    if (nProblems > 0) {
+TERMINATE:
+    
+    if (status != FMIOK || nProblems > 0) {
         FMIFreeModelDescription(modelDescription);
         modelDescription = NULL;
     }
-
-TERMINATE:
-    
-    // TODO
     
     return modelDescription;
 }
@@ -1017,11 +1011,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             const char* start = (char*)xmlGetProp(dimensionNode, (xmlChar*)"start");
             const char* valueReference = (char*)xmlGetProp(dimensionNode, (xmlChar*)"valueReference");
 
-            variable->dimensions = realloc(variable->dimensions, (variable->nDimensions + 1) * sizeof(FMIDimension));
-
-            if (!variable->dimensions) {
-                return NULL;
-            }
+            CALL(FMIRealloc(&variable->dimensions, (variable->nDimensions + 1) * sizeof(FMIDimension)));
 
             FMIDimension* dimension = &variable->dimensions[variable->nDimensions];
 
@@ -1084,14 +1074,12 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
     nProblems += FMIValidateModelDescription(modelDescription);
 
-    if (nProblems > 0) {
+TERMINATE:
+
+    if (status != FMIOK || nProblems > 0) {
         FMIFreeModelDescription(modelDescription);
         modelDescription = NULL;
     }
-
-TERMINATE:
-
-    // TODO
 
     return modelDescription;
 }
