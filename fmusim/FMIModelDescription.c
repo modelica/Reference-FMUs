@@ -31,6 +31,24 @@
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
+static char* getStringAttribute(const xmlNodePtr node, const char* name) {
+    
+    const char* attribute = (char*)xmlGetProp(node, (xmlChar*)name);
+    
+    if (!attribute) {
+        return NULL;
+    }
+
+    char* value = NULL;
+
+    FMIDuplicateString(attribute, &value);
+    
+    xmlFree(attribute);
+
+    return value;
+}
+
+
 static bool getBooleanAttribute(const xmlNodePtr node, const char* name) {
     char* literal = (char*)xmlGetProp(node, (xmlChar*)name);
     bool value = literal && (strcmp(literal, "true") == 0 || strcmp(literal, "1") == 0);
@@ -84,39 +102,37 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
     CALL(FMICalloc((void**)&modelDescription, 1, sizeof(FMIModelDescription)));
 
     modelDescription->fmiMajorVersion          = FMIMajorVersion1;
-    modelDescription->modelName                = (char*)xmlGetProp(root, (xmlChar*)"modelName");
-    modelDescription->instantiationToken       = (char*)xmlGetProp(root, (xmlChar*)"guid");
-    modelDescription->description              = (char*)xmlGetProp(root, (xmlChar*)"description");
-    modelDescription->generationTool           = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
-    modelDescription->generationDateAndTime    = (char*)xmlGetProp(root, (xmlChar*)"generationDateAndTime");
+    modelDescription->modelName                = getStringAttribute(root, "modelName");
+    modelDescription->instantiationToken       = getStringAttribute(root, "guid");
+    modelDescription->description              = getStringAttribute(root, "description");
+    modelDescription->generationTool           = getStringAttribute(root, "generationTool");
+    modelDescription->generationDateAndTime    = getStringAttribute(root, "generationDateAndTime");
     modelDescription->variableNamingConvention = getVariableNamingConvention(root);
 
     const char* numberOfContinuousStates = (char*)xmlGetProp(root, (xmlChar*)"numberOfContinuousStates");
     
     if (numberOfContinuousStates) {
         modelDescription->nContinuousStates = atoi(numberOfContinuousStates);
+        xmlFree((void*)numberOfContinuousStates);
     }
     
-    xmlFree((void*)numberOfContinuousStates);
-
     const char* numberOfEventIndicators = (char*)xmlGetProp(root, (xmlChar*)"numberOfEventIndicators");
     
     if (numberOfEventIndicators) {
         modelDescription->nEventIndicators = atoi(numberOfEventIndicators);
+        xmlFree((void*)numberOfEventIndicators);
     }
     
-    xmlFree((void*)numberOfEventIndicators);
-
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(root->doc);
 
     xmlXPathObjectPtr xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/Implementation/CoSimulation_StandAlone", xpathCtx);
     
     if (xpathObj->nodesetval->nodeNr == 1) {
         CALL(FMICalloc((void**)&modelDescription->coSimulation, 1, sizeof(FMICoSimulationInterface)));
-        modelDescription->coSimulation->modelIdentifier = (char*)xmlGetProp(root, (xmlChar*)"modelIdentifier");
+        modelDescription->coSimulation->modelIdentifier = getStringAttribute(root, "modelIdentifier");
     } else {
         CALL(FMICalloc((void**)&modelDescription->modelExchange, 1, sizeof(FMIModelExchangeInterface)));
-        modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(root, (xmlChar*)"modelIdentifier");
+        modelDescription->modelExchange->modelIdentifier = getStringAttribute(root, "modelIdentifier");
     }
     
     xmlXPathFreeObject(xpathObj);
@@ -126,9 +142,9 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
     if (xpathObj->nodesetval->nodeNr == 1) {
         CALL(FMICalloc((void**)&modelDescription->defaultExperiment, 1, sizeof(FMIDefaultExperiment)));
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
-        modelDescription->defaultExperiment->startTime = (char*)xmlGetProp(node, (xmlChar*)"startTime");
-        modelDescription->defaultExperiment->stopTime  = (char*)xmlGetProp(node, (xmlChar*)"stopTime");
-        modelDescription->defaultExperiment->tolerance = (char*)xmlGetProp(node, (xmlChar*)"tolerance");
+        modelDescription->defaultExperiment->startTime = getStringAttribute(node, "startTime");
+        modelDescription->defaultExperiment->stopTime  = getStringAttribute(node, "stopTime");
+        modelDescription->defaultExperiment->tolerance = getStringAttribute(node, "tolerance");
     }
     
     xmlXPathFreeObject(xpathObj);
@@ -152,13 +168,13 @@ static FMIModelDescription* readModelDescriptionFMI1(xmlNodePtr root) {
 
         variable->line = variableNode->line;
 
-        variable->name        = (char*)xmlGetProp(variableNode, (xmlChar*)"name");
-        variable->description = (char*)xmlGetProp(variableNode, (xmlChar*)"description");
+        variable->name        = getStringAttribute(variableNode, "name");
+        variable->description = getStringAttribute(variableNode, "description");
 
-        variable->min     = (char*)xmlGetProp(typeNode, (xmlChar*)"min");
-        variable->max     = (char*)xmlGetProp(typeNode, (xmlChar*)"max");
-        variable->nominal = (char*)xmlGetProp(typeNode, (xmlChar*)"nominal");
-        variable->start   = (char*)xmlGetProp(typeNode, (xmlChar*)"start");
+        variable->min     = getStringAttribute(typeNode, "min");
+        variable->max     = getStringAttribute(typeNode, "max");
+        variable->nominal = getStringAttribute(typeNode, "nominal");
+        variable->start   = getStringAttribute(typeNode, "start");
 
         const char* typeName = (char*)typeNode->name;
 
@@ -326,7 +342,7 @@ static FMIStatus readSourceFiles(xmlXPathContextPtr xpathCtx, const char* path, 
 
         for (int i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
             xmlNodePtr fileNode = xpathObj->nodesetval->nodeTab[i];
-            (*sourceFiles)[i] = (char*)xmlGetProp(fileNode, (xmlChar*)"name");
+            (*sourceFiles)[i] = getStringAttribute(fileNode, "name");
         }
     }
 
@@ -348,17 +364,18 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     CALL(FMICalloc((void**)&modelDescription, 1, sizeof(FMIModelDescription)));
 
     modelDescription->fmiMajorVersion          = FMIMajorVersion2;
-    modelDescription->modelName                = (char*)xmlGetProp(root, (xmlChar*)"modelName");
-    modelDescription->instantiationToken       = (char*)xmlGetProp(root, (xmlChar*)"guid");
-    modelDescription->description              = (char*)xmlGetProp(root, (xmlChar*)"description");
-    modelDescription->generationTool           = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
-    modelDescription->generationDateAndTime    = (char*)xmlGetProp(root, (xmlChar*)"generationDateAndTime");
+    modelDescription->modelName                = getStringAttribute(root, "modelName");
+    modelDescription->instantiationToken       = getStringAttribute(root, "guid");
+    modelDescription->description              = getStringAttribute(root, "description");
+    modelDescription->generationTool           = getStringAttribute(root, "generationTool");
+    modelDescription->generationDateAndTime    = getStringAttribute(root, "generationDateAndTime");
     modelDescription->variableNamingConvention = getVariableNamingConvention(root);
 
     const char* numberOfEventIndicators = (char*)xmlGetProp(root, (xmlChar*)"numberOfEventIndicators");
 
     if (numberOfEventIndicators) {
         modelDescription->nEventIndicators = atoi(numberOfEventIndicators);
+        xmlFree((void*)numberOfEventIndicators);
     }
 
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(root->doc);
@@ -367,7 +384,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     if (xpathObj->nodesetval->nodeNr == 1) {
         CALL(FMICalloc((void**)&modelDescription->modelExchange, 1, sizeof(FMIModelExchangeInterface)));
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
-        modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(node, (xmlChar*)"modelIdentifier");
+        modelDescription->modelExchange->modelIdentifier = getStringAttribute(node, "modelIdentifier");
         modelDescription->modelExchange->providesDirectionalDerivatives = getBooleanAttribute(node, "providesDirectionalDerivative");
         modelDescription->modelExchange->needsCompletedIntegratorStep = !getBooleanAttribute(node, "completedIntegratorStepNotNeeded");
         CALL(readSourceFiles(xpathCtx, "/fmiModelDescription/ModelExchange/SourceFiles/File", &modelDescription->modelExchange->nSourceFiles, &modelDescription->modelExchange->sourceFiles));
@@ -377,7 +394,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/CoSimulation", xpathCtx);
     if (xpathObj->nodesetval->nodeNr == 1) {
         CALL(FMICalloc((void**)&modelDescription->coSimulation, 1, sizeof(FMICoSimulationInterface)));
-        modelDescription->coSimulation->modelIdentifier = (char*)xmlGetProp(xpathObj->nodesetval->nodeTab[0], (xmlChar*)"modelIdentifier");
+        modelDescription->coSimulation->modelIdentifier = getStringAttribute(xpathObj->nodesetval->nodeTab[0], "modelIdentifier");
         CALL(readSourceFiles(xpathCtx, "/fmiModelDescription/CoSimulation/SourceFiles/File", &modelDescription->coSimulation->nSourceFiles, &modelDescription->coSimulation->sourceFiles));
     }
     xmlXPathFreeObject(xpathObj);
@@ -386,10 +403,10 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     if (xpathObj->nodesetval->nodeNr == 1) {
         CALL(FMICalloc((void**)&modelDescription->defaultExperiment, 1, sizeof(FMIDefaultExperiment)));
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
-        modelDescription->defaultExperiment->startTime = (char*)xmlGetProp(node, (xmlChar*)"startTime");
-        modelDescription->defaultExperiment->stopTime  = (char*)xmlGetProp(node, (xmlChar*)"stopTime");
-        modelDescription->defaultExperiment->tolerance = (char*)xmlGetProp(node, (xmlChar*)"tolerance");
-        modelDescription->defaultExperiment->stepSize  = (char*)xmlGetProp(node, (xmlChar*)"stepSize");
+        modelDescription->defaultExperiment->startTime = getStringAttribute(node, "startTime");
+        modelDescription->defaultExperiment->stopTime  = getStringAttribute(node, "stopTime");
+        modelDescription->defaultExperiment->tolerance = getStringAttribute(node, "tolerance");
+        modelDescription->defaultExperiment->stepSize  = getStringAttribute(node, "stepSize");
     }
     xmlXPathFreeObject(xpathObj);
 
@@ -441,7 +458,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
                 CALL(FMICalloc((void**)&displayUnit, 1, sizeof(FMIDisplayUnit)));
 
-                displayUnit->name = (char*)xmlGetProp(childNode, (xmlChar*)"name");
+                displayUnit->name = getStringAttribute(childNode, "name");
                 displayUnit->factor = getDoubleAttribute(childNode, "factor", 1.0);
                 displayUnit->offset = getDoubleAttribute(childNode, "offset", 0.0);
 
@@ -452,7 +469,7 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
             childNode = childNode->next;
         }
 
-        unit->name = (char*)xmlGetProp(unitNode, (xmlChar*)"name");
+        unit->name = getStringAttribute(unitNode, "name");
     }
 
     // type definitions
@@ -474,9 +491,9 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
             modelDescription->typeDefinitions[i] = typeDefinition;
 
-            typeDefinition->name = (char*)xmlGetProp(simpleTypeNode, (xmlChar*)"name");
+            typeDefinition->name = getStringAttribute(simpleTypeNode, "name");
             
-            typeDefinition->quantity = (char*)xmlGetProp(typeNode, (xmlChar*)"quantity");
+            typeDefinition->quantity = getStringAttribute(typeNode, "quantity");
 
             const char* unit = (char*)xmlGetProp(typeNode, (xmlChar*)"unit");
             
@@ -501,9 +518,9 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
             }
 
             typeDefinition->relativeQuantity = getBooleanAttribute(typeNode, "relativeQuantity");
-            typeDefinition->min              = (char*)xmlGetProp(typeNode, (xmlChar*)"min");
-            typeDefinition->max              = (char*)xmlGetProp(typeNode, (xmlChar*)"max");
-            typeDefinition->nominal          = (char*)xmlGetProp(typeNode, (xmlChar*)"nominal");
+            typeDefinition->min              = getStringAttribute(typeNode, "min");
+            typeDefinition->max              = getStringAttribute(typeNode, "max");
+            typeDefinition->nominal          = getStringAttribute(typeNode, "nominal");
             typeDefinition->unbounded        = getBooleanAttribute(typeNode, "unbounded");
 
             // TODO: variable type
@@ -527,13 +544,13 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
 
         modelDescription->modelVariables[i] = variable;
 
-        variable->name        = (char*)xmlGetProp(variableNode, (xmlChar*)"name");        
-        variable->description = (char*)xmlGetProp(variableNode, (xmlChar*)"description");
+        variable->name        = getStringAttribute(variableNode, "name");        
+        variable->description = getStringAttribute(variableNode, "description");
 
-        variable->min     = (char*)xmlGetProp(typeNode, (xmlChar*)"min");
-        variable->max     = (char*)xmlGetProp(typeNode, (xmlChar*)"max");
-        variable->nominal = (char*)xmlGetProp(typeNode, (xmlChar*)"nominal");
-        variable->start   = (char*)xmlGetProp(typeNode, (xmlChar*)"start");
+        variable->min     = getStringAttribute(typeNode, "min");
+        variable->max     = getStringAttribute(typeNode, "max");
+        variable->nominal = getStringAttribute(typeNode, "nominal");
+        variable->start   = getStringAttribute(typeNode, "start");
 
         variable->line = variableNode->line;
 
@@ -672,11 +689,11 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
     CALL(FMICalloc((void**)&modelDescription, 1, sizeof(FMIModelDescription)));
 
     modelDescription->fmiMajorVersion          = FMIMajorVersion3;
-    modelDescription->modelName                = (char*)xmlGetProp(root, (xmlChar*)"modelName");
-    modelDescription->instantiationToken       = (char*)xmlGetProp(root, (xmlChar*)"instantiationToken");
-    modelDescription->description              = (char*)xmlGetProp(root, (xmlChar*)"description");
-    modelDescription->generationTool           = (char*)xmlGetProp(root, (xmlChar*)"generationTool");
-    modelDescription->generationDateAndTime    = (char*)xmlGetProp(root, (xmlChar*)"generationDateAndTime");
+    modelDescription->modelName                = getStringAttribute(root, "modelName");
+    modelDescription->instantiationToken       = getStringAttribute(root, "instantiationToken");
+    modelDescription->description              = getStringAttribute(root, "description");
+    modelDescription->generationTool           = getStringAttribute(root, "generationTool");
+    modelDescription->generationDateAndTime    = getStringAttribute(root, "generationDateAndTime");
     modelDescription->variableNamingConvention = getVariableNamingConvention(root);
 
     xmlXPathContextPtr xpathCtx = xmlXPathNewContext(root->doc);
@@ -685,7 +702,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
     if (xpathObj->nodesetval->nodeNr == 1) {
         CALL(FMICalloc((void**)&modelDescription->coSimulation, 1, sizeof(FMICoSimulationInterface)));
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
-        modelDescription->coSimulation->modelIdentifier = (char*)xmlGetProp(node, (xmlChar*)"modelIdentifier");
+        modelDescription->coSimulation->modelIdentifier = getStringAttribute(node, "modelIdentifier");
         modelDescription->coSimulation->hasEventMode = getBooleanAttribute(node, "hasEventMode");
     }
     xmlXPathFreeObject(xpathObj);
@@ -694,7 +711,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
     if (xpathObj->nodesetval->nodeNr == 1) {
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
         CALL(FMICalloc((void**)&modelDescription->modelExchange, 1, sizeof(FMIModelExchangeInterface)));
-        modelDescription->modelExchange->modelIdentifier = (char*)xmlGetProp(node, (xmlChar*)"modelIdentifier");
+        modelDescription->modelExchange->modelIdentifier = getStringAttribute(node, "modelIdentifier");
         modelDescription->modelExchange->providesDirectionalDerivatives = getBooleanAttribute(node, "providesDirectionalDerivatives");
         modelDescription->modelExchange->needsCompletedIntegratorStep = getBooleanAttribute(node, "needsCompletedIntegratorStep");
     }
@@ -704,10 +721,10 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
     if (xpathObj->nodesetval->nodeNr == 1) {
         CALL(FMICalloc((void**)&modelDescription->defaultExperiment, 1, sizeof(FMIDefaultExperiment)));
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
-        modelDescription->defaultExperiment->startTime = (char*)xmlGetProp(node, (xmlChar*)"startTime");
-        modelDescription->defaultExperiment->stopTime  = (char*)xmlGetProp(node, (xmlChar*)"stopTime");
-        modelDescription->defaultExperiment->tolerance = (char*)xmlGetProp(node, (xmlChar*)"tolerance");
-        modelDescription->defaultExperiment->stepSize  = (char*)xmlGetProp(node, (xmlChar*)"stepSize");
+        modelDescription->defaultExperiment->startTime = getStringAttribute(node, "startTime");
+        modelDescription->defaultExperiment->stopTime  = getStringAttribute(node, "stopTime");
+        modelDescription->defaultExperiment->tolerance = getStringAttribute(node, "tolerance");
+        modelDescription->defaultExperiment->stepSize  = getStringAttribute(node, "stepSize");
     }
     xmlXPathFreeObject(xpathObj);
 
@@ -759,7 +776,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
                 CALL(FMICalloc((void**)&displayUnit, 1, sizeof(FMIDisplayUnit)));
 
-                displayUnit->name = (char*)xmlGetProp(childNode, (xmlChar*)"name");
+                displayUnit->name   = getStringAttribute(childNode, "name");
                 displayUnit->factor = getDoubleAttribute(childNode, "factor", 1.0);
                 displayUnit->offset = getDoubleAttribute(childNode, "offset", 0.0);
 
@@ -770,7 +787,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             childNode = childNode->next;
         }
 
-        unit->name = (char*)xmlGetProp(unitNode, (xmlChar*)"name");
+        unit->name = getStringAttribute(unitNode, "name");
     }
 
     // type definitions
@@ -809,8 +826,8 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             xmlNodePtr typeDefinitionNode = xpathObj->nodesetval->nodeTab[i];
 
             // TODO: type
-            typeDefinition->name = (char*)xmlGetProp(typeDefinitionNode, (xmlChar*)"name");
-            typeDefinition->quantity = (char*)xmlGetProp(typeDefinitionNode, (xmlChar*)"quantity");
+            typeDefinition->name = getStringAttribute(typeDefinitionNode, "name");
+            typeDefinition->quantity = getStringAttribute(typeDefinitionNode, "quantity");
 
             const char* unit = (char*)xmlGetProp(typeDefinitionNode, (xmlChar*)"unit");
 
@@ -835,9 +852,9 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             }
 
             typeDefinition->relativeQuantity = getBooleanAttribute(typeDefinitionNode, "relativeQuantity");
-            typeDefinition->min              = (char*)xmlGetProp(typeDefinitionNode, (xmlChar*)"min");
-            typeDefinition->max              = (char*)xmlGetProp(typeDefinitionNode, (xmlChar*)"max");
-            typeDefinition->nominal          = (char*)xmlGetProp(typeDefinitionNode, (xmlChar*)"nominal");
+            typeDefinition->min              = getStringAttribute(typeDefinitionNode, "min");
+            typeDefinition->max              = getStringAttribute(typeDefinitionNode, "max");
+            typeDefinition->nominal          = getStringAttribute(typeDefinitionNode, "nominal");
             typeDefinition->unbounded        = getBooleanAttribute(typeDefinitionNode, "unbounded");
         }
     }
@@ -876,12 +893,12 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         xmlNodePtr variableNode = xpathObj->nodesetval->nodeTab[i];
 
         variable->line        = variableNode->line;
-        variable->name        = (char*)xmlGetProp(variableNode, (xmlChar*)"name");
-        variable->min         = (char*)xmlGetProp(variableNode, (xmlChar*)"min");
-        variable->max         = (char*)xmlGetProp(variableNode, (xmlChar*)"max");
-        variable->nominal     = (char*)xmlGetProp(variableNode, (xmlChar*)"nominal");
-        variable->start       = (char*)xmlGetProp(variableNode, (xmlChar*)"start");
-        variable->description = (char*)xmlGetProp(variableNode, (xmlChar*)"description");
+        variable->name        = getStringAttribute(variableNode, "name");
+        variable->min         = getStringAttribute(variableNode, "min");
+        variable->max         = getStringAttribute(variableNode, "max");
+        variable->nominal     = getStringAttribute(variableNode, "nominal");
+        variable->start       = getStringAttribute(variableNode, "start");
+        variable->description = getStringAttribute(variableNode, "description");
 
         const char* unit = (char*)xmlGetProp(variableNode, (xmlChar*)"unit");        
         if (unit) {
@@ -1023,10 +1040,14 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             } else if (valueReference) {
                 const FMIValueReference vr = atoi(valueReference);
                 dimension->variable = FMIModelVariableForValueReference(modelDescription, vr);
+                // TODO: check variable != NULL, type, and dimensions
             } else {
-                FMILogError("Dimension must have start or valueReference.\n");
+                FMILogError("Dimension %zu of variable \"%s\" (line %hu) must have either a start or a valueReference attribute.\n", (j + 1), variable->name, variable->line);
                 return NULL;
             }
+
+            xmlFree(start);
+            xmlFree(valueReference);
 
             variable->nDimensions++;
         }
@@ -1168,12 +1189,12 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
     }
 
     if (modelDescription) {
-        modelDescription->fmiVersion = fmiVersion;
-    } else {
-        xmlFree((void*)fmiVersion);
+        FMIDuplicateString(fmiVersion, &modelDescription->fmiVersion);
     }
 
 TERMINATE:
+
+    xmlFree(fmiVersion);
 
     if (vctxt) {
         xmlSchemaFreeValidCtxt(vctxt);
@@ -1200,35 +1221,35 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
         return;
     }
 
-    xmlFree((void*)modelDescription->fmiVersion);
-    xmlFree((void*)modelDescription->modelName);
-    xmlFree((void*)modelDescription->instantiationToken);
-    xmlFree((void*)modelDescription->description);
-    xmlFree((void*)modelDescription->generationTool);
-    xmlFree((void*)modelDescription->generationDateAndTime);
+    FMIFree((void**)&modelDescription->fmiVersion);
+    FMIFree((void**)&modelDescription->modelName);
+    FMIFree((void**)&modelDescription->instantiationToken);
+    FMIFree((void**)&modelDescription->description);
+    FMIFree((void**)&modelDescription->generationTool);
+    FMIFree((void**)&modelDescription->generationDateAndTime);
 
     if (modelDescription->modelExchange) {
-        xmlFree((void*)modelDescription->modelExchange->modelIdentifier);
+        FMIFree((void**)&modelDescription->modelExchange->modelIdentifier);
         for (size_t i = 0; i < modelDescription->modelExchange->nSourceFiles; i++) {
-            xmlFree((void*)modelDescription->modelExchange->sourceFiles[i]);
+            FMIFree((void**)&modelDescription->modelExchange->sourceFiles[i]);
         }
         FMIFree((void**)&modelDescription->modelExchange->sourceFiles);
         FMIFree((void**)&modelDescription->modelExchange);
     }
 
     if (modelDescription->coSimulation) {
-        xmlFree((void*)modelDescription->coSimulation->modelIdentifier);
+        FMIFree((void**)&modelDescription->coSimulation->modelIdentifier);
         for (size_t i = 0; i < modelDescription->coSimulation->nSourceFiles; i++) {
-            xmlFree((void*)modelDescription->coSimulation->sourceFiles[i]);
+            FMIFree((void**)&modelDescription->coSimulation->sourceFiles[i]);
         }
         FMIFree((void**)&modelDescription->coSimulation->sourceFiles);
         FMIFree((void**)&modelDescription->coSimulation);
     }
 
     if (modelDescription->defaultExperiment) {
-        xmlFree((void*)modelDescription->defaultExperiment->startTime);
-        xmlFree((void*)modelDescription->defaultExperiment->stopTime);
-        xmlFree((void*)modelDescription->defaultExperiment->stepSize);
+        FMIFree((void**)&modelDescription->defaultExperiment->startTime);
+        FMIFree((void**)&modelDescription->defaultExperiment->stopTime);
+        FMIFree((void**)&modelDescription->defaultExperiment->stepSize);
         FMIFree((void**)&modelDescription->defaultExperiment);
     }
 
@@ -1239,12 +1260,12 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
         
         if (unit) {
 
-            xmlFree((void*)unit->name);
+            FMIFree((void**)&unit->name);
             FMIFree((void**)&unit->baseUnit);
 
             for (size_t j = 0; j < unit->nDisplayUnits; j++) {
                 FMIDisplayUnit* displayUnit = unit->displayUnits[j];
-                xmlFree((void*)displayUnit->name);
+                FMIFree((void**)&displayUnit->name);
                 FMIFree((void**)&displayUnit);
             }
 
@@ -1261,11 +1282,11 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
 
         if (typeDefintion) {
 
-            xmlFree((void*)typeDefintion->name);
-            xmlFree((void*)typeDefintion->quantity);
-            xmlFree((void*)typeDefintion->min);
-            xmlFree((void*)typeDefintion->max);
-            xmlFree((void*)typeDefintion->nominal);
+            FMIFree((void**)&typeDefintion->name);
+            FMIFree((void**)&typeDefintion->quantity);
+            FMIFree((void**)&typeDefintion->min);
+            FMIFree((void**)&typeDefintion->max);
+            FMIFree((void**)&typeDefintion->nominal);
 
             FMIFree((void**)&typeDefintion);
         }
@@ -1279,12 +1300,12 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
         FMIModelVariable* variable = modelDescription->modelVariables[i];
 
         if (variable) {
-            xmlFree((void*)variable->name);
-            xmlFree((void*)variable->min);
-            xmlFree((void*)variable->max);
-            xmlFree((void*)variable->nominal);
-            xmlFree((void*)variable->start);
-            xmlFree((void*)variable->description);
+            FMIFree((void**)&variable->name);
+            FMIFree((void**)&variable->min);
+            FMIFree((void**)&variable->max);
+            FMIFree((void**)&variable->nominal);
+            FMIFree((void**)&variable->start);
+            FMIFree((void**)&variable->description);
 
             FMIFree(&variable);
         }
