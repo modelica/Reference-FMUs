@@ -157,6 +157,8 @@ typedef struct {
 typedef struct {
 
     FMIModelVariable* modelVariable;
+    size_t nDependencies;
+    FMIModelVariable** dependencies;
 
 } FMIUnknown;
 

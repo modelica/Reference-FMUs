@@ -266,7 +266,7 @@ static FMIStatus readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescripti
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
-        xmlNodePtr unkownNode = xpathObj->nodesetval->nodeTab[i];
+        xmlNodePtr unknownNode = xpathObj->nodesetval->nodeTab[i];
 
         FMIUnknown* unknown;
 
@@ -274,11 +274,45 @@ static FMIStatus readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescripti
 
         (*unknowns)[i] = unknown;
 
-        const char* indexLiteral = (char*)xmlGetProp(unkownNode, (xmlChar*)"index");
+        const char* indexLiteral = (char*)xmlGetProp(unknownNode, (xmlChar*)"index");
 
         unknown->modelVariable = FMIModelVariableForIndexLiteral(modelDescription, indexLiteral);
 
         xmlFree((void*)indexLiteral);
+
+        if (!unknown->modelVariable) {
+            FMILogError("Failed to find unknown variable for index.\n");
+            status = FMIError;
+            goto TERMINATE;
+        }
+
+        const char* dependenciesLiteral = (char*)xmlGetProp(unknownNode, (xmlChar*)"dependencies");
+
+        if (dependenciesLiteral) {
+
+            unsigned int* dependencyIndices;
+
+            CALL(FMIParseValues(FMIMajorVersion2, FMIUInt32Type, dependenciesLiteral, &unknown->nDependencies, &dependencyIndices));
+
+            CALL(FMICalloc(&unknown->dependencies, unknown->nDependencies, sizeof(FMIModelVariable*)));
+
+            for (size_t j = 0; j < unknown->nDependencies; j++) {
+
+                const size_t index = dependencyIndices[j] - 1;
+                
+                if (index >= modelDescription->nModelVariables) {
+                    FMILogError("Failed to resolve dependencies for variable \"%s\"\n", unknown->modelVariable->name);
+                    status = FMIError;
+                    goto TERMINATE;
+                }
+
+                unknown->dependencies[j] = modelDescription->modelVariables[index];
+            }
+
+            FMIFree((void**)&dependencyIndices);
+
+            xmlFree((void*)dependenciesLiteral);
+        }
     }
 
     xmlXPathFreeObject(xpathObj);
@@ -308,16 +342,40 @@ static FMIStatus readUnknownsFMI3(xmlXPathContextPtr xpathCtx, FMIModelDescripti
 
         (*unknowns)[i] = unknown;
 
-        FMIValueReference valueReference = getUInt32Attribute(unknownNode, "valueReference");
+        const FMIValueReference valueReference = getUInt32Attribute(unknownNode, "valueReference");
 
-        for (size_t j = 0; j < modelDescription->nModelVariables; j++) {
+        unknown->modelVariable = FMIModelVariableForValueReference(modelDescription, valueReference);
 
-            FMIModelVariable* variable = modelDescription->modelVariables[j];
-            
-            if (variable->valueReference == valueReference) {
-                unknown->modelVariable = variable;
-                break;
+        if (!unknown->modelVariable) {
+            FMILogError("Failed to find unknown variable for value reference %hu.\n", valueReference);
+            status = FMIError;
+            goto TERMINATE;
+        }
+
+        const char* dependenciesLiteral = (char*)xmlGetProp(unknownNode, (xmlChar*)"dependencies");
+
+        if (dependenciesLiteral) {
+
+            unsigned int* dependencyValueReferences;
+
+            CALL(FMIParseValues(FMIMajorVersion3, FMIUInt32Type, dependenciesLiteral, &unknown->nDependencies, &dependencyValueReferences));
+
+            CALL(FMICalloc(&unknown->dependencies, unknown->nDependencies, sizeof(FMIModelVariable*)));
+
+            for (size_t j = 0; j < unknown->nDependencies; j++) {
+                
+                unknown->dependencies[j] = FMIModelVariableForValueReference(modelDescription, dependencyValueReferences[j]);
+
+                if (!unknown->dependencies[j]) {
+                    FMILogError("Failed to resolve dependencies for variable \"%s\"\n", unknown->modelVariable->name);
+                    status = FMIError;
+                    goto TERMINATE;
+                }
             }
+
+            FMIFree((void**)&dependencyValueReferences);
+
+            xmlFree((void*)dependenciesLiteral);
         }
     }
 
@@ -1308,6 +1366,38 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
             FMIFree((void**)&variable->description);
 
             FMIFree(&variable);
+        }
+    }
+
+    // outputs
+    if (modelDescription->outputs) {
+        for (size_t i = 0; i < modelDescription->nOutputs; i++) {
+            FMIUnknown* unknown = modelDescription->outputs[i];
+            FMIFree((void**)&unknown->dependencies);
+        }
+    }
+
+    // derivatives
+    if (modelDescription->derivatives) {
+        for (size_t i = 0; i < modelDescription->nContinuousStates; i++) {
+            FMIUnknown* unknown = modelDescription->derivatives[i];
+            FMIFree((void**)&unknown->dependencies);
+        }
+    }
+
+    // initial unknowns
+    if (modelDescription->initialUnknowns) {
+        for (size_t i = 0; i < modelDescription->nInitialUnknowns; i++) {
+            FMIUnknown* unknown = modelDescription->initialUnknowns[i];
+            FMIFree((void**)&unknown->dependencies);
+        }
+    }
+
+    // event indicators
+    if (modelDescription->eventIndicators) {
+        for (size_t i = 0; i < modelDescription->nEventIndicators; i++) {
+            FMIUnknown* unknown = modelDescription->eventIndicators[i];
+            FMIFree((void**)&unknown->dependencies);
         }
     }
 
