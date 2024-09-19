@@ -266,7 +266,7 @@ static FMIStatus readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescripti
 
     for (size_t i = 0; i < xpathObj->nodesetval->nodeNr; i++) {
 
-        xmlNodePtr unkownNode = xpathObj->nodesetval->nodeTab[i];
+        xmlNodePtr unknownNode = xpathObj->nodesetval->nodeTab[i];
 
         FMIUnknown* unknown;
 
@@ -274,11 +274,46 @@ static FMIStatus readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescripti
 
         (*unknowns)[i] = unknown;
 
-        const char* indexLiteral = (char*)xmlGetProp(unkownNode, (xmlChar*)"index");
+        const char* indexLiteral = (char*)xmlGetProp(unknownNode, (xmlChar*)"index");
 
         unknown->modelVariable = FMIModelVariableForIndexLiteral(modelDescription, indexLiteral);
 
+        if (!unknown->modelVariable) {
+            FMILogError("Illegal variable index %s for unkonwn (line %hu).\n", indexLiteral, unknownNode->line);
+            xmlFree((void*)indexLiteral);
+            status = FMIError;
+            goto TERMINATE;
+        }
+
         xmlFree((void*)indexLiteral);
+
+        const char* dependenciesLiteral = (char*)xmlGetProp(unknownNode, (xmlChar*)"dependencies");
+
+        if (dependenciesLiteral) {
+
+            unsigned int* dependencyIndices;
+
+            CALL(FMIParseValues(FMIMajorVersion2, FMIUInt32Type, dependenciesLiteral, &unknown->nDependencies, &dependencyIndices));
+
+            CALL(FMICalloc(&unknown->dependencies, unknown->nDependencies, sizeof(FMIModelVariable*)));
+
+            for (size_t j = 0; j < unknown->nDependencies; j++) {
+
+                const unsigned int index = dependencyIndices[j];
+
+                if (index < 1 || index > modelDescription->nModelVariables) {
+                    FMILogError("Dependency %zu of unknown (line %hu) has illegal index %u.\n", j + 1, unknownNode->line, index);
+                    status = FMIError;
+                    goto TERMINATE;
+                }
+
+                unknown->dependencies[j] = modelDescription->modelVariables[index - 1];
+            }
+
+            FMIFree((void**)&dependencyIndices);
+
+            xmlFree((void*)dependenciesLiteral);
+        }
     }
 
     xmlXPathFreeObject(xpathObj);
@@ -308,16 +343,42 @@ static FMIStatus readUnknownsFMI3(xmlXPathContextPtr xpathCtx, FMIModelDescripti
 
         (*unknowns)[i] = unknown;
 
-        FMIValueReference valueReference = getUInt32Attribute(unknownNode, "valueReference");
+        const FMIValueReference valueReference = getUInt32Attribute(unknownNode, "valueReference");
 
-        for (size_t j = 0; j < modelDescription->nModelVariables; j++) {
+        unknown->modelVariable = FMIModelVariableForValueReference(modelDescription, valueReference);
 
-            FMIModelVariable* variable = modelDescription->modelVariables[j];
-            
-            if (variable->valueReference == valueReference) {
-                unknown->modelVariable = variable;
-                break;
+        if (!unknown->modelVariable) {
+            FMILogError("Illegal value reference %u for unknown (line %hu).\n", valueReference, unknownNode->line);
+            status = FMIError;
+            goto TERMINATE;
+        }
+
+        const char* dependenciesLiteral = (char*)xmlGetProp(unknownNode, (xmlChar*)"dependencies");
+
+        if (dependenciesLiteral) {
+
+            unsigned int* dependencyValueReferences;
+
+            CALL(FMIParseValues(FMIMajorVersion3, FMIUInt32Type, dependenciesLiteral, &unknown->nDependencies, &dependencyValueReferences));
+
+            CALL(FMICalloc(&unknown->dependencies, unknown->nDependencies, sizeof(FMIModelVariable*)));
+
+            for (size_t j = 0; j < unknown->nDependencies; j++) {
+
+                const FMIValueReference valueReference = dependencyValueReferences[j];
+                
+                unknown->dependencies[j] = FMIModelVariableForValueReference(modelDescription, valueReference);
+
+                if (!unknown->dependencies[j]) {
+                    FMILogError("Illegal value reference %zu for dependency %zu of unkonwn (line %hu).\n", valueReference, j + 1, unknownNode->line);
+                    status = FMIError;
+                    goto TERMINATE;
+                }
             }
+
+            FMIFree((void**)&dependencyValueReferences);
+
+            xmlFree((void*)dependenciesLiteral);
         }
     }
 
@@ -1215,6 +1276,25 @@ TERMINATE:
     return modelDescription;
 }
 
+static void freeUnknowns(FMIUnknown* unknowns[], size_t nUnknowns) {
+
+    if (!unknowns) {
+        return;
+    }
+
+    for (size_t i = 0; i < nUnknowns; i++) {
+
+        FMIUnknown* unknown = unknowns[i];
+        
+        if (unknown) {
+            FMIFree((void**)&unknown->dependencies);
+            FMIFree((void**)&unknown);
+        }
+    }
+
+    FMIFree((void**)&unknowns);
+}
+
 void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
 
     if (!modelDescription) {
@@ -1310,6 +1390,12 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
             FMIFree(&variable);
         }
     }
+
+    // unknowns
+    freeUnknowns(modelDescription->outputs, modelDescription->nOutputs);
+    freeUnknowns(modelDescription->derivatives, modelDescription->nContinuousStates);
+    freeUnknowns(modelDescription->initialUnknowns, modelDescription->nInitialUnknowns);
+    freeUnknowns(modelDescription->eventIndicators, modelDescription->nEventIndicators);
 
     FMIFree((void**)&modelDescription->modelVariables);
 
