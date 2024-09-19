@@ -278,13 +278,14 @@ static FMIStatus readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescripti
 
         unknown->modelVariable = FMIModelVariableForIndexLiteral(modelDescription, indexLiteral);
 
-        xmlFree((void*)indexLiteral);
-
         if (!unknown->modelVariable) {
-            FMILogError("Failed to find unknown variable for index.\n");
+            FMILogError("Illegal variable index %s for unkonwn (line %hu).\n", indexLiteral, unknownNode->line);
+            xmlFree((void*)indexLiteral);
             status = FMIError;
             goto TERMINATE;
         }
+
+        xmlFree((void*)indexLiteral);
 
         const char* dependenciesLiteral = (char*)xmlGetProp(unknownNode, (xmlChar*)"dependencies");
 
@@ -298,15 +299,15 @@ static FMIStatus readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescripti
 
             for (size_t j = 0; j < unknown->nDependencies; j++) {
 
-                const size_t index = dependencyIndices[j] - 1;
-                
-                if (index >= modelDescription->nModelVariables) {
-                    FMILogError("Failed to resolve dependencies for variable \"%s\"\n", unknown->modelVariable->name);
+                const unsigned int index = dependencyIndices[j];
+
+                if (index < 1 || index > modelDescription->nModelVariables) {
+                    FMILogError("Dependency %zu of unknown (line %hu) has illegal index %u.\n", j + 1, unknownNode->line, index);
                     status = FMIError;
                     goto TERMINATE;
                 }
 
-                unknown->dependencies[j] = modelDescription->modelVariables[index];
+                unknown->dependencies[j] = modelDescription->modelVariables[index - 1];
             }
 
             FMIFree((void**)&dependencyIndices);
@@ -347,7 +348,7 @@ static FMIStatus readUnknownsFMI3(xmlXPathContextPtr xpathCtx, FMIModelDescripti
         unknown->modelVariable = FMIModelVariableForValueReference(modelDescription, valueReference);
 
         if (!unknown->modelVariable) {
-            FMILogError("Failed to find unknown variable for value reference %hu.\n", valueReference);
+            FMILogError("Illegal value reference %u for unknown (line %hu).\n", valueReference, unknownNode->line);
             status = FMIError;
             goto TERMINATE;
         }
@@ -363,11 +364,13 @@ static FMIStatus readUnknownsFMI3(xmlXPathContextPtr xpathCtx, FMIModelDescripti
             CALL(FMICalloc(&unknown->dependencies, unknown->nDependencies, sizeof(FMIModelVariable*)));
 
             for (size_t j = 0; j < unknown->nDependencies; j++) {
+
+                const FMIValueReference valueReference = dependencyValueReferences[j];
                 
-                unknown->dependencies[j] = FMIModelVariableForValueReference(modelDescription, dependencyValueReferences[j]);
+                unknown->dependencies[j] = FMIModelVariableForValueReference(modelDescription, valueReference);
 
                 if (!unknown->dependencies[j]) {
-                    FMILogError("Failed to resolve dependencies for variable \"%s\"\n", unknown->modelVariable->name);
+                    FMILogError("Illegal value reference %zu for dependency %zu of unkonwn (line %hu).\n", valueReference, j + 1, unknownNode->line);
                     status = FMIError;
                     goto TERMINATE;
                 }
@@ -1273,6 +1276,25 @@ TERMINATE:
     return modelDescription;
 }
 
+static void freeUnknowns(FMIUnknown* unknowns[], size_t nUnknowns) {
+
+    if (!unknowns) {
+        return;
+    }
+
+    for (size_t i = 0; i < nUnknowns; i++) {
+
+        FMIUnknown* unknown = unknowns[i];
+        
+        if (unknown) {
+            FMIFree((void**)&unknown->dependencies);
+            FMIFree((void**)&unknown);
+        }
+    }
+
+    FMIFree((void**)&unknowns);
+}
+
 void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
 
     if (!modelDescription) {
@@ -1369,37 +1391,11 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
         }
     }
 
-    // outputs
-    if (modelDescription->outputs) {
-        for (size_t i = 0; i < modelDescription->nOutputs; i++) {
-            FMIUnknown* unknown = modelDescription->outputs[i];
-            FMIFree((void**)&unknown->dependencies);
-        }
-    }
-
-    // derivatives
-    if (modelDescription->derivatives) {
-        for (size_t i = 0; i < modelDescription->nContinuousStates; i++) {
-            FMIUnknown* unknown = modelDescription->derivatives[i];
-            FMIFree((void**)&unknown->dependencies);
-        }
-    }
-
-    // initial unknowns
-    if (modelDescription->initialUnknowns) {
-        for (size_t i = 0; i < modelDescription->nInitialUnknowns; i++) {
-            FMIUnknown* unknown = modelDescription->initialUnknowns[i];
-            FMIFree((void**)&unknown->dependencies);
-        }
-    }
-
-    // event indicators
-    if (modelDescription->eventIndicators) {
-        for (size_t i = 0; i < modelDescription->nEventIndicators; i++) {
-            FMIUnknown* unknown = modelDescription->eventIndicators[i];
-            FMIFree((void**)&unknown->dependencies);
-        }
-    }
+    // unknowns
+    freeUnknowns(modelDescription->outputs, modelDescription->nOutputs);
+    freeUnknowns(modelDescription->derivatives, modelDescription->nContinuousStates);
+    freeUnknowns(modelDescription->initialUnknowns, modelDescription->nInitialUnknowns);
+    freeUnknowns(modelDescription->eventIndicators, modelDescription->nEventIndicators);
 
     FMIFree((void**)&modelDescription->modelVariables);
 
