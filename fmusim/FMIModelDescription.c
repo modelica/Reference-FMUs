@@ -1038,18 +1038,6 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
 
         variable->type = type;
 
-        if (variable->variability == -1) {
-            switch (variable->type) {
-            case FMIFloat32Type:
-            case FMIFloat64Type:
-                variable->variability = FMIContinuous;
-                break;
-            default:
-                variable->variability = FMIDiscrete;
-                break;
-            }
-        }
-
         const char* vr = (char*)xmlGetProp(variableNode, (xmlChar*)"valueReference");
 
         variable->valueReference = FMIValueReferenceForLiteral(vr);
@@ -1077,6 +1065,27 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         }
 
         xmlFree((void*)causality);
+
+        if (variable->variability == -1) {
+            switch (variable->causality) {
+            case FMIParameter:
+            case FMICalculatedParameter:
+            case FMIStructuralParameter:
+                variable->variability = FMIFixed;
+                break;
+            default:
+                switch (variable->type) {
+                case FMIFloat32Type:
+                case FMIFloat64Type:
+                    variable->variability = FMIContinuous;
+                    break;
+                default:
+                    variable->variability = FMIDiscrete;
+                    break;
+                }
+                break;
+            }
+        }
 
         variable->derivative = (FMIModelVariable*)xmlGetProp(variableNode, (xmlChar*)"derivative");
 
