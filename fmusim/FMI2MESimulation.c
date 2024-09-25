@@ -188,8 +188,8 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
             resetSolver = fmi2False;
 
-            // event iteration
             do {
+
                 CALL(FMI2NewDiscreteStates(S, &eventInfo));
 
                 if (eventInfo.terminateSimulation) {

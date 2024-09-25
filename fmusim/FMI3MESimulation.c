@@ -95,10 +95,6 @@ FMIStatus FMI3MESimulate(const FMISimulationSettings* s) {
 
         } while (discreteStatesNeedUpdate);
 
-        if (!nextEventTimeDefined) {
-            nextEventTime = INFINITY;
-        }
-
         CALL(FMI3EnterContinuousTimeMode(S));
     }
 
@@ -138,7 +134,7 @@ FMIStatus FMI3MESimulate(const FMISimulationSettings* s) {
 
         CALL(FMISample(S, time, s->recorder));
 
-        if (time >= s->stopTime) {
+        if (time > s->stopTime || FMIIsClose(time, s->stopTime)) {
             break;
         }
 
@@ -148,13 +144,17 @@ FMIStatus FMI3MESimulate(const FMISimulationSettings* s) {
 
         nextInputEventTime = FMINextInputEvent(s->input, time);
 
-        inputEvent = nextCommunicationPoint >= nextInputEventTime;
-
-        timeEvent = nextCommunicationPoint >= nextEventTime;
-
-        if (inputEvent || timeEvent) {
-            nextCommunicationPoint = fmin(nextInputEventTime, nextEventTime);
+        if (nextCommunicationPoint > nextInputEventTime && !FMIIsClose(nextCommunicationPoint, nextInputEventTime)) {
+            nextCommunicationPoint = nextInputEventTime;
         }
+
+        if (nextEventTimeDefined && nextCommunicationPoint > nextEventTime && !FMIIsClose(nextCommunicationPoint, nextEventTime)) {
+            nextCommunicationPoint = nextEventTime;
+        }
+
+        inputEvent = FMIIsClose(nextCommunicationPoint, nextInputEventTime);
+
+        timeEvent = nextEventTimeDefined && FMIIsClose(nextCommunicationPoint, nextEventTime);
 
         CALL(s->solverStep(solver, nextCommunicationPoint, &time, &stateEvent));
 
@@ -166,7 +166,7 @@ FMIStatus FMI3MESimulate(const FMISimulationSettings* s) {
             false  // after event
         ));
 
-        if (time == nextRegularPoint) {
+        if (FMIIsClose(time, nextRegularPoint)) {
             nSteps++;
         }
 
@@ -181,6 +181,7 @@ FMIStatus FMI3MESimulate(const FMISimulationSettings* s) {
 
         if (inputEvent || timeEvent || stateEvent || stepEvent) {
 
+            // record the values before the event
             CALL(FMISample(S, time, s->recorder));
 
             CALL(FMI3EnterEventMode(S));
@@ -213,10 +214,6 @@ FMIStatus FMI3MESimulate(const FMISimulationSettings* s) {
                 resetSolver |= nominalsOfContinuousStatesChanged || valuesOfContinuousStatesChanged;
 
             } while (discreteStatesNeedUpdate);
-
-            if (!nextEventTimeDefined) {
-                nextEventTime = INFINITY;
-            }
 
             CALL(FMI3EnterContinuousTimeMode(S));
 
