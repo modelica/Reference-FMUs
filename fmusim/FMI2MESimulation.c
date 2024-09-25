@@ -158,7 +158,7 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
             false   // after event
         ));
 
-        if (time == nextRegularPoint) {
+        if (FMIIsClose(time, nextRegularPoint)) {
             nSteps++;
         }
 
