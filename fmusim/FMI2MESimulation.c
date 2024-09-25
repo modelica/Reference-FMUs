@@ -10,16 +10,25 @@
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
-#define EPSILON (1.0e-5)
-
-static bool isClose(double f1, double f2) {
-
-    if (fabs(f1 - f2) <= EPSILON) {
-        return true;
-    }
-    
-    return fabs(f1 - f2) <= EPSILON * fmax(fabs(f1), fabs(f2));
-}
+//#define EPSILON (1.0e-5)
+//
+//static bool isClose(double a, double b) {
+//
+//    if (fabs(a - b) <= EPSILON) {
+//        return true;
+//    }
+//    
+//    return fabs(a - b) <= EPSILON * fmax(fabs(a), fabs(b));
+//}
+//
+//static bool isGreaterOrClose(double a, double b) {
+//
+//    if (a > b) {
+//        return true;
+//    }
+//
+//    return isClose(a, b);
+//}
 
 FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
@@ -102,9 +111,9 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
         } while (eventInfo.newDiscreteStatesNeeded);
 
-        if (!eventInfo.nextEventTimeDefined) {
-            eventInfo.nextEventTime = INFINITY;
-        }
+        //if (!eventInfo.nextEventTimeDefined) {
+        //    eventInfo.nextEventTime = INFINITY;
+        //}
 
         CALL(FMI2EnterContinuousTimeMode(S));
     }
@@ -151,24 +160,17 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
         nextInputEventTime = FMINextInputEvent(s->input, time);
 
-        // determine the next communication point
-        if ((nextCommunicationPoint > nextInputEventTime || isClose(nextCommunicationPoint, nextInputEventTime)) || 
-            (nextCommunicationPoint > eventInfo.nextEventTime || isClose(nextCommunicationPoint, eventInfo.nextEventTime))) {
-
-            const double nextEventTime = fmin(nextInputEventTime, eventInfo.nextEventTime);
-
-            if (!isClose(nextEventTime, nextCommunicationPoint)) {
-                nextCommunicationPoint = fmin(nextInputEventTime, eventInfo.nextEventTime);
-            }
+        if (nextCommunicationPoint > nextInputEventTime && !FMIIsClose(nextCommunicationPoint, nextInputEventTime)) {
+            nextCommunicationPoint = nextInputEventTime;
         }
 
-        inputEvent = nextCommunicationPoint >= nextInputEventTime;
+        if (eventInfo.nextEventTimeDefined && nextCommunicationPoint > eventInfo.nextEventTime && !FMIIsClose(nextCommunicationPoint, eventInfo.nextEventTime)) {
+            nextCommunicationPoint = eventInfo.nextEventTime;
+        }
 
-        timeEvent = nextCommunicationPoint >= eventInfo.nextEventTime;
+        inputEvent = FMIIsClose(nextCommunicationPoint, nextInputEventTime);
 
-        //if (inputEvent || timeEvent) {
-        //    nextCommunicationPoint = fmin(nextInputEventTime, eventInfo.nextEventTime);
-        //}
+        timeEvent = eventInfo.nextEventTimeDefined && FMIIsClose(nextCommunicationPoint, eventInfo.nextEventTime);
 
         CALL(s->solverStep(solver, nextCommunicationPoint, &time, &stateEvent));
 
@@ -223,9 +225,9 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
             } while (eventInfo.newDiscreteStatesNeeded);
 
-            if (!eventInfo.nextEventTimeDefined) {
-                eventInfo.nextEventTime = INFINITY;
-            }
+            //if (!eventInfo.nextEventTimeDefined) {
+            //    eventInfo.nextEventTime = INFINITY;
+            //}
 
             // enter Continuous-Time Mode
             CALL(FMI2EnterContinuousTimeMode(S));

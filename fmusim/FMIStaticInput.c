@@ -137,9 +137,13 @@ double FMINextInputEvent(const FMIStaticInput* input, double time) {
 		const double t0 = input->time[i];
 		const double t1 = input->time[i + 1];
 
-		if (time >= t1) {
+		if (time > t1 || FMIIsClose(time, t1)) {
 			continue;
 		}
+
+		//if (time >= t1) {
+		//	continue;
+		//}
 
 		if (t0 == t1) {
 			return t0;  // discrete change of a continuous variable
@@ -266,22 +270,24 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMIStaticInput* input, doub
 
 			size_t row = 0;
 
-			for (size_t i = 1; i < input->nRows; i++) {
+			for (size_t j = 1; j < input->nRows; j++) {
 
-				const double t = input->time[i];
+				const double t = input->time[j];
 
-				if (t >= time) {
+				if (t > time || FMIIsClose(t, time)) {
 					break;
 				}
 
-				row = i;
+				row = j;
 			}
 
 			if (afterEvent) {
 
 				while (row < input->nRows - 1) {
 
-					if (input->time[row + 1] > time) {
+					const double t = input->time[row + 1];
+
+					if (t > time && !FMIIsClose(t, time)) {
 						break;
 					}
 

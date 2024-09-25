@@ -48,3 +48,23 @@ FMIStatus FMISaveFMUStateToFile(FMIInstance* S, const char* filename);
 FMIStatus FMIDuplicateString(const char* source, char** destination);
 
 FMIStatus FMIDuplicateBuffer(const void* source, void** destination, size_t size);
+
+#define EPSILON (1.0e-5)
+
+static bool FMIIsClose(double a, double b) {
+
+    if (fabs(a - b) <= EPSILON) {
+        return true;
+    }
+    
+    return fabs(a - b) <= EPSILON * fmax(fabs(a), fabs(b));
+}
+
+//static bool isGreaterOrClose(double a, double b) {
+//
+//    if (a > b) {
+//        return true;
+//    }
+//
+//    return isClose(a, b);
+//}
