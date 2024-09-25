@@ -10,6 +10,17 @@
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
+#define EPSILON (1.0e-5)
+
+static bool isClose(double f1, double f2) {
+
+    if (fabs(f1 - f2) <= EPSILON) {
+        return true;
+    }
+    
+    return fabs(f1 - f2) <= EPSILON * fmax(fabs(f1), fabs(f2));
+}
+
 FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
     FMIStatus status = FMIOK;
@@ -140,13 +151,24 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
         nextInputEventTime = FMINextInputEvent(s->input, time);
 
+        // determine the next communication point
+        if ((nextCommunicationPoint > nextInputEventTime || isClose(nextCommunicationPoint, nextInputEventTime)) || 
+            (nextCommunicationPoint > eventInfo.nextEventTime || isClose(nextCommunicationPoint, eventInfo.nextEventTime))) {
+
+            const double nextEventTime = fmin(nextInputEventTime, eventInfo.nextEventTime);
+
+            if (!isClose(nextEventTime, nextCommunicationPoint)) {
+                nextCommunicationPoint = fmin(nextInputEventTime, eventInfo.nextEventTime);
+            }
+        }
+
         inputEvent = nextCommunicationPoint >= nextInputEventTime;
 
         timeEvent = nextCommunicationPoint >= eventInfo.nextEventTime;
 
-        if (inputEvent || timeEvent) {
-            nextCommunicationPoint = fmin(nextInputEventTime, eventInfo.nextEventTime);
-        }
+        //if (inputEvent || timeEvent) {
+        //    nextCommunicationPoint = fmin(nextInputEventTime, eventInfo.nextEventTime);
+        //}
 
         CALL(s->solverStep(solver, nextCommunicationPoint, &time, &stateEvent));
 
