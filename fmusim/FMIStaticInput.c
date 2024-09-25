@@ -141,10 +141,6 @@ double FMINextInputEvent(const FMIStaticInput* input, double time) {
 			continue;
 		}
 
-		//if (time >= t1) {
-		//	continue;
-		//}
-
 		if (t0 == t1) {
 			return t0;  // discrete change of a continuous variable
 		}

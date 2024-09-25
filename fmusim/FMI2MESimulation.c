@@ -10,26 +10,6 @@
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
 
-//#define EPSILON (1.0e-5)
-//
-//static bool isClose(double a, double b) {
-//
-//    if (fabs(a - b) <= EPSILON) {
-//        return true;
-//    }
-//    
-//    return fabs(a - b) <= EPSILON * fmax(fabs(a), fabs(b));
-//}
-//
-//static bool isGreaterOrClose(double a, double b) {
-//
-//    if (a > b) {
-//        return true;
-//    }
-//
-//    return isClose(a, b);
-//}
-
 FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
     FMIStatus status = FMIOK;
@@ -110,10 +90,6 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
             }
 
         } while (eventInfo.newDiscreteStatesNeeded);
-
-        //if (!eventInfo.nextEventTimeDefined) {
-        //    eventInfo.nextEventTime = INFINITY;
-        //}
 
         CALL(FMI2EnterContinuousTimeMode(S));
     }
@@ -225,11 +201,6 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
             } while (eventInfo.newDiscreteStatesNeeded);
 
-            //if (!eventInfo.nextEventTimeDefined) {
-            //    eventInfo.nextEventTime = INFINITY;
-            //}
-
-            // enter Continuous-Time Mode
             CALL(FMI2EnterContinuousTimeMode(S));
 
             if (resetSolver) {
