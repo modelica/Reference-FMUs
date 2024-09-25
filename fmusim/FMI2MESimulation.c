@@ -126,7 +126,7 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
         CALL(FMISample(S, time, s->recorder));
 
-        if (time >= s->stopTime) {
+        if (time > s->stopTime || FMIIsClose(time, s->stopTime)) {
             break;
         }
     

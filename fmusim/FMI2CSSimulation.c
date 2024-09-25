@@ -55,7 +55,7 @@ FMIStatus FMI2CSSimulate(const FMISimulationSettings* s) {
 
         CALL(FMIApplyInput(S, s->input, time, true, true, false));
 
-        if (time >= s->stopTime) {
+        if (time > s->stopTime || FMIIsClose(time, s->stopTime)) {
             break;
         }
 
