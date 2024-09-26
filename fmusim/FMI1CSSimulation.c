@@ -1,10 +1,10 @@
+#include "FMIUtil.h"
 #include "FMI1.h"
 #include "FMI1CSSimulation.h"
 
 #define FMI_PATH_MAX 4096
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
-
 
 FMIStatus FMI1CSSimulate(const FMISimulationSettings* s) {
 

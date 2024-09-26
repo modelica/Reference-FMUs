@@ -1,12 +1,11 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "FMIUtil.h"
 #include "FMI1.h"
 #include "FMI1MESimulation.h"
 
-
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
-
 
 FMIStatus FMI1MESimulate(const FMISimulationSettings* s) {
 
@@ -56,10 +55,6 @@ FMIStatus FMI1MESimulate(const FMISimulationSettings* s) {
 
     // initialize
     CALL(FMI1Initialize(S, s->tolerance > 0, s->tolerance, &eventInfo));
-
-    if (!eventInfo.upcomingTimeEvent) {
-        eventInfo.nextEventTime = INFINITY;
-    }
 
     const FMISolverParameters solverFunctions = {
         .modelInstance = S,

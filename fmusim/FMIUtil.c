@@ -738,6 +738,10 @@ FMIStatus FMIDuplicateBuffer(const void* source, void** destination, size_t size
 
 bool FMIIsClose(double a, double b) {
 
+    if (!isfinite(a) || !isfinite(b)) {
+        return false;
+    }
+
     if (fabs(a - b) <= EPSILON) {
         return true;
     }

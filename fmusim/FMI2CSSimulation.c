@@ -2,7 +2,6 @@
 #include "FMI2.h"
 #include "FMI2CSSimulation.h"
 
-
 #define FMI_PATH_MAX 4096
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
