@@ -1,12 +1,11 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "FMIUtil.h"
 #include "FMI1.h"
 #include "FMI1MESimulation.h"
 
-
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
-
 
 FMIStatus FMI1MESimulate(const FMISimulationSettings* s) {
 
@@ -57,10 +56,6 @@ FMIStatus FMI1MESimulate(const FMISimulationSettings* s) {
     // initialize
     CALL(FMI1Initialize(S, s->tolerance > 0, s->tolerance, &eventInfo));
 
-    if (!eventInfo.upcomingTimeEvent) {
-        eventInfo.nextEventTime = INFINITY;
-    }
-
     const FMISolverParameters solverFunctions = {
         .modelInstance = S,
         .input = s->input,
@@ -91,7 +86,7 @@ FMIStatus FMI1MESimulate(const FMISimulationSettings* s) {
 
         CALL(FMISample(S, time, s->recorder));
 
-        if (time >= s->stopTime) {
+        if (time > s->stopTime || FMIIsClose(time, s->stopTime)) {
             break;
         }
     
@@ -101,13 +96,18 @@ FMIStatus FMI1MESimulate(const FMISimulationSettings* s) {
 
         nextInputEventTime = FMINextInputEvent(s->input, time);
 
-        inputEvent = nextCommunicationPoint >= nextInputEventTime;
-
-        timeEvent = nextCommunicationPoint >= eventInfo.nextEventTime;
-
-        if (inputEvent || timeEvent) {
-            nextCommunicationPoint = fmin(nextInputEventTime, eventInfo.nextEventTime);
+        if (nextCommunicationPoint > nextInputEventTime && !FMIIsClose(nextCommunicationPoint, nextInputEventTime)) {
+            nextCommunicationPoint = nextInputEventTime;
         }
+
+        if (eventInfo.upcomingTimeEvent && nextCommunicationPoint > eventInfo.nextEventTime && !FMIIsClose(nextCommunicationPoint, eventInfo.nextEventTime)) {
+            nextCommunicationPoint = eventInfo.nextEventTime;
+        }
+
+        inputEvent = FMIIsClose(nextCommunicationPoint, nextInputEventTime);
+
+        timeEvent = eventInfo.upcomingTimeEvent && FMIIsClose(nextCommunicationPoint, eventInfo.nextEventTime);
+
 
         CALL(s->solverStep(solver, nextCommunicationPoint, &time, &stateEvent));
 
@@ -119,7 +119,7 @@ FMIStatus FMI1MESimulate(const FMISimulationSettings* s) {
             false   // after event
         ));
 
-        if (time == nextRegularPoint) {
+        if (FMIIsClose(time, nextRegularPoint)) {
             nSteps++;
         }
 
@@ -144,8 +144,8 @@ FMIStatus FMI1MESimulate(const FMISimulationSettings* s) {
 
             resetSolver = fmi1False;
 
-            // event iteration
             do {
+
                 CALL(FMI1EventUpdate(S, fmi1True, &eventInfo));
 
                 if (eventInfo.terminateSimulation) {
@@ -156,10 +156,6 @@ FMIStatus FMI1MESimulate(const FMISimulationSettings* s) {
                 resetSolver |= eventInfo.stateValuesChanged;
 
             } while (!eventInfo.iterationConverged);
-
-            if (!eventInfo.upcomingTimeEvent) {
-                eventInfo.nextEventTime = INFINITY;
-            }
 
             if (resetSolver) {
                 s->solverReset(solver, time);

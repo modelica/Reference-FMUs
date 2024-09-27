@@ -48,3 +48,5 @@ FMIStatus FMISaveFMUStateToFile(FMIInstance* S, const char* filename);
 FMIStatus FMIDuplicateString(const char* source, char** destination);
 
 FMIStatus FMIDuplicateBuffer(const void* source, void** destination, size_t size);
+
+bool FMIIsClose(double a, double b);

@@ -91,10 +91,6 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
         } while (eventInfo.newDiscreteStatesNeeded);
 
-        if (!eventInfo.nextEventTimeDefined) {
-            eventInfo.nextEventTime = INFINITY;
-        }
-
         CALL(FMI2EnterContinuousTimeMode(S));
     }
 
@@ -130,7 +126,7 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
         CALL(FMISample(S, time, s->recorder));
 
-        if (time >= s->stopTime) {
+        if (time > s->stopTime || FMIIsClose(time, s->stopTime)) {
             break;
         }
     
@@ -140,13 +136,17 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
         nextInputEventTime = FMINextInputEvent(s->input, time);
 
-        inputEvent = nextCommunicationPoint >= nextInputEventTime;
-
-        timeEvent = nextCommunicationPoint >= eventInfo.nextEventTime;
-
-        if (inputEvent || timeEvent) {
-            nextCommunicationPoint = fmin(nextInputEventTime, eventInfo.nextEventTime);
+        if (nextCommunicationPoint > nextInputEventTime && !FMIIsClose(nextCommunicationPoint, nextInputEventTime)) {
+            nextCommunicationPoint = nextInputEventTime;
         }
+
+        if (eventInfo.nextEventTimeDefined && nextCommunicationPoint > eventInfo.nextEventTime && !FMIIsClose(nextCommunicationPoint, eventInfo.nextEventTime)) {
+            nextCommunicationPoint = eventInfo.nextEventTime;
+        }
+
+        inputEvent = FMIIsClose(nextCommunicationPoint, nextInputEventTime);
+
+        timeEvent = eventInfo.nextEventTimeDefined && FMIIsClose(nextCommunicationPoint, eventInfo.nextEventTime);
 
         CALL(s->solverStep(solver, nextCommunicationPoint, &time, &stateEvent));
 
@@ -158,7 +158,7 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
             false   // after event
         ));
 
-        if (time == nextRegularPoint) {
+        if (FMIIsClose(time, nextRegularPoint)) {
             nSteps++;
         }
 
@@ -188,8 +188,8 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
             resetSolver = fmi2False;
 
-            // event iteration
             do {
+
                 CALL(FMI2NewDiscreteStates(S, &eventInfo));
 
                 if (eventInfo.terminateSimulation) {
@@ -201,11 +201,6 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
             } while (eventInfo.newDiscreteStatesNeeded);
 
-            if (!eventInfo.nextEventTimeDefined) {
-                eventInfo.nextEventTime = INFINITY;
-            }
-
-            // enter Continuous-Time Mode
             CALL(FMI2EnterContinuousTimeMode(S));
 
             if (resetSolver) {

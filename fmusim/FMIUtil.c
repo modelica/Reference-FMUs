@@ -1,4 +1,5 @@
 #include <string.h>
+#include <math.h>
 
 #include "FMI1.h"
 #include "FMI2.h"
@@ -731,4 +732,19 @@ FMIStatus FMIDuplicateBuffer(const void* source, void** destination, size_t size
     *destination = temp;
 
     return FMIOK;
+}
+
+#define EPSILON (1.0e-5)
+
+bool FMIIsClose(double a, double b) {
+
+    if (!isfinite(a) || !isfinite(b)) {
+        return false;
+    }
+
+    if (fabs(a - b) <= EPSILON) {
+        return true;
+    }
+
+    return fabs(a - b) <= EPSILON * fmax(fabs(a), fabs(b));
 }

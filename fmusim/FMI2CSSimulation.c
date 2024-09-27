@@ -2,7 +2,6 @@
 #include "FMI2.h"
 #include "FMI2CSSimulation.h"
 
-
 #define FMI_PATH_MAX 4096
 
 #define CALL(f) do { status = f; if (status > FMIOK) goto TERMINATE; } while (0)
@@ -53,11 +52,11 @@ FMIStatus FMI2CSSimulate(const FMISimulationSettings* s) {
 
         CALL(FMISample(S, time, s->recorder));
 
-        CALL(FMIApplyInput(S, s->input, time, true, true, false));
-
-        if (time >= s->stopTime) {
+        if (time > s->stopTime || FMIIsClose(time, s->stopTime)) {
             break;
         }
+
+        CALL(FMIApplyInput(S, s->input, time, true, true, false));
 
         const FMIStatus doStepStatus = FMI2DoStep(S, time, s->outputInterval, fmi2True);
 
