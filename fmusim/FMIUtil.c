@@ -110,7 +110,7 @@ FMIStatus FMIGetValues(
 
         for (size_t j = 0; j < variable->nDimensions; j++) {
 
-            const FMIDimension* dimension = &variable->dimensions[j];
+            const FMIDimension* dimension = variable->dimensions[j];
 
             fmi3UInt64 extent;
 
