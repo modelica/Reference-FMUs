@@ -2,6 +2,7 @@
 <fmiModelDescription
   fmiVersion="3.0"
   modelName="StateSpace"
+  description="This model implements a linear time-invariant (LTI) system."
   generationTool="Reference FMUs (development build)"
   instantiationToken="{D773325B-AB94-4630-BF85-643EB24FCB78}">
 
