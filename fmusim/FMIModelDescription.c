@@ -43,7 +43,7 @@ static char* getStringAttribute(const xmlNodePtr node, const char* name) {
 
     FMIDuplicateString(attribute, &value);
     
-    xmlFree(attribute);
+    xmlFree((void*)attribute);
 
     return value;
 }
@@ -295,7 +295,7 @@ static FMIStatus readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescripti
 
             CALL(FMIParseValues(FMIMajorVersion2, FMIUInt32Type, dependenciesLiteral, &unknown->nDependencies, &dependencyIndices));
 
-            CALL(FMICalloc(&unknown->dependencies, unknown->nDependencies, sizeof(FMIModelVariable*)));
+            CALL(FMICalloc((void**)&unknown->dependencies, unknown->nDependencies, sizeof(FMIModelVariable*)));
 
             for (size_t j = 0; j < unknown->nDependencies; j++) {
 
@@ -361,7 +361,7 @@ static FMIStatus readUnknownsFMI3(xmlXPathContextPtr xpathCtx, FMIModelDescripti
 
             CALL(FMIParseValues(FMIMajorVersion3, FMIUInt32Type, dependenciesLiteral, &unknown->nDependencies, &dependencyValueReferences));
 
-            CALL(FMICalloc(&unknown->dependencies, unknown->nDependencies, sizeof(FMIModelVariable*)));
+            CALL(FMICalloc((void**)&unknown->dependencies, unknown->nDependencies, sizeof(FMIModelVariable*)));
 
             for (size_t j = 0; j < unknown->nDependencies; j++) {
 
@@ -1098,12 +1098,11 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
             const char* start = (char*)xmlGetProp(dimensionNode, (xmlChar*)"start");
             const char* valueReference = (char*)xmlGetProp(dimensionNode, (xmlChar*)"valueReference");
 
-            CALL(FMIRealloc(&variable->dimensions, (variable->nDimensions + 1) * sizeof(FMIDimension)));
+            CALL(FMIRealloc((void**)& variable->dimensions, (variable->nDimensions + 1) * sizeof(FMIDimension*)));
 
-            FMIDimension* dimension = &variable->dimensions[variable->nDimensions];
+            FMIDimension* dimension;
 
-            dimension->start = 0;
-            dimension->variable = NULL;
+            CALL(FMICalloc(&dimension, 1, sizeof(FMIDimension)));
 
             if (start) {
                 dimension->start = atoi(start);
@@ -1116,10 +1115,10 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
                 return NULL;
             }
 
-            xmlFree(start);
-            xmlFree(valueReference);
+            xmlFree((void*)start);
+            xmlFree((void*)valueReference);
 
-            variable->nDimensions++;
+            variable->dimensions[variable->nDimensions++] = dimension;
         }
 
         xmlXPathFreeObject(xpathObj2);
@@ -1264,7 +1263,7 @@ FMIModelDescription* FMIReadModelDescription(const char* filename) {
 
 TERMINATE:
 
-    xmlFree(fmiVersion);
+    xmlFree((void*)fmiVersion);
 
     if (vctxt) {
         xmlSchemaFreeValidCtxt(vctxt);
@@ -1389,12 +1388,19 @@ void FMIFreeModelDescription(FMIModelDescription* modelDescription) {
         FMIModelVariable* variable = modelDescription->modelVariables[i];
 
         if (variable) {
+
             FMIFree((void**)&variable->name);
             FMIFree((void**)&variable->min);
             FMIFree((void**)&variable->max);
             FMIFree((void**)&variable->nominal);
             FMIFree((void**)&variable->start);
             FMIFree((void**)&variable->description);
+
+            for (size_t j = 0; j < variable->nDimensions; j++) {
+                FMIFree(&variable->dimensions[j]);
+            }
+
+            FMIFree((void**)&variable->dimensions);
 
             FMIFree(&variable);
         }

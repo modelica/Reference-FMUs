@@ -110,7 +110,7 @@ struct FMIModelVariable {
     FMIVariability variability;
     FMIInitial initial;
     size_t nDimensions;
-    FMIDimension* dimensions;
+    FMIDimension** dimensions;
     FMIModelVariable* derivative;
     FMIUnit* unit;
     bool relativeQuantity;

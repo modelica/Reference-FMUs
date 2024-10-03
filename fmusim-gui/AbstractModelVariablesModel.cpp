@@ -186,7 +186,7 @@ QVariant AbstractModelVariablesModel::columnData(const FMIModelVariable *variabl
 
                 for (size_t i = 0; i < variable->nDimensions; i++) {
 
-                    FMIDimension* dimension = &variable->dimensions[i];
+                    const FMIDimension* dimension = variable->dimensions[i];
 
                     if (i > 0) {
                         dimensions += ", ";
