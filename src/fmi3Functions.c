@@ -49,7 +49,7 @@ do { \
 #define GET_VARIABLES(T) \
 BEGIN_FUNCTION(Get ## T); \
 if (nValueReferences == 0) goto TERMINATE; \
-else ASSERT_NOT_NULL(valueReferences); \
+ASSERT_NOT_NULL(valueReferences); \
 if (nValues > 0) ASSERT_NOT_NULL(values); \
 if (S->isDirtyValues) { \
     CALL(calculateValues(S)); \
@@ -568,6 +568,21 @@ fmi3Status fmi3GetBinary(fmi3Instance instance,
 
     BEGIN_FUNCTION(GetBinary);
 
+    if (nValueReferences == 0) {
+        goto TERMINATE;
+    } else {
+        ASSERT_NOT_NULL(valueReferences);
+    }
+
+    if (nValues > 0) {
+        ASSERT_NOT_NULL(values);
+    }
+
+    if (S->isDirtyValues) {
+        CALL(calculateValues(S));
+        S->isDirtyValues = false;
+    }
+
     size_t index = 0;
 
     for (size_t i = 0; i < nValueReferences; i++) {
@@ -695,10 +710,25 @@ fmi3Status fmi3SetBinary(fmi3Instance instance,
 
     BEGIN_FUNCTION(SetBinary);
 
+    if (nValueReferences == 0) {
+        goto TERMINATE;
+    }
+
+    ASSERT_NOT_NULL(valueReferences);
+
     size_t index = 0;
 
     for (size_t i = 0; i < nValueReferences; i++) {
         CALL(setBinary(S, (ValueReference)valueReferences[i], valueSizes, (const char* const*)values, nValues, &index));
+    }
+
+    if (nValueReferences > 0) {
+        S->isDirtyValues = true;
+    }
+
+    if (index != nValues) {
+        logError(S, "Expected nValues = %zu but was %zu.", index, nValues); \
+        CALL(Error);
     }
 
     END_FUNCTION();
