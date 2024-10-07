@@ -1,6 +1,5 @@
 #include <stdlib.h>  // for calloc(), free()
 #include <float.h>   // for DBL_EPSILON
-#include <math.h>    // for fabs()
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -192,17 +191,25 @@ Status reset(ModelInstance* comp) {
 
 #define EPSILON (1.0e-5)
 
+static bool fmiAbs(double v) {
+    return v >= 0 ? v : -v;
+}
+
+static bool fmiMax(double a, double b) {
+    return (a < b) ? b : a;
+}
+
 bool isClose(double a, double b) {
 
     if (!isfinite(a) || !isfinite(b)) {
         return false;
     }
 
-    if (fabs(a - b) <= EPSILON) {
+    if (fmiAbs(a - b) <= EPSILON) {
         return true;
     }
 
-    return fabs(a - b) <= EPSILON * fmax(fabs(a), fabs(b));
+    return fmiAbs(a - b) <= EPSILON * fmiMax(fmiAbs(a), fmiAbs(b));
 }
 
 bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected) {
