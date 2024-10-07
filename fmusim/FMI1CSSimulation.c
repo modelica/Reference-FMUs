@@ -29,7 +29,7 @@ FMIStatus FMI1CSSimulate(const FMISimulationSettings* s) {
 
     // set start values
     CALL(FMIApplyStartValues(S, s));
-    CALL(FMIApplyInput(S, s->input, s->startTime, true, true, false));
+    CALL(FMIApplyInput(S, s->input, s->startTime, true, true, true));
 
     // initialize
     CALL(FMI1InitializeSlave(S, s->startTime, fmi1False, 0));
@@ -46,7 +46,7 @@ FMIStatus FMI1CSSimulate(const FMISimulationSettings* s) {
             break;
         }
 
-        CALL(FMIApplyInput(S, s->input, time, true, true, false));
+        CALL(FMIApplyInput(S, s->input, time, true, true, true));
 
         const FMIStatus doStepStatus = FMI1DoStep(S, time, s->outputInterval, fmi1True);
 
