@@ -2,6 +2,7 @@
 <fmiModelDescription
   fmiVersion="3.0"
   modelName="van der Pol oscillator"
+  description="This model implements the van der Pol oscillator"
   generationTool="Reference FMUs (development build)"
   instantiationToken="{BD403596-3166-4232-ABC2-132BDF73E644}">
 

@@ -3,7 +3,7 @@
   fmiVersion="1.0"
   modelName="Dahlquist"
   modelIdentifier="Dahlquist"
-  description="This model implements the Dahlquist test equation."
+  description="This model implements the Dahlquist test equation"
   generationTool="Reference FMUs (development build)"
   guid="{221063D2-EF4A-45FE-B954-B5BFEEA9A59B}"
   numberOfContinuousStates="1"
