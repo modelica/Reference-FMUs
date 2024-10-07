@@ -198,6 +198,10 @@ set_target_properties(${TARGET_NAME} PROPERTIES
 set_target_properties(${TARGET_NAME} PROPERTIES PREFIX "")
 set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME ${MODEL_NAME})
 
+if (UNIX)
+    target_link_libraries(${TARGET_NAME} m)
+endif ()
+
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 # modelDescription.xml
