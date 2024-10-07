@@ -2,6 +2,7 @@
 <fmiModelDescription
   fmiVersion="3.0"
   modelName="Feedthrough"
+  description="A model to test different variable types, causalities, and variabilities"
   generationTool="Reference FMUs (development build)"
   instantiationToken="{37B954F1-CC86-4D8F-B97F-C7C36F6670D2}">
 

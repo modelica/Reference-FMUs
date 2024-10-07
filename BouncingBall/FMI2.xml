@@ -2,7 +2,7 @@
 <fmiModelDescription
   fmiVersion="2.0"
   modelName="BouncingBall"
-  description="This model calculates the trajectory, over time, of a ball dropped from a height of 1 m."
+  description="This model calculates the trajectory, over time, of a ball dropped from a height of 1 m"
   generationTool="Reference FMUs (development build)"
   guid="{1AE5E10D-9521-4DE3-80B9-D0EAAA7D5AF1}"
   numberOfEventIndicators="1">
