@@ -647,7 +647,9 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
 
     while (true) {
 
-        if (S->time > nextCommunicationPoint || isClose(S->time, nextCommunicationPoint)) {
+        const double nextSolverStepTime = S->time + FIXED_SOLVER_STEP;
+
+        if (nextSolverStepTime > nextCommunicationPoint && !isClose(nextSolverStepTime, nextCommunicationPoint)) {
             break;  // next communcation point reached
         }
 

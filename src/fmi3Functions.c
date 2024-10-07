@@ -1381,7 +1381,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
 
         const fmi3Float64 nextSolverStepTime = S->time + FIXED_SOLVER_STEP;
 
-        nextCommunicationPointReached = nextSolverStepTime > nextCommunicationPoint || isClose(nextSolverStepTime, nextCommunicationPoint);
+        nextCommunicationPointReached = nextSolverStepTime > nextCommunicationPoint && !isClose(nextSolverStepTime, nextCommunicationPoint);
 
         if (nextCommunicationPointReached || (*eventHandlingNeeded && S->earlyReturnAllowed)) {
             break;

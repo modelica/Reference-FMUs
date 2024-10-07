@@ -191,11 +191,11 @@ Status reset(ModelInstance* comp) {
 
 #define EPSILON (1.0e-5)
 
-static bool fmiAbs(double v) {
+static double fmiAbs(double v) {
     return v >= 0 ? v : -v;
 }
 
-static bool fmiMax(double a, double b) {
+static double fmiMax(double a, double b) {
     return (a < b) ? b : a;
 }
 
