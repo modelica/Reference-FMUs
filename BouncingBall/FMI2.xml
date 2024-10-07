@@ -88,12 +88,12 @@
 
   <ModelStructure>
     <Outputs>
-      <Unknown index="2"/>
-      <Unknown index="4"/>
+      <Unknown index="2" dependencies=""/>
+      <Unknown index="4" dependencies=""/>
     </Outputs>
     <Derivatives>
-      <Unknown index="3"/>
-      <Unknown index="5"/>
+      <Unknown index="3" dependencies="4" dependenciesKind="constant"/>
+      <Unknown index="5" dependencies="6" dependenciesKind="constant"/>
     </Derivatives>
     <InitialUnknowns>
       <Unknown index="3" dependencies="4" dependenciesKind="constant"/>
