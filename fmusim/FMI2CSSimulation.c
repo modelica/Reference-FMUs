@@ -40,7 +40,7 @@ FMIStatus FMI2CSSimulate(const FMISimulationSettings* s) {
     if (!s->initialFMUStateFile) {
         CALL(FMI2SetupExperiment(S, s->tolerance > 0, s->tolerance, s->startTime, fmi2False, 0));
         CALL(FMI2EnterInitializationMode(S));
-        CALL(FMIApplyInput(S, s->input, s->startTime, true, true, false));
+        CALL(FMIApplyInput(S, s->input, s->startTime, true, true, true));
         CALL(FMI2ExitInitializationMode(S));
     }
 
@@ -56,7 +56,7 @@ FMIStatus FMI2CSSimulate(const FMISimulationSettings* s) {
             break;
         }
 
-        CALL(FMIApplyInput(S, s->input, time, true, true, false));
+        CALL(FMIApplyInput(S, s->input, time, true, true, true));
 
         const FMIStatus doStepStatus = FMI2DoStep(S, time, s->outputInterval, fmi2True);
 

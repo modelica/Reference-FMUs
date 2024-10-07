@@ -95,7 +95,7 @@ FMIStatus FMI3CSSimulate(const FMISimulationSettings* s) {
 
         CALL(FMI3EnterInitializationMode(S, s->tolerance > 0, s->tolerance, s->startTime, fmi3False, 0));
 
-        CALL(FMIApplyInput(S, s->input, s->startTime, true, true, false));
+        CALL(FMIApplyInput(S, s->input, s->startTime, true, true, true));
 
         CALL(FMI3ExitInitializationMode(S));
 
