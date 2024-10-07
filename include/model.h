@@ -221,6 +221,7 @@ Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueRe
 Status getEventIndicators(ModelInstance *comp, double z[], size_t nz);
 Status eventUpdate(ModelInstance *comp);
 
+bool isClose(double a, double b);
 bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected);
 bool invalidState(ModelInstance *comp, const char *f, int statesExpected);
 bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void *p);

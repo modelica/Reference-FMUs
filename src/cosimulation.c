@@ -190,6 +190,21 @@ Status reset(ModelInstance* comp) {
     return OK;
 }
 
+#define EPSILON (1.0e-5)
+
+bool isClose(double a, double b) {
+
+    if (!isfinite(a) || !isfinite(b)) {
+        return false;
+    }
+
+    if (fabs(a - b) <= EPSILON) {
+        return true;
+    }
+
+    return fabs(a - b) <= EPSILON * fmax(fabs(a), fabs(b));
+}
+
 bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected) {
 
     if (actual != expected) {

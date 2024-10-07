@@ -1352,27 +1352,24 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
 
     BEGIN_FUNCTION(DoStep);
 
-    if (fabs(currentCommunicationPoint - S->nextCommunicationPoint) > EPSILON) {
+    if (!isClose(currentCommunicationPoint, S->nextCommunicationPoint)) {
         logError(S, "Expected currentCommunicationPoint = %.16g but was %.16g.",
             S->nextCommunicationPoint, currentCommunicationPoint);
-        S->state = Terminated;
-        return fmi3Error;
+        CALL(Error);
     }
 
     if (communicationStepSize <= 0) {
-        logError(S, "Communication step size must be > 0 but was %g.", communicationStepSize);
-        S->state = Terminated;
-        return fmi3Error;
+        logError(S, "Communication step size must be > 0 but was %.16g.", communicationStepSize);
+        CALL(Error);
     }
 
-    if (currentCommunicationPoint + communicationStepSize > S->stopTime + EPSILON) {
+    const fmi3Float64 nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
+
+    if (nextCommunicationPoint > S->stopTime && !isClose(nextCommunicationPoint, S->stopTime)) {
         logError(S, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
             currentCommunicationPoint, communicationStepSize, S->stopTime);
-        S->state = Terminated;
-        return fmi3Error;
+        CALL(Error);
     }
-
-    const fmi3Float64 nextCommunicationPoint = currentCommunicationPoint + communicationStepSize + EPSILON;
 
     bool nextCommunicationPointReached;
 
@@ -1384,7 +1381,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
 
         const fmi3Float64 nextSolverStepTime = S->time + FIXED_SOLVER_STEP;
 
-        nextCommunicationPointReached = nextSolverStepTime > nextCommunicationPoint;
+        nextCommunicationPointReached = nextSolverStepTime > nextCommunicationPoint || isClose(nextSolverStepTime, nextCommunicationPoint);
 
         if (nextCommunicationPointReached || (*eventHandlingNeeded && S->earlyReturnAllowed)) {
             break;

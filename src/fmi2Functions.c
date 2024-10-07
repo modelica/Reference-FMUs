@@ -625,7 +625,7 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
 
     BEGIN_FUNCTION(DoStep);
 
-    if (fabs(currentCommunicationPoint - S->nextCommunicationPoint) > EPSILON) {
+    if (!isClose(currentCommunicationPoint, S->nextCommunicationPoint)) {
         logError(S, "Expected currentCommunicationPoint = %.16g but was %.16g.",
             S->nextCommunicationPoint, currentCommunicationPoint);
         S->state = Terminated;
@@ -637,17 +637,17 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
         CALL(Error);
     }
 
-    if (currentCommunicationPoint + communicationStepSize > S->stopTime + EPSILON) {
+    const fmi2Real nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
+
+    if (nextCommunicationPoint > S->stopTime && !isClose(nextCommunicationPoint, S->stopTime)) {
         logError(S, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
             currentCommunicationPoint, communicationStepSize, S->stopTime);
         CALL(Error);
     }
 
-    const fmi2Real nextCommunicationPoint = currentCommunicationPoint + communicationStepSize + EPSILON;
-
     while (true) {
 
-        if (S->time + FIXED_SOLVER_STEP > nextCommunicationPoint) {
+        if (S->time > nextCommunicationPoint || isClose(S->time, nextCommunicationPoint)) {
             break;  // next communcation point reached
         }
 
@@ -667,7 +667,7 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
         }
     }
 
-    S->nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
+    S->nextCommunicationPoint = nextCommunicationPoint;
 
     END_FUNCTION();
 }
