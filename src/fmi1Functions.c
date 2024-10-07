@@ -304,31 +304,34 @@ fmiStatus fmiDoStep(fmiComponent c, fmiReal currentCommunicationPoint, fmiReal c
 
     ModelInstance* instance = (ModelInstance *)c;
 
-    if (fabs(currentCommunicationPoint - instance->nextCommunicationPoint) > EPSILON) {
+    if (!isClose(currentCommunicationPoint, instance->nextCommunicationPoint)) {
         logError(instance, "Expected currentCommunicationPoint = %.16g but was %.16g.",
             instance->nextCommunicationPoint, currentCommunicationPoint);
         instance->state = modelError;
         return fmiError;
     }
 
-    if (currentCommunicationPoint + communicationStepSize > instance->stopTime + EPSILON) {
+    const fmiReal nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
+
+    if (nextCommunicationPoint > instance->stopTime && !isClose(nextCommunicationPoint, instance->stopTime)) {
         logError(instance, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
             currentCommunicationPoint, communicationStepSize, instance->stopTime);
         instance->state = modelError;
         return fmiError;
     }
 
-    const fmiReal nextCommunicationPoint = currentCommunicationPoint + communicationStepSize + EPSILON;
-
     while (true) {
 
-        if (instance->time + FIXED_SOLVER_STEP > nextCommunicationPoint) {
+        const fmiReal nextSolverStepTime = instance->time + FIXED_SOLVER_STEP;
+
+        if (nextSolverStepTime > nextCommunicationPoint && !isClose(nextSolverStepTime, nextCommunicationPoint)) {
             break;  // next communcation point reached
         }
 
         bool stateEvent, timeEvent;
 
         doFixedStep(instance, &stateEvent, &timeEvent);
+
 #ifdef EVENT_UPDATE
         if (stateEvent || timeEvent) {
             eventUpdate(instance);
@@ -336,7 +339,7 @@ fmiStatus fmiDoStep(fmiComponent c, fmiReal currentCommunicationPoint, fmiReal c
 #endif
     }
 
-    instance->nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
+    instance->nextCommunicationPoint = nextCommunicationPoint;
 
     return fmiOK;
 }
