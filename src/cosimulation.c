@@ -201,10 +201,6 @@ static bool fmiMax(double a, double b) {
 
 bool isClose(double a, double b) {
 
-    if (!isfinite(a) || !isfinite(b)) {
-        return false;
-    }
-
     if (fmiAbs(a - b) <= EPSILON) {
         return true;
     }
