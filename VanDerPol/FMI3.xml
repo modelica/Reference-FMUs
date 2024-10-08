@@ -41,12 +41,12 @@
   </ModelVariables>
 
   <ModelStructure>
-    <Output valueReference="1"/>
-    <Output valueReference="3"/>
-    <ContinuousStateDerivative valueReference="2"/>
-    <ContinuousStateDerivative valueReference="4"/>
-    <InitialUnknown valueReference="2"/>
-    <InitialUnknown valueReference="4"/>
+    <Output valueReference="1" dependencies=""/>
+    <Output valueReference="3" dependencies=""/>
+    <ContinuousStateDerivative valueReference="2" dependencies="3" dependenciesKind="constant"/>
+    <ContinuousStateDerivative valueReference="4" dependencies="1 3" dependenciesKind="dependent dependent"/>
+    <InitialUnknown valueReference="2" dependencies="3" dependenciesKind="constant"/>
+    <InitialUnknown valueReference="4" dependencies="1 3 5" dependenciesKind="dependent dependent dependent"/>
   </ModelStructure>
 
 </fmiModelDescription>
