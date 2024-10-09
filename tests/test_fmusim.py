@@ -377,8 +377,8 @@ def test_event_mode_time_events(platform):
         model='Stair.fmu'
     )
 
-    assert np.all(result['time'] == [0, 1, 1, 2, 2, 2.5, 3, 3, 4, 4, 5, 5])
-    assert np.all(result['counter'] == [1, 1, 2, 2, 3, 3, 3, 4, 4, 5, 5, 6])
+    assert np.all(result['time']    == [0, 1, 1, 2, 2, 2.5, 3, 3, 4, 4, 5, 5])
+    assert np.all(result['counter'] == [1, 1, 2, 2, 3, 3,   3, 4, 4, 5, 5, 6])
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))

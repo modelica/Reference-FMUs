@@ -43,7 +43,9 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t
 
     switch (vr) {
         case vr_counter:
-            calculateCounter(comp);
+            if (comp->state == EventMode) {
+                calculateCounter(comp);
+            }
             values[(*index)++] = M(counter);
             return OK;
         default:
