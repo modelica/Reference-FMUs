@@ -310,14 +310,16 @@ void FMIAppendArrayToLogMessageBuffer(FMIInstance* instance, const void* values,
             continue;
         }
 
-        if (length + sizeof(", ") < instance->logMessageBufferSize - instance->logMessageBufferPosition) {
+        const size_t requiredCharacters = length + sizeof(", ");
+
+        if (requiredCharacters < instance->logMessageBufferSize - instance->logMessageBufferPosition) {
 
             instance->logMessageBufferPosition += length;
             i++;
 
         } else {
 
-            while (instance->logMessageBufferSize < instance->logMessageBufferPosition + length) {
+            while (instance->logMessageBufferSize < instance->logMessageBufferPosition + requiredCharacters) {
                 instance->logMessageBufferSize *= 2;
             }
 
