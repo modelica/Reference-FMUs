@@ -40,7 +40,7 @@ jobs:
         path: fmusim-gui/build/fmusim-gui/Release
         if-no-files-found: error
   build-fmusim-gui-macos:
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-python@v5
