@@ -9,10 +9,26 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if (${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
+  set(FMI_ARCHITECTURE "x86_64")
+elseif (${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "aarch64")
+  set(FMI_ARCHITECTURE "aarch64")
+else ()
+  message(FATAL_ERROR "Unknown System Architecture: ${CMAKE_SYSTEM_PROCESSOR}")
+endif ()
+
+if (WIN32)
+  set(FMI_PLATFORM "${FMI_ARCHITECTURE}-windows")
+elseif (APPLE)
+  set(FMI_PLATFORM "${FMI_ARCHITECTURE}-darwin")
+else ()
+  set(FMI_PLATFORM "${FMI_ARCHITECTURE}-linux")
+endif ()
+
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-set(CVODE_DIR    ${CMAKE_SOURCE_DIR}/build/cvode-x86_64-windows/install)
-set(LIBXML2_DIR  ${CMAKE_SOURCE_DIR}/build/libxml2-x86_64-windows/install)
-set(ZLIB_DIR     ${CMAKE_SOURCE_DIR}/build/zlib-x86_64-windows/install)
+set(CVODE_DIR    ${CMAKE_SOURCE_DIR}/build/cvode-${FMI_PLATFORM}/install)
+set(LIBXML2_DIR  ${CMAKE_SOURCE_DIR}/build/libxml2-${FMI_PLATFORM}/install)
+set(ZLIB_DIR     ${CMAKE_SOURCE_DIR}/build/zlib-${FMI_PLATFORM}/install)
 
 set(ZLIB_SRC_DIR ${CMAKE_SOURCE_DIR}/build/zlib-1.3)
 
@@ -31,7 +47,6 @@ set(PROJECT_SOURCES
     ../fmusim/miniunzip.c
     ${ZLIB_SRC_DIR}/contrib/minizip/unzip.c
     ${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c
-    ${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c
     ../fmusim/FMIModelDescription.c
     ../fmusim/FMIModelDescription.h
     ../fmusim/FMIBuildDescription.c
@@ -39,6 +54,15 @@ set(PROJECT_SOURCES
     ../src/structured_variable_name.tab.c
     ../src/structured_variable_name.yy.c
 )
+
+if (WIN32)
+    set(PROJECT_SOURCES ${PROJECT_SOURCES} ${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c)
+elseif (APPLE)
+    set(MACOSX_BUNDLE_ICON_FILE icon.icns)
+    set(app_icon_macos "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon/icon.icns")
+    set_source_files_properties(${app_icon_macos} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+    set(PROJECT_SOURCES ${PROJECT_SOURCES} ${app_icon_macos})
+endif ()
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(fmusim-gui
@@ -118,16 +142,26 @@ target_include_directories(fmusim-gui PRIVATE
     ${CVODE_DIR}/include
 )
 
-target_compile_definitions(fmusim-gui PRIVATE
-    YY_NO_UNISTD_H
-)
+if (WIN32)
+    target_compile_definitions(fmusim-gui PRIVATE YY_NO_UNISTD_H)
+endif ()
 
-target_link_libraries(fmusim-gui PRIVATE
-    Qt6::WebEngineWidgets
-    ${LIBXML2_DIR}/lib/libxml2.lib
-    ${ZLIB_DIR}/lib/zlib.lib
-    ${CVODE_DIR}/lib/sundials_cvode.lib
-)
+
+if (WIN32)
+    target_link_libraries(fmusim-gui PRIVATE
+        Qt6::WebEngineWidgets
+        ${LIBXML2_DIR}/lib/libxml2.lib
+        ${ZLIB_DIR}/lib/zlib.lib
+        ${CVODE_DIR}/lib/sundials_cvode.lib
+    )
+elseif (APPLE)
+    target_link_libraries(fmusim-gui PRIVATE
+        Qt6::WebEngineWidgets
+        ${LIBXML2_DIR}/lib/libxml2.dylib
+        ${ZLIB_DIR}/lib/libz.a
+        ${CVODE_DIR}/lib/libsundials_cvode.a
+    )
+endif ()
 
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET fmusim-gui APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
