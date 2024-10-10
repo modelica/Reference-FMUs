@@ -1,8 +1,13 @@
-#include <float.h>  // for DBL_EPSILON
-#include <math.h>   // for fabs()
-#include "config.h"
 #include "model.h"
 
+
+static void calculateCounter(ModelInstance* comp) {
+
+    if (comp->nextEventTimeDefined && isClose(comp->time, comp->nextEventTime)) {
+        M(counter)++;
+        comp->nextEventTime += 1;
+    }
+}
 
 void setStartValues(ModelInstance *comp) {
     M(counter) = 1;
@@ -38,6 +43,11 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t
 
     switch (vr) {
         case vr_counter:
+#if FMI_VERSION == 3
+            if (comp->state == EventMode) {
+                calculateCounter(comp);
+            }
+#endif
             values[(*index)++] = M(counter);
             return OK;
         default:
@@ -79,16 +89,11 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], 
 
 Status eventUpdate(ModelInstance *comp) {
 
-    if (M(counter) >= 10) {
+    calculateCounter(comp);
+
+    if (M(counter) > 10) {
         logError(comp, "Variable \"counter\" cannot be incremented for values >= 10.");
         return Error;
-    }
-
-    const double epsilon = (1.0 + fabs(comp->time)) * DBL_EPSILON;
-
-    if (comp->nextEventTimeDefined && comp->time + epsilon >= comp->nextEventTime) {
-        M(counter)++;
-        comp->nextEventTime += 1;
     }
 
     comp->valuesOfContinuousStatesChanged   = false;
