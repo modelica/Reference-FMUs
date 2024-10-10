@@ -43,9 +43,11 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t
 
     switch (vr) {
         case vr_counter:
+#if FMI_VERSION == 3
             if (comp->state == EventMode) {
                 calculateCounter(comp);
             }
+#endif
             values[(*index)++] = M(counter);
             return OK;
         default:
