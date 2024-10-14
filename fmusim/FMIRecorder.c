@@ -206,7 +206,7 @@ TERMINATE:
     return status;
 }
 
-static void print_value(FILE* file, FMIVariableType type, void* value) {
+static void print_value(FILE* file, FMIVariableType type, FMIMajorVersion fmiMajorVersion, void* value) {
 
     size_t size = 3;
 
@@ -247,7 +247,17 @@ static void print_value(FILE* file, FMIVariableType type, void* value) {
         fprintf(file, "%" PRIu64, *((fmi3UInt64*)value));
         break;
     case FMIBooleanType:
-        fprintf(file, "%d", *((fmi3Boolean*)value));
+        switch (fmiMajorVersion) {
+        case FMIMajorVersion1:
+            fprintf(file, "%d", *((fmi1Boolean*)value));
+            break;
+        case FMIMajorVersion2:
+            fprintf(file, "%d", *((fmi2Boolean*)value));
+            break;
+        case FMIMajorVersion3:
+            fprintf(file, "%d", *((fmi3Boolean*)value));
+            break;
+        }
         break;
     case FMIStringType:
         fprintf(file, "\"%s\"", *((fmi3String*)value));
@@ -299,11 +309,13 @@ FMIStatus FMIRecorderWriteCSV(FMIRecorder* recorder, FILE* file) {
 
     fputc('\n', file);
 
+    const FMIMajorVersion fmiMajorVersion = recorder->instance->fmiMajorVersion;
+
     for (size_t i = 0; i < recorder->nRows; i++) {
 
         Row* row = recorder->rows[i];
 
-        print_value(file, FMIFloat64Type, &row->time);
+        print_value(file, FMIFloat64Type, FMIMajorVersion3, &row->time);
 
         for (size_t j = 0; j < N_VARIABLE_TYPES; j++) {
             
@@ -316,7 +328,7 @@ FMIStatus FMIRecorderWriteCSV(FMIRecorder* recorder, FILE* file) {
             }
 
             const FMIVariableType type = (FMIVariableType)j;
-            const size_t size = FMISizeOfVariableType(type, FMIMajorVersion3);
+            const size_t size = FMISizeOfVariableType(type, fmiMajorVersion);
             char* value = (char*)row->values[j];
 
             for (size_t k = 0; k < info->nVariables; k++) {
@@ -329,7 +341,7 @@ FMIStatus FMIRecorderWriteCSV(FMIRecorder* recorder, FILE* file) {
                         fputc(' ', file);
                     }
                     
-                    print_value(file, type, value);
+                    print_value(file, type, fmiMajorVersion, value);
                     
                     value += size;
                 }
