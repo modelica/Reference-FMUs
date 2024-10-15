@@ -16,6 +16,8 @@ FMIStatus FMI2CSSimulate(const FMISimulationSettings* s) {
     fmi2Real nextCommunicationPoint = 0.0;
     fmi2Real nextInputEventTime = 0.0;
     fmi2Real stepSize = 0.0;
+    
+    const bool canHandleVariableCommunicationStepSize = s->modelDescription->coSimulation->canHandleVariableCommunicationStepSize;
 
     char resourcePath[FMI_PATH_MAX] = "";
     char resourceURI[FMI_PATH_MAX] = "";
@@ -68,12 +70,16 @@ FMIStatus FMI2CSSimulate(const FMISimulationSettings* s) {
 
         nextInputEventTime = FMINextInputEvent(s->input, time);
 
-        if (nextCommunicationPoint > nextInputEventTime && !FMIIsClose(nextCommunicationPoint, nextInputEventTime)) {
+        if (canHandleVariableCommunicationStepSize &&
+            nextCommunicationPoint > nextInputEventTime &&
+            !FMIIsClose(nextCommunicationPoint, nextInputEventTime)) {
+            
             nextCommunicationPoint = nextInputEventTime;
         }
 
         if (nextCommunicationPoint > s->stopTime && !FMIIsClose(nextCommunicationPoint, s->stopTime)) {
-            if (s->modelDescription->coSimulation->canHandleVariableCommunicationStepSize) {
+            
+            if (canHandleVariableCommunicationStepSize) {
                 nextCommunicationPoint = s->stopTime;
             } else {
                 break;
