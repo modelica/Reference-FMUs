@@ -10,6 +10,13 @@ FMIStatus FMI2CSSimulate(const FMISimulationSettings* s) {
 
     FMIStatus status = FMIOK;
 
+    fmi2Boolean terminateSimulation = fmi2False;
+    fmi2Real time = s->startTime;
+    fmi2Real nextRegularPoint = 0.0;
+    fmi2Real nextCommunicationPoint = 0.0;
+    fmi2Real nextInputEventTime = 0.0;
+    fmi2Real stepSize = 0.0;
+
     char resourcePath[FMI_PATH_MAX] = "";
     char resourceURI[FMI_PATH_MAX] = "";
 
@@ -38,46 +45,68 @@ FMIStatus FMI2CSSimulate(const FMISimulationSettings* s) {
     CALL(FMIApplyStartValues(S, s));
 
     if (!s->initialFMUStateFile) {
-        CALL(FMI2SetupExperiment(S, s->tolerance > 0, s->tolerance, s->startTime, fmi2False, 0));
+        CALL(FMI2SetupExperiment(S, s->tolerance > 0, s->tolerance, time, s->setStopTime, s->stopTime));
         CALL(FMI2EnterInitializationMode(S));
         CALL(FMIApplyInput(S, s->input, s->startTime, true, true, true));
         CALL(FMI2ExitInitializationMode(S));
     }
 
-    CALL(FMISample(S, s->startTime, s->initialRecorder));
+    CALL(FMISample(S, time, s->initialRecorder));
+    CALL(FMISample(S, time, s->recorder));
 
-    for (unsigned long step = 0;; step++) {
+    size_t nSteps = 0;
+
+    for (;;) {
         
-        const fmi2Real time = s->startTime + step * s->outputInterval;
-
-        CALL(FMISample(S, time, s->recorder));
-
         if (time > s->stopTime || FMIIsClose(time, s->stopTime)) {
             break;
         }
 
+        nextRegularPoint = s->startTime + (nSteps + 1) * s->outputInterval;
+
+        nextCommunicationPoint = nextRegularPoint;
+
+        nextInputEventTime = FMINextInputEvent(s->input, time);
+
+        if (nextCommunicationPoint > nextInputEventTime && !FMIIsClose(nextCommunicationPoint, nextInputEventTime)) {
+            nextCommunicationPoint = nextInputEventTime;
+        }
+
+        if (nextCommunicationPoint > s->stopTime && !FMIIsClose(nextCommunicationPoint, s->stopTime)) {
+            if (s->modelDescription->coSimulation->canHandleVariableCommunicationStepSize) {
+                nextCommunicationPoint = s->stopTime;
+            } else {
+                break;
+            }
+        }
+
+        stepSize = nextCommunicationPoint - time;
+
         CALL(FMIApplyInput(S, s->input, time, true, true, true));
 
-        const FMIStatus doStepStatus = FMI2DoStep(S, time, s->outputInterval, fmi2True);
+        const FMIStatus doStepStatus = FMI2DoStep(S, time, stepSize, fmi2True);
 
         if (doStepStatus == fmi2Discard) {
 
-            fmi2Boolean terminated;
-            CALL(FMI2GetBooleanStatus(S, fmi2Terminated, &terminated));
+            CALL(FMI2GetRealStatus(S, fmi2LastSuccessfulTime, &time));
 
-            if (terminated) {
-
-                fmi2Real lastSuccessfulTime;
-
-                CALL(FMI2GetRealStatus(S, fmi2LastSuccessfulTime, &lastSuccessfulTime));
-
-                CALL(FMISample(S, lastSuccessfulTime, s->recorder));
-
-                break;
-            }
+            CALL(FMI2GetBooleanStatus(S, fmi2Terminated, &terminateSimulation));
 
         } else {
+
             CALL(doStepStatus);
+            
+            time = nextCommunicationPoint;
+        }
+
+        if (FMIIsClose(time, nextRegularPoint)) {
+            nSteps++;
+        }
+
+        CALL(FMISample(S, time, s->recorder));
+
+        if (terminateSimulation) {
+            goto TERMINATE;
         }
 
         if (s->stepFinished && !s->stepFinished(s, time)) {

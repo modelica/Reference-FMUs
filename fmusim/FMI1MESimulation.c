@@ -104,6 +104,10 @@ FMIStatus FMI1MESimulate(const FMISimulationSettings* s) {
             nextCommunicationPoint = eventInfo.nextEventTime;
         }
 
+        if (nextCommunicationPoint > s->stopTime && !FMIIsClose(nextCommunicationPoint, s->stopTime)) {
+            nextCommunicationPoint = s->stopTime;
+        }
+
         inputEvent = FMIIsClose(nextCommunicationPoint, nextInputEventTime);
 
         timeEvent = eventInfo.upcomingTimeEvent && FMIIsClose(nextCommunicationPoint, eventInfo.nextEventTime);

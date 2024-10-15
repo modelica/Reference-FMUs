@@ -30,6 +30,7 @@ typedef struct FMISimulationSettings {
     const char* finalFMUStateFile;
     bool visible;
     bool loggingOn;
+    bool setStopTime;
 
     // Co-Simulation
     bool earlyReturnAllowed;

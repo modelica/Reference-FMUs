@@ -455,7 +455,9 @@ static FMIModelDescription* readModelDescriptionFMI2(xmlNodePtr root) {
     xpathObj = xmlXPathEvalExpression((xmlChar*)"/fmiModelDescription/CoSimulation", xpathCtx);
     if (xpathObj->nodesetval->nodeNr == 1) {
         CALL(FMICalloc((void**)&modelDescription->coSimulation, 1, sizeof(FMICoSimulationInterface)));
-        modelDescription->coSimulation->modelIdentifier = getStringAttribute(xpathObj->nodesetval->nodeTab[0], "modelIdentifier");
+        const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
+        modelDescription->coSimulation->modelIdentifier = getStringAttribute(node, "modelIdentifier");
+        modelDescription->coSimulation->canHandleVariableCommunicationStepSize = getBooleanAttribute(node, "canHandleVariableCommunicationStepSize");
         CALL(readSourceFiles(xpathCtx, "/fmiModelDescription/CoSimulation/SourceFiles/File", &modelDescription->coSimulation->nSourceFiles, &modelDescription->coSimulation->sourceFiles));
     }
     xmlXPathFreeObject(xpathObj);
@@ -764,6 +766,7 @@ static FMIModelDescription* readModelDescriptionFMI3(xmlNodePtr root) {
         CALL(FMICalloc((void**)&modelDescription->coSimulation, 1, sizeof(FMICoSimulationInterface)));
         const xmlNodePtr node = xpathObj->nodesetval->nodeTab[0];
         modelDescription->coSimulation->modelIdentifier = getStringAttribute(node, "modelIdentifier");
+        modelDescription->coSimulation->canHandleVariableCommunicationStepSize = getBooleanAttribute(node, "canHandleVariableCommunicationStepSize");
         modelDescription->coSimulation->hasEventMode = getBooleanAttribute(node, "hasEventMode");
     }
     xmlXPathFreeObject(xpathObj);

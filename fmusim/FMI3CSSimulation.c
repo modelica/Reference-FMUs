@@ -93,7 +93,7 @@ FMIStatus FMI3CSSimulate(const FMISimulationSettings* s) {
 
     if (!s->initialFMUStateFile) {
 
-        CALL(FMI3EnterInitializationMode(S, s->tolerance > 0, s->tolerance, s->startTime, fmi3False, 0));
+        CALL(FMI3EnterInitializationMode(S, s->tolerance > 0, s->tolerance, s->startTime, s->setStopTime, s->stopTime));
 
         CALL(FMIApplyInput(S, s->input, s->startTime, true, true, true));
 
@@ -143,6 +143,14 @@ FMIStatus FMI3CSSimulate(const FMISimulationSettings* s) {
 
         if (nextCommunicationPoint > nextInputEventTime && !FMIIsClose(nextCommunicationPoint, nextInputEventTime)) {
             nextCommunicationPoint = nextInputEventTime;
+        }
+
+        if (nextCommunicationPoint > s->stopTime && !FMIIsClose(nextCommunicationPoint, s->stopTime)) {
+            if (s->modelDescription->coSimulation->canHandleVariableCommunicationStepSize) {
+                nextCommunicationPoint = s->stopTime;
+            } else {
+                break;
+            }
         }
 
         inputEvent = FMIIsClose(nextCommunicationPoint, nextInputEventTime);

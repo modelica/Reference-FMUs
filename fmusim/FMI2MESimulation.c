@@ -72,7 +72,7 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
     if (!s->initialFMUStateFile) {
 
-        CALL(FMI2SetupExperiment(S, s->tolerance > 0, s->tolerance, time, fmi2False, 0));
+        CALL(FMI2SetupExperiment(S, s->tolerance > 0, s->tolerance, time, s->setStopTime, s->stopTime));
         CALL(FMI2EnterInitializationMode(S));
         CALL(FMIApplyInput(S, s->input, time,
             true,  // discrete
@@ -142,6 +142,10 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
         if (eventInfo.nextEventTimeDefined && nextCommunicationPoint > eventInfo.nextEventTime && !FMIIsClose(nextCommunicationPoint, eventInfo.nextEventTime)) {
             nextCommunicationPoint = eventInfo.nextEventTime;
+        }
+
+        if (nextCommunicationPoint > s->stopTime && !FMIIsClose(nextCommunicationPoint, s->stopTime)) {
+            nextCommunicationPoint = s->stopTime;
         }
 
         inputEvent = FMIIsClose(nextCommunicationPoint, nextInputEventTime);

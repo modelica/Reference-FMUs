@@ -112,6 +112,7 @@ void printUsage() {
         "  --tolerance [TOLERANCE]          relative tolerance\n"
         "  --start-time [VALUE]             start time\n"
         "  --stop-time [VALUE]              stop time\n"
+        "  --set-stop-time                  set stop time explicitly\n"
         "  --output-interval [VALUE]        set the output interval\n"
         "  --start-value [name] [value]     set a start value\n"
         "  --output-variable [name]         record a specific variable\n"
@@ -151,6 +152,7 @@ int main(int argc, const char* argv[]) {
 
     const char* startTimeLiteral = NULL;
     const char* stopTimeLiteral = NULL;
+    bool setStopTime = false;
     
     double outputInterval = 0;
 
@@ -251,6 +253,8 @@ int main(int argc, const char* argv[]) {
             startTimeLiteral = argv[++i];
         } else if (!strcmp(v, "--stop-time")) {
             stopTimeLiteral = argv[++i];
+        } else if (!strcmp(v, "--set-stop-time")) {
+            setStopTime = true;
         } else if (!strcmp(v, "--output-interval")) {
             char* error;
             outputInterval = strtod(argv[++i], &error);
@@ -442,25 +446,21 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    if (!startTimeLiteral) {
-        if (modelDescription->defaultExperiment && modelDescription->defaultExperiment->startTime) {
-            startTimeLiteral = modelDescription->defaultExperiment->startTime;
-        } else {
-            startTimeLiteral = "0";
-        }
+    double startTime = 0;
+
+    if (startTimeLiteral) {
+        startTime = strtod(startTimeLiteral, NULL);
+    } else if (modelDescription->defaultExperiment && modelDescription->defaultExperiment->startTime) {
+        startTime = strtod(modelDescription->defaultExperiment->startTime, NULL);
     }
 
-    const double startTime = strtod(startTimeLiteral, NULL);
+    double stopTime = startTime + 1;
 
-    if (!stopTimeLiteral) {
-        if (modelDescription->defaultExperiment && modelDescription->defaultExperiment->stopTime) {
-            stopTimeLiteral = modelDescription->defaultExperiment->stopTime;
-        } else {
-            stopTimeLiteral = "1";
-        }
+    if (stopTimeLiteral) {
+        stopTime = strtod(stopTimeLiteral, NULL);
+    } else if (modelDescription->defaultExperiment && modelDescription->defaultExperiment->stopTime) {
+        stopTime = strtod(modelDescription->defaultExperiment->stopTime, NULL);
     }
-
-    const double stopTime = strtod(stopTimeLiteral, NULL);
 
     if (outputInterval == 0) {
         if (modelDescription->defaultExperiment && modelDescription->defaultExperiment->stepSize) {
@@ -480,6 +480,7 @@ int main(int argc, const char* argv[]) {
     settings.startTime                = startTime;
     settings.outputInterval           = outputInterval;
     settings.stopTime                 = stopTime;
+    settings.setStopTime              = setStopTime;
     settings.earlyReturnAllowed       = earlyReturnAllowed;
     settings.eventModeUsed            = eventModeUsed;
     settings.recordIntermediateValues = recordIntermediateValues;
