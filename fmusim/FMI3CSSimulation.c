@@ -37,6 +37,7 @@ FMIStatus FMI3CSSimulate(const FMISimulationSettings* s) {
     FMIStatus status = FMIOK;
 
     FMIInstance* S = s->S;
+    const bool canHandleVariableCommunicationStepSize = s->modelDescription->coSimulation->canHandleVariableCommunicationStepSize;
 
     fmi3Boolean inputEvent = fmi3False;
     fmi3Boolean eventEncountered = fmi3False;
@@ -141,12 +142,16 @@ FMIStatus FMI3CSSimulate(const FMISimulationSettings* s) {
 
         nextInputEventTime = FMINextInputEvent(s->input, time);
 
-        if (nextCommunicationPoint > nextInputEventTime && !FMIIsClose(nextCommunicationPoint, nextInputEventTime)) {
+        if (canHandleVariableCommunicationStepSize &&
+            nextCommunicationPoint > nextInputEventTime &&
+            !FMIIsClose(nextCommunicationPoint, nextInputEventTime)) {
+
             nextCommunicationPoint = nextInputEventTime;
         }
 
         if (nextCommunicationPoint > s->stopTime && !FMIIsClose(nextCommunicationPoint, s->stopTime)) {
-            if (s->modelDescription->coSimulation->canHandleVariableCommunicationStepSize) {
+
+            if (canHandleVariableCommunicationStepSize) {
                 nextCommunicationPoint = s->stopTime;
             } else {
                 break;
