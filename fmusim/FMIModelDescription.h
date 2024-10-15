@@ -139,6 +139,7 @@ typedef struct {
 typedef struct {
 
     const char* modelIdentifier;
+    bool canHandleVariableCommunicationStepSize;
     bool hasEventMode;
     size_t nSourceFiles;
     const char** sourceFiles;

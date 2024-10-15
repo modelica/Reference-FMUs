@@ -10,6 +10,8 @@ FMIStatus FMI1CSSimulate(const FMISimulationSettings* s) {
 
     FMIStatus status = FMIOK;
 
+    fmi1Real time = s->startTime;
+
     FMIInstance* S = s->S;
 
     char fmuLocation[FMI_PATH_MAX] = "";
@@ -29,20 +31,20 @@ FMIStatus FMI1CSSimulate(const FMISimulationSettings* s) {
 
     // set start values
     CALL(FMIApplyStartValues(S, s));
-    CALL(FMIApplyInput(S, s->input, s->startTime, true, true, true));
+    CALL(FMIApplyInput(S, s->input, time, true, true, true));
 
     // initialize
-    CALL(FMI1InitializeSlave(S, s->startTime, fmi1False, 0));
+    CALL(FMI1InitializeSlave(S, time, s->setStopTime, s->stopTime));
 
-    CALL(FMISample(S, s->startTime, s->initialRecorder));
+    CALL(FMISample(S, time, s->initialRecorder));
 
     for (unsigned long step = 0;; step++) {
         
-        const fmi1Real time = s->startTime + step * s->outputInterval;
-
         CALL(FMISample(S, time, s->recorder));
 
-        if (time > s->stopTime || FMIIsClose(time, s->stopTime)) {
+        const fmi1Real nextCommunicationPoint = s->startTime + (step + 1) * s->outputInterval;
+
+        if (nextCommunicationPoint > s->stopTime && !FMIIsClose(nextCommunicationPoint, s->stopTime)) {
             break;
         }
 
@@ -58,9 +60,7 @@ FMIStatus FMI1CSSimulate(const FMISimulationSettings* s) {
 
             if (terminated) {
 
-                fmi1Real lastSuccessfulTime;
-
-                CALL(FMI1GetRealStatus(S, fmi1LastSuccessfulTime, &lastSuccessfulTime));
+                CALL(FMI1GetRealStatus(S, fmi1LastSuccessfulTime, &time));
 
                 CALL(FMISample(S, time, s->recorder));
 
@@ -68,7 +68,10 @@ FMIStatus FMI1CSSimulate(const FMISimulationSettings* s) {
             }
 
         } else {
+
             CALL(doStepStatus);
+
+            time = nextCommunicationPoint;
         }
 
         if (s->stepFinished && !s->stepFinished(s, time)) {

@@ -64,6 +64,23 @@ def test_stop_time(fmi_version, interface_type, arch, platform):
 
 
 @pytest.mark.parametrize('fmi_version, interface_type', product([1, 2, 3], ['cs', 'me']))
+def test_set_stop_time(fmi_version, interface_type, arch, platform):
+
+    if fmi_version in {1, 2} and arch not in {'x86', 'x86_64'}:
+        pytest.skip(f"FMI version {fmi_version} is not supported on {arch}.")
+
+    result = call_fmusim(platform, fmi_version, interface_type, 'test_set_stop_time',
+                         ['--stop-time', '3', '--set-stop-time', '--output-interval', '0.7'])
+
+    last = result['time'][-1]
+
+    if fmi_version == 1 and interface_type == 'cs':
+        assert last == pytest.approx(2.8)
+    else:
+        assert last == pytest.approx(3.0)
+
+
+@pytest.mark.parametrize('fmi_version, interface_type', product([1, 2, 3], ['cs', 'me']))
 def test_start_value_types(fmi_version, interface_type, arch, platform):
 
     if fmi_version in {1, 2} and arch not in {'x86', 'x86_64'}:
