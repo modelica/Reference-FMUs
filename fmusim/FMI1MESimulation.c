@@ -49,7 +49,7 @@ FMIStatus FMI1MESimulate(const FMISimulationSettings* s) {
 
     CALL(FMIApplyInput(S, s->input, time,
         true,  // discrete
-        true,  // continous
+        true,  // continuous
         false  // after event
     ));
 
@@ -119,7 +119,7 @@ FMIStatus FMI1MESimulate(const FMISimulationSettings* s) {
 
         CALL(FMIApplyInput(S, s->input, time,
             false,  // discrete
-            true,   // continous
+            true,   // continuous
             false   // after event
         ));
 
@@ -141,7 +141,7 @@ FMIStatus FMI1MESimulate(const FMISimulationSettings* s) {
             if (inputEvent) {
                 CALL(FMIApplyInput(S, s->input, time,
                     true,  // discrete
-                    true,  // continous
+                    true,  // continuous
                     true   // after event
                 ));
             }

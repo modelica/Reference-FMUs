@@ -76,7 +76,7 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
         CALL(FMI2EnterInitializationMode(S));
         CALL(FMIApplyInput(S, s->input, time,
             true,  // discrete
-            true,  // continous
+            true,  // continuous
             false  // after event
         ));
         CALL(FMI2ExitInitializationMode(S));
@@ -158,7 +158,7 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
 
         CALL(FMIApplyInput(S, s->input, time,
             false,  // discrete
-            true,   // continous
+            true,   // continuous
             false   // after event
         ));
 
@@ -185,7 +185,7 @@ FMIStatus FMI2MESimulate(const FMISimulationSettings* s) {
             if (inputEvent) {
                 CALL(FMIApplyInput(S, s->input, time,
                     true,  // discrete
-                    true,  // continous
+                    true,  // continuous
                     true   // after event
                 ));
             }
