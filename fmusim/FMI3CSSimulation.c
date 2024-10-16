@@ -207,7 +207,7 @@ FMIStatus FMI3CSSimulate(const FMISimulationSettings* s) {
             if (inputEvent) {
                 CALL(FMIApplyInput(S, s->input, time,
                     true,  // discrete
-                    true,  // continous
+                    true,  // continuous
                     true   // after event
                 ));
             }
