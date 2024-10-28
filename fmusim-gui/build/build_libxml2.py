@@ -1,24 +1,26 @@
 from pathlib import Path
 from subprocess import check_call
+from fmpy import extract, platform_tuple
 from fmpy.util import download_file
-from fmpy import extract
 
+
+root = Path(__file__).parent
 
 archive = download_file('https://github.com/GNOME/libxml2/archive/refs/tags/v2.11.5.zip',
                         checksum='711675470075cc85ba450f56aff7424f1ecdef00bc5d1d5dced3ffecd1a9b772')
 
-root = Path(__file__).parent
-
 extract(archive, root)
 
-build_dir = root / 'libxml2-x86_64-windows' / 'build'
+if platform_tuple == 'x86_64-windows':
+    cmake_args = [
+        '-G', 'Visual Studio 16 2019',
+        '-A', 'x64'
+    ]
+else:
+    cmake_args = []   
 
-install_prefix = root / 'libxml2-x86_64-windows' / 'install'
-
-cmake_args = [
-    '-G', 'Visual Studio 16 2019',
-    '-A', 'x64'
-]
+build_dir = root / f'libxml2-{platform_tuple}' / 'build'
+install_prefix = root / f'libxml2-{platform_tuple}' / 'install'
 
 check_call(
     ['cmake'] +

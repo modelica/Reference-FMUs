@@ -216,7 +216,6 @@ QString PlotUtil::createPlot(const FMIRecorder* initialRecorder, const FMIRecord
         "    var layout = {"
         "    showlegend: false,"
         "    autosize: true,"
-        "    font: {family: 'Segoe UI', size: 12},"
         + plotColors +
         "    grid: {rows: " + QString::number(plotVariables.size()) + ", columns: 1, pattern: 'independent'},"
         + axes +

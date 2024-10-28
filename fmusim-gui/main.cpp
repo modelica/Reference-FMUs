@@ -16,10 +16,11 @@ int main(int argc, char *argv[]) {
     app.setStyle("Fusion");
 
     QFont font = app.font();
-    font.setPointSize(10);
+    // font.setPointSize(10);
     app.setFont(font);
 
     MainWindow *window = new MainWindow();
+    //window->setStyleSheet("QWidget { font-size: 11px; }");
     window->show();
 
     for (qsizetype i = 1; i < app.arguments().length(); i++) {
