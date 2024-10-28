@@ -135,7 +135,7 @@ To build the `fmusim` executable, run the `build/build_*.py <platform>` Python s
 
 ## License and attribution
 
-Copyright &copy; 2023, Modelica Association Project "FMI".
+Copyright &copy; 2024, Modelica Association Project "FMI".
 All rights reserved.
 The code is released under the [2-Clause BSD License](LICENSE.txt).
 
