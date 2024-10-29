@@ -32,10 +32,10 @@ jobs:
             image: ubuntu-20.04
             arch: aarch64
           - name: x86_64-darwin
-            image: macos-12
+            image: macos-13
             arch: x86_64
           - name: aarch64-darwin
-            image: macos-12
+            image: macos-13
             arch: aarch64
     runs-on: ${{ matrix.image }}
     needs: lint-files
