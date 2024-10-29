@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include <libxml/parser.h>
 #include <libxml/xmlschemas.h>
