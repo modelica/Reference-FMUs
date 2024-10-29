@@ -84,8 +84,8 @@ typedef fmi1Status    fmi1SetDebugLoggingTYPE (fmi1Component c, fmi1Boolean logg
 /***************************************************
  FMI 1.0 for Model Exchange Functions
 ****************************************************/
-typedef const char*   fmi1GetModelTypesPlatformTYPE      ();
-typedef const char*   fmi1GetVersionTYPE                 ();
+typedef const char*   fmi1GetModelTypesPlatformTYPE      (void);
+typedef const char*   fmi1GetVersionTYPE                 (void);
 typedef fmi1Component fmi1InstantiateModelTYPE           (fmi1String instanceName, fmi1String GUID, fmi1CallbackFunctions functions, fmi1Boolean loggingOn);
 typedef void          fmi1FreeModelInstanceTYPE          (fmi1Component c);
 typedef fmi1Status    fmi1SetTimeTYPE                    (fmi1Component c, fmi1Real time);
@@ -103,7 +103,7 @@ typedef fmi1Status    fmi1TerminateTYPE                  (fmi1Component c);
 /***************************************************
  FMI 1.0 for Co-Simulation Functions
 ****************************************************/
-typedef const char*   fmi1GetTypesPlatformTYPE         ();
+typedef const char*   fmi1GetTypesPlatformTYPE         (void);
 typedef fmi1Component fmi1InstantiateSlaveTYPE         (fmi1String  instanceName, fmi1String  fmuGUID, fmi1String  fmuLocation,fmi1String  mimeType, fmi1Real timeout, fmi1Boolean visible, fmi1Boolean interactive, fmi1CallbackFunctions functions, fmi1Boolean loggingOn);
 typedef fmi1Status    fmi1InitializeSlaveTYPE          (fmi1Component c, fmi1Real tStart, fmi1Boolean StopTimeDefined, fmi1Real tStop);
 typedef fmi1Status    fmi1TerminateSlaveTYPE           (fmi1Component c);
