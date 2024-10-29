@@ -106,7 +106,8 @@ if (WIN32)
     set(libraries
       ${LIBXML2_DIR}/lib/libxml2s.lib
       ${ZLIB_DIR}/lib/zlibstatic.lib
-      ${CVODE_DIR}/lib/sundials_cvode.lib
+      ${CVODE_DIR}/lib/sundials_core_static.lib
+      ${CVODE_DIR}/lib/sundials_cvode_static.lib
       wsock32
       ws2_32
       bcrypt
