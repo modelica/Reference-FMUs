@@ -45,7 +45,7 @@ jobs:
       with:
         python-version: '3.10'
     - run: which python
-    - run: python -m pip install fmpy==0.3.21 pytest scipy
+    - run: python -m pip install fmpy==0.3.21 pytest requests scipy
     - if: matrix.name == 'aarch64-linux'
       run: |
         sudo apt-get update
