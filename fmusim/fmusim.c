@@ -171,7 +171,7 @@ int main(int argc, const char* argv[]) {
     FMIRecorder* initialRecorder = NULL;
     FMIRecorder* recorder = NULL;
     const char* unzipdir = NULL;
-    FMIStatus status = FMIFatal;
+    FMIStatus status = FMIOK;
     bool earlyReturnAllowed = false;
     bool eventModeUsed = false;
     bool recordIntermediateValues = false;
@@ -284,6 +284,7 @@ int main(int argc, const char* argv[]) {
         s_logFile = fopen(logFile, "w");
         if (!s_logFile) {
             printf("Failed to open log file %s for writing.\n", logFile);
+            status = FMIError;
             goto TERMINATE;
         }
     }
@@ -292,6 +293,7 @@ int main(int argc, const char* argv[]) {
         s_fmiLogFile = fopen(fmiLogFile, "w");
         if (!s_fmiLogFile) {
             printf("Failed to open FMI log file %s for writing.\n", fmiLogFile);
+            status = FMIError;
             goto TERMINATE;
         }
     }
