@@ -190,7 +190,7 @@ fmiStatus fmiGetString(fmiComponent c, const fmiValueReference vr[], size_t nvr,
 // FMI functions: only for FMI Co-Simulation 1.0
 // ---------------------------------------------------------------------------
 
-const char* fmiGetTypesPlatform() {
+const char* fmiGetTypesPlatform(void) {
     return fmiPlatform;
 }
 
