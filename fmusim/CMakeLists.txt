@@ -15,7 +15,7 @@ set(FMUSIM_VERSION "" CACHE STRING "")
 set(CVODE_DIR    ${CMAKE_SOURCE_DIR}/build/cvode-${FMI_PLATFORM}/install/)
 set(LIBXML2_DIR  ${CMAKE_SOURCE_DIR}/build/libxml2-${FMI_PLATFORM}/install/)
 set(ZLIB_DIR     ${CMAKE_SOURCE_DIR}/build/zlib-${FMI_PLATFORM}/install/)
-set(ZLIB_SRC_DIR ${CMAKE_SOURCE_DIR}/build/zlib-1.3/)
+set(ZLIB_SRC_DIR ${CMAKE_SOURCE_DIR}/build/zlib-1.3.1/)
 
 if (WIN32)
     set(FMUSIM_DIST_DIR ${CMAKE_BINARY_DIR}/dist/fmusim-windows/)
