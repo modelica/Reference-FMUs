@@ -116,6 +116,7 @@ elseif(UNIX AND NOT APPLE)
     set(libraries
       ${LIBXML2_DIR}/lib/libxml2.a
       ${ZLIB_DIR}lib/libz.a
+      ${CVODE_DIR}/lib/libsundials_core.a
       ${CVODE_DIR}/lib/libsundials_cvode.a
       ${CMAKE_DL_LIBS}
       m
@@ -124,6 +125,7 @@ else ()
     set(libraries
       ${LIBXML2_DIR}/lib/libxml2.a
       ${ZLIB_DIR}lib/libz.a
+      ${CVODE_DIR}/lib/libsundials_core.a
       ${CVODE_DIR}/lib/libsundials_cvode.a
     )
 endif ()
