@@ -19,8 +19,8 @@ parser.add_argument(
 )
 (args, _) = parser.parse_known_args()
 
-archive = download_file('https://github.com/GNOME/libxml2/archive/refs/tags/v2.11.5.zip',
-                        checksum='711675470075cc85ba450f56aff7424f1ecdef00bc5d1d5dced3ffecd1a9b772')
+archive = download_file('https://github.com/GNOME/libxml2/archive/refs/tags/v2.13.4.zip',
+                        checksum='9d31649a3f8c0274253e57874280647c8962eed36570b714e869939c101347ba')
 
 root = Path(__file__).parent
 
@@ -71,7 +71,7 @@ check_call(
     '-D', 'LIBXML2_WITH_PYTHON=OFF',
     '-D', 'LIBXML2_WITH_ZLIB=OFF',
     '-D', 'LIBXML2_WITH_TESTS=OFF',
-    root / 'libxml2-2.11.5']
+    root / 'libxml2-2.13.4']
 )
 
 check_call([

@@ -109,6 +109,7 @@ if (WIN32)
       ${CVODE_DIR}/lib/sundials_cvode.lib
       wsock32
       ws2_32
+      bcrypt
     )
 elseif(UNIX AND NOT APPLE)
     set(libraries
