@@ -106,8 +106,8 @@ if (WIN32)
     set(libraries
       ${LIBXML2_DIR}/lib/libxml2s.lib
       ${ZLIB_DIR}/lib/zlibstatic.lib
-      ${CVODE_DIR}/lib/sundials_core_static.lib
       ${CVODE_DIR}/lib/sundials_cvode_static.lib
+      ${CVODE_DIR}/lib/sundials_core_static.lib
       wsock32
       ws2_32
       bcrypt
@@ -116,8 +116,8 @@ elseif(UNIX AND NOT APPLE)
     set(libraries
       ${LIBXML2_DIR}/lib/libxml2.a
       ${ZLIB_DIR}lib/libz.a
-      ${CVODE_DIR}/lib/libsundials_core.a
       ${CVODE_DIR}/lib/libsundials_cvode.a
+      ${CVODE_DIR}/lib/libsundials_core.a
       ${CMAKE_DL_LIBS}
       m
     )
@@ -125,8 +125,8 @@ else ()
     set(libraries
       ${LIBXML2_DIR}/lib/libxml2.a
       ${ZLIB_DIR}lib/libz.a
-      ${CVODE_DIR}/lib/libsundials_core.a
       ${CVODE_DIR}/lib/libsundials_cvode.a
+      ${CVODE_DIR}/lib/libsundials_core.a
     )
 endif ()
 
