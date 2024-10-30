@@ -4,8 +4,8 @@ from fmpy.util import download_file
 import tarfile
 
 
-archive = download_file('https://github.com/LLNL/sundials/releases/download/v6.4.1/cvode-6.4.1.tar.gz',
-                        checksum='0a614e7d7d525d9ec88d5a30c887786d7c3681bd123bb6679fb9a4ec5f4609fe')
+archive = download_file('https://github.com/LLNL/sundials/releases/download/v7.1.1/cvode-7.1.1.tar.gz',
+                        checksum='36eb0ccea5e223ff4fbc528ef996bfb292ec8a1238019b929290ae5d444520ff')
 
 root = Path(__file__).parent
 
@@ -24,11 +24,12 @@ check_call(
     ['cmake'] +
     cmake_args +
     ['-B', build_dir,
-    '-D', f'BUILD_SHARED_LIBS=OFF',
-    '-D', f'BUILD_TESTING=OFF',
-    '-D', f'EXAMPLES_INSTALL=OFF',
+    '-D', 'BUILD_SHARED_LIBS=OFF',
+    '-D', 'BUILD_TESTING=OFF',
+    '-D', 'EXAMPLES_INSTALL=OFF',
+    '-D', 'SUNDIALS_ENABLE_ERROR_CHECKS=OFF',
     '-D', f'CMAKE_INSTALL_PREFIX={ install_prefix }',
-    str(root / 'cvode-6.4.1')]
+    str(root / 'cvode-7.1.1')]
 )
 
 check_call([

@@ -126,7 +126,8 @@ target_link_libraries(fmusim-gui PRIVATE
     Qt6::WebEngineWidgets
     ${LIBXML2_DIR}/lib/libxml2.lib
     ${ZLIB_DIR}/lib/zlib.lib
-    ${CVODE_DIR}/lib/sundials_cvode.lib
+    ${CVODE_DIR}/lib/sundials_cvode_static.lib
+    ${CVODE_DIR}/lib/sundials_core_static.lib
 )
 
 # Define target properties for Android with Qt 6 as:
