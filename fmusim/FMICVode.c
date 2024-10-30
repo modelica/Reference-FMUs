@@ -20,7 +20,7 @@ struct FMISolverImpl {
 
     SUNContext sunctx;
     N_Vector x;
-    realtype reltol;
+    sunrealtype reltol;
     N_Vector abstol;
     SUNMatrix A;
     SUNLinearSolver LS;
@@ -40,7 +40,7 @@ struct FMISolverImpl {
 } SolverImpl_;
 
 // Right-hand-side function
-static int f(realtype t, N_Vector x, N_Vector ydot, void* user_data) {
+static int f(sunrealtype t, N_Vector x, N_Vector ydot, void* user_data) {
 
     FMISolver* solver = (FMISolver*)user_data;
 
@@ -60,7 +60,7 @@ TERMINATE:
 }
 
 // Root function
-static int g(realtype t, N_Vector x, realtype* gout, void* user_data) {
+static int g(sunrealtype t, N_Vector x, sunrealtype* gout, void* user_data) {
 
     FMISolver* solver = (FMISolver*)user_data;
 
@@ -113,7 +113,7 @@ FMISolver* FMICVodeCreate(const FMISolverParameters* solverFunctions) {
     solver->getEventIndicators            = solverFunctions->getEventIndicators;
     solver->logError                      = solverFunctions->logError;
 
-    CALL_CVODE(SUNContext_Create(NULL, &solver->sunctx));
+    CALL_CVODE(SUNContext_Create(SUN_COMM_NULL, &solver->sunctx));
 
     solver->cvode_mem = CVodeCreate(CV_BDF, solver->sunctx);
     ASSERT_NOT_NULL(solver->cvode_mem);
