@@ -182,7 +182,7 @@ TERMINATE:
         }
     }
 
-    if (status != FMIFatal) {
+    if (status != FMIFatal && S->component) {
         FMI1FreeModelInstance(S);
     }
 

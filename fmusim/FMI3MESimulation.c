@@ -246,7 +246,7 @@ TERMINATE:
         }
     }
 
-    if (status != FMIFatal) {
+    if (status != FMIFatal && S->component) {
         FMI3FreeInstance(S);
     }
 
