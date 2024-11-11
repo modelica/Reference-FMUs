@@ -232,7 +232,7 @@ TERMINATE:
         }
     }
 
-    if (status != FMIFatal) {
+    if (status != FMIFatal && S->component) {
         FMI2FreeInstance(S);
     }
 

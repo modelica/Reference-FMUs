@@ -90,7 +90,7 @@ TERMINATE:
         }
     }
 
-    if (status != FMIFatal) {
+    if (status != FMIFatal && S->component) {
         FMI1FreeSlaveInstance(S);
     }
 
