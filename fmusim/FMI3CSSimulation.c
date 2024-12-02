@@ -172,7 +172,7 @@ FMIStatus FMI3CSSimulate(const FMISimulationSettings* s) {
             time,                  // currentCommunicationPoint
             stepSize,              // communicationStepSize
             fmi3True,              // noSetFMUStatePriorToCurrentPoint
-            &eventEncountered,     // eventEncountered
+            &eventEncountered,     // eventHandlingNeeded
             &terminateSimulation,  // terminateSimulation
             &earlyReturn,          // earlyReturn
             &lastSuccessfulTime    // lastSuccessfulTime
