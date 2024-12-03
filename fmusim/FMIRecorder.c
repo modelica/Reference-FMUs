@@ -181,7 +181,9 @@ FMIStatus FMISample(FMIInstance* instance, double time, FMIRecorder* recorder) {
 
         CALL(FMICalloc(&values, info->nValues, FMISizeOfVariableType(type, recorder->instance->fmiMajorVersion)));
 
-        CALL(FMIGetValues(recorder->instance, type, info->valueReferences, info->nVariables, row->sizes, values, info->nValues));
+        if (type != FMIClockType) {  // skip clocks
+            CALL(FMIGetValues(recorder->instance, type, info->valueReferences, info->nVariables, row->sizes, values, info->nValues));
+        }
 
         if (type == FMIBinaryType) {
 
