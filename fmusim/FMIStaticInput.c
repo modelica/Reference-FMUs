@@ -296,8 +296,22 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMIStaticInput* input, doub
 			const size_t nValues = input->nValues[j];
 			const void* values = input->values[j];
 
-			if (nValues == 0) continue;
+			if (nValues == 0) {
+				continue;
+			}
 
+			if (variable->type == FMIClockType) {
+
+				if (instance->state == FMIInitializationModeState) {
+					continue; // don't set clocks in Initialization Mode
+				}
+
+				if (!*((bool*)values)) {
+					continue;  // don't set inactive clocks
+				}
+
+			}
+	
 			CALL(FMISetValues(instance, type, &vr, 1, NULL, values, nValues));
 		}
 	}
