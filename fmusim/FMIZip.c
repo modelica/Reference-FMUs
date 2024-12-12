@@ -22,7 +22,13 @@
 const char* FMICreateTemporaryDirectory() {
     
 #ifdef _WIN32
-    const char* tempfile = _tempnam(NULL, NULL);
+    DWORD processId = GetCurrentProcessId();
+
+    char prefix[256] = "fmusim.";
+    
+    sprintf(&prefix[7], "%lu", processId);
+
+    const char* tempfile = _tempnam(NULL, prefix);
     
     if (!tempfile) {
         return NULL;
