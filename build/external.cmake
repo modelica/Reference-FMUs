@@ -1,5 +1,11 @@
+cmake_host_system_information(RESULT TARGET_64_BITS QUERY IS_64BIT)
+
 include(ExternalProject)
 set(EXTERNAL_BASE_DIR ${CMAKE_BINARY_DIR}/external CACHE STRING "External base directory")
+file(MAKE_DIRECTORY ${EXTERNAL_BASE_DIR}/lib)
+if(UNIX AND TARGET_64_BITS GREATER_EQUAL 1)
+    file(CREATE_LINK lib ${EXTERNAL_BASE_DIR}/lib64 SYMBOLIC)
+endif()
 
 ExternalProject_Add(
     zlib_src
@@ -18,12 +24,10 @@ set_target_properties(zlib PROPERTIES IMPORTED_LOCATION ${EXTERNAL_BASE_DIR}/lib
 add_dependencies(zlib zlib_src)
 
 set(ZLIB_SRC_DIR ${EXTERNAL_BASE_DIR}/src/zlib_src)
-set_source_files_properties(${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c PROPERTIES GENERATED 1)
-set_source_files_properties(${ZLIB_SRC_DIR}/contrib/minizip/unzip.c PROPERTIES GENERATED 1)
-set_source_files_properties(${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c PROPERTIES GENERATED 1)
 
 ExternalProject_Add(
     xml2_src
+    DEPENDS zlib
     PREFIX ${EXTERNAL_BASE_DIR}
     GIT_REPOSITORY https://github.com/GNOME/libxml2.git
     GIT_TAG 60d3056c97067e6cb2125284878ed7c99c90ed81 # v2.13.4

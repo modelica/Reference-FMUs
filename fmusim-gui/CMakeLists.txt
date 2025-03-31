@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.18)
 
 project(fmusim-gui VERSION 0.1 LANGUAGES C CXX)
 
@@ -10,14 +10,16 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-set(CVODE_DIR    ${CMAKE_SOURCE_DIR}/build/cvode-x86_64-windows/install)
-set(LIBXML2_DIR  ${CMAKE_SOURCE_DIR}/build/libxml2-x86_64-windows/install)
-set(ZLIB_DIR     ${CMAKE_SOURCE_DIR}/build/zlib-x86_64-windows/install)
-
-set(ZLIB_SRC_DIR ${CMAKE_SOURCE_DIR}/build/zlib-1.3.1)
-
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
-find_package(Qt6 REQUIRED COMPONENTS WebEngineWidgets)
+if(QT_VERSION_MAJOR GREATER_EQUAL 6)
+    find_package(Qt6 REQUIRED COMPONENTS WebEngineWidgets)
+endif()
+
+set_source_files_properties(
+    ${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c
+    ${ZLIB_SRC_DIR}/contrib/minizip/unzip.c
+    ${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c
+    PROPERTIES GENERATED 1)
 
 set(PROJECT_SOURCES
     main.cpp
@@ -31,7 +33,6 @@ set(PROJECT_SOURCES
     ../fmusim/miniunzip.c
     ${ZLIB_SRC_DIR}/contrib/minizip/unzip.c
     ${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c
-    ${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c
     ../fmusim/FMIModelDescription.c
     ../fmusim/FMIModelDescription.h
     ../fmusim/FMIBuildDescription.c
@@ -39,6 +40,35 @@ set(PROJECT_SOURCES
     ../src/structured_variable_name.tab.c
     ../src/structured_variable_name.yy.c
 )
+if (WIN32)
+    set (PROJECT_SOURCES ${PROJECT_SOURCES} ${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c)
+endif ()
+
+if(WIN32)
+    set(PROJECT_LIBRARIES
+        ${EXTERNAL_BASE_DIR}/lib/libxml2s.lib
+        ${EXTERNAL_BASE_DIR}/lib/zlibstatic.lib
+        ${EXTERNAL_BASE_DIR}/lib/sundials_cvode_static.lib
+        ${EXTERNAL_BASE_DIR}/lib/sundials_core_static.lib
+        )
+elseif(UNIX AND NOT APPLE)
+    set(PROJECT_LIBRARIES
+        ${EXTERNAL_BASE_DIR}/lib/libxml2.a
+        ${EXTERNAL_BASE_DIR}/lib/libz.a
+        ${EXTERNAL_BASE_DIR}/lib/libsundials_cvode.a
+        ${EXTERNAL_BASE_DIR}/lib/libsundials_core.a
+        ${CMAKE_DL_LIBS}
+        m
+        )
+else()
+    set(PROJECT_LIBRARIES
+        ${EXTERNAL_BASE_DIR}/lib/libxml2.a
+        ${EXTERNAL_BASE_DIR}/lib/libz.a
+        ${EXTERNAL_BASE_DIR}/lib/libsundials_cvode.a
+        ${EXTERNAL_BASE_DIR}/lib/libsundials_core.a
+        )
+endif()
+
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(fmusim-gui
@@ -109,26 +139,27 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         resources/build/build.qrc
     )
 
-target_include_directories(fmusim-gui PRIVATE
-    ../include
-    ../fmusim
-    ${LIBXML2_DIR}/include/libxml2
-    ${ZLIB_DIR}/include
-    ${ZLIB_SRC_DIR}/contrib/minizip
-    ${CVODE_DIR}/include
-)
+    add_dependencies(fmusim-gui zlib xml2 cvcode)
 
-target_compile_definitions(fmusim-gui PRIVATE
-    YY_NO_UNISTD_H
-)
+    target_include_directories(fmusim-gui PRIVATE
+        ../include
+        ../fmusim
+        ${EXTERNAL_BASE_DIR}/include
+        ${EXTERNAL_BASE_DIR}/include/libxml2
+        ${ZLIB_SRC_DIR}/contrib/minizip
+        ${ZLIB_SRC_DIR}/contrib/minizip
+    )
 
-target_link_libraries(fmusim-gui PRIVATE
-    Qt6::WebEngineWidgets
-    ${LIBXML2_DIR}/lib/libxml2.lib
-    ${ZLIB_DIR}/lib/zlib.lib
-    ${CVODE_DIR}/lib/sundials_cvode_static.lib
-    ${CVODE_DIR}/lib/sundials_core_static.lib
-)
+    if(WIN32)
+        target_compile_definitions(fmusim-gui PRIVATE
+            YY_NO_UNISTD_H
+        )
+    endif()
+
+    target_link_libraries(fmusim-gui PRIVATE
+        Qt6::WebEngineWidgets
+        ${PROJECT_LIBRARIES}
+    )
 
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET fmusim-gui APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -171,6 +202,6 @@ install(TARGETS fmusim-gui
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-if(QT_VERSION_MAJOR EQUAL 6)
+if(QT_VERSION_MAJOR GREATER_EQUAL 6)
     qt_finalize_executable(fmusim-gui)
 endif()

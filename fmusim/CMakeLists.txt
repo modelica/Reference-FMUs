@@ -12,8 +12,6 @@ endif ()
 
 set(FMUSIM_VERSION "" CACHE STRING "")
 
-include(../build/external.cmake)
-
 if (WIN32)
     set(FMUSIM_DIST_DIR ${CMAKE_BINARY_DIR}/dist/fmusim-windows/)
 elseif (APPLE)
@@ -25,6 +23,12 @@ endif ()
 project (FMUSim)
 
 file(MAKE_DIRECTORY ${FMUSIM_DIST_DIR})
+
+set_source_files_properties(
+    ${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c
+    ${ZLIB_SRC_DIR}/contrib/minizip/unzip.c
+    ${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c
+    PROPERTIES GENERATED 1)
 
 set(sources
   ../include/FMI.h

@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.17)
+cmake_minimum_required (VERSION 3.18)
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
@@ -33,6 +33,7 @@ if (NOT FMI_ARCHITECTURE)
 endif ()
 
 set(WITH_FMUSIM OFF CACHE BOOL "Add fmusim project")
+set(WITH_FMUSIM_GUI OFF CACHE BOOL "Add fmusim Gui project")
 
 if (MSVC)
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
@@ -277,6 +278,14 @@ endforeach(MODEL_NAME)
 # Examples
 include(examples/Examples.cmake)
 
-if (WITH_FMUSIM)
-  add_subdirectory(fmusim)
+if(WITH_FMUSIM OR WITH_FMUSIM_GUI)
+  include(build/external.cmake)
+
+  if (WITH_FMUSIM)
+    add_subdirectory(fmusim)
+  endif ()
+
+  if (WITH_FMUSIM_GUI)
+    add_subdirectory(fmusim-gui)
+  endif ()
 endif ()
