@@ -15,114 +15,28 @@ if(QT_VERSION_MAJOR GREATER_EQUAL 6)
     find_package(Qt6 REQUIRED COMPONENTS WebEngineWidgets)
 endif()
 
-set_source_files_properties(
-    ${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c
-    ${ZLIB_SRC_DIR}/contrib/minizip/unzip.c
-    ${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c
-    PROPERTIES GENERATED 1)
+include(${CMAKE_SOURCE_DIR}/build/sim_common.cmake)
 
-set(PROJECT_SOURCES
+set(FMUSIM_GUI_SOURCES
+    ${FMUSIM_SOURCES}
     main.cpp
     MainWindow.cpp
     MainWindow.h
     MainWindow.ui
-    ../src/FMI.c
-    ../include/FMI.h
-    ../fmusim/FMIZip.c
-    ../fmusim/FMIZip.h
-    ../fmusim/miniunzip.c
-    ${ZLIB_SRC_DIR}/contrib/minizip/unzip.c
-    ${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c
-    ../fmusim/FMIModelDescription.c
-    ../fmusim/FMIModelDescription.h
-    ../fmusim/FMIBuildDescription.c
-    ../fmusim/FMIBuildDescription.h
-    ../src/structured_variable_name.tab.c
-    ../src/structured_variable_name.yy.c
 )
-if (WIN32)
-    set (PROJECT_SOURCES ${PROJECT_SOURCES} ${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c)
-endif ()
-
-if(WIN32)
-    set(PROJECT_LIBRARIES
-        ${EXTERNAL_BASE_DIR}/lib/libxml2s.lib
-        ${EXTERNAL_BASE_DIR}/lib/zlibstatic.lib
-        ${EXTERNAL_BASE_DIR}/lib/sundials_cvode_static.lib
-        ${EXTERNAL_BASE_DIR}/lib/sundials_core_static.lib
-        )
-elseif(UNIX AND NOT APPLE)
-    set(PROJECT_LIBRARIES
-        ${EXTERNAL_BASE_DIR}/lib/libxml2.a
-        ${EXTERNAL_BASE_DIR}/lib/libz.a
-        ${EXTERNAL_BASE_DIR}/lib/libsundials_cvode.a
-        ${EXTERNAL_BASE_DIR}/lib/libsundials_core.a
-        ${CMAKE_DL_LIBS}
-        m
-        )
-else()
-    set(PROJECT_LIBRARIES
-        ${EXTERNAL_BASE_DIR}/lib/libxml2.a
-        ${EXTERNAL_BASE_DIR}/lib/libz.a
-        ${EXTERNAL_BASE_DIR}/lib/libsundials_cvode.a
-        ${EXTERNAL_BASE_DIR}/lib/libsundials_core.a
-        )
-endif()
-
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(fmusim-gui
         MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
+        ${FMUSIM_GUI_SOURCES}
+
         ModelVariablesTableModel.h
         ModelVariablesTableModel.cpp
-        ../src/FMI1.c
-        ../src/FMI2.c
-        ../include/FMI1.h
-        ../include/FMI2.h
-        ../src/FMI3.c
-        ../include/FMI3.h
-        ../fmusim/FMIUtil.c
-        ../fmusim/FMIUtil.h
-        ../fmusim/csv.c
-        ../fmusim/csv.h
-
-        ../fmusim/FMIStaticInput.h
-        ../fmusim/FMIStaticInput.c
-
-        ../fmusim/FMI1CSSimulation.h
-        ../fmusim/FMI1CSSimulation.c
-        ../fmusim/FMI1MESimulation.h
-        ../fmusim/FMI1MESimulation.c
-
-        ../fmusim/FMI2CSSimulation.h
-        ../fmusim/FMI2CSSimulation.c
-        ../fmusim/FMI2MESimulation.h
-        ../fmusim/FMI2MESimulation.c
-
-        ../fmusim/FMI3CSSimulation.h
-        ../fmusim/FMI3CSSimulation.c
-        ../fmusim/FMI3MESimulation.h
-        ../fmusim/FMI3MESimulation.c
-
-        ../fmusim/FMIRecorder.h
-        ../fmusim/FMIRecorder.c
-
-        ../fmusim/FMISimulation.h
-        ../fmusim/FMISimulation.c
-
-        ../fmusim/FMIEuler.h
-        ../fmusim/FMIEuler.c
-
-        ../fmusim/FMICVode.h
-        ../fmusim/FMICVode.c
 
         resources/buttons/buttons.qrc
         resources/tools/tools.qrc
-
         resources/plot/plot.html
         resources/plot/plot.qrc
-
         resources/variables/variables.qrc
 
         VariablesFilterModel.h VariablesFilterModel.cpp
@@ -138,17 +52,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         resources/icon/icon.rc
         resources/build/build.qrc
     )
+    add_dependencies(fmusim-gui ${FMUSIM_DEPENDS})
 
-    add_dependencies(fmusim-gui zlib xml2 cvcode)
-
-    target_include_directories(fmusim-gui PRIVATE
-        ../include
-        ../fmusim
-        ${EXTERNAL_BASE_DIR}/include
-        ${EXTERNAL_BASE_DIR}/include/libxml2
-        ${ZLIB_SRC_DIR}/contrib/minizip
-        ${ZLIB_SRC_DIR}/contrib/minizip
-    )
+    target_include_directories(fmusim-gui PRIVATE ${FMUSIM_INCLUDES})
 
     if(WIN32)
         target_compile_definitions(fmusim-gui PRIVATE
@@ -158,7 +64,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 
     target_link_libraries(fmusim-gui PRIVATE
         Qt6::WebEngineWidgets
-        ${PROJECT_LIBRARIES}
+        ${FMUSIM_LIBS}
     )
 
 # Define target properties for Android with Qt 6 as:
@@ -168,13 +74,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 else()
     if(ANDROID)
         add_library(fmusim-gui SHARED
-            ${PROJECT_SOURCES}
+            ${FMUSIM_GUI_SOURCES}
         )
 # Define properties for Android with Qt 5 after find_package() calls as:
 #    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
         add_executable(fmusim-gui
-            ${PROJECT_SOURCES}
+            ${FMUSIM_GUI_SOURCES}
         )
     endif()
 endif()
