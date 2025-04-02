@@ -15,7 +15,11 @@ if(QT_VERSION_MAJOR GREATER_EQUAL 6)
     find_package(Qt6 REQUIRED COMPONENTS WebEngineWidgets)
 endif()
 
-include(${CMAKE_SOURCE_DIR}/build/sim_common.cmake)
+get_directory_property(NestedProject PARENT_DIRECTORY)
+if(NOT NestedProject)
+    include(../build/external.cmake)
+endif()
+include(../build/sim_common.cmake)
 
 set(FMUSIM_GUI_SOURCES
     ${FMUSIM_SOURCES}
