@@ -1,7 +1,7 @@
 cmake_host_system_information(RESULT TARGET_64_BITS QUERY IS_64BIT)
 
 include(ExternalProject)
-set(EXTERNAL_BASE_DIR ${CMAKE_BINARY_DIR}/external CACHE STRING "External base directory")
+set(EXTERNAL_BASE_DIR ${CMAKE_BINARY_DIR}/_deps CACHE STRING "External base directory")
 file(MAKE_DIRECTORY ${EXTERNAL_BASE_DIR}/lib)
 if(UNIX AND TARGET_64_BITS GREATER_EQUAL 1)
     file(CREATE_LINK lib ${EXTERNAL_BASE_DIR}/lib64 SYMBOLIC)
