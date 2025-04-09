@@ -5,6 +5,8 @@ import tarfile
 import argparse
 
 
+cvode_version = '7.3.0'
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     'platform',
@@ -19,7 +21,7 @@ parser.add_argument(
 )
 args, _ = parser.parse_known_args()
 
-archive = download_file('https://github.com/LLNL/sundials/releases/download/v7.3.0/cvode-7.3.0.tar.gz',
+archive = download_file(f'https://github.com/LLNL/sundials/releases/download/v{cvode_version}/cvode-{cvode_version}.tar.gz',
                         checksum='8b15a646882f2414b1915cad4d53136717a077539e7cfc480f2002c5898ae568')
 
 root = Path(__file__).parent
@@ -71,7 +73,7 @@ check_call(
     '-D', 'EXAMPLES_INSTALL=OFF',
     '-D', 'SUNDIALS_ENABLE_ERROR_CHECKS=OFF',
     '-D', f'CMAKE_INSTALL_PREFIX={ install_prefix }',
-    root / 'cvode-7.1.1']
+    root / f'cvode-{cvode_version}']
 )
 
 check_call([
