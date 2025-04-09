@@ -5,6 +5,8 @@ from fmpy import extract
 import argparse
 
 
+libxml_version = '2.14.1'
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     'platform',
@@ -19,8 +21,8 @@ parser.add_argument(
 )
 (args, _) = parser.parse_known_args()
 
-archive = download_file('https://github.com/GNOME/libxml2/archive/refs/tags/v2.13.4.zip',
-                        checksum='9d31649a3f8c0274253e57874280647c8962eed36570b714e869939c101347ba')
+archive = download_file(f'https://github.com/GNOME/libxml2/archive/refs/tags/v{libxml_version}.zip',
+                        checksum='c6219ada99bc750b1ae2ba06d70d08054b5f3f08eebebfd48ddbcbb4800133fd')
 
 root = Path(__file__).parent
 
@@ -69,9 +71,10 @@ check_call(
     '-D', 'LIBXML2_WITH_ICONV=OFF',
     '-D', 'LIBXML2_WITH_LZMA=OFF',
     '-D', 'LIBXML2_WITH_PYTHON=OFF',
+    '-D', 'LIBXML2_WITH_THREADS=OFF',
     '-D', 'LIBXML2_WITH_ZLIB=OFF',
     '-D', 'LIBXML2_WITH_TESTS=OFF',
-    root / 'libxml2-2.13.4']
+    root / f'libxml2-{libxml_version}']
 )
 
 check_call([
