@@ -27,7 +27,7 @@ archive = download_file(f'https://github.com/LLNL/sundials/releases/download/v{c
 root = Path(__file__).parent
 
 with tarfile.open(archive) as file:
-    file.extractall(root, filter='data')
+    file.extractall(root)
 
 build_dir = root / f'cvode-{args.platform}' / 'build'
 
