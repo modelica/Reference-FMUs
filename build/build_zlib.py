@@ -24,7 +24,7 @@ archive = download_file('https://www.zlib.net/fossils/zlib-1.3.1.tar.gz',
 root = Path(__file__).parent
 
 with tarfile.open(archive) as tf:
-    tf.extractall(root)
+    tf.extractall(root, filter='data')
 
 build_dir = root / f'zlib-{args.platform}' / 'build'
 

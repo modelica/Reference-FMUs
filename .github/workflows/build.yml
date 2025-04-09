@@ -50,6 +50,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install gcc-aarch64-linux-gnu qemu-user
+    - run: cmake --version
     - run: python build/build_cvode.py ${{ matrix.name }}
     - run: python build/build_libxml2.py ${{ matrix.name }}
     - run: python build/build_zlib.py ${{ matrix.name }}

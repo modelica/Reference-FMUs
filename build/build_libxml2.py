@@ -19,8 +19,8 @@ parser.add_argument(
 )
 (args, _) = parser.parse_known_args()
 
-archive = download_file('https://github.com/GNOME/libxml2/archive/refs/tags/v2.13.4.zip',
-                        checksum='9d31649a3f8c0274253e57874280647c8962eed36570b714e869939c101347ba')
+archive = download_file('https://github.com/GNOME/libxml2/archive/refs/tags/v2.14.1.zip',
+                        checksum='c6219ada99bc750b1ae2ba06d70d08054b5f3f08eebebfd48ddbcbb4800133fd')
 
 root = Path(__file__).parent
 
