@@ -71,6 +71,7 @@ check_call(
     '-D', 'LIBXML2_WITH_ICONV=OFF',
     '-D', 'LIBXML2_WITH_LZMA=OFF',
     '-D', 'LIBXML2_WITH_PYTHON=OFF',
+    '-D', 'LIBXML2_WITH_THREADS=OFF',
     '-D', 'LIBXML2_WITH_ZLIB=OFF',
     '-D', 'LIBXML2_WITH_TESTS=OFF',
     root / f'libxml2-{libxml_version}']
