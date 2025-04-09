@@ -21,6 +21,26 @@ if(NOT NestedProject)
 endif()
 include(../build/sim_common.cmake)
 
+if(WIN32)
+    ExternalProject_Add(
+        xml2d_src
+        DEPENDS zlib xml2_src
+        PREFIX ${EXTERNAL_BASE_DIR}
+        SOURCE_DIR ${EXTERNAL_BASE_DIR}/src/xml2_src
+        DOWNLOAD_COMMAND ""
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_BASE_DIR} -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=${CMAKE_MSVC_RUNTIME_LIBRARY} -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_ZLIB=OFF -DLIBXML2_WITH_TESTS=OFF
+        BUILD_COMMAND ${CMAKE_COMMAND} --build . --config Release
+        BUILD_BYPRODUCTS ${EXTERNAL_BASE_DIR}/lib/libxml2.lib
+        INSTALL_COMMAND ${CMAKE_COMMAND} --install . --config Release
+    )
+    add_library(xml2d STATIC IMPORTED)
+    set_target_properties(xml2d PROPERTIES IMPORTED_LOCATION ${EXTERNAL_BASE_DIR}/lib/libxml2.lib)
+    add_dependencies(xml2d xml2d_src)
+
+    set(FMUSIM_LIBS ${EXTERNAL_BASE_DIR}/lib/libxml2.lib ${FMUSIM_LIBS})
+    set(FMUSIM_DEPENDS ${FMUSIM_DEPENDS} xml2d)
+endif()
+
 set(FMUSIM_GUI_SOURCES
     ${FMUSIM_SOURCES}
     main.cpp
