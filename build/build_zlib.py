@@ -4,6 +4,9 @@ from subprocess import check_call
 from fmpy.util import download_file
 import argparse
 
+
+zlib_version = '1.3.1'
+
 parser = argparse.ArgumentParser()
 parser.add_argument(
     'platform',
@@ -18,7 +21,7 @@ parser.add_argument(
 )
 args, _ = parser.parse_known_args()
 
-archive = download_file('https://www.zlib.net/fossils/zlib-1.3.1.tar.gz',
+archive = download_file(f'https://www.zlib.net/fossils/zlib-{zlib_version}.tar.gz',
                         checksum='9a93b2b7dfdac77ceba5a558a580e74667dd6fede4585b91eefb60f03b72df23')
 
 root = Path(__file__).parent
@@ -68,7 +71,7 @@ check_call(
     cmake_args +
     ['-B', build_dir,
     '-D', f'CMAKE_INSTALL_PREFIX={ install_prefix }',
-    root / 'zlib-1.3.1']
+    root / f'zlib-{zlib_version}']
 )
 
 check_call([
