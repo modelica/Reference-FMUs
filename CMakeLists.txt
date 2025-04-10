@@ -279,7 +279,7 @@ endforeach(MODEL_NAME)
 include(examples/Examples.cmake)
 
 if(WITH_FMUSIM OR WITH_FMUSIM_GUI)
-  include(build/external.cmake)
+  include(build/fmusim.cmake)
 
   if (WITH_FMUSIM)
     add_subdirectory(fmusim)

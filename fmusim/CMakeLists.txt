@@ -4,7 +4,11 @@ set(FMUSIM_VERSION "" CACHE STRING "")
 
 project (FMUSim)
 
-include(${CMAKE_SOURCE_DIR}/build/sim_common.cmake)
+set_source_files_properties(
+    ${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c
+    ${ZLIB_SRC_DIR}/contrib/minizip/unzip.c
+    ${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c
+    PROPERTIES GENERATED 1)
 
 if(WIN32)
     set(FMUSIM_DIST_DIR ${CMAKE_BINARY_DIR}/dist/fmusim-windows/)

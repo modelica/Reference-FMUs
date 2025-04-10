@@ -17,9 +17,14 @@ endif()
 
 get_directory_property(NestedProject PARENT_DIRECTORY)
 if(NOT NestedProject)
-    include(../build/external.cmake)
+    include(../build/fmusim.cmake)
 endif()
-include(../build/sim_common.cmake)
+
+set_source_files_properties(
+    ${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c
+    ${ZLIB_SRC_DIR}/contrib/minizip/unzip.c
+    ${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c
+    PROPERTIES GENERATED 1)
 
 if(WIN32)
     ExternalProject_Add(
