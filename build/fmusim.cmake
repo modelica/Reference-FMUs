@@ -44,7 +44,7 @@ set_target_properties(xml2 PROPERTIES IMPORTED_LOCATION ${EXTERNAL_BASE_DIR}/lib
 add_dependencies(xml2 xml2_src)
 
 ExternalProject_Add(
-    cvcode_src
+    cvode_src
     PREFIX ${EXTERNAL_BASE_DIR}
     GIT_REPOSITORY https://github.com/LLNL/sundials.git
     GIT_TAG c28eaa3764a03705d61decb6025b409360e9d53f # v7.1.1
@@ -55,9 +55,9 @@ ExternalProject_Add(
     BUILD_BYPRODUCTS ${EXTERNAL_BASE_DIR}/lib/libsundials_cvode.a ${EXTERNAL_BASE_DIR}/lib/libsundials_core.a
     INSTALL_COMMAND ${CMAKE_COMMAND} --install . --config Release
 )
-add_library(cvcode STATIC IMPORTED)
-set_target_properties(cvcode PROPERTIES IMPORTED_LOCATION ${EXTERNAL_BASE_DIR}/lib/libsundials_core.a)
-add_dependencies(cvcode cvcode_src)
+add_library(cvode STATIC IMPORTED)
+set_target_properties(cvode PROPERTIES IMPORTED_LOCATION ${EXTERNAL_BASE_DIR}/lib/libsundials_core.a)
+add_dependencies(cvode cvode_src)
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded)
 
@@ -154,4 +154,4 @@ else()
         )
 endif()
 
-set(FMUSIM_DEPENDS zlib xml2 cvcode)
+set(FMUSIM_DEPENDS zlib xml2 cvode)
