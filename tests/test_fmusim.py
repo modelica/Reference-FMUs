@@ -44,7 +44,8 @@ def call_fmusim(platform: str, fmi_version: int, interface_type: str, test_name:
 @pytest.mark.parametrize('fmi_version, interface_type', product([1, 2, 3], ['cs', 'me']))
 def test_start_time(fmi_version, interface_type, arch, platform):
 
-    if fmi_version in {1, 2} and arch not in {'x86', 'x86_64'}:
+    if (fmi_version in {1, 2} and arch not in {'x86', 'x86_64', 'universal64'}) or \
+       (fmi_version in {3} and arch in {'universal64'}):
         pytest.skip(f"FMI version {fmi_version} is not supported on {arch}.")
 
     result = call_fmusim(platform, fmi_version, interface_type, 'test_start_time', ['--start-time', '0.5'])
@@ -55,7 +56,8 @@ def test_start_time(fmi_version, interface_type, arch, platform):
 @pytest.mark.parametrize('fmi_version, interface_type', product([1, 2, 3], ['cs', 'me']))
 def test_stop_time(fmi_version, interface_type, arch, platform):
 
-    if fmi_version in {1, 2} and arch not in {'x86', 'x86_64'}:
+    if (fmi_version in {1, 2} and arch not in {'x86', 'x86_64', 'universal64'}) or \
+       (fmi_version in {3} and arch in {'universal64'}):
         pytest.skip(f"FMI version {fmi_version} is not supported on {arch}.")
 
     result = call_fmusim(platform, fmi_version, interface_type, 'test_stop_time', ['--stop-time', '1.5'])
@@ -66,7 +68,8 @@ def test_stop_time(fmi_version, interface_type, arch, platform):
 @pytest.mark.parametrize('fmi_version, interface_type', product([1, 2, 3], ['cs', 'me']))
 def test_set_stop_time(fmi_version, interface_type, arch, platform):
 
-    if fmi_version in {1, 2} and arch not in {'x86', 'x86_64'}:
+    if (fmi_version in {1, 2} and arch not in {'x86', 'x86_64', 'universal64'}) or \
+       (fmi_version in {3} and arch in {'universal64'}):
         pytest.skip(f"FMI version {fmi_version} is not supported on {arch}.")
 
     result = call_fmusim(platform, fmi_version, interface_type, 'test_set_stop_time',
@@ -83,7 +86,8 @@ def test_set_stop_time(fmi_version, interface_type, arch, platform):
 @pytest.mark.parametrize('fmi_version, interface_type', product([1, 2, 3], ['cs', 'me']))
 def test_start_value_types(fmi_version, interface_type, arch, platform):
 
-    if fmi_version in {1, 2} and arch not in {'x86', 'x86_64'}:
+    if (fmi_version in {1, 2} and arch not in {'x86', 'x86_64', 'universal64'}) or \
+       (fmi_version in {3} and arch in {'universal64'}):
         pytest.skip(f"FMI version {fmi_version} is not supported on {arch}.")
 
     args = [
@@ -134,7 +138,9 @@ def test_start_value_types(fmi_version, interface_type, arch, platform):
 
 
 @pytest.mark.parametrize('interface_type', ['cs', 'me'])
-def test_start_value_arrays(work_dir, interface_type, platform):
+def test_start_value_arrays(work_dir, interface_type, arch, platform):
+    if arch in {'universal64'}:
+        pytest.skip(f"FMI version 3 is not supported on {arch}.")
 
     call_fmusim(
         platform=platform,
@@ -164,7 +170,8 @@ def test_start_value_arrays(work_dir, interface_type, platform):
 @pytest.mark.parametrize('fmi_version, interface_type', product([1, 2, 3], ['cs', 'me']))
 def test_input_file(fmi_version, interface_type, arch, platform):
 
-    if fmi_version in {1, 2} and arch not in {'x86', 'x86_64'}:
+    if (fmi_version in {1, 2} and arch not in {'x86', 'x86_64', 'universal64'}) or \
+       (fmi_version in {3} and arch in {'universal64'}):
         pytest.skip(f"FMI version {fmi_version} is not supported on {arch}.")
 
     result = call_fmusim(
@@ -197,7 +204,9 @@ def test_input_file(fmi_version, interface_type, arch, platform):
     assert result['Int32_output'][-1] == 2
 
 
-def test_arrays(work_dir, platform):
+def test_arrays(work_dir, arch, platform):
+    if arch in {'universal64'}:
+        pytest.skip(f"FMI version 3 is not supported on {arch}.")
 
     call_fmusim(
         platform=platform,
@@ -227,7 +236,9 @@ def test_arrays(work_dir, platform):
 '''
 
 
-def test_collapsed_array(work_dir, platform):
+def test_collapsed_array(work_dir, arch, platform):
+    if arch in {'universal64'}:
+        pytest.skip(f"FMI version 3 is not supported on {arch}.")
 
     call_fmusim(
         platform=platform,
@@ -258,7 +269,8 @@ def test_collapsed_array(work_dir, platform):
 @pytest.mark.parametrize('fmi_version, interface_type', product([1, 2, 3], ['cs', 'me']))
 def test_fmi_log_file(fmi_version, interface_type, arch, platform):
 
-    if fmi_version in {1, 2} and arch not in {'x86', 'x86_64'}:
+    if (fmi_version in {1, 2} and arch not in {'x86', 'x86_64', 'universal64'}) or \
+       (fmi_version in {3} and arch in {'universal64'}):
         pytest.skip(f"FMI version {fmi_version} is not supported on {arch}.")
 
     fmi_log_file = work / f'test_fmi_log_file_fmi{fmi_version}_{interface_type}.txt'
@@ -277,7 +289,8 @@ def test_fmi_log_file(fmi_version, interface_type, arch, platform):
 @pytest.mark.parametrize('fmi_version, interface_type', product([1, 2, 3], ['cs', 'me']))
 def test_output_interval(fmi_version, interface_type, arch, platform):
 
-    if fmi_version in {1, 2} and arch not in {'x86', 'x86_64'}:
+    if (fmi_version in {1, 2} and arch not in {'x86', 'x86_64', 'universal64'}) or \
+       (fmi_version in {3} and arch in {'universal64'}):
         pytest.skip(f"FMI version {fmi_version} is not supported on {arch}.")
 
     result = call_fmusim(
@@ -297,7 +310,8 @@ def test_output_interval(fmi_version, interface_type, arch, platform):
 @pytest.mark.parametrize('fmi_version, solver', product([1, 2, 3], ['euler', 'cvode']))
 def test_solver(fmi_version, solver, arch, platform):
 
-    if fmi_version in {1, 2} and arch not in {'x86', 'x86_64'}:
+    if (fmi_version in {1, 2} and arch not in {'x86', 'x86_64', 'universal64'}) or \
+       (fmi_version in {3} and arch in {'universal64'}):
         pytest.skip(f"FMI version {fmi_version} is not supported on {arch}.")
 
     call_fmusim(
@@ -312,7 +326,8 @@ def test_solver(fmi_version, solver, arch, platform):
 @pytest.mark.parametrize('fmi_version, interface_type', product([1, 2, 3], ['cs', 'me']))
 def test_output_variable(fmi_version, interface_type, arch, platform):
 
-    if fmi_version in {1, 2} and arch not in {'x86', 'x86_64'}:
+    if (fmi_version in {1, 2} and arch not in {'x86', 'x86_64', 'universal64'}) or \
+       (fmi_version in {3} and arch in {'universal64'}):
         pytest.skip(f"FMI version {fmi_version} is not supported on {arch}.")
 
     result = call_fmusim(
@@ -326,7 +341,9 @@ def test_output_variable(fmi_version, interface_type, arch, platform):
     assert set(result.dtype.names) == {'time', 'e', 'der(h)'}
 
 
-def test_intermediate_values(platform):
+def test_intermediate_values(arch, platform):
+    if arch in {'universal64'}:
+        pytest.skip(f"FMI version 3 is not supported on {arch}.")
 
     result = call_fmusim(
         platform=platform,
@@ -339,7 +356,9 @@ def test_intermediate_values(platform):
     assert np.all(np.diff(result['time']) < 0.1)
 
 
-def test_early_return_state_events(platform):
+def test_early_return_state_events(arch, platform):
+    if arch in {'universal64'}:
+        pytest.skip(f"FMI version 3 is not supported on {arch}.")
 
     result = call_fmusim(
         platform=platform,
@@ -354,7 +373,9 @@ def test_early_return_state_events(platform):
     assert np.sum(np.logical_and(time > 0, time < 0.5)) == 1
 
 
-def test_event_mode_input_events(platform):
+def test_event_mode_input_events(arch, platform):
+    if arch in {'universal64'}:
+        pytest.skip(f"FMI version 3 is not supported on {arch}.")
 
     input_file = resources / 'Feedthrough_in.csv'
 
@@ -378,7 +399,9 @@ def test_event_mode_input_events(platform):
     assert np.all(result['Int32_output']              == [1, 1, 1, 1, 1, 1,   1, 2, 2])
 
 
-def test_event_mode_time_events(platform):
+def test_event_mode_time_events(arch, platform):
+    if arch in {'universal64'}:
+        pytest.skip(f"FMI version 3 is not supported on {arch}.")
 
     result = call_fmusim(
         platform=platform,
@@ -401,7 +424,8 @@ def test_event_mode_time_events(platform):
 @pytest.mark.parametrize('fmi_version, interface_type', product([2, 3], ['cs', 'me']))
 def test_restore_fmu_state(fmi_version, interface_type, arch, platform):
 
-    if fmi_version == 2 and arch not in {'x86', 'x86_64'}:
+    if (fmi_version in {1, 2} and arch not in {'x86', 'x86_64', 'universal64'}) or \
+       (fmi_version in {3} and arch in {'universal64'}):
         pytest.skip(f"FMI version {fmi_version} is not supported on {arch}.")
 
     result1 = call_fmusim(
