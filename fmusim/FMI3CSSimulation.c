@@ -129,6 +129,7 @@ FMIStatus FMI3CSSimulate(const FMISimulationSettings* s) {
     CALL(FMISample(S, time, s->recorder));
 
     size_t nSteps = 0;
+    bool inputApplied = false;
 
     for (;;) {
 
@@ -164,7 +165,7 @@ FMIStatus FMI3CSSimulate(const FMISimulationSettings* s) {
 
         CALL(FMIApplyInput(S, s->input, time,
             !s->eventModeUsed,  // discrete
-            true,               // continuous
+            !inputApplied,      // continuous
             !s->eventModeUsed   // afterEvent
         ));
 
@@ -232,6 +233,11 @@ FMIStatus FMI3CSSimulate(const FMISimulationSettings* s) {
             CALL(FMI3EnterStepMode(S));
 
             CALL(FMISample(S, time, s->recorder));
+
+            inputApplied = true;
+
+        } else {
+            inputApplied = false;
         }
 
         if (s->stepFinished && !s->stepFinished(s, time)) {
