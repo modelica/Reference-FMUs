@@ -12,7 +12,7 @@ parent_dir = Path(__file__).parent
 parser = argparse.ArgumentParser()
 parser.add_argument(
     'platform',
-    choices={'x86-windows', 'x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin', 'aarch64-darwin'},
+    choices={'x86-windows', 'x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin', 'aarch64-darwin', 'universal64-darwin'},
     help="Platform to build for, e.g. x86_64-windows"
 )
 parser.add_argument(
@@ -91,6 +91,9 @@ def build_fmus(fmi_version, fmi_type=None):
 
         cmake_args += ['-D', 'CMAKE_OSX_ARCHITECTURES=arm64']
 
+    elif fmi_platform == 'universal64-darwin':
+        cmake_args += ['-D', 'CMAKE_OSX_ARCHITECTURES=arm64;x86_64']
+
     install_dir = build_dir / 'install'
 
     if fmi_type is not None:
@@ -135,9 +138,9 @@ def build_fmus(fmi_version, fmi_type=None):
 
 if __name__ == '__main__':
 
-    if args.platform in {'x86_64-linux', 'x86-windows', 'x86_64-windows', 'x86_64-darwin'}:
+    if args.platform in {'x86_64-linux', 'x86-windows', 'x86_64-windows', 'x86_64-darwin', 'universal64-darwin'}:
         build_fmus(fmi_version=1, fmi_type='me')
         build_fmus(fmi_version=1, fmi_type='cs')
         build_fmus(fmi_version=2)
-
-    build_fmus(fmi_version=3)
+    if args.platform not in {'universal64-darwin'}:
+        build_fmus(fmi_version=3)
