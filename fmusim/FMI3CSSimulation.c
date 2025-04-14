@@ -164,9 +164,9 @@ FMIStatus FMI3CSSimulate(const FMISimulationSettings* s) {
         stepSize = nextCommunicationPoint - time;
 
         CALL(FMIApplyInput(S, s->input, time,
-            !s->eventModeUsed,  // discrete
-            !inputApplied,      // continuous
-            !s->eventModeUsed   // afterEvent
+            !inputApplied,     // discrete
+            !inputApplied,     // continuous
+            !s->eventModeUsed  // afterEvent
         ));
 
         CALL(FMI3DoStep(S, 
