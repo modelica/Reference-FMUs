@@ -40,24 +40,29 @@ do { \
     instance->fmi2Functions->fmi2 ## f = fmi2 ## f; \
 } while (0)
 #elif defined(_WIN32)
+#define LOAD_ADDRESS GetProcAddress
+#else
+#define LOAD_ADDRESS dlsym
+#endif
+
 #define LOAD_SYMBOL(f) \
 do { \
-    instance->fmi2Functions->fmi2 ## f = (fmi2 ## f ## TYPE*)GetProcAddress(instance->libraryHandle, "fmi2" #f); \
+    instance->fmi2Functions->fmi2 ## f = (fmi2 ## f ## TYPE*)LOAD_ADDRESS(instance->libraryHandle, "fmi2" #f); \
     if (!instance->fmi2Functions->fmi2 ## f) { \
-        instance->logMessage(instance, FMIFatal, "fatal", "Symbol fmi2" #f " is missing in shared library."); \
+        instance->logMessage(instance, FMIFatal, "fatal", "Required symbol fmi2" #f " is missing in shared library."); \
         return FMIFatal; \
     }\
 } while (0)
-#else
-#define LOAD_SYMBOL(f) \
+
+//Just print only the warning message for optional function
+#define LOAD_OPTIONAL_SYMBOL(f) \
 do { \
-    instance->fmi2Functions->fmi2 ## f = (fmi2 ## f ## TYPE*)dlsym(instance->libraryHandle, "fmi2" #f); \
+    instance->fmi2Functions->fmi2 ## f = (fmi2 ## f ## TYPE*)LOAD_ADDRESS(instance->libraryHandle, "fmi2" #f); \
     if (!instance->fmi2Functions->fmi2 ## f) { \
-        instance->logMessage(instance, FMIFatal, "fatal", "Symbol fmi2" #f " is missing in shared library."); \
-        return FMIFatal; \
-    } \
+        instance->logMessage(instance, FMIWarning, "warning", "Optional symbol fmi2" #f " is missing in shared library."); \
+    }\
 } while (0)
-#endif
+
 
 #define CALL(f) \
 do { \
@@ -173,13 +178,13 @@ FMIStatus FMI2Instantiate(FMIInstance *instance, const char *fmuResourceLocation
     LOAD_SYMBOL(SetString);
 
     /* optional functions */
-    LOAD_SYMBOL(GetFMUstate);
-    LOAD_SYMBOL(SetFMUstate);
-    LOAD_SYMBOL(FreeFMUstate);
-    LOAD_SYMBOL(SerializedFMUstateSize);
-    LOAD_SYMBOL(SerializeFMUstate);
-    LOAD_SYMBOL(DeSerializeFMUstate);
-    LOAD_SYMBOL(GetDirectionalDerivative);
+    LOAD_OPTIONAL_SYMBOL(GetFMUstate);
+    LOAD_OPTIONAL_SYMBOL(SetFMUstate);
+    LOAD_OPTIONAL_SYMBOL(FreeFMUstate);
+    LOAD_OPTIONAL_SYMBOL(SerializedFMUstateSize);
+    LOAD_OPTIONAL_SYMBOL(SerializeFMUstate);
+    LOAD_OPTIONAL_SYMBOL(DeSerializeFMUstate);
+    LOAD_OPTIONAL_SYMBOL(GetDirectionalDerivative);
 
     if (fmuType == fmi2ModelExchange) {
 #ifndef CO_SIMULATION
