@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.18)
 
 project(fmusim-gui VERSION 0.1 LANGUAGES C CXX)
 
@@ -10,89 +10,62 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-set(CVODE_DIR    ${CMAKE_SOURCE_DIR}/build/cvode-x86_64-windows/install)
-set(LIBXML2_DIR  ${CMAKE_SOURCE_DIR}/build/libxml2-x86_64-windows/install)
-set(ZLIB_DIR     ${CMAKE_SOURCE_DIR}/build/zlib-x86_64-windows/install)
-
-set(ZLIB_SRC_DIR ${CMAKE_SOURCE_DIR}/build/zlib-1.3.1)
-
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
-find_package(Qt6 REQUIRED COMPONENTS WebEngineWidgets)
+if(QT_VERSION_MAJOR GREATER_EQUAL 6)
+    find_package(Qt6 REQUIRED COMPONENTS WebEngineWidgets)
+endif()
 
-set(PROJECT_SOURCES
+get_directory_property(NestedProject PARENT_DIRECTORY)
+if(NOT NestedProject)
+    include(../build/fmusim.cmake)
+endif()
+
+set_source_files_properties(
+    ${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c
+    ${ZLIB_SRC_DIR}/contrib/minizip/unzip.c
+    ${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c
+    PROPERTIES GENERATED 1)
+
+if(WIN32)
+    ExternalProject_Add(
+        xml2d_src
+        DEPENDS zlib xml2_src
+        PREFIX ${EXTERNAL_BASE_DIR}
+        SOURCE_DIR ${EXTERNAL_BASE_DIR}/src/xml2_src
+        DOWNLOAD_COMMAND ""
+        CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_BASE_DIR} -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=${CMAKE_MSVC_RUNTIME_LIBRARY} -DLIBXML2_WITH_ICONV=OFF -DLIBXML2_WITH_LZMA=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_ZLIB=OFF -DLIBXML2_WITH_TESTS=OFF
+        BUILD_COMMAND ${CMAKE_COMMAND} --build . --config Release
+        BUILD_BYPRODUCTS ${EXTERNAL_BASE_DIR}/lib/libxml2.lib
+        INSTALL_COMMAND ${CMAKE_COMMAND} --install . --config Release
+    )
+    add_library(xml2d STATIC IMPORTED)
+    set_target_properties(xml2d PROPERTIES IMPORTED_LOCATION ${EXTERNAL_BASE_DIR}/lib/libxml2.lib)
+    add_dependencies(xml2d xml2d_src)
+
+    set(FMUSIM_LIBS ${EXTERNAL_BASE_DIR}/lib/libxml2.lib ${FMUSIM_LIBS})
+    set(FMUSIM_DEPENDS ${FMUSIM_DEPENDS} xml2d)
+endif()
+
+set(FMUSIM_GUI_SOURCES
+    ${FMUSIM_SOURCES}
     main.cpp
     MainWindow.cpp
     MainWindow.h
     MainWindow.ui
-    ../src/FMI.c
-    ../include/FMI.h
-    ../fmusim/FMIZip.c
-    ../fmusim/FMIZip.h
-    ../fmusim/miniunzip.c
-    ${ZLIB_SRC_DIR}/contrib/minizip/unzip.c
-    ${ZLIB_SRC_DIR}/contrib/minizip/ioapi.c
-    ${ZLIB_SRC_DIR}/contrib/minizip/iowin32.c
-    ../fmusim/FMIModelDescription.c
-    ../fmusim/FMIModelDescription.h
-    ../fmusim/FMIBuildDescription.c
-    ../fmusim/FMIBuildDescription.h
-    ../src/structured_variable_name.tab.c
-    ../src/structured_variable_name.yy.c
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(fmusim-gui
         MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
+        ${FMUSIM_GUI_SOURCES}
+
         ModelVariablesTableModel.h
         ModelVariablesTableModel.cpp
-        ../src/FMI1.c
-        ../src/FMI2.c
-        ../include/FMI1.h
-        ../include/FMI2.h
-        ../src/FMI3.c
-        ../include/FMI3.h
-        ../fmusim/FMIUtil.c
-        ../fmusim/FMIUtil.h
-        ../fmusim/csv.c
-        ../fmusim/csv.h
-
-        ../fmusim/FMIStaticInput.h
-        ../fmusim/FMIStaticInput.c
-
-        ../fmusim/FMI1CSSimulation.h
-        ../fmusim/FMI1CSSimulation.c
-        ../fmusim/FMI1MESimulation.h
-        ../fmusim/FMI1MESimulation.c
-
-        ../fmusim/FMI2CSSimulation.h
-        ../fmusim/FMI2CSSimulation.c
-        ../fmusim/FMI2MESimulation.h
-        ../fmusim/FMI2MESimulation.c
-
-        ../fmusim/FMI3CSSimulation.h
-        ../fmusim/FMI3CSSimulation.c
-        ../fmusim/FMI3MESimulation.h
-        ../fmusim/FMI3MESimulation.c
-
-        ../fmusim/FMIRecorder.h
-        ../fmusim/FMIRecorder.c
-
-        ../fmusim/FMISimulation.h
-        ../fmusim/FMISimulation.c
-
-        ../fmusim/FMIEuler.h
-        ../fmusim/FMIEuler.c
-
-        ../fmusim/FMICVode.h
-        ../fmusim/FMICVode.c
 
         resources/buttons/buttons.qrc
         resources/tools/tools.qrc
-
         resources/plot/plot.html
         resources/plot/plot.qrc
-
         resources/variables/variables.qrc
 
         VariablesFilterModel.h VariablesFilterModel.cpp
@@ -108,27 +81,20 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         resources/icon/icon.rc
         resources/build/build.qrc
     )
+    add_dependencies(fmusim-gui ${FMUSIM_DEPENDS})
 
-target_include_directories(fmusim-gui PRIVATE
-    ../include
-    ../fmusim
-    ${LIBXML2_DIR}/include/libxml2
-    ${ZLIB_DIR}/include
-    ${ZLIB_SRC_DIR}/contrib/minizip
-    ${CVODE_DIR}/include
-)
+    target_include_directories(fmusim-gui PRIVATE ${FMUSIM_INCLUDES})
 
-target_compile_definitions(fmusim-gui PRIVATE
-    YY_NO_UNISTD_H
-)
+    if(WIN32)
+        target_compile_definitions(fmusim-gui PRIVATE
+            YY_NO_UNISTD_H
+        )
+    endif()
 
-target_link_libraries(fmusim-gui PRIVATE
-    Qt6::WebEngineWidgets
-    ${LIBXML2_DIR}/lib/libxml2.lib
-    ${ZLIB_DIR}/lib/zlib.lib
-    ${CVODE_DIR}/lib/sundials_cvode_static.lib
-    ${CVODE_DIR}/lib/sundials_core_static.lib
-)
+    target_link_libraries(fmusim-gui PRIVATE
+        Qt6::WebEngineWidgets
+        ${FMUSIM_LIBS}
+    )
 
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET fmusim-gui APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -137,13 +103,13 @@ target_link_libraries(fmusim-gui PRIVATE
 else()
     if(ANDROID)
         add_library(fmusim-gui SHARED
-            ${PROJECT_SOURCES}
+            ${FMUSIM_GUI_SOURCES}
         )
 # Define properties for Android with Qt 5 after find_package() calls as:
 #    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
         add_executable(fmusim-gui
-            ${PROJECT_SOURCES}
+            ${FMUSIM_GUI_SOURCES}
         )
     endif()
 endif()
@@ -171,6 +137,6 @@ install(TARGETS fmusim-gui
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-if(QT_VERSION_MAJOR EQUAL 6)
+if(QT_VERSION_MAJOR GREATER_EQUAL 6)
     qt_finalize_executable(fmusim-gui)
 endif()
