@@ -373,7 +373,7 @@ def test_event_mode_input_events(platform):
     )
 
     assert np.all(result['time']                      == [0, 1, 1, 2, 2, 2.5, 3, 3, 5])
-    assert np.all(result['Float64_continuous_output'] == [3, 3, 2, 3, 3, 3,   3, 3, 3])
+    assert np.all(result['Float64_continuous_output'] == [3, 3, 2, 2, 3, 3,   3, 3, 3])
     assert np.all(result['Float64_discrete_output']   == [3, 3, 2, 2, 3, 3,   3, 3, 3])
     assert np.all(result['Int32_output']              == [1, 1, 1, 1, 1, 1,   1, 2, 2])
 
