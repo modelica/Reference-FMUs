@@ -107,8 +107,8 @@
     <Output valueReference="24" dependencies="23" dependenciesKind="constant"/>
     <Output valueReference="26" dependencies="25" dependenciesKind="constant"/>
     <Output valueReference="28" dependencies="27" dependenciesKind="constant"/>
-	<Output valueReference="30" dependencies="29" dependenciesKind="constant"/>
-	<Output valueReference="32" dependencies="31" dependenciesKind="constant"/>
+    <Output valueReference="30" dependencies="29" dependenciesKind="constant"/>
+    <Output valueReference="32" dependencies="31" dependenciesKind="constant"/>
     <Output valueReference="34" dependencies="33" dependenciesKind="constant"/>
     <InitialUnknown valueReference="2" dependencies="1" dependenciesKind="constant"/>
     <InitialUnknown valueReference="4" dependencies="3" dependenciesKind="constant"/>
@@ -124,8 +124,8 @@
     <InitialUnknown valueReference="26" dependencies="25" dependenciesKind="constant"/>
     <InitialUnknown valueReference="28" dependencies="27" dependenciesKind="constant"/>
     <InitialUnknown valueReference="30" dependencies="29" dependenciesKind="constant"/>
-	<InitialUnknown valueReference="32" dependencies="31" dependenciesKind="constant"/>
-	<InitialUnknown valueReference="34" dependencies="33" dependenciesKind="constant"/>
+    <InitialUnknown valueReference="32" dependencies="31" dependenciesKind="constant"/>
+    <InitialUnknown valueReference="34" dependencies="33" dependenciesKind="constant"/>
   </ModelStructure>
 
 </fmiModelDescription>
