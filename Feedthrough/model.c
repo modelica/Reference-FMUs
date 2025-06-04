@@ -89,6 +89,8 @@ Status calculateValues(ModelInstance *comp) {
 
     M(Boolean_output) = M(Boolean_input);
 
+    strncpy(M(String_output), M(String_input), STRING_MAX_LEN);
+
     M(Binary_output_size) = M(Binary_input_size);
     memcpy(M(Binary_output), M(Binary_input), M(Binary_input_size));
 

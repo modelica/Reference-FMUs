@@ -8,7 +8,11 @@ FILE *createOutputFile(const char *filename) {
     FILE *file = fopen(filename, "w");
 
     if (file) {
-        fputs("time,Float32_continuous_output,Float32_discrete_output,Float64_continuous_output,Float64_discrete_output,Int8_output,UInt8_output,Int16_output,UInt16_output,Int32_output,UInt32_output,Int64_output,UInt64_output,Boolean_output,Binary_output\n", file);
+#if FMI_VERSION == 3
+        fputs("time,Float32_continuous_output,Float32_discrete_output,Float64_continuous_output,Float64_discrete_output,Int8_output,UInt8_output,Int16_output,UInt16_output,Int32_output,UInt32_output,Int64_output,UInt64_output,Boolean_output,String_output,Binary_output\n", file);
+#else
+        fputs("time,Float64_continuous_output,Float64_discrete_output,Int32_output,Boolean_output,String_output\n", file);
+#endif
     }
 
     return file;
@@ -34,26 +38,14 @@ FMIStatus applyStartValues(FMIInstance *S) {
     const fmi1ValueReference float64ValueReferences[1] = { vr_Float64_fixed_parameter };
     const fmi1Real realValues[1] = { 1.0 };
     CALL(FMI1SetReal(S, float64ValueReferences, 1, realValues));
-
-    const fmi1ValueReference stringValueReferences[1] = { vr_String_parameter };
-    const fmi1String stringValues[1] = { "FMI is awesome!" };
-    CALL(FMI1SetString(S, stringValueReferences, 1, stringValues));
 #elif FMI_VERSION == 2
     const fmi2ValueReference float64ValueReferences[1] = { vr_Float64_fixed_parameter };
     const fmi2Real realValues[1] = { 1.0 };
     CALL(FMI2SetReal(S, float64ValueReferences, 1, realValues));
-
-    const fmi2ValueReference stringValueReferences[1] = { vr_String_parameter };
-    const fmi2String stringValues[1] = { "FMI is awesome!" };
-    CALL(FMI2SetString(S, stringValueReferences, 1, stringValues));
 #elif FMI_VERSION == 3
     const fmi3ValueReference float64ValueReferences[1] = { vr_Float64_fixed_parameter };
     const fmi3Float64 float64Values[1] = { 1.0 };
     CALL(FMI3SetFloat64(S, float64ValueReferences, 1, float64Values, 1));
-
-    const fmi3ValueReference stringValueReferences[1] = { vr_String_parameter };
-    const fmi3String stringValues[1] = { "FMI is awesome!" };
-    CALL(FMI3SetString(S, stringValueReferences, 1, stringValues, 1));
 #endif
 
 TERMINATE:
@@ -106,7 +98,7 @@ FMIStatus applyDiscreteInputs(FMIInstance *S, double time) {
 
 #if FMI_VERSION == 1
     const fmi1ValueReference float64ValueReferences[2] = { vr_Float64_tunable_parameter, vr_Float64_discrete_input };
-    const fmi1Real float64Values[2] = { time < 1.5 ? 0.0 : -1.0, time < 1.0 ? 0 : 1.0 };
+    const fmi1Real float64Values[2] = { time < 1.5 ? 0.0 : -1.0, before_step ? 0 : 1.0 };
     CALL(FMI1SetReal(S, float64ValueReferences, 1, float64Values));
 
     const fmi1ValueReference int32ValueReferences[1] = { vr_Int32_input };
@@ -114,11 +106,15 @@ FMIStatus applyDiscreteInputs(FMIInstance *S, double time) {
     CALL(FMI1SetInteger(S, int32ValueReferences, 1, int32Values));
 
     const fmi1ValueReference booleanValueReferences[1] = { vr_Boolean_input };
-    const fmi1Boolean booleanValues[1] = { time < 1.0 ? false : true };
+    const fmi1Boolean booleanValues[1] = { before_step ? false : true };
     CALL(FMI1SetBoolean(S, booleanValueReferences, 1, booleanValues));
+
+    const fmi1ValueReference stringValueReferences[1] = { vr_String_input };
+    const fmi1String stringValues[1] = { before_step ? "FMI is awesome!" : "FMI is still awesome!" };
+    CALL(FMI1SetString(S, stringValueReferences, 1, stringValues));
 #elif FMI_VERSION == 2
     const fmi2ValueReference float64ValueReferences[2] = { vr_Float64_tunable_parameter, vr_Float64_discrete_input };
-    const fmi2Real float64Values[2] = { time < 1.5 ? 0.0 : -1.0, time < 1.0 ? 0 : 1.0 };
+    const fmi2Real float64Values[2] = { time < 1.5 ? 0.0 : -1.0, before_step ? 0 : 1.0 };
     CALL(FMI2SetReal(S, float64ValueReferences, 1, float64Values));
 
     const fmi2ValueReference int32ValueReferences[1] = { vr_Int32_input };
@@ -126,8 +122,12 @@ FMIStatus applyDiscreteInputs(FMIInstance *S, double time) {
     CALL(FMI2SetInteger(S, int32ValueReferences, 1, int32Values));
 
     const fmi2ValueReference booleanValueReferences[1] = { vr_Boolean_input };
-    const fmi2Boolean booleanValues[1] = { time < 1.0 ? false : true };
+    const fmi2Boolean booleanValues[1] = { before_step ? false : true };
     CALL(FMI2SetBoolean(S, booleanValueReferences, 1, booleanValues));
+
+    const fmi2ValueReference stringValueReferences[1] = { vr_String_input };
+    const fmi2String stringValues[1] = { before_step ? "FMI is awesome!" : "FMI is still awesome!" };
+    CALL(FMI2SetString(S, stringValueReferences, 1, stringValues));
 #elif FMI_VERSION == 3
     const fmi3ValueReference Float32_vr[1] = { vr_Float32_discrete_input };
     const fmi3Float32 Float32_values[1] = { before_step ? 0 : 1.0f };
@@ -173,8 +173,12 @@ FMIStatus applyDiscreteInputs(FMIInstance *S, double time) {
     const fmi3Boolean booleanValues[1] = { before_step ? false : true };
     CALL(FMI3SetBoolean(S, booleanValueReferences, 1, booleanValues, 1));
 
+    const fmi3ValueReference stringValueReferences[1] = { vr_String_input };
+    const fmi3String stringValues[1] = { before_step ? "FMI is awesome!" : "FMI is still awesome!" };
+    CALL(FMI3SetString(S, stringValueReferences, 1, stringValues, 1));
+
     const fmi3ValueReference binaryValueReferences[1] = { vr_Binary_input };
-    const fmi3Binary binaryValues[1] = { (void*)"bar" };
+    const fmi3Binary binaryValues[1] = { before_step ? (void*)"foo" : (void*)"bar" };
     const size_t binarySizes[1] = { 3 };
     CALL(FMI3SetBinary(S, binaryValueReferences, 1, binarySizes, binaryValues, 1));
 #endif
@@ -201,7 +205,12 @@ FMIStatus recordVariables(FMIInstance *S, double time, FILE *outputFile) {
     fmi1Boolean Boolean_values[1] = { 0 };
     CALL(FMI1GetBoolean(S, Boolean_vr, 1, Boolean_values));
 
-    fprintf(outputFile, "%g,%.16g,%.16g,%" PRIu32 ",%d\n", time, Float64_values[0], Float64_values[1], Int32_values[0], Boolean_values[0]);
+    const fmi1ValueReference String_vr[1] = { vr_String_output };
+    fmi1String String_values[1] = { NULL };
+    CALL(FMI1GetString((FMIInstance*)S, String_vr, 1, String_values));
+
+    fprintf(outputFile, "%g,%.16g,%.16g,%" PRIu32 ",%d,\"%s\"\n",
+        time, Float64_values[0], Float64_values[1], Int32_values[0], Boolean_values[0], String_values[0]);
 
 #elif FMI_VERSION == 2
 
@@ -217,7 +226,12 @@ FMIStatus recordVariables(FMIInstance *S, double time, FILE *outputFile) {
     fmi2Boolean Boolean_values[1] = { 0 };
     CALL(FMI2GetBoolean(S, Boolean_vr, 1, Boolean_values));
 
-    fprintf(outputFile, "%g,%.16g,%.16g,%" PRIu32 ",%d\n", time, Float64_values[0], Float64_values[1], Int32_values[0], Boolean_values[0]);
+    const fmi2ValueReference String_vr[1] = { vr_String_output };
+    fmi2String String_values[1] = { NULL };
+    CALL(FMI2GetString((FMIInstance*)S, String_vr, 1, String_values));
+
+    fprintf(outputFile, "%g,%.16g,%.16g,%" PRIu32 ",%d,\"%s\"\n",
+        time, Float64_values[0], Float64_values[1], Int32_values[0], Boolean_values[0], String_values[0]);
 
 #elif FMI_VERSION == 3
 
@@ -265,12 +279,32 @@ FMIStatus recordVariables(FMIInstance *S, double time, FILE *outputFile) {
     fmi3Boolean Boolean_values[1] = { 0 };
     CALL(FMI3GetBoolean((FMIInstance *)S, Boolean_vr, 1, Boolean_values, 1));
 
+    const fmi3ValueReference String_vr[1] = { vr_String_output };
+    fmi3String String_values[1] = { NULL };
+    CALL(FMI3GetString((FMIInstance*)S, String_vr, 1, String_values, 1));
+
     const fmi3ValueReference Binary_vr[1] = { vr_Binary_output };
     size_t Binary_sizes[1] = { 0 };
     fmi3Binary Binary_values[1] = { NULL };
-    CALL(FMI3GetBinary((FMIInstance *)S, Binary_vr, 1, Binary_sizes, Binary_values, 1));
+    CALL(FMI3GetBinary((FMIInstance*)S, Binary_vr, 1, Binary_sizes, Binary_values, 1));
 
-    fprintf(outputFile, "%g,%.7g,%.7g,%.16g,%.16g,%" PRId8 ",%" PRIu8 ",%" PRId16 ",%" PRIu16 ",%" PRId32 ",%" PRIu32 ",%" PRId64 ",%" PRIu64 ",%d,%.*s\n", time, Float32_values[0], Float32_values[1], Float64_values[0], Float64_values[1], Int8_values[0], UInt8_values[0], Int16_values[0], UInt16_values[0], Int32_values[0], UInt32_values[0], Int64_values[0], UInt64_values[0], Boolean_values[0], (int)Binary_sizes[0], Binary_values[0]);
+    fprintf(outputFile, "%g,%.7g,%.7g,%.16g,%.16g,%" PRId8 ",%" PRIu8 ",%" PRId16 ",%" PRIu16 ",%" PRId32 ",%" PRIu32 ",%" PRId64 ",%" PRIu64 ",%d,\"%s\",",
+        time, Float32_values[0], Float32_values[1], Float64_values[0], Float64_values[1], Int8_values[0], UInt8_values[0], Int16_values[0], UInt16_values[0], Int32_values[0], UInt32_values[0], Int64_values[0], UInt64_values[0], Boolean_values[0], String_values[0]);
+
+    for (size_t i = 0; i < Binary_sizes[0]; i++) {
+
+        const fmi3Byte b = Binary_values[0][i];
+
+        const char hex[3] = {
+            "0123456789abcdef"[b >> 4],
+            "0123456789abcdef"[b & 0x0F],
+            '\0'
+        };
+
+        fputs(hex, outputFile);
+    }
+
+    fputc('\n', outputFile);
 
 #endif
 
