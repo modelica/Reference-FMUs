@@ -81,7 +81,7 @@
     <String name="String_input" valueReference="29" causality="input">
         <Start value="Set me!"/>
     </String>
-	<String name="String_output" valueReference="30" causality="output"/>
+    <String name="String_output" valueReference="30" causality="output"/>
 
     <Binary name="Binary_input" valueReference="31" causality="input">
         <Start value="666f6f"/>

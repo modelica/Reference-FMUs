@@ -54,18 +54,18 @@
     <ScalarVariable name="Boolean_output" valueReference="28" causality="output" variability="discrete">
       <Boolean/>
     </ScalarVariable>
-	<ScalarVariable name="String_input" valueReference="29" causality="input" variability="discrete">
-	  <String start="Set me!"/>
-	</ScalarVariable>
-	<ScalarVariable name="String_output" valueReference="30" causality="output" variability="discrete">
+    <ScalarVariable name="String_input" valueReference="29" causality="input" variability="discrete">
+      <String start="Set me!"/>
+    </ScalarVariable>
+    <ScalarVariable name="String_output" valueReference="30" causality="output" variability="discrete">
       <String/>
-	</ScalarVariable>
-	<ScalarVariable name="Enumeration_input" valueReference="33" causality="input" variability="discrete">
-	  <Enumeration declaredType="Option" start="1"/>
-	</ScalarVariable>
-	<ScalarVariable name="Enumeration_output" valueReference="34" causality="output" variability="discrete">
-	  <Enumeration declaredType="Option"/>
-	</ScalarVariable>
+    </ScalarVariable>
+    <ScalarVariable name="Enumeration_input" valueReference="33" causality="input" variability="discrete">
+      <Enumeration declaredType="Option" start="1"/>
+    </ScalarVariable>
+    <ScalarVariable name="Enumeration_output" valueReference="34" causality="output" variability="discrete">
+      <Enumeration declaredType="Option"/>
+    </ScalarVariable>
   </ModelVariables>
 
 </fmiModelDescription>
