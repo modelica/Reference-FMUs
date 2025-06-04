@@ -9,9 +9,9 @@ FILE *createOutputFile(const char *filename) {
 
     if (file) {
 #if FMI_VERSION == 3
-        fputs("time,Float32_continuous_output,Float32_discrete_output,Float64_continuous_output,Float64_discrete_output,Int8_output,UInt8_output,Int16_output,UInt16_output,Int32_output,UInt32_output,Int64_output,UInt64_output,Boolean_output,String_output,Binary_output\n", file);
+        fputs("time,Float32_continuous_output,Float32_discrete_output,Float64_continuous_output,Float64_discrete_output,Int8_output,UInt8_output,Int16_output,UInt16_output,Int32_output,UInt32_output,Int64_output,UInt64_output,Boolean_output,String_output,Binary_output,Enumeration_output\n", file);
 #else
-        fputs("time,Float64_continuous_output,Float64_discrete_output,Int32_output,Boolean_output,String_output\n", file);
+        fputs("time,Float64_continuous_output,Float64_discrete_output,Int32_output,Boolean_output,String_output,Enumeration_output\n", file);
 #endif
     }
 
@@ -181,6 +181,10 @@ FMIStatus applyDiscreteInputs(FMIInstance *S, double time) {
     const fmi3Binary binaryValues[1] = { before_step ? (void*)"foo" : (void*)"bar" };
     const size_t binarySizes[1] = { 3 };
     CALL(FMI3SetBinary(S, binaryValueReferences, 1, binarySizes, binaryValues, 1));
+
+    const fmi3ValueReference Enumeration_vr[1] = { vr_Enumeration_input };
+    const fmi3Int64 Enumeration_values[1] = { before_step ? Option1 : Option2 };
+    CALL(FMI3SetInt64(S, Enumeration_vr, 1, Enumeration_values, 1));
 #endif
 
 TERMINATE:
@@ -197,9 +201,9 @@ FMIStatus recordVariables(FMIInstance *S, double time, FILE *outputFile) {
     fmi1Real Float64_values[2] = { 0 };
     CALL(FMI1GetReal(S, float64ValueReferences, 2, Float64_values));
 
-    const fmi1ValueReference Int32_vr[1] = { vr_Int32_output };
-    fmi1Integer Int32_values[1] = { 0 };
-    CALL(FMI1GetInteger(S, Int32_vr, 1, Int32_values));
+    const fmi1ValueReference Int32_vr[2] = { vr_Int32_output, vr_Enumeration_output };
+    fmi1Integer Int32_values[2] = { 0, 0 };
+    CALL(FMI1GetInteger(S, Int32_vr, 2, Int32_values));
 
     const fmi1ValueReference Boolean_vr[1] = { vr_Boolean_output };
     fmi1Boolean Boolean_values[1] = { 0 };
@@ -209,8 +213,13 @@ FMIStatus recordVariables(FMIInstance *S, double time, FILE *outputFile) {
     fmi1String String_values[1] = { NULL };
     CALL(FMI1GetString((FMIInstance*)S, String_vr, 1, String_values));
 
-    fprintf(outputFile, "%g,%.16g,%.16g,%" PRIu32 ",%d,\"%s\"\n",
-        time, Float64_values[0], Float64_values[1], Int32_values[0], Boolean_values[0], String_values[0]);
+    fprintf(outputFile, "%.16g,", time);
+    fprintf(outputFile, "%.16g,", Float64_values[0]);
+    fprintf(outputFile, "%.16g,", Float64_values[1]);
+    fprintf(outputFile, "%" PRId32 ",", Int32_values[0]);
+    fprintf(outputFile, "%d,", Boolean_values[0]);
+    fprintf(outputFile, "%\"%s\",", String_values[0]);
+    fprintf(outputFile, ",%" PRId32 "\n", Int32_values[1]);
 
 #elif FMI_VERSION == 2
 
@@ -218,9 +227,9 @@ FMIStatus recordVariables(FMIInstance *S, double time, FILE *outputFile) {
     fmi2Real Float64_values[2] = { 0 };
     CALL(FMI2GetReal(S, float64ValueReferences, 2, Float64_values));
 
-    const fmi2ValueReference Int32_vr[1] = { vr_Int32_output };
-    fmi2Integer Int32_values[1] = { 0 };
-    CALL(FMI2GetInteger(S, Int32_vr, 1, Int32_values));
+    const fmi2ValueReference Int32_vr[2] = { vr_Int32_output, vr_Enumeration_output };
+    fmi2Integer Int32_values[2] = { 0, 0 };
+    CALL(FMI2GetInteger(S, Int32_vr, 2, Int32_values));
 
     const fmi2ValueReference Boolean_vr[1] = { vr_Boolean_output };
     fmi2Boolean Boolean_values[1] = { 0 };
@@ -230,8 +239,13 @@ FMIStatus recordVariables(FMIInstance *S, double time, FILE *outputFile) {
     fmi2String String_values[1] = { NULL };
     CALL(FMI2GetString((FMIInstance*)S, String_vr, 1, String_values));
 
-    fprintf(outputFile, "%g,%.16g,%.16g,%" PRIu32 ",%d,\"%s\"\n",
-        time, Float64_values[0], Float64_values[1], Int32_values[0], Boolean_values[0], String_values[0]);
+    fprintf(outputFile, "%.16g,", time);
+    fprintf(outputFile, "%.16g,", Float64_values[0]);
+    fprintf(outputFile, "%.16g,", Float64_values[1]);
+    fprintf(outputFile, "%" PRId32 ",", Int32_values[0]);
+    fprintf(outputFile, "%d,", Boolean_values[0]);
+    fprintf(outputFile, "%\"%s\",", String_values[0]);
+    fprintf(outputFile, ",%" PRId32 "\n", Int32_values[1]);
 
 #elif FMI_VERSION == 3
 
@@ -267,9 +281,9 @@ FMIStatus recordVariables(FMIInstance *S, double time, FILE *outputFile) {
     fmi3UInt32 UInt32_values[1] = { 0 };
     CALL(FMI3GetUInt32((FMIInstance *)S, UInt32_vr, 1, UInt32_values, 1));
 
-    const fmi3ValueReference Int64_vr[1] = { vr_Int64_output };
-    fmi3Int64 Int64_values[1] = { 0 };
-    CALL(FMI3GetInt64((FMIInstance *)S, Int64_vr, 1, Int64_values, 1));
+    const fmi3ValueReference Int64_vr[2] = { vr_Int64_output, vr_Enumeration_output };
+    fmi3Int64 Int64_values[2] = { 0, 0 };
+    CALL(FMI3GetInt64((FMIInstance *)S, Int64_vr, 2, Int64_values, 2));
 
     const fmi3ValueReference UInt64_vr[1] = { vr_UInt64_output };
     fmi3UInt64 UInt64_values[1] = { 0 };
@@ -288,8 +302,21 @@ FMIStatus recordVariables(FMIInstance *S, double time, FILE *outputFile) {
     fmi3Binary Binary_values[1] = { NULL };
     CALL(FMI3GetBinary((FMIInstance*)S, Binary_vr, 1, Binary_sizes, Binary_values, 1));
 
-    fprintf(outputFile, "%g,%.7g,%.7g,%.16g,%.16g,%" PRId8 ",%" PRIu8 ",%" PRId16 ",%" PRIu16 ",%" PRId32 ",%" PRIu32 ",%" PRId64 ",%" PRIu64 ",%d,\"%s\",",
-        time, Float32_values[0], Float32_values[1], Float64_values[0], Float64_values[1], Int8_values[0], UInt8_values[0], Int16_values[0], UInt16_values[0], Int32_values[0], UInt32_values[0], Int64_values[0], UInt64_values[0], Boolean_values[0], String_values[0]);
+    fprintf(outputFile, "%.16g,", time);
+    fprintf(outputFile, "%.7g,", Float32_values[0]);
+    fprintf(outputFile, "%.7g,", Float32_values[1]);
+    fprintf(outputFile, "%.16g,", Float64_values[0]);
+    fprintf(outputFile, "%.16g,", Float64_values[1]);
+    fprintf(outputFile, "%" PRId8 ",", Int8_values[0]);
+    fprintf(outputFile, "%" PRIu8 ",", UInt8_values[0]);
+    fprintf(outputFile, "%" PRId16 ",", Int16_values[0]);
+    fprintf(outputFile, "%" PRIu16 ",", UInt16_values[0]);
+    fprintf(outputFile, "%" PRId32 ",", Int32_values[0]);
+    fprintf(outputFile, "%" PRIu32 ",", UInt32_values[0]);
+    fprintf(outputFile, "%" PRId64 ",", Int64_values[0]);
+    fprintf(outputFile, "%" PRIu64 ",", UInt64_values[0]);
+    fprintf(outputFile, "%d,", Boolean_values[0]);
+    fprintf(outputFile, "%\"%s\",", String_values[0]);
 
     for (size_t i = 0; i < Binary_sizes[0]; i++) {
 
@@ -304,7 +331,7 @@ FMIStatus recordVariables(FMIInstance *S, double time, FILE *outputFile) {
         fputs(hex, outputFile);
     }
 
-    fputc('\n', outputFile);
+    fprintf(outputFile, ",%" PRId64 "\n", Int64_values[1]);
 
 #endif
 
