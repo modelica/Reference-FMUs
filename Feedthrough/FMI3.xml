@@ -78,17 +78,18 @@
     <Boolean name="Boolean_input" valueReference="27" causality="input" start="false"/>
     <Boolean name="Boolean_output" valueReference="28" causality="output" initial="calculated"/>
 
-    <String name="String_parameter" valueReference="29" causality="parameter" variability="fixed">
+    <String name="String_input" valueReference="29" causality="input">
         <Start value="Set me!"/>
     </String>
+	<String name="String_output" valueReference="30" causality="output"/>
 
-    <Binary name="Binary_input" valueReference="30" causality="input">
+    <Binary name="Binary_input" valueReference="31" causality="input">
         <Start value="666f6f"/>
     </Binary>
-    <Binary name="Binary_output" valueReference="31" causality="output"/>
+    <Binary name="Binary_output" valueReference="32" causality="output"/>
 
-    <Enumeration name="Enumeration_input" declaredType="Option" valueReference="32" causality="input" start="1"/>
-    <Enumeration name="Enumeration_output" declaredType="Option" valueReference="33" causality="output"/>
+    <Enumeration name="Enumeration_input" declaredType="Option" valueReference="33" causality="input" start="1"/>
+    <Enumeration name="Enumeration_output" declaredType="Option" valueReference="34" causality="output"/>
 
   </ModelVariables>
 
