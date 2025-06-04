@@ -91,7 +91,7 @@ def test_start_value_types(fmi_version, interface_type, arch, platform):
         '--start-value', 'Float64_continuous_input', '-5e-1',
         '--start-value', 'Int32_input', '2147483647',
         '--start-value', 'Boolean_input', '1',
-        '--start-value', 'String_parameter', 'FMI is awesome!',
+        '--start-value', 'String_input', 'FMI is awesome!',
         '--start-value', 'Enumeration_input', '2',
     ]
 
