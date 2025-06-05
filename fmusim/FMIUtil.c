@@ -286,17 +286,26 @@ size_t FMISizeOfVariableType(FMIVariableType type, FMIMajorVersion majorVersion)
     }
 }
 
-FMIStatus FMIParseValues(FMIMajorVersion fmiMajorVersion, FMIVariableType type, const char* literal, size_t* nValues, void** values) {
+FMIStatus FMIParseValues(FMIMajorVersion fmiMajorVersion, FMIVariableType type, const char* literal, size_t* nValues, void** values, size_t** sizes) {
 
     FMIStatus status = FMIOK;
 
     if (!literal) {
-        FMILogError("Value literal must not be NULL.\n");
+        FMILogError("Argument literal must not be NULL.\n");
+        return FMIError;
+    }
+
+    if (!values) {
+        FMILogError("Argument values must not be NULL.\n");
         return FMIError;
     }
 
     *nValues = 0;
     *values = NULL;
+
+    if (sizes) {
+        *sizes = NULL;
+    }
 
     char* next = (char*)literal;
 
@@ -385,13 +394,21 @@ FMIStatus FMIParseValues(FMIMajorVersion fmiMajorVersion, FMIVariableType type, 
         break;
     }
     case FMIBinaryType: {
-        const size_t size = strlen(literal) / 2;
+        const size_t length = strlen(literal);
+        if (length % 2 != 0) {
+            FMILogError("The length of a binary literal must be a multiple of two.");
+            status = FMIError;
+            goto TERMINATE;
+        }
+        const size_t size = length / 2;
         CALL(FMICalloc(values, 1, sizeof(fmi3Binary) + size * sizeof(fmi3Byte)));
         fmi3Binary* v = (fmi3Binary*)*values;
         fmi3Byte* b = (fmi3Byte*)&v[1];
         CALL(FMIHexToBinary(literal, size, b));
         v[0] = b;
         *nValues = 1;
+        CALL(FMICalloc(sizes, 1, sizeof(size_t)));
+        **sizes = size;
         break;
     }
     default:
@@ -545,20 +562,25 @@ TERMINATE:
 
  FMIStatus FMIHexToBinary(const char* hex, size_t size, unsigned char* binary) {
 
-     if (hex == NULL || *hex == '\0' || binary == NULL) {
-         // TODO: print message
+     if (hex == NULL || *hex == '\0') {
+         FMILogError("Argument hex must not be NULL or an empty string.");
          return FMIError;
      }
-         
+        
+     if (binary == NULL) {
+         FMILogError("Argument binary must not be NULL.");
+         return FMIError;
+     }
+
      if (size != strlen(hex) / 2) {
-         // TODO: print message
+         FMILogError("The length of a binary literal must be a multiple of two.");
          return FMIError;
      }
 
      for (size_t i = 0; i < size; i++) {
          char b1, b2;
          if (!hexchr2bin(hex[i * 2], &b1) || !hexchr2bin(hex[i * 2 + 1], &b2)) {
-             // TODO: print message
+             FMILogError("\"%s\" is not a valid hex value.", hex);
              return FMIError;
          }
          binary[i] = (b1 << 4) | b2;

@@ -10,7 +10,7 @@ on:
 jobs:
 
   lint-files:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
     - run: python3 build/lint_files.py
@@ -26,10 +26,10 @@ jobs:
             image: windows-2022
             arch: x86_64
           - name: x86_64-linux
-            image: ubuntu-20.04
+            image: ubuntu-22.04
             arch: x86_64
           - name: aarch64-linux
-            image: ubuntu-20.04
+            image: ubuntu-22.04
             arch: aarch64
           - name: x86_64-darwin
             image: macos-13
@@ -64,7 +64,7 @@ jobs:
         if-no-files-found: error
 
   merge-fmus:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: [build]
     steps:
     - uses: s-weigand/setup-conda@v1

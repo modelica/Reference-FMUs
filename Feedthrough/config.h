@@ -91,7 +91,8 @@ typedef enum {
     vr_Boolean_input,
     vr_Boolean_output,
 
-    vr_String_parameter,
+    vr_String_input,
+    vr_String_output,
 
     vr_Binary_input,
     vr_Binary_output,
@@ -147,7 +148,8 @@ typedef struct {
     bool Boolean_input;
     bool Boolean_output;
 
-    char String_parameter[STRING_MAX_LEN];
+    char String_input[STRING_MAX_LEN];
+    char String_output[STRING_MAX_LEN];
 
     size_t Binary_input_size;
     char Binary_input[BINARY_MAX_LEN];

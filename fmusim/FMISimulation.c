@@ -20,6 +20,7 @@ FMIStatus FMIApplyStartValues(FMIInstance* S, const FMISimulationSettings* setti
 
     size_t nValues = 0;
     void* values = NULL;
+    size_t* sizes = NULL;
 
     bool configurationMode = false;
 
@@ -33,7 +34,7 @@ FMIStatus FMIApplyStartValues(FMIInstance* S, const FMISimulationSettings* setti
 
         if (causality == FMIStructuralParameter && type == FMIUInt64Type) {
 
-            CALL(FMIParseValues(FMIMajorVersion3, type, literal, &nValues, &values));
+            CALL(FMIParseValues(FMIMajorVersion3, type, literal, &nValues, &values, NULL));
 
             if (!configurationMode) {
                 CALL(FMI3EnterConfigurationMode(S));
@@ -62,12 +63,11 @@ FMIStatus FMIApplyStartValues(FMIInstance* S, const FMISimulationSettings* setti
             continue;
         }
 
-        CALL(FMIParseValues(S->fmiMajorVersion, type, literal, &nValues, &values));
+        size_t* sizes = { NULL };
 
-        // only used for Binary variables
-        const size_t size = strlen(literal) / 2;
+        CALL(FMIParseValues(S->fmiMajorVersion, type, literal, &nValues, &values, &sizes));
 
-        CALL(FMISetValues(S, type, &vr, 1, &size, values, nValues));
+        CALL(FMISetValues(S, type, &vr, 1, sizes, values, nValues));
 
         FMIFree(&values);
     }

@@ -58,7 +58,8 @@ FMIStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
         CALL(FMIRealloc((void**)&input->time, (input->nRows + 1) * sizeof(double)));
 		CALL(FMIRealloc((void**)&input->nValues, (input->nRows + 1) * input->nVariables * sizeof(size_t)));
 		CALL(FMIRealloc((void**)&input->values, (input->nRows + 1) * input->nVariables * sizeof(void*)));
-		
+		CALL(FMIRealloc((size_t**)&input->sizes, (input->nRows + 1) * input->nVariables * sizeof(size_t*)));
+
 		const size_t index = input->nRows * input->nVariables;
 		memset(&input->nValues[index], 0x0, input->nVariables * sizeof(size_t));
 		memset(&input->values [index], 0x0, input->nVariables * sizeof(void*));
@@ -90,7 +91,7 @@ FMIStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 			const size_t index = (input->nRows * input->nVariables) + i;
 
-			CALL(FMIParseValues(modelDescription->fmiMajorVersion, variable->type, col, &input->nValues[index], &input->values[index]));
+			CALL(FMIParseValues(modelDescription->fmiMajorVersion, variable->type, col, &input->nValues[index], &input->values[index], &input->sizes[index]));
 			
 			i++;
 		}
@@ -155,13 +156,59 @@ double FMINextInputEvent(const FMIStaticInput* input, double time) {
 				continue;  // skip continuous variables
 			}
 
-			const void* values0 = input->values[i * input->nVariables + j];
-			const void* values1 = input->values[(i + 1) * input->nVariables + j];
-			const size_t size = FMISizeOfVariableType(type, input->fmiMajorVersion) * nValues;
+			const size_t k0 = i * input->nVariables + j;
+			const size_t k1 = (i + 1) * input->nVariables + j;
 
-			if (memcmp(values0, values1, size)) {
-				return t1;
+			const size_t nValues0 = input->nValues[k0];
+			const size_t nValues1 = input->nValues[k1];
+
+			if (nValues0 != nValues1) {
+				continue;  // array sizes have changed
 			}
+
+			const void* values0 = input->values[k0];
+			const void* values1 = input->values[k1];
+						
+			if (type == FMIBinaryType) {
+
+				const size_t* sizes0 = input->sizes[k0];
+				const size_t* sizes1 = input->sizes[k1];
+
+				for (size_t l = 0; l < nValues; l++) {
+
+					const void* c0 = ((void**)values0)[l];
+					const void* c1 = ((void**)values1)[l];
+
+					const size_t size0 = sizes0[l];
+					const size_t size1 = sizes1[l];
+
+					if (size0 != size1 || memcmp(c0, c1, size0)) {
+						return t1;
+					}
+				}
+
+			} else if (type == FMIStringType) {
+
+				for (size_t l = 0; l < nValues; l++) {
+
+					const char* c0 = ((char**)values0)[l];
+					const char* c1 = ((char**)values1)[l];
+
+					if (strcmp(c0, c1)) {
+						return t1;
+					}
+				}
+					
+			} else {
+
+				size_t size = FMISizeOfVariableType(type, input->fmiMajorVersion) * nValues;
+
+				if (memcmp(values0, values1, size)) {
+					return t1;
+				}
+			}
+
+
 		}
 
 	}
@@ -295,6 +342,7 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMIStaticInput* input, doub
 
 			const size_t nValues = input->nValues[j];
 			const void* values = input->values[j];
+			const size_t* sizes = input->sizes[j];
 
 			if (nValues == 0) {
 				continue;
@@ -312,7 +360,7 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMIStaticInput* input, doub
 
 			}
 	
-			CALL(FMISetValues(instance, type, &vr, 1, NULL, values, nValues));
+			CALL(FMISetValues(instance, type, &vr, 1, sizes, values, nValues));
 		}
 	}
 

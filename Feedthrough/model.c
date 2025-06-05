@@ -51,7 +51,8 @@ void setStartValues(ModelInstance *comp) {
     M(Boolean_input)  = false;
     M(Boolean_output) = false;
 
-    strncpy(M(String_parameter), STRING_START, STRING_MAX_LEN);
+    strncpy(M(String_input), STRING_START, STRING_MAX_LEN);
+    strncpy(M(String_output), STRING_START, STRING_MAX_LEN);
 
     M(Binary_input_size) = strlen(BINARY_START);
     strncpy(M(Binary_input), BINARY_START, BINARY_MAX_LEN);
@@ -87,6 +88,8 @@ Status calculateValues(ModelInstance *comp) {
     M(UInt64_output)  = M(UInt64_input);
 
     M(Boolean_output) = M(Boolean_input);
+
+    strncpy(M(String_output), M(String_input), STRING_MAX_LEN);
 
     M(Binary_output_size) = M(Binary_input_size);
     memcpy(M(Binary_output), M(Binary_input), M(Binary_input_size));
@@ -368,8 +371,11 @@ Status getString(ModelInstance* comp, ValueReference vr, const char* values[], s
     ASSERT_NVALUES(1);
 
     switch (vr) {
-        case vr_String_parameter:
-            values[(*index)++] = M(String_parameter);
+        case vr_String_input:
+            values[(*index)++] = M(String_input);
+            break;
+        case vr_String_output:
+            values[(*index)++] = M(String_output);
             break;
         default:
             logError(comp, "Get String is not allowed for value reference %u.", vr);
@@ -647,12 +653,12 @@ Status setString(ModelInstance* comp, ValueReference vr, const char *const value
     ASSERT_NVALUES(1);
 
     switch (vr) {
-        case vr_String_parameter:
+        case vr_String_input:
             if (strlen(values[*index]) >= STRING_MAX_LEN) {
                 logError(comp, "Max. string length is %d bytes.", STRING_MAX_LEN);
                 return Error;
             }
-            strcpy(M(String_parameter), values[(*index)++]);
+            strcpy(M(String_input), values[(*index)++]);
             break;
         default:
             logError(comp, "Set String is not allowed for value reference %u.", vr);
