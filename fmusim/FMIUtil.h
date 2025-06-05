@@ -35,7 +35,7 @@ FMIStatus FMIGetNumberOfUnkownValues(
 
 size_t FMISizeOfVariableType(FMIVariableType type, FMIMajorVersion majorVersion);
 
-FMIStatus FMIParseValues(FMIMajorVersion fmiMajorVersion, FMIVariableType type, const char* literal, size_t* nValues, void** values);
+FMIStatus FMIParseValues(FMIMajorVersion fmiMajorVersion, FMIVariableType type, const char* literal, size_t* nValues, void** values, size_t** sizes);
 
 FMIStatus FMIParseStartValues(FMIVariableType type, const char* literal, size_t nValues, void* values);
 

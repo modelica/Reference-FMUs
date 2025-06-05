@@ -58,7 +58,8 @@ FMIStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
         CALL(FMIRealloc((void**)&input->time, (input->nRows + 1) * sizeof(double)));
 		CALL(FMIRealloc((void**)&input->nValues, (input->nRows + 1) * input->nVariables * sizeof(size_t)));
 		CALL(FMIRealloc((void**)&input->values, (input->nRows + 1) * input->nVariables * sizeof(void*)));
-		
+		CALL(FMIRealloc((size_t**)&input->sizes, (input->nRows + 1) * input->nVariables * sizeof(size_t*)));
+
 		const size_t index = input->nRows * input->nVariables;
 		memset(&input->nValues[index], 0x0, input->nVariables * sizeof(size_t));
 		memset(&input->values [index], 0x0, input->nVariables * sizeof(void*));
@@ -90,7 +91,7 @@ FMIStaticInput* FMIReadInput(const FMIModelDescription* modelDescription, const 
 
 			const size_t index = (input->nRows * input->nVariables) + i;
 
-			CALL(FMIParseValues(modelDescription->fmiMajorVersion, variable->type, col, &input->nValues[index], &input->values[index]));
+			CALL(FMIParseValues(modelDescription->fmiMajorVersion, variable->type, col, &input->nValues[index], &input->values[index], &input->sizes[index]));
 			
 			i++;
 		}
@@ -295,6 +296,7 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMIStaticInput* input, doub
 
 			const size_t nValues = input->nValues[j];
 			const void* values = input->values[j];
+			const size_t* sizes = input->sizes[j];
 
 			if (nValues == 0) {
 				continue;
@@ -312,7 +314,7 @@ FMIStatus FMIApplyInput(FMIInstance* instance, const FMIStaticInput* input, doub
 
 			}
 	
-			CALL(FMISetValues(instance, type, &vr, 1, NULL, values, nValues));
+			CALL(FMISetValues(instance, type, &vr, 1, sizes, values, nValues));
 		}
 	}
 

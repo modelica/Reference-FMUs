@@ -294,7 +294,7 @@ static FMIStatus readUnknownsFMI2(xmlXPathContextPtr xpathCtx, FMIModelDescripti
 
             unsigned int* dependencyIndices;
 
-            CALL(FMIParseValues(FMIMajorVersion2, FMIUInt32Type, dependenciesLiteral, &unknown->nDependencies, &dependencyIndices));
+            CALL(FMIParseValues(FMIMajorVersion2, FMIUInt32Type, dependenciesLiteral, &unknown->nDependencies, &dependencyIndices, NULL));
 
             CALL(FMICalloc((void**)&unknown->dependencies, unknown->nDependencies, sizeof(FMIModelVariable*)));
 
@@ -360,7 +360,7 @@ static FMIStatus readUnknownsFMI3(xmlXPathContextPtr xpathCtx, FMIModelDescripti
 
             unsigned int* dependencyValueReferences;
 
-            CALL(FMIParseValues(FMIMajorVersion3, FMIUInt32Type, dependenciesLiteral, &unknown->nDependencies, &dependencyValueReferences));
+            CALL(FMIParseValues(FMIMajorVersion3, FMIUInt32Type, dependenciesLiteral, &unknown->nDependencies, &dependencyValueReferences, NULL));
 
             CALL(FMICalloc((void**)&unknown->dependencies, unknown->nDependencies, sizeof(FMIModelVariable*)));
 

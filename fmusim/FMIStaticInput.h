@@ -10,6 +10,7 @@ typedef struct {
 	const FMIModelVariable** variables;
 	size_t* nValues;
 	void** values;
+	size_t** sizes;
 	size_t nRows;
 	double* time;
 
