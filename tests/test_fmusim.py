@@ -31,7 +31,7 @@ def call_fmusim(platform: str, fmi_version: int, interface_type: str, test_name:
     if output_file.exists():
         os.remove(output_file)
 
-    fmusim_args = [install / 'fmusim', '--interface-type', interface_type, '--output-file', output_file] + args + [install / model]
+    fmusim_args = [install / 'fmusim', '--interface-type', interface_type, '--output-file', output_file] + list(args) + [install / model]
 
     if platform == 'aarch64-linux':
         fmusim_args = ['qemu-aarch64', '-L', '/usr/aarch64-linux-gnu'] + fmusim_args
@@ -172,7 +172,7 @@ def test_input_file(fmi_version, interface_type, arch, platform):
         fmi_version=fmi_version,
         interface_type=interface_type,
         test_name='test_input_file',
-        args=['--input-file', resources / f'Feedthrough_in.csv', '--stop-time', '5'],
+        args=['--input-file', resources / 'Feedthrough_in.csv', '--stop-time', '5'],
         model='Feedthrough.fmu'
     )
 
