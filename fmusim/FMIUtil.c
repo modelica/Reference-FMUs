@@ -400,6 +400,11 @@ FMIStatus FMIParseValues(FMIMajorVersion fmiMajorVersion, FMIVariableType type, 
             status = FMIError;
             goto TERMINATE;
         }
+        if (!sizes) {
+            FMILogError("Argument sizes must not be NULL for type Binary.");
+            status = FMIError;
+            goto TERMINATE;
+        }
         const size_t size = length / 2;
         CALL(FMICalloc(values, 1, sizeof(fmi3Binary) + size * sizeof(fmi3Byte)));
         fmi3Binary* v = (fmi3Binary*)*values;

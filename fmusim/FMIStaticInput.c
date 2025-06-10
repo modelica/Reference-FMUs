@@ -120,8 +120,34 @@ void FMIFreeInput(FMIStaticInput* input) {
 		return;
 	}
 
+	for (size_t i = 0; i < input->nRows; i++) {
+
+		for (size_t j = 0; j < input->nVariables; j++) {
+
+			const FMIModelVariable* variable = input->variables[j];
+			const FMIVariableType   type = variable->type;
+			const size_t            nValues = input->nValues[j];
+		
+			const size_t k = i * input->nVariables + j;
+
+			if (type == FMIStringType) {
+				const char** values = input->values[k];
+				FMIFree((void**)&values);
+			} else if (type == FMIBinaryType) {
+				size_t* sizes = input->sizes[k];
+				FMIFree((void**)&sizes);
+				void** values = input->values[k];
+				FMIFree((void**)&values);
+			}
+		
+		}
+
+	}
+
 	FMIFree((void**)&input->variables);
 	FMIFree((void**)&input->nValues);
+	FMIFree((void**)&input->values);
+	FMIFree((void**)&input->sizes);
 	FMIFree((void**)&input->buffer);
 
 	FMIFree((void**)&input);
