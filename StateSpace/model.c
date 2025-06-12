@@ -51,7 +51,6 @@ Status calculateValues(ModelInstance *comp) {
         }
     }
 
-
     // y = Cx + Du
     for (size_t i = 0; i < M(r); i++) {
 

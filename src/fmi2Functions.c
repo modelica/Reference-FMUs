@@ -833,7 +833,7 @@ fmi2Status fmi2SetContinuousStates(fmi2Component c, const fmi2Real x[], size_t n
 
     BEGIN_FUNCTION(SetContinuousStates);
 
-#ifdef HAS_CONTINUOUS_STATES
+#ifdef MAX_CONTINUOUS_STATES
     if (invalidNumber(S, "fmi2SetContinuousStates", "nx", nx, getNumberOfContinuousStates(S)))
         CALL(Error);
 
@@ -856,7 +856,7 @@ fmi2Status fmi2GetDerivatives(fmi2Component c, fmi2Real derivatives[], size_t nx
 
     BEGIN_FUNCTION(GetDerivatives);
 
-#ifdef HAS_CONTINUOUS_STATES
+#ifdef MAX_CONTINUOUS_STATES
     if (invalidNumber(S, "fmi2GetDerivatives", "nx", nx, getNumberOfContinuousStates(S)))
         CALL(Error);
 
@@ -878,7 +878,7 @@ fmi2Status fmi2GetEventIndicators(fmi2Component c, fmi2Real eventIndicators[], s
 
     BEGIN_FUNCTION(GetEventIndicators);
 
-#ifdef HAS_EVENT_INDICATORS
+#ifdef MAX_EVENT_INDICATORS
     if (invalidNumber(S, "fmi2GetEventIndicators", "ni", ni, getNumberOfEventIndicators(S)))
         CALL(Error);
 
@@ -897,7 +897,7 @@ fmi2Status fmi2GetContinuousStates(fmi2Component c, fmi2Real states[], size_t nx
 
     BEGIN_FUNCTION(GetContinuousStates);
 
-#ifdef HAS_CONTINUOUS_STATES
+#ifdef MAX_CONTINUOUS_STATES
     if (invalidNumber(S, "fmi2GetContinuousStates", "nx", nx, getNumberOfContinuousStates(S)))
         CALL(Error);
 
@@ -919,7 +919,7 @@ fmi2Status fmi2GetNominalsOfContinuousStates(fmi2Component c, fmi2Real x_nominal
 
     BEGIN_FUNCTION(GetNominalsOfContinuousStates);
 
-#ifdef HAS_CONTINUOUS_STATES
+#ifdef MAX_CONTINUOUS_STATES
     if (invalidNumber(S, "fmi2GetNominalContinuousStates", "nx", nx, getNumberOfContinuousStates(S)))
         CALL(Error);
 
