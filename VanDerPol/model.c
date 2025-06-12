@@ -102,6 +102,7 @@ Status getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
     return OK;
 }
 
+#if FMI_VERSION > 1
 Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative) {
 
     if (unknown == vr_der_x0 && known == vr_x0) {
@@ -112,12 +113,15 @@ Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueRe
         *partialDerivative = -2 * M(x0) * M(x1) * M(mu) - 1;
     } else if (unknown == vr_der_x1 && known == vr_x1) {
         *partialDerivative = M(mu) * (1 - M(x0) * M(x0));
+    } else if (unknown == vr_der_x1 && known == vr_mu && comp->state == InitializationMode) {
+        *partialDerivative = (1 - M(x0) * M(x0)) * M(x1);
     } else {
         *partialDerivative = 0;
     }
 
     return OK;
 }
+#endif
 
 Status eventUpdate(ModelInstance *comp) {
 
