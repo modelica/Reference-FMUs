@@ -116,14 +116,6 @@ void freeModelInstance(ModelInstance *comp) {
 
     if (comp->resourceLocation) free((void*)comp->resourceLocation);
 
-    if (comp->prez) free(comp->prez);
-
-    if (comp->z) free(comp->z);
-
-    if (comp->x) free(comp->x);
-
-    if (comp->dx) free(comp->dx);
-
     free(comp);
 }
 
@@ -153,24 +145,13 @@ Status configurate(ModelInstance* comp) {
 
     (void)comp;
 
-#ifdef HAS_EVENT_INDICATORS
+#ifdef MAX_EVENT_INDICATORS
     comp->nz = getNumberOfEventIndicators(comp);
-
-    if (comp->nz > 0) {
-        CALL(s_reallocate(comp, (void**)&comp->prez, comp->nz * sizeof(double)));
-        CALL(s_reallocate(comp, (void**)&comp->z, comp->nz * sizeof(double)));
-    }
-
     CALL(getEventIndicators(comp, comp->prez, comp->nz));
 #endif
 
-#ifdef HAS_CONTINUOUS_STATES
+#if MAX_CONTINUOUS_STATES > 0
     comp->nx = getNumberOfContinuousStates(comp);
-
-    if (comp->nx > 0) {
-        CALL(s_reallocate(comp, (void**)&comp->x, comp->nx * sizeof(double)));
-        CALL(s_reallocate(comp, (void**)&comp->dx, comp->nx * sizeof(double)));
-    }
 #endif
 
     return OK;
@@ -603,7 +584,7 @@ Status setFMUState(ModelInstance* comp, void* FMUState) {
 
     comp->isDirtyValues = s->isDirtyValues;
 
-    comp->modelData = s->modelData;
+    memcpy(& comp->modelData, & s->modelData, sizeof(ModelData));
 
     comp->nSteps = s->nSteps;
 
@@ -611,14 +592,17 @@ Status setFMUState(ModelInstance* comp, void* FMUState) {
     comp->eventModeUsed = s->eventModeUsed;
     comp->nextCommunicationPoint = s->nextCommunicationPoint;
 
-    if (comp->nx > 0) {
-        memcpy(comp->x, s->x, s->nx * sizeof(double));
-        memcpy(comp->dx, s->dx, s->nx * sizeof(double));
-    }
+#if MAX_EVENT_INDICATORS > 0
+    comp->nz = s->nz;
+    memcpy(comp->z, s->z, s->nz * sizeof(double));
+    memcpy(comp->prez, s->prez, s->nz * sizeof(double));
+#endif
 
-    if (comp->nz > 0) {
-        memcpy(comp->z, s->z, s->nz * sizeof(double));
-    }
+#if MAX_CONTINUOUS_STATES > 0
+    comp->nx = s->nx;
+    memcpy(comp->x, s->x, s->nx * sizeof(double));
+    memcpy(comp->dx, s->dx, s->nx * sizeof(double));
+#endif
 
     comp->nSteps = s->nSteps;
 
@@ -627,7 +611,7 @@ Status setFMUState(ModelInstance* comp, void* FMUState) {
 
 Status doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
 
-#ifdef HAS_CONTINUOUS_STATES
+#if MAX_CONTINUOUS_STATES > 0
     if (comp->nx > 0) {
 
         CALL(getContinuousStates(comp, comp->x, comp->nx));
@@ -649,7 +633,7 @@ Status doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
     // state event
     *stateEvent = false;
 
-#ifdef HAS_EVENT_INDICATORS
+#if MAX_EVENT_INDICATORS > 0
     if (comp->nz > 0) {
 
         CALL(getEventIndicators(comp, comp->z, comp->nz));
@@ -662,9 +646,7 @@ Status doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
         }
 
         // remember the current event indicators
-        double* temp = comp->prez;
-        comp->prez = comp->z;
-        comp->z = temp;
+        memcpy(comp->prez, comp->z, comp->nz * sizeof(double));
     }
 #endif
 

@@ -145,13 +145,17 @@ typedef struct {
     double nextCommunicationPoint;
 
     // solver
+#if MAX_EVENT_INDICATORS > 0
     size_t nz;
-    double* z;
-    double* prez;
+    double z[MAX_EVENT_INDICATORS];
+    double prez[MAX_EVENT_INDICATORS];
+#endif
 
+#if MAX_CONTINUOUS_STATES > 0
     size_t nx;
-    double* x;
-    double* dx;
+    double x[MAX_CONTINUOUS_STATES];
+    double dx[MAX_CONTINUOUS_STATES];
+#endif
 
 } ModelInstance;
 

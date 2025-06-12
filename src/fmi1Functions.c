@@ -463,7 +463,7 @@ fmiStatus fmiSetContinuousStates(fmiComponent c, const fmiReal x[], size_t nx) {
 
     ModelInstance* instance = (ModelInstance *)c;
 
-#ifdef HAS_CONTINUOUS_STATES
+#if MAX_CONTINUOUS_STATES > 0
     if (invalidState(instance, "fmiSetContinuousStates", Initialized))
          return fmiError;
 
@@ -538,7 +538,7 @@ fmiStatus fmiGetContinuousStates(fmiComponent c, fmiReal states[], size_t nx){
 
     ModelInstance* instance = (ModelInstance *)c;
 
-#ifdef HAS_CONTINUOUS_STATES
+#if MAX_CONTINUOUS_STATES > 0
     if (invalidState(instance, "fmiGetContinuousStates", not_modelError))
         return fmiError;
 
@@ -563,7 +563,7 @@ fmiStatus fmiGetNominalContinuousStates(fmiComponent c, fmiReal x_nominal[], siz
 
     ModelInstance* instance = (ModelInstance *)c;
 
-#ifdef HAS_CONTINUOUS_STATES
+#if MAX_CONTINUOUS_STATES > 0
     if (invalidState(instance, "fmiGetNominalContinuousStates", not_modelError))
         return fmiError;
 
@@ -590,7 +590,7 @@ fmiStatus fmiGetDerivatives(fmiComponent c, fmiReal derivatives[], size_t nx) {
 
     ModelInstance* instance = (ModelInstance *)c;
 
-#ifdef HAS_CONTINUOUS_STATES
+#if MAX_CONTINUOUS_STATES > 0
     if (invalidState(instance, "fmiGetDerivatives", not_modelError))
          return fmiError;
 
@@ -615,7 +615,7 @@ fmiStatus fmiGetEventIndicators(fmiComponent c, fmiReal eventIndicators[], size_
 
     ModelInstance* instance = (ModelInstance *)c;
 
-#ifdef HAS_EVENT_INDICATORS
+#if MAX_EVENT_INDICATORS > 0
     if (invalidState(instance, "fmiGetEventIndicators", not_modelError))
         return fmiError;
 

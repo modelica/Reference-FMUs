@@ -957,7 +957,7 @@ fmi3Status fmi3ExitConfigurationMode(fmi3Instance instance) {
         }
     }
 
-#if defined(HAS_CONTINUOUS_STATES) || defined(HAS_EVENT_INDICATORS)
+#if MAX_CONTINUOUS_STATES > 0 || MAX_EVENT_INDICATORS > 0
     CALL(configurate(S));
 #endif
 
@@ -1151,7 +1151,7 @@ fmi3Status fmi3SetContinuousStates(fmi3Instance instance,
 
     BEGIN_FUNCTION(SetContinuousStates);
 
-#ifdef HAS_CONTINUOUS_STATES
+#if MAX_CONTINUOUS_STATES > 0
     if (invalidNumber(S, "fmi3SetContinuousStates", "nContinuousStates", nContinuousStates, getNumberOfContinuousStates(S)))
         return fmi3Error;
 
@@ -1174,7 +1174,7 @@ fmi3Status fmi3GetContinuousStateDerivatives(fmi3Instance instance,
 
     BEGIN_FUNCTION(GetContinuousStateDerivatives);
 
-#ifdef HAS_CONTINUOUS_STATES
+#if MAX_CONTINUOUS_STATES > 0
     if (invalidNumber(S, "fmi3GetContinuousStateDerivatives", "nContinuousStates", nContinuousStates, getNumberOfContinuousStates(S)))
         return fmi3Error;
 
@@ -1197,7 +1197,7 @@ fmi3Status fmi3GetEventIndicators(fmi3Instance instance,
 
     BEGIN_FUNCTION(GetEventIndicators);
 
-#ifdef HAS_EVENT_INDICATORS
+#if MAX_EVENT_INDICATORS > 0
     if (invalidNumber(S, "fmi3GetEventIndicators", "nEventIndicators", nEventIndicators, getNumberOfEventIndicators(S))) {
         return fmi3Error;
     }
@@ -1222,7 +1222,7 @@ fmi3Status fmi3GetContinuousStates(fmi3Instance instance,
 
     BEGIN_FUNCTION(GetContinuousStates);
 
-#ifdef HAS_CONTINUOUS_STATES
+#if MAX_CONTINUOUS_STATES > 0
     if (invalidNumber(S, "fmi3GetContinuousStates", "nContinuousStates", nContinuousStates, getNumberOfContinuousStates(S)))
         return fmi3Error;
 
@@ -1245,7 +1245,7 @@ fmi3Status fmi3GetNominalsOfContinuousStates(fmi3Instance instance,
 
     BEGIN_FUNCTION(GetNominalsOfContinuousStates);
 
-#ifdef HAS_CONTINUOUS_STATES
+#if MAX_CONTINUOUS_STATES > 0
     if (invalidNumber(S, "fmi3GetNominalContinuousStates", "nContinuousStates", nContinuousStates, getNumberOfContinuousStates(instance)))
         return fmi3Error;
 
@@ -1273,7 +1273,7 @@ fmi3Status fmi3GetNumberOfEventIndicators(fmi3Instance instance,
 
     ASSERT_NOT_NULL(nEventIndicators);
 
-#ifdef HAS_EVENT_INDICATORS
+#if MAX_EVENT_INDICATORS > 0
     *nEventIndicators = getNumberOfEventIndicators(instance);
 #else
     *nEventIndicators = 0;
@@ -1290,7 +1290,7 @@ fmi3Status fmi3GetNumberOfContinuousStates(fmi3Instance instance,
 
     ASSERT_NOT_NULL(nContinuousStates);
 
-#ifdef HAS_CONTINUOUS_STATES
+#if MAX_CONTINUOUS_STATES > 0
     *nContinuousStates = getNumberOfContinuousStates(instance);
 #else
     *nContinuousStates = 0;
@@ -1405,7 +1405,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
                 *eventHandlingNeeded = fmi3True;
             } else {
                 CALL(eventUpdate(S));
-#ifdef HAS_EVENT_INDICATORS
+#if MAX_EVENT_INDICATORS > 0
                 CALL(getEventIndicators(S, S->prez, S->nz));
 #endif
             }
