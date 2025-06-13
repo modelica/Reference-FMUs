@@ -43,7 +43,7 @@ def validate(build_dir, model, fmi_types, simulate=True):
 
 def test_fmi1_me(arch, platform):
 
-    if arch not in {'x86', 'x86_64'}:
+    if arch not in {'x86', 'x86_64', 'universal64'}:
         pytest.skip(f"{arch} not supported")
 
     build_dir = root / 'build' / f'fmi1-me-{platform}'
@@ -59,7 +59,7 @@ def test_fmi1_me(arch, platform):
 
 def test_fmi1_cs(arch, platform):
 
-    if arch not in {'x86', 'x86_64'}:
+    if arch not in {'x86', 'x86_64', 'universal'}:
         pytest.skip(f"{arch} not supported")
 
     build_dir = root / 'build' / f'fmi1-cs-{platform}'
@@ -75,7 +75,7 @@ def test_fmi1_cs(arch, platform):
 
 def test_fmi2(arch, platform):
 
-    if arch not in {'x86', 'x86_64'}:
+    if arch not in {'x86', 'x86_64', 'universal64'}:
         pytest.skip(f"{arch} not supported")
 
     build_dir = root / 'build' / f'fmi2-{platform}'
@@ -93,6 +93,9 @@ def test_fmi2(arch, platform):
 
 def test_fmi3(arch, platform):
 
+    if arch in {'universal64'}:
+        pytest.skip(f"FMI version 3 is not supported on {arch}.")
+
     build_dir = root / 'build' / f'fmi3-{platform}'
 
     models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'StateSpace', 'VanDerPol']
@@ -108,15 +111,23 @@ def test_fmi3(arch, platform):
     assert not validate_fmu(build_dir / 'install' / 'Clocks.fmu')
 
 
-def test_cs_early_return(platform):
+def test_cs_early_return(arch, platform):
+    if arch in {'universal64'}:
+        pytest.skip(f"FMI version 3 is not supported on {arch}.")
+
     run_example(root / 'build' / f'fmi3-{platform}' / 'temp' / 'cs_early_return')
 
 
-def test_cs_event_mode(platform):
+def test_cs_event_mode(arch, platform):
+    if arch in {'universal64'}:
+        pytest.skip(f"FMI version 3 is not supported on {arch}.")
+
     run_example(root / 'build' / f'fmi3-{platform}' / 'temp' / 'cs_event_mode')
 
 
-def test_cs_reconfiguration(platform):
+def test_cs_reconfiguration(arch, platform):
+    if arch in {'universal64'}:
+        pytest.skip(f"FMI version 3 is not supported on {arch}.")
 
     build_dir = root / 'build' / f'fmi3-{platform}' / 'temp'
 

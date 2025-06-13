@@ -10,7 +10,7 @@ zlib_version = '1.3.1'
 parser = argparse.ArgumentParser()
 parser.add_argument(
     'platform',
-    choices={'x86-windows', 'x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin', 'aarch64-darwin'},
+    choices={'x86-windows', 'x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin', 'aarch64-darwin', 'universal64-darwin'},
     help="Platform to build for, e.g. x86_64-windows"
 )
 parser.add_argument(
@@ -65,6 +65,10 @@ elif fmi_platform == 'x86_64-darwin':
 elif fmi_platform == 'aarch64-darwin':
 
     cmake_args += ['-D', 'CMAKE_OSX_ARCHITECTURES=arm64']
+
+elif fmi_platform == 'universal64-darwin':
+
+    cmake_args += ['-D', 'CMAKE_OSX_ARCHITECTURES=arm64;x86_64']
 
 check_call(
     ['cmake'] +
