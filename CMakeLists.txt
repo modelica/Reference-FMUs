@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.17)
+cmake_minimum_required (VERSION 3.18)
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
@@ -25,7 +25,7 @@ set_property(CACHE FMI_ARCHITECTURE PROPERTY STRINGS "" "aarch64" "x86" "x86_64"
 if (NOT FMI_ARCHITECTURE)
   if (${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
     set(FMI_ARCHITECTURE "x86_64")
-  elseif (${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "aarch64")
+  elseif (${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "aarch64|arm64")
     set(FMI_ARCHITECTURE "aarch64")
   else ()
     message(FATAL_ERROR "Unknown System Architecture: ${CMAKE_SYSTEM_PROCESSOR}")
@@ -33,6 +33,7 @@ if (NOT FMI_ARCHITECTURE)
 endif ()
 
 set(WITH_FMUSIM OFF CACHE BOOL "Add fmusim project")
+set(WITH_FMUSIM_GUI OFF CACHE BOOL "Add fmusim Gui project")
 
 if (MSVC)
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
@@ -277,6 +278,14 @@ endforeach(MODEL_NAME)
 # Examples
 include(examples/Examples.cmake)
 
-if (WITH_FMUSIM)
-  add_subdirectory(fmusim)
+if(WITH_FMUSIM OR WITH_FMUSIM_GUI)
+  include(build/fmusim.cmake)
+
+  if (WITH_FMUSIM)
+    add_subdirectory(fmusim)
+  endif ()
+
+  if (WITH_FMUSIM_GUI)
+    add_subdirectory(fmusim-gui)
+  endif ()
 endif ()

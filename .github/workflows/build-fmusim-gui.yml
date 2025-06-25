@@ -24,9 +24,6 @@ jobs:
         arch: 'win64_msvc2019_64'
         modules: 'qtpositioning qtwebchannel qtwebengine'
     - run: python -m pip install fmpy requests
-    - run: python fmusim-gui/build/build_cvode.py
-    - run: python fmusim-gui/build/build_libxml2.py
-    - run: python fmusim-gui/build/build_zlib.py
     - run: cmake -D CMAKE_PREFIX_PATH=${{env.QT_ROOT_DIR}} -S fmusim-gui -B fmusim-gui/build/fmusim-gui
     - run: cmake --build fmusim-gui/build/fmusim-gui --config Release
     - run: ${{env.QT_ROOT_DIR}}\bin\windeployqt.exe fmusim-gui\build\fmusim-gui\Release\fmusim-gui.exe
