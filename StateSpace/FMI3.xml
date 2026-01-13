@@ -67,11 +67,11 @@
     </ModelVariables>
 
     <ModelStructure>
-        <Output valueReference="10"/>
-        <ContinuousStateDerivative valueReference="12"/>
-        <InitialUnknown valueReference="10"/>
-        <InitialUnknown valueReference="11"/>
-        <InitialUnknown valueReference="12"/>
+        <Output valueReference="10" dependencies="6 7 9 11"/>
+        <ContinuousStateDerivative valueReference="12" dependencies="4 5 9 11"/>
+        <InitialUnknown valueReference="10" dependencies="6 7 9 11"/>
+        <InitialUnknown valueReference="11" dependencies="8"/>
+        <InitialUnknown valueReference="12" dependencies="4 5 9 11"/>
     </ModelStructure>
 
 </fmiModelDescription>
