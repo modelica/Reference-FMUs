@@ -46,7 +46,7 @@ Status calculateValues(ModelInstance *comp) {
 
     for (size_t i = 0; i < M(n); i++) {
 
-        for (size_t j = 0; j < M(r); j++) {
+        for (size_t j = 0; j < M(m); j++) {
             M(der_x)[i] += M(B)[i][j] * M(u)[j];
         }
     }
