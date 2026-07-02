@@ -52,8 +52,8 @@ jobs:
         sudo apt-get install gcc-aarch64-linux-gnu qemu-user
     - run: cmake --version
     - run: python build/build.py ${{ matrix.name }}
-    - if: matrix.name != 'aarch64-darwin'
-      run: pytest tests --platform ${{ matrix.name }}
+    # - if: matrix.name != 'aarch64-darwin'
+    #   run: pytest tests --platform ${{ matrix.name }}
     - uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.name }}

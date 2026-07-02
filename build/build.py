@@ -92,7 +92,6 @@ def build_fmus(fmi_version):
         '-D', f'CMAKE_INSTALL_PREFIX={install_dir}',
         '-D', f'FMI_VERSION={fmi_version}',
         '-D', f'FMI_ARCHITECTURE={fmi_architecture}',
-        '-D', 'WITH_FMUSIM=ON',
         '-B', build_dir,
         parent_dir.parent
     ]
