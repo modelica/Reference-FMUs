@@ -257,4 +257,4 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fmus/${MODEL_NAME}.fmu DESTINATION ${C
 endforeach(MODEL_NAME)
 
 # Examples
-# include(examples/Examples.cmake)
+include(examples/Examples.cmake)

@@ -190,6 +190,11 @@ endif()
 
 # Examples
 set(MODEL_NAMES BouncingBall Dahlquist Feedthrough Resource Stair VanDerPol)
+
+if(${FMI_VERSION} EQUAL 3)
+    set(MODEL_NAMES ${MODEL_NAMES} StateSpace)
+endif()
+
 set(INTERFACE_TYPES cs me)
 
 foreach (MODEL_NAME ${MODEL_NAMES})
