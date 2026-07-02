@@ -1,4 +1,4 @@
-# build FMUs and fmusim for all FMI versions
+# build FMUs for both FMI versions
 
 import os
 import shutil
@@ -64,8 +64,6 @@ def build_fmus(fmi_version, fmi_type=None):
     if not version:
         version = 'development build'
 
-    cmake_args += ['-D', f'FMUSIM_VERSION="{version}"']
-
     fmi_platform = args.platform
     fmi_architecture, fmi_system = fmi_platform.split('-')
 
@@ -118,19 +116,10 @@ def build_fmus(fmi_version, fmi_type=None):
 
     os.makedirs(fmus_dir)
 
-    fmusim_dir = parent_dir / 'fmus' / f'fmusim-{args.platform}'
-
-    if fmusim_dir.exists():
-        shutil.rmtree(fmusim_dir)
-
-    os.makedirs(fmusim_dir)
-
     for root, dirs, files in os.walk(install_dir):
         for file in files:
             if file.endswith('.fmu'):
                 shutil.copyfile(src=install_dir / file, dst=fmus_dir / file)
-            elif file.startswith('fmusim'):
-                shutil.copyfile(src=install_dir / file, dst=fmusim_dir / file)
 
 
 if __name__ == '__main__':

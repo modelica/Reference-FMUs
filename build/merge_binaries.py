@@ -178,10 +178,6 @@ results_dir = root / 'dist-merged' / 'results'
 
 os.makedirs(results_dir, exist_ok=True)
 
-# copy fmusim
-for system in ['x86-windows', 'x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin', 'aarch64-darwin']:
-    shutil.copytree(src=root / f'dist-{system}' / f'fmusim-{system}', dst=root / 'dist-merged' / f'fmusim-{system}')
-
 # copy license and readme
 for file in ['LICENSE.txt', 'README.md']:
     shutil.copyfile(src=root / file, dst=root / 'dist-merged' / file)

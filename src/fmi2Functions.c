@@ -155,7 +155,7 @@ do { \
 #define MASK_fmi2SetRealInputDerivatives (Instantiated | InitializationMode \
 | StepComplete)
 #define MASK_fmi2GetRealOutputDerivatives (StepComplete | StepFailed | StepCanceled \
-| Terminated | Error)
+| Terminated)
 #define MASK_fmi2DoStep                  StepComplete
 #define MASK_fmi2CancelStep              StepInProgress
 #define MASK_fmi2GetStatus               (StepComplete | StepInProgress | StepFailed \

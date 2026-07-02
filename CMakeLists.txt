@@ -32,8 +32,6 @@ if (NOT FMI_ARCHITECTURE)
   endif ()
 endif ()
 
-set(WITH_FMUSIM OFF CACHE BOOL "Add fmusim project")
-
 if (MSVC)
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 
@@ -275,8 +273,4 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fmus/${MODEL_NAME}.fmu DESTINATION ${C
 endforeach(MODEL_NAME)
 
 # Examples
-include(examples/Examples.cmake)
-
-if (WITH_FMUSIM)
-  add_subdirectory(fmusim)
-endif ()
+# include(examples/Examples.cmake)
