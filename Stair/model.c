@@ -66,7 +66,7 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], 
             logError(comp, "Variable \"counter\" can only be set in Instantiated and Intialization Mode.");
             return Error;
         }
-        
+
         if (values[*index] >= 10) {
             logError(comp, "The maximum value for variable \"counter\" is 10.");
             return Error;
