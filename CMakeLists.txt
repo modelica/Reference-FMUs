@@ -9,15 +9,8 @@ ENDFUNCTION()
 
 project (Reference-FMUs)
 
-set(FMI_VERSION 2 CACHE STRING "FMI Version")
-set_property(CACHE FMI_VERSION PROPERTY STRINGS 1 2 3)
-
-set(FMI_TYPE ME CACHE STRING "FMI Type (FMI 1.0 only)")
-set_property(CACHE FMI_TYPE PROPERTY STRINGS ME CS)
-
-if (${FMI_VERSION} GREATER 1)
-  set(FMI_TYPE "")
-endif ()
+set(FMI_VERSION 3 CACHE STRING "FMI Version")
+set_property(CACHE FMI_VERSION PROPERTY STRINGS 2 3)
 
 set(FMI_ARCHITECTURE "" CACHE STRING "FMI Architecture")
 set_property(CACHE FMI_ARCHITECTURE PROPERTY STRINGS "" "aarch64" "x86" "x86_64")
@@ -100,11 +93,7 @@ if (${FMI_VERSION} LESS 3)
 ")
 endif ()
 
-set (MODEL_NAMES BouncingBall Dahlquist Stair Feedthrough VanDerPol)
-
-if (${FMI_VERSION} GREATER 1 OR "${FMI_TYPE}" STREQUAL "CS")
-  set (MODEL_NAMES ${MODEL_NAMES} Resource)
-endif ()
+set (MODEL_NAMES BouncingBall Dahlquist Feedthrough Resource Stair VanDerPol)
 
 if (${FMI_VERSION} GREATER 2)
   set (MODEL_NAMES ${MODEL_NAMES} StateSpace Clocks)
@@ -145,7 +134,6 @@ SET(SOURCES
 add_library(${TARGET_NAME} SHARED
   ${HEADERS}
   ${SOURCES}
-  ${MODEL_NAME}/FMI${FMI_VERSION}${FMI_TYPE}.xml
   ${MODEL_NAME}/buildDescription.xml
 )
 
@@ -168,10 +156,6 @@ endif()
 
 if (CMAKE_C_COMPILER_ID STREQUAL "Intel")
   target_link_options(${TARGET_NAME} PRIVATE "-static-intel" "-static-libgcc")
-endif()
-
-if (${FMI_VERSION} EQUAL 1 AND "${FMI_TYPE}" STREQUAL CS)
-  target_compile_definitions(${TARGET_NAME} PRIVATE FMI_COSIMULATION)
 endif()
 
 target_include_directories(${TARGET_NAME} PRIVATE
@@ -200,7 +184,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 # modelDescription.xml
 add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-  ${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/FMI${FMI_VERSION}${FMI_TYPE}.xml
+  ${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/FMI${FMI_VERSION}.xml
   "${FMU_BUILD_DIR}/modelDescription.xml"
 )
 

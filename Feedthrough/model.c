@@ -394,7 +394,6 @@ Status setFloat32(ModelInstance* comp, ValueReference vr, const float values[], 
             M(Float32_continuous_input) = values[(*index)++];
             break;
         case vr_Float32_discrete_input:
-#if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
                 comp->state != Instantiated &&
                 comp->state != InitializationMode &&
@@ -402,7 +401,6 @@ Status setFloat32(ModelInstance* comp, ValueReference vr, const float values[], 
                 logError(comp, "Variable Float32_discrete_input can only be set in after instantiation, in Initialization Mode, and in Event Mode.");
                 return Error;
             }
-#endif
             M(Float32_discrete_input) = values[(*index)++];
             break;
         default:
@@ -420,19 +418,16 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
     switch (vr) {
 
         case vr_Float64_fixed_parameter:
-#if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
                 comp->state != Instantiated &&
                 comp->state != InitializationMode) {
                 logError(comp, "Variable Float64_fixed_parameter can only be set after instantiation or in initialization mode.");
                 return Error;
             }
-#endif
             M(Float64_fixed_parameter) = values[(*index)++];
             break;
 
         case vr_Float64_tunable_parameter:
-#if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
                 comp->state != Instantiated &&
                 comp->state != InitializationMode &&
@@ -440,7 +435,6 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
                 logError(comp, "Variable Float64_tunable_parameter can only be set after instantiation, in initialization mode or event mode.");
                 return Error;
             }
-#endif
             M(Float64_tunable_parameter) = values[(*index)++];
             break;
 
@@ -449,7 +443,6 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
             break;
 
         case vr_Float64_discrete_input:
-#if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
                 comp->state != Instantiated &&
                 comp->state != InitializationMode &&
@@ -457,7 +450,6 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
                 logError(comp, "Variable Float64_discrete_input can only be set after instantiation, in initialization mode or event mode.");
                 return Error;
             }
-#endif
             M(Float64_discrete_input) = values[(*index)++];
             break;
 
@@ -545,7 +537,7 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], 
         case vr_Int32_input:
             M(Int32_input) = values[(*index)++];
             break;
-#if FMI_VERSION == 1 || FMI_VERSION == 2
+#if FMI_VERSION == 2
         case vr_Enumeration_input:
             if (values[*index] != Option1 && values[*index] != Option2) {
                 logError(comp, "%d is not a legal value for Enumeration_input.", values[*index]);
