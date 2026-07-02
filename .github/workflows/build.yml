@@ -43,7 +43,7 @@ jobs:
     - uses: actions/checkout@v7
     - uses: actions/setup-python@v6
       with:
-        python-version: '3.10'
+        python-version: '3.12'
     - run: which python
     - run: python -m pip install fmpy==0.3.21 pytest requests scipy
     - if: matrix.name == 'aarch64-linux'
