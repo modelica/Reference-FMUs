@@ -45,12 +45,9 @@ def get_version():
         return None
 
 
-def build_fmus(fmi_version, fmi_type=None):
+def build_fmus(fmi_version):
 
-    if fmi_type is not None:
-        build_dir = parent_dir / f'fmi{fmi_version}-{fmi_type}-{args.platform}'
-    else:
-        build_dir = parent_dir / f'fmi{fmi_version}-{args.platform}'
+    build_dir = parent_dir / f'fmi{fmi_version}-{args.platform}'
 
     if build_dir.exists():
         shutil.rmtree(build_dir)
@@ -91,9 +88,6 @@ def build_fmus(fmi_version, fmi_type=None):
 
     install_dir = build_dir / 'install'
 
-    if fmi_type is not None:
-        cmake_args += ['-D', f'FMI_TYPE={fmi_type.upper()}']
-
     cmake_args += [
         '-D', f'CMAKE_INSTALL_PREFIX={install_dir}',
         '-D', f'FMI_VERSION={fmi_version}',
@@ -107,9 +101,6 @@ def build_fmus(fmi_version, fmi_type=None):
     subprocess.check_call(['cmake', '--build', build_dir, '--target', 'install', '--config', 'Release'])
 
     fmus_dir = parent_dir / 'fmus' / f'{fmi_version}.0'
-
-    if fmi_type is not None:
-        fmus_dir = fmus_dir / fmi_type
 
     if fmus_dir.exists():
         shutil.rmtree(fmus_dir)
@@ -125,8 +116,6 @@ def build_fmus(fmi_version, fmi_type=None):
 if __name__ == '__main__':
 
     if args.platform in {'x86_64-linux', 'x86-windows', 'x86_64-windows', 'x86_64-darwin'}:
-        build_fmus(fmi_version=1, fmi_type='me')
-        build_fmus(fmi_version=1, fmi_type='cs')
         build_fmus(fmi_version=2)
 
     build_fmus(fmi_version=3)

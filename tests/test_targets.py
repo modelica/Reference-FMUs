@@ -41,38 +41,6 @@ def validate(build_dir, model, fmi_types, simulate=True):
             simulate_fmu(fmu_filename, fmi_type=fmi_type)
 
 
-def test_fmi1_me(arch, platform):
-
-    if arch not in {'x86', 'x86_64'}:
-        pytest.skip(f"{arch} not supported")
-
-    build_dir = root / 'build' / f'fmi1-me-{platform}'
-
-    models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Stair', 'VanDerPol']
-
-    for model in models:
-        validate(build_dir, model=model, fmi_types=['ModelExchange'], simulate=platform == fmpy.platform_tuple)
-
-    for model in models:
-        run_example(build_dir / 'temp' / f'{model}_me')
-
-
-def test_fmi1_cs(arch, platform):
-
-    if arch not in {'x86', 'x86_64'}:
-        pytest.skip(f"{arch} not supported")
-
-    build_dir = root / 'build' / f'fmi1-cs-{platform}'
-
-    models = ['BouncingBall', 'Dahlquist', 'Feedthrough', 'Resource', 'Stair', 'VanDerPol']
-
-    for model in models:
-        validate(build_dir, model=model, fmi_types=['CoSimulation'], simulate=platform == fmpy.platform_tuple)
-
-    for model in models:
-        run_example(build_dir / 'temp' / f'{model}_cs')
-
-
 def test_fmi2(arch, platform):
 
     if arch not in {'x86', 'x86_64'}:
