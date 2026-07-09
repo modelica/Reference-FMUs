@@ -21,8 +21,6 @@ dist_merged = root / 'dist-merged'
 
 os.makedirs(dist_merged, exist_ok=True)
 
-fmusim = root / f'dist-{fmpy.platform_tuple}' / f'fmusim-{fmpy.platform_tuple}' / 'fmusim'
-
 parameters = {
     'BouncingBall': [
         '--output-interval', '0.05',
@@ -119,7 +117,7 @@ def merge_fmus(version):
 
                 params += parameters[model_name]
 
-                command = [str(fmusim)] + params + ['--output-file', str(output_filename), str(root / f'dist-{fmpy.platform_tuple}' / version / filename)]
+                command = ['fmusim'] + params + ['--output-file', str(output_filename), str(root / f'dist-{fmpy.platform_tuple}' / version / filename)]
 
                 print(' '.join(command))
 
@@ -170,7 +168,7 @@ def merge_fmus(version):
             rmtree(tempdir, ignore_errors=True)
 
 
-for version in ['1.0/cs', '1.0/me', '2.0', '3.0']:
+for version in ['2.0', '3.0']:
     os.makedirs(dist_merged / version)
     merge_fmus(version)
 
