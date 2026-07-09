@@ -46,14 +46,12 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
             M(x) = values[(*index)++];
             return OK;
         case vr_k:
-#if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
                 comp->state != Instantiated &&
                 comp->state != InitializationMode) {
                 logError(comp, "Variable k can only be set after instantiation or in initialization mode.");
                 return Error;
             }
-#endif
             M(k) = values[(*index)++];
             return OK;
         default:

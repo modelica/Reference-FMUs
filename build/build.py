@@ -1,4 +1,4 @@
-# build FMUs and fmusim for all FMI versions
+# build FMUs for both FMI versions
 
 import os
 import shutil
@@ -45,12 +45,9 @@ def get_version():
         return None
 
 
-def build_fmus(fmi_version, fmi_type=None):
+def build_fmus(fmi_version):
 
-    if fmi_type is not None:
-        build_dir = parent_dir / f'fmi{fmi_version}-{fmi_type}-{args.platform}'
-    else:
-        build_dir = parent_dir / f'fmi{fmi_version}-{args.platform}'
+    build_dir = parent_dir / f'fmi{fmi_version}-{args.platform}'
 
     if build_dir.exists():
         shutil.rmtree(build_dir)
@@ -63,8 +60,6 @@ def build_fmus(fmi_version, fmi_type=None):
 
     if not version:
         version = 'development build'
-
-    cmake_args += ['-D', f'FMUSIM_VERSION="{version}"']
 
     fmi_platform = args.platform
     fmi_architecture, fmi_system = fmi_platform.split('-')
@@ -93,14 +88,10 @@ def build_fmus(fmi_version, fmi_type=None):
 
     install_dir = build_dir / 'install'
 
-    if fmi_type is not None:
-        cmake_args += ['-D', f'FMI_TYPE={fmi_type.upper()}']
-
     cmake_args += [
         '-D', f'CMAKE_INSTALL_PREFIX={install_dir}',
         '-D', f'FMI_VERSION={fmi_version}',
         '-D', f'FMI_ARCHITECTURE={fmi_architecture}',
-        '-D', 'WITH_FMUSIM=ON',
         '-B', build_dir,
         parent_dir.parent
     ]
@@ -110,34 +101,20 @@ def build_fmus(fmi_version, fmi_type=None):
 
     fmus_dir = parent_dir / 'fmus' / f'{fmi_version}.0'
 
-    if fmi_type is not None:
-        fmus_dir = fmus_dir / fmi_type
-
     if fmus_dir.exists():
         shutil.rmtree(fmus_dir)
 
     os.makedirs(fmus_dir)
 
-    fmusim_dir = parent_dir / 'fmus' / f'fmusim-{args.platform}'
-
-    if fmusim_dir.exists():
-        shutil.rmtree(fmusim_dir)
-
-    os.makedirs(fmusim_dir)
-
     for root, dirs, files in os.walk(install_dir):
         for file in files:
             if file.endswith('.fmu'):
                 shutil.copyfile(src=install_dir / file, dst=fmus_dir / file)
-            elif file.startswith('fmusim'):
-                shutil.copyfile(src=install_dir / file, dst=fmusim_dir / file)
 
 
 if __name__ == '__main__':
 
     if args.platform in {'x86_64-linux', 'x86-windows', 'x86_64-windows', 'x86_64-darwin'}:
-        build_fmus(fmi_version=1, fmi_type='me')
-        build_fmus(fmi_version=1, fmi_type='cs')
         build_fmus(fmi_version=2)
 
     build_fmus(fmi_version=3)

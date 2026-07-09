@@ -189,22 +189,13 @@ if (${FMI_VERSION} EQUAL 3)
 endif()
 
 # Examples
-set(MODEL_NAMES BouncingBall Dahlquist Feedthrough Stair VanDerPol)
+set(MODEL_NAMES BouncingBall Dahlquist Feedthrough Resource Stair VanDerPol)
 
-if (${FMI_VERSION} EQUAL 1)
-    if (${FMI_TYPE} STREQUAL CS)
-        set(MODEL_NAMES ${MODEL_NAMES} Resource)
-        set(INTERFACE_TYPES cs)
-    else()
-        set(INTERFACE_TYPES me)
-    endif()
-elseif(${FMI_VERSION} EQUAL 2)
-    set(MODEL_NAMES ${MODEL_NAMES} Resource)
-    set(INTERFACE_TYPES cs me)
-else()
-    set(MODEL_NAMES ${MODEL_NAMES} Resource StateSpace)
-    set(INTERFACE_TYPES cs me)
+if(${FMI_VERSION} EQUAL 3)
+    set(MODEL_NAMES ${MODEL_NAMES} StateSpace)
 endif()
+
+set(INTERFACE_TYPES cs me)
 
 foreach (MODEL_NAME ${MODEL_NAMES})
     foreach (INTERFACE_TYPE ${INTERFACE_TYPES})

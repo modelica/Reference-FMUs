@@ -21,8 +21,6 @@ dist_merged = root / 'dist-merged'
 
 os.makedirs(dist_merged, exist_ok=True)
 
-fmusim = root / f'dist-{fmpy.platform_tuple}' / f'fmusim-{fmpy.platform_tuple}' / 'fmusim'
-
 parameters = {
     'BouncingBall': [
         '--output-interval', '0.05',
@@ -112,14 +110,11 @@ def merge_fmus(version):
                 os.makedirs(tempdir / 'documentation', exist_ok=True)
                 plot_filename = tempdir / 'documentation' / 'result.svg'
 
-                if version == '1.0/cs':
-                    params = ['--interface-type', 'cs']
-                else:
-                    params = ['--interface-type', 'me', '--solver', 'cvode']
+                params = ['--interface-type', 'me', '--solver', 'cvode']
 
                 params += parameters[model_name]
 
-                command = [str(fmusim)] + params + ['--output-file', str(output_filename), str(root / f'dist-{fmpy.platform_tuple}' / version / filename)]
+                command = ['fmusim', 'simulate'] + params + ['--output-file', str(output_filename), str(root / f'dist-{fmpy.platform_tuple}' / version / filename)]
 
                 print(' '.join(command))
 
@@ -170,17 +165,13 @@ def merge_fmus(version):
             rmtree(tempdir, ignore_errors=True)
 
 
-for version in ['1.0/cs', '1.0/me', '2.0', '3.0']:
+for version in ['2.0', '3.0']:
     os.makedirs(dist_merged / version)
     merge_fmus(version)
 
 results_dir = root / 'dist-merged' / 'results'
 
 os.makedirs(results_dir, exist_ok=True)
-
-# copy fmusim
-for system in ['x86-windows', 'x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin', 'aarch64-darwin']:
-    shutil.copytree(src=root / f'dist-{system}' / f'fmusim-{system}', dst=root / 'dist-merged' / f'fmusim-{system}')
 
 # copy license and readme
 for file in ['LICENSE.txt', 'README.md']:

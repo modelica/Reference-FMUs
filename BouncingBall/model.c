@@ -58,7 +58,6 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double value[], 
     switch (vr) {
 
         case vr_h:
-#if FMI_VERSION > 1
             if (comp->state != Instantiated &&
                 comp->state != InitializationMode &&
                 comp->state != ContinuousTimeMode &&
@@ -66,12 +65,10 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double value[], 
                 logError(comp, "Variable \"h\" can only be set in Instantiated Mode, Initialization Mode, Continuous Time Mode, and Event Mode.");
                 return Error;
             }
-#endif
             M(h) = value[(*index)++];
             return OK;
 
         case vr_v:
-#if FMI_VERSION > 1
             if (comp->state != Instantiated &&
                 comp->state != InitializationMode &&
                 comp->state != ContinuousTimeMode &&
@@ -79,24 +76,20 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double value[], 
                 logError(comp, "Variable \"v\" can only be set in Instantiated Mode, Initialization Mode, Continuous Time Mode, and Event Mode.");
                 return Error;
             }
-#endif
             M(v) = value[(*index)++];
             return OK;
 
         case vr_g:
-#if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
                 comp->state != Instantiated &&
                 comp->state != InitializationMode) {
                 logError(comp, "Variable g can only be set after instantiation or in initialization mode.");
                 return Error;
             }
-#endif
             M(g) = value[(*index)++];
             return OK;
 
         case vr_e:
-#if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
                 comp->state != Instantiated &&
                 comp->state != InitializationMode &&
@@ -104,7 +97,6 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double value[], 
                 logError(comp, "Variable e can only be set after instantiation, in initialization mode or event mode.");
                 return Error;
             }
-#endif
             M(e) = value[(*index)++];
             return OK;
 

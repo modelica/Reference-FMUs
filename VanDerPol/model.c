@@ -57,7 +57,6 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
             M(x1) = values[(*index)++];
             return OK;
         case vr_mu:
-#if FMI_VERSION > 1
             if (comp->type == ModelExchange &&
                 comp->state != Instantiated &&
                 comp->state != InitializationMode &&
@@ -65,7 +64,6 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
                 logError(comp, "Variable mu can only be set after instantiation, in initialization mode or event mode.");
                 return Error;
             }
-#endif
             M(mu) = values[(*index)++];
             return OK;
         default:

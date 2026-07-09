@@ -1,9 +1,0 @@
-<RCC>
-    <qresource prefix="/variables">
-        <file>float-input.svg</file>
-        <file>float-output.svg</file>
-        <file>float-parameter.svg</file>
-        <file>float-variable.svg</file>
-        <file>subsystem.svg</file>
-    </qresource>
-</RCC>

@@ -41,9 +41,7 @@ Status calculateValues(ModelInstance *comp) {
     strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
 #endif
 
-#if FMI_VERSION == 1
-    if (!PathAppendA(path, "resources") || !PathAppendA(path, "y.txt")) return Error;
-#elif FMI_VERSION == 2
+#if FMI_VERSION == 2
     if (!PathAppendA(path, "y.txt")) return Error;
 #else
     if (!strncat(path, "y.txt", MAX_PATH_LENGTH)) return Error;
@@ -88,15 +86,12 @@ Status calculateValues(ModelInstance *comp) {
     strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
 #endif
 
-#if FMI_VERSION == 1
-    strncat(path, "/resources/y.txt", MAX_PATH_LENGTH-strlen(path)-1);
-#elif FMI_VERSION == 2
+#if FMI_VERSION == 2
     strncat(path, "/y.txt", MAX_PATH_LENGTH-strlen(path)-1);
 #else
     strncat(path, "y.txt", MAX_PATH_LENGTH-strlen(path)-1);
 #endif
     path[MAX_PATH_LENGTH-1] = 0;
-
 #endif
 
     // open the resource file

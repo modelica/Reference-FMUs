@@ -1,7 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>plot.html</file>
-        <file>plotly-2.32.0.js</file>
-        <file>plotly-2.33.0.min.js</file>
-    </qresource>
-</RCC>
