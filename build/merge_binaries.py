@@ -117,7 +117,7 @@ def merge_fmus(version):
 
                 params += parameters[model_name]
 
-                command = ['fmusim'] + params + ['--output-file', str(output_filename), str(root / f'dist-{fmpy.platform_tuple}' / version / filename)]
+                command = ['fmusim', 'simulate'] + params + ['--output-file', str(output_filename), str(root / f'dist-{fmpy.platform_tuple}' / version / filename)]
 
                 print(' '.join(command))
 
