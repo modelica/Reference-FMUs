@@ -90,7 +90,7 @@ typedef enum {
     FMIValueReferenceType,
     FMISizeTType,
 
-    // aliases for FMI 1.0 and 2.0 variable types
+    // aliases for FMI 2.0 variable types
     FMIRealType         = FMIFloat64Type,
     FMIIntegerType      = FMIInt32Type,
 

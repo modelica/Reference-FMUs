@@ -110,10 +110,7 @@ def merge_fmus(version):
                 os.makedirs(tempdir / 'documentation', exist_ok=True)
                 plot_filename = tempdir / 'documentation' / 'result.svg'
 
-                if version == '1.0/cs':
-                    params = ['--interface-type', 'cs']
-                else:
-                    params = ['--interface-type', 'me', '--solver', 'cvode']
+                params = ['--interface-type', 'me', '--solver', 'cvode']
 
                 params += parameters[model_name]
 
