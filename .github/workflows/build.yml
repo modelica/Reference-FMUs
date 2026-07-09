@@ -10,7 +10,7 @@ on:
 jobs:
 
   lint-files:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
     - run: python3 build/lint_files.py
@@ -61,7 +61,7 @@ jobs:
         if-no-files-found: error
 
   merge-fmus:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [build]
     steps:
     - name: Install fmusim
