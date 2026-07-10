@@ -1,6 +1,6 @@
 # Reference FMUs
 
-A set of hand-coded FMUs for development, testing and debugging of the [Functional Mock-up Interface](https://fmi-standard.org/).
+A set of hand-coded FMUs for development, testing, and debugging of the [Functional Mock-up Interface](https://fmi-standard.org/).
 
 - [BouncingBall](BouncingBall) - a bouncing ball model with state events
 - [Dahlquist](Dahlquist) - Dahlquist test equation
@@ -10,22 +10,22 @@ A set of hand-coded FMUs for development, testing and debugging of the [Function
 - [StateSpace](StateSpace) - arrays and structural parameters
 - [VanDerPol](VanDerPol) - Van der Pol test equation
 
-You can download the pre-built Reference FMUs from [releases](https://github.com/modelica/Reference-FMUs/releases).
+:arrow_down: [download the latest release](https://github.com/modelica/Reference-FMUs/releases/latest/download/Reference-FMUs.zip).
 
 ## Repository structure
 
 `<model>`
 - `config.h` - model specific types and definitions
-- `FMI{1CS|1ME|2|3}.xml` - model descriptions
+- `FMI{2|3}.xml` - model descriptions
 - `model.c` - implementation of the model
 
 `include`
-- `fmi{|2|3}Functions.h` - FMI header files
+- `fmi{2|3}Functions.h` - FMI header files
 - `model.h` - generic model interface
 - `cosimulation.h` - generic co-simulation interface
 
 `src`
-- `fmi{1|2|3}Functions.c` - FMI implementations
+- `fmi{2|3}Functions.c` - FMI implementations
 - `cosimulation.c` - generic co-simulation
 
 `examples`
@@ -34,22 +34,15 @@ You can download the pre-built Reference FMUs from [releases](https://github.com
 
 ## Build the FMUs
 
-To build the FMUs you need [CMake](https://cmake.org/) and a supported [build tool](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html) e.g. Visual Studio &GreaterEqual; 2013 , Xcode or make:
+To build the FMUs you need [CMake](https://cmake.org/) and a supported [build tool](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html) e.g. Visual Studio, Xcode, or make:
 
-* download or clone the repository
-* open the [CMakeGUI](https://cmake.org/runningcmake/)
-* click `Browse Source...` and select the cloned or downloaded and extracted repository (that contains `CMakeLists.txt`)
-* click `Browse Build...` and select the folder where you want build the FMUs
-* click `Configure` and select the generator for your IDE / build tool
-* select the `FMI_VERSION` you want to build
-* click `Generate` to generate the project files
-* click `Open Project` or open the project in your build tool
-* build the project
+```bash
+cmake -B build .
+cmake --build build
+```
 
-The FMUs will be in the `dist` folder inside the selected build folder.
+The FMUs will be created in `build/fmus/`.
 
 ## License
 
-Copyright &copy; 2026, Modelica Association Project "FMI".
-All rights reserved.
-The code is released under the [2-Clause BSD License](LICENSE.txt).
+The code is released under the 2-Clause BSD license.
