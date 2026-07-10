@@ -169,6 +169,14 @@ for version in ['2.0', '3.0']:
     os.makedirs(dist_merged / version)
     merge_fmus(version)
 
+# validate the merged FMUs
+for root_dir, _dirs, files in os.walk(dist_merged):
+    for file in files:
+        if file.endswith(".fmu"):
+            fmu_path = os.path.join(root_dir, file)
+            print(f"Validating {file}...")
+            check_call(["fmusim", "validate", fmu_path])
+
 results_dir = root / 'dist-merged' / 'results'
 
 os.makedirs(results_dir, exist_ok=True)
