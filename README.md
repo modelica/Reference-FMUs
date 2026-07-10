@@ -10,7 +10,7 @@ A set of hand-coded FMUs for development, testing, and debugging of the [Functio
 - [StateSpace](StateSpace) - arrays and structural parameters
 - [VanDerPol](VanDerPol) - Van der Pol test equation
 
-:arrow_down: [download the latest release](https://github.com/modelica/Reference-FMUs/releases/latest/download/Reference-FMUs.zip).
+:arrow_down: [Download the latest release.](https://github.com/modelica/Reference-FMUs/releases/latest/download/Reference-FMUs.zip)
 
 ## Repository structure
 
