@@ -4,6 +4,5 @@ __pycache__
 .idea/
 *.fmu
 *.zip
-*_out.csv
 /venv/
 tests/work/

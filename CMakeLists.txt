@@ -129,13 +129,19 @@ SET(SOURCES
   ${MODEL_NAME}/model.c
   src/fmi${FMI_VERSION}Functions.c
   src/cosimulation.c
+  ${MODEL_NAME}/buildDescription.xml
+  ${MODEL_NAME}/FMI${FMI_VERSION}.xml
 )
+
+if(NOT "${MODEL_NAME}" STREQUAL "Clocks")
+  list(APPEND SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/fmi-ls-ref-manifest.xml"
+  )
+endif()
 
 add_library(${TARGET_NAME} SHARED
   ${HEADERS}
   ${SOURCES}
-  ${MODEL_NAME}/buildDescription.xml
-  ${MODEL_NAME}/FMI${FMI_VERSION}.xml
 )
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fmus)
@@ -185,9 +191,23 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
 # modelDescription.xml
 add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-  ${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/FMI${FMI_VERSION}.xml
+  "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/FMI${FMI_VERSION}.xml"
   "${FMU_BUILD_DIR}/modelDescription.xml"
 )
+
+if(NOT "${MODEL_NAME}" STREQUAL "Clocks")
+    # fmi-ls-ref-manifest.xml
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+      "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/fmi-ls-ref-manifest.xml"
+      "${FMU_BUILD_DIR}/extras/fmi-ls-ref-manifest.xml"
+    )
+
+    # {model_name}_out.csv
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+      "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/${MODEL_NAME}_out.csv"
+      "${FMU_BUILD_DIR}/extras/${MODEL_NAME}_out.csv"
+    )
+endif()
 
 # model specific header and source
 foreach (SOURCE_FILE config.h model.c)
