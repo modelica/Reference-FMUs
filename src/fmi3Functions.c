@@ -1164,8 +1164,6 @@ fmi3Status fmi3SetContinuousStates(fmi3Instance instance,
 
     if (invalidNumber(S, "fmi3SetContinuousStates", "nContinuousStates", nContinuousStates, 0))
         CALL(Error);
-
-    return fmi3Error;
 #endif
 
     END_FUNCTION();
