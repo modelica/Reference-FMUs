@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  fmiVersion="3.0"
+  modelName="Roberts"
+  description="A system of semi-explicit differential-algebraic equations (DAEs) due to Robertson"
+  generationTool="Reference FMUs (development build)"
+  instantiationToken="{1AE5E10D-9521-4DE3-80B9-D0EAAA7D5AF2}">
+
+  <ModelExchange
+    modelIdentifier="Roberts"
+    canGetAndSetFMUState="true"
+    canSerializeFMUState="true"
+	providesDirectionalDerivatives="true"
+    providesAdjointDerivatives="true"/>
+
+  <LogCategories>
+    <Category name="logEvents" description="Log events"/>
+    <Category name="logStatusError" description="Log error messages"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="0" stopTime="1" stepSize="0.01"/>
+
+  <ModelVariables>
+      <Float64 name="time" valueReference="0" causality="independent" description="Simulation time"/>
+	  <Float64 name="y1" valueReference="1" causality="output" initial="exact" start="1"/>
+	  <Float64 name="der(y1)" valueReference="2"/>
+	  <Float64 name="y2" valueReference="3" causality="output" initial="exact" start="0"/>
+	  <Float64 name="der(y2)" valueReference="4"/>
+	  <Float64 name="y3" valueReference="5" initial="approx" start="0"/>
+	  <Float64 name="r" valueReference="6"/>
+	  <Float64 name="g1" valueReference="7"/>
+	  <Float64 name="g2" valueReference="8"/>
+  </ModelVariables>
+
+  <ModelStructure>
+    <Output valueReference="1" dependencies=""/>
+    <Output valueReference="3" dependencies=""/>
+    <ContinuousStateDerivative valueReference="2" dependencies="1 3" dependenciesKind="dependent dependent"/>
+    <ContinuousStateDerivative valueReference="4" dependencies="1 3" dependenciesKind="dependent dependent"/>
+    <InitialUnknown valueReference="2" dependencies="1 3" dependenciesKind="dependent dependent"/>
+    <InitialUnknown valueReference="4" dependencies="1 3" dependenciesKind="dependent dependent"/>
+  </ModelStructure>
+
+</fmiModelDescription>

@@ -96,7 +96,7 @@ endif ()
 set (MODEL_NAMES BouncingBall Dahlquist Feedthrough Resource Stair VanDerPol)
 
 if (${FMI_VERSION} GREATER 2)
-  set (MODEL_NAMES ${MODEL_NAMES} StateSpace Clocks)
+  set (MODEL_NAMES ${MODEL_NAMES} Clocks Roberts StateSpace)
 endif ()
 
 foreach (MODEL_NAME ${MODEL_NAMES})
