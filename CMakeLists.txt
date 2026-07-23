@@ -212,7 +212,7 @@ elseif(NOT "${MODEL_NAME}" STREQUAL "Clocks")
     "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/${MODEL_NAME}_out.csv"
     "${FMU_BUILD_DIR}/extras/org.fmi-standard.fmi-ls-ref/${MODEL_NAME}_out.csv"
   )
-  
+
   list(APPEND ARCHIVE_FILES "extras")
 endif()
 
