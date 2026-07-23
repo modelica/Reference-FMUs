@@ -200,7 +200,9 @@ set(ARCHIVE_FILES "modelDescription.xml" "binaries" "sources")
 if("${MODEL_NAME}" STREQUAL "Resource")
   # resources/
   list(APPEND ARCHIVE_FILES "resources")
-elseif(NOT "${MODEL_NAME}" STREQUAL "Clocks")
+endif()
+
+if(NOT "${MODEL_NAME}" STREQUAL "Clocks")
   # fmi-ls-ref.xml
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/fmi-ls-ref.xml"
