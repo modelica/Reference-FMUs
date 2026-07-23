@@ -1,0 +1,22 @@
+time,Float32_continuous_output,Float32_discrete_output,Float64_continuous_output,Float64_discrete_output,Int8_output,UInt8_output,Int16_output,UInt16_output,Int32_output,UInt32_output,Int64_output,UInt64_output,Boolean_output,String_output,Binary_output,Enumeration_output
+0,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+0.1,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+0.2,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+0.30000000000000004,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+0.4,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+0.5,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+0.6000000000000001,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+0.7000000000000001,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+0.8,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+0.9,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+1,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+1.1,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+1.2000000000000002,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+1.3,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+1.4000000000000001,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+1.5,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+1.6,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+1.7000000000000002,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+1.8,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+1.9000000000000001,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
+2,0,0,0,0,0,0,0,0,0,0,0,0,false,Set me!,666f6f,1
