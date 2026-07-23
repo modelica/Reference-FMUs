@@ -133,16 +133,15 @@ SET(SOURCES
   ${MODEL_NAME}/FMI${FMI_VERSION}.xml
 )
 
-if(NOT "${MODEL_NAME}" STREQUAL "Clocks")
-  list(APPEND SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/fmi-ls-ref.xml"
-  )
+if("${MODEL_NAME}" STREQUAL "Resource")
+  list(APPEND SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/y.txt")
 endif()
 
-add_library(${TARGET_NAME} SHARED
-  ${HEADERS}
-  ${SOURCES}
-)
+if(NOT "${MODEL_NAME}" STREQUAL "Clocks")
+  list(APPEND SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/fmi-ls-ref.xml")
+endif()
+
+add_library(${TARGET_NAME} SHARED ${HEADERS} ${SOURCES})
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fmus)
 
@@ -197,11 +196,6 @@ add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E 
 
 set(ARCHIVE_FILES "modelDescription.xml" "binaries" "sources")
 
-if("${MODEL_NAME}" STREQUAL "Resource")
-  # resources/
-  list(APPEND ARCHIVE_FILES "resources")
-endif()
-
 if(NOT "${MODEL_NAME}" STREQUAL "Clocks")
   # fmi-ls-ref.xml
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
@@ -253,6 +247,15 @@ else()
     "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/buildDescription.xml"
     "${FMU_BUILD_DIR}/sources/buildDescription.xml"
   )
+endif()
+
+# resources/y.txt
+if("${MODEL_NAME}" STREQUAL "Resource")
+  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+    "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/y.txt"
+    "${FMU_BUILD_DIR}/resources/y.txt"
+  )
+  list(APPEND ARCHIVE_FILES "resources")
 endif()
 
 # delete unintended files from binaries (Release configuration only)
