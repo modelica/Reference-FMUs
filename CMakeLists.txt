@@ -135,7 +135,7 @@ SET(SOURCES
 
 if(NOT "${MODEL_NAME}" STREQUAL "Clocks")
   list(APPEND SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/fmi-ls-ref-manifest.xml"
+    "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/fmi-ls-ref.xml"
   )
 endif()
 
@@ -195,18 +195,25 @@ add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E 
   "${FMU_BUILD_DIR}/modelDescription.xml"
 )
 
-if(NOT "${MODEL_NAME}" STREQUAL "Clocks")
-    # fmi-ls-ref-manifest.xml
-    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-      "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/fmi-ls-ref-manifest.xml"
-      "${FMU_BUILD_DIR}/extras/fmi-ls-ref-manifest.xml"
-    )
+set(ARCHIVE_FILES "modelDescription.xml" "binaries" "sources")
 
-    # {model_name}_out.csv
-    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-      "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/${MODEL_NAME}_out.csv"
-      "${FMU_BUILD_DIR}/extras/${MODEL_NAME}_out.csv"
-    )
+if("${MODEL_NAME}" STREQUAL "Resource")
+  # resources/
+  list(APPEND ARCHIVE_FILES "resources")
+elseif(NOT "${MODEL_NAME}" STREQUAL "Clocks")
+  # fmi-ls-ref.xml
+  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+    "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/fmi-ls-ref.xml"
+    "${FMU_BUILD_DIR}/extras/org.fmi-standard.fmi-ls-ref/fmi-ls-manifest.xml"
+  )
+
+  # {model_name}_out.csv
+  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+    "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/${MODEL_NAME}_out.csv"
+    "${FMU_BUILD_DIR}/extras/org.fmi-standard.fmi-ls-ref/${MODEL_NAME}_out.csv"
+  )
+  
+  list(APPEND ARCHIVE_FILES "extras")
 endif()
 
 # model specific header and source
@@ -244,16 +251,6 @@ else()
     "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/buildDescription.xml"
     "${FMU_BUILD_DIR}/sources/buildDescription.xml"
   )
-endif()
-
-set(ARCHIVE_FILES "modelDescription.xml" "binaries" "sources")
-
-if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/resources")
-  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/resources"
-    "${FMU_BUILD_DIR}/resources/"
-  )
-  set(ARCHIVE_FILES ${ARCHIVE_FILES} "resources")
 endif()
 
 # delete unintended files from binaries (Release configuration only)
