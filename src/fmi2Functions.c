@@ -833,7 +833,7 @@ fmi2Status fmi2SetContinuousStates(fmi2Component c, const fmi2Real x[], size_t n
 
     BEGIN_FUNCTION(SetContinuousStates);
 
-#ifdef MAX_CONTINUOUS_STATES
+#if MAX_CONTINUOUS_STATES > 0
     if (invalidNumber(S, "fmi2SetContinuousStates", "nx", nx, getNumberOfContinuousStates(S)))
         CALL(Error);
 

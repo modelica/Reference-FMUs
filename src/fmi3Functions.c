@@ -1153,14 +1153,18 @@ fmi3Status fmi3SetContinuousStates(fmi3Instance instance,
 
 #if MAX_CONTINUOUS_STATES > 0
     if (invalidNumber(S, "fmi3SetContinuousStates", "nContinuousStates", nContinuousStates, getNumberOfContinuousStates(S)))
-        return fmi3Error;
+        CALL(Error);
 
-    ASSERT_NOT_NULL(continuousStates);
+    if (nullPointer(S, "fmi3SetContinuousStates", "continuousStates", continuousStates))
+        CALL(Error);
 
     CALL(setContinuousStates(S, continuousStates, nContinuousStates));
 #else
     UNUSED(continuousStates);
-    UNUSED(nContinuousStates);
+
+    if (invalidNumber(S, "fmi3SetContinuousStates", "nContinuousStates", nContinuousStates, 0))
+        CALL(Error);
+
     return fmi3Error;
 #endif
 
