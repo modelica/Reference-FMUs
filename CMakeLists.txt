@@ -141,6 +141,10 @@ if(NOT "${MODEL_NAME}" STREQUAL "Clocks")
   list(APPEND SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/fmi-ls-ref.xml")
 endif()
 
+if("${MODEL_NAME}" STREQUAL "Roberts")
+  list(APPEND SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/fmi-ls-dae.xml")
+endif()
+
 add_library(${TARGET_NAME} SHARED ${HEADERS} ${SOURCES})
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fmus)
@@ -200,16 +204,25 @@ if(NOT "${MODEL_NAME}" STREQUAL "Clocks")
   # fmi-ls-ref.xml
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/fmi-ls-ref.xml"
-    "${FMU_BUILD_DIR}/extras/org.fmi-standard.fmi-ls-ref/fmi-ls-manifest.xml"
+    "${FMU_BUILD_DIR}/extra/org.fmi-standard.fmi-ls-ref/fmi-ls-manifest.xml"
   )
 
   # {model_name}_out.csv
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/${MODEL_NAME}_out.csv"
-    "${FMU_BUILD_DIR}/extras/org.fmi-standard.fmi-ls-ref/${MODEL_NAME}_out.csv"
+    "${FMU_BUILD_DIR}/extra/org.fmi-standard.fmi-ls-ref/${MODEL_NAME}_out.csv"
   )
 
-  list(APPEND ARCHIVE_FILES "extras")
+  list(APPEND ARCHIVE_FILES "extra")
+endif()
+
+if("${MODEL_NAME}" STREQUAL "Roberts")
+  # fmi-ls-dae.xml
+  add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+    "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/fmi-ls-dae.xml"
+    "${FMU_BUILD_DIR}/extra/org.fmi-standard.fmi-ls-dae/fmi-ls-manifest.xml"
+  )
+  list(APPEND ARCHIVE_FILES "extra")
 endif()
 
 # model specific header and source

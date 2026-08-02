@@ -13,23 +13,33 @@
 	providesDirectionalDerivatives="true"
     providesAdjointDerivatives="true"/>
 
+  <CoSimulation
+	modelIdentifier="Roberts"
+	canGetAndSetFMUState="true"
+	canSerializeFMUState="true"
+	canHandleVariableCommunicationStepSize="true"
+	providesIntermediateUpdate="true"
+	mightReturnEarlyFromDoStep="true"
+	canReturnEarlyAfterIntermediateUpdate="true"
+	fixedInternalStepSize="1e-3"
+	hasEventMode="true"/>
+
   <LogCategories>
     <Category name="logEvents" description="Log events"/>
     <Category name="logStatusError" description="Log error messages"/>
   </LogCategories>
 
-  <DefaultExperiment startTime="0" stopTime="1" stepSize="0.01"/>
+  <DefaultExperiment startTime="1e-5" stopTime="1e7" tolerance="1e-4"/>
 
   <ModelVariables>
       <Float64 name="time" valueReference="0" causality="independent" description="Simulation time"/>
-	  <Float64 name="y1" valueReference="1" causality="output" initial="exact" start="1"/>
-	  <Float64 name="der(y1)" valueReference="2"/>
-	  <Float64 name="y2" valueReference="3" causality="output" initial="exact" start="0"/>
-	  <Float64 name="der(y2)" valueReference="4"/>
-	  <Float64 name="y3" valueReference="5" initial="approx" start="0"/>
+	  <Float64 name="y1" valueReference="1" causality="output" initial="exact" start="1" nominal="1e-4"/>
+	  <Float64 name="der(y1)" valueReference="2" derivative="1"/>
+	  <Float64 name="y2" valueReference="3" causality="output" initial="exact" start="0" nominal="1e-2"/>
+	  <Float64 name="der(y2)" valueReference="4" derivative="3"/>
+	  <Float64 name="y3" valueReference="5" causality="output" initial="approx" start="0" nominal="1e-2"/>
 	  <Float64 name="r" valueReference="6"/>
-	  <Float64 name="g1" valueReference="7"/>
-	  <Float64 name="g2" valueReference="8"/>
+	  <Boolean name="dae" valueReference="7" causality="structuralParameter" variability="tunable"/>
   </ModelVariables>
 
   <ModelStructure>
