@@ -305,6 +305,19 @@ Status getContinuousStates(ModelInstance* comp, double x[], size_t nx) {
     return OK;
 }
 
+Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], size_t nx) {
+    if (nx != M(n)) {
+        logError(comp, "Expected nx=%zu but was %zu.", M(n), nx);
+        return Error;
+    }
+
+    for (size_t i = 0; i < M(n); i++) {
+        nominals[i] = 1.0;
+    }
+
+    return OK;
+}
+
 Status setContinuousStates(ModelInstance* comp, const double x[], size_t nx) {
 
     if (nx != M(n)) {

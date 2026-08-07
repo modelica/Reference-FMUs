@@ -9,23 +9,44 @@
   <EnableDAE valueReference="7"/>
   <AlgebraicVariables>
     <AlgebraicVariable
-      valueReference="5"/>
+      valueReference="6"
+	  nominal="7"/>
   </AlgebraicVariables>
   <ModelStructure>
     <ContinuousStateDerivative
-      valueReference="2"
-      dependencies="1 3 5"
-      dependenciesKind="dependent dependent dependent"/>
+      valueReference="3"
+      dependencies="2 4 6"
+	  dependenciesKind="constant constant constant"/>
     <ContinuousStateDerivative
-      valueReference="4"
-      dependencies="1 3 5"
-      dependenciesKind="dependent dependent dependent"/>
-    <Residual>
+      valueReference="5"
+      dependencies="2 4 6"
+	  dependenciesKind="constant constant constant"/>
+	<InitialUnknown
+      valueReference="3"
+      dependencies="2 4 6"
+	  dependenciesKind="constant constant constant"/>
+	<InitialUnknown
+	  valueReference="5"
+      dependencies="2 4 6"
+	  dependenciesKind="constant constant constant"/>
+	<InitialUnknown
+	  valueReference="7"
+      dependencies="2 4 6"
+	  dependenciesKind="constant constant constant"/>
+	<EventIndicator
+	  valueReference="9"
+	  dependencies="2"
+	  dependenciesKind="constant"/>
+	<EventIndicator
+	  valueReference="10"
+	  dependencies="6"
+	  dependenciesKind="constant"/>
+	<Residual>
       <Formulation
         index="1"
-        valueReference="6"
-        dependencies="1 3 5"
-        dependenciesKind="dependent dependent dependent"/>
+        valueReference="8"
+        dependencies="2 4 6"
+        dependenciesKind="constant constant constant"/>
     </Residual>
   </ModelStructure>
 </fmiLayeredStandardManifest>

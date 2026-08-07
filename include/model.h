@@ -218,6 +218,7 @@ Status activateModelPartition(ModelInstance* comp, ValueReference vr, double act
 size_t getNumberOfEventIndicators(ModelInstance* comp);
 size_t getNumberOfContinuousStates(ModelInstance* comp);
 Status getContinuousStates(ModelInstance *comp, double x[], size_t nx);
+Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], size_t nx);
 Status setContinuousStates(ModelInstance *comp, const double x[], size_t nx);
 Status getDerivatives(ModelInstance *comp, double dx[], size_t nx);
 Status getOutputDerivative(ModelInstance *comp, ValueReference valueReference, int order, double *value);

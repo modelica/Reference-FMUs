@@ -33,22 +33,28 @@
 
   <ModelVariables>
       <Float64 name="time" valueReference="0" causality="independent" description="Simulation time"/>
-	  <Float64 name="y1" valueReference="1" causality="output" initial="exact" start="1" nominal="1e-4"/>
-	  <Float64 name="der(y1)" valueReference="2" derivative="1"/>
-	  <Float64 name="y2" valueReference="3" causality="output" initial="exact" start="0" nominal="1e-2"/>
-	  <Float64 name="der(y2)" valueReference="4" derivative="3"/>
-	  <Float64 name="y3" valueReference="5" causality="output" initial="approx" start="0" nominal="1e-2"/>
-	  <Float64 name="r" valueReference="6"/>
-	  <Boolean name="dae" valueReference="7" causality="structuralParameter" variability="tunable"/>
+	  <Boolean name="dae" valueReference="1" causality="structuralParameter" variability="tunable" start="false"/>
+	  <Float64 name="y1" valueReference="2" causality="output" initial="exact" start="1" nominal="1e-4"/>
+	  <Float64 name="der(y1)" valueReference="3" derivative="2"/>
+	  <Float64 name="y2" valueReference="4" causality="output" initial="exact" start="0" nominal="1e-2"/>
+	  <Float64 name="der(y2)" valueReference="5" derivative="4"/>
+	  <Float64 name="y3" valueReference="6" causality="output" initial="approx" start="0" nominal="1e-2"/>
+	  <Float64 name="y3_nominal" valueReference="7" variability="constant"/>
+	  <Float64 name="r" valueReference="8"/>
+	  <Float64 name="g1" valueReference="9"/>
+	  <Float64 name="g2" valueReference="10"/>
   </ModelVariables>
 
   <ModelStructure>
-    <Output valueReference="1" dependencies=""/>
-    <Output valueReference="3" dependencies=""/>
-    <ContinuousStateDerivative valueReference="2" dependencies="1 3" dependenciesKind="dependent dependent"/>
-    <ContinuousStateDerivative valueReference="4" dependencies="1 3" dependenciesKind="dependent dependent"/>
-    <InitialUnknown valueReference="2" dependencies="1 3" dependenciesKind="dependent dependent"/>
-    <InitialUnknown valueReference="4" dependencies="1 3" dependenciesKind="dependent dependent"/>
+    <Output valueReference="2" dependencies=""/>
+    <Output valueReference="4" dependencies=""/>
+	<Output valueReference="6" dependencies=""/>
+	<ContinuousStateDerivative valueReference="3" dependencies="2 4" dependenciesKind="dependent dependent"/>
+    <ContinuousStateDerivative valueReference="5" dependencies="2 4" dependenciesKind="dependent dependent"/>
+    <InitialUnknown valueReference="3" dependencies="2 4" dependenciesKind="dependent dependent"/>
+    <InitialUnknown valueReference="5" dependencies="2 4" dependenciesKind="dependent dependent"/>
+    <EventIndicator valueReference="9" dependencies="2" dependenciesKind="constant"/>
+	<EventIndicator valueReference="10" dependencies="6" dependenciesKind="constant"/>
   </ModelStructure>
 
 </fmiModelDescription>
