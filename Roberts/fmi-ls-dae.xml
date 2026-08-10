@@ -10,38 +10,38 @@
   <AlgebraicVariables>
     <AlgebraicVariable
       valueReference="6"
-	  nominal="7"/>
+      nominal="7"/>
   </AlgebraicVariables>
   <ModelStructure>
     <ContinuousStateDerivative
       valueReference="3"
       dependencies="2 4 6"
-	  dependenciesKind="constant constant constant"/>
+      dependenciesKind="constant constant constant"/>
     <ContinuousStateDerivative
       valueReference="5"
       dependencies="2 4 6"
-	  dependenciesKind="constant constant constant"/>
-	<InitialUnknown
+      dependenciesKind="constant constant constant"/>
+    <InitialUnknown
       valueReference="3"
       dependencies="2 4 6"
-	  dependenciesKind="constant constant constant"/>
-	<InitialUnknown
-	  valueReference="5"
+      dependenciesKind="constant constant constant"/>
+    <InitialUnknown
+      valueReference="5"
       dependencies="2 4 6"
-	  dependenciesKind="constant constant constant"/>
-	<InitialUnknown
-	  valueReference="7"
+      dependenciesKind="constant constant constant"/>
+    <InitialUnknown
+      valueReference="7"
       dependencies="2 4 6"
-	  dependenciesKind="constant constant constant"/>
-	<EventIndicator
-	  valueReference="9"
-	  dependencies="2"
-	  dependenciesKind="constant"/>
-	<EventIndicator
-	  valueReference="10"
-	  dependencies="6"
-	  dependenciesKind="constant"/>
-	<Residual>
+      dependenciesKind="constant constant constant"/>
+    <EventIndicator
+      valueReference="9"
+      dependencies="2"
+      dependenciesKind="constant"/>
+    <EventIndicator
+      valueReference="10"
+      dependencies="6"
+      dependenciesKind="constant"/>
+    <Residual>
       <Formulation
         index="1"
         valueReference="8"

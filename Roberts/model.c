@@ -190,12 +190,12 @@ Status getPartialDerivative(ModelInstance* comp, ValueReference unknown, ValueRe
 
 Status getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
     UNUSED(nx);
-    
+
     calculateValues(comp);
-    
+
     x[0] = M(y1);
     x[1] = M(y2);
-    
+
     return OK;
 }
 
@@ -215,23 +215,23 @@ Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], siz
 
 Status setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
     UNUSED(nx);
-    
+
     M(y1) = x[0];
     M(y2) = x[1];
-    
+
     comp->isDirtyValues = true;
-    
+
     return OK;
 }
 
 Status getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
     UNUSED(nx);
-    
+
     calculateValues(comp);
-    
+
     dx[0] = M(der_y1);
     dx[1] = M(der_y2);
-    
+
     return OK;
 }
 
