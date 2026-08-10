@@ -39,7 +39,7 @@
       <Float64 name="y2" valueReference="4" causality="output" initial="exact" start="0" nominal="1e-2"/>
       <Float64 name="der(y2)" valueReference="5" derivative="4"/>
       <Float64 name="y3" valueReference="6" causality="output" initial="approx" start="0" nominal="1e-2"/>
-      <Float64 name="y3_nominal" valueReference="7" variability="constant"/>
+      <Float64 name="y3_nominal" valueReference="7" variability="constant" start="1e-2"/>
       <Float64 name="r" valueReference="8"/>
       <Float64 name="g1" valueReference="9"/>
       <Float64 name="g2" valueReference="10"/>
@@ -53,6 +53,7 @@
     <ContinuousStateDerivative valueReference="5" dependencies="2 4" dependenciesKind="dependent dependent"/>
     <InitialUnknown valueReference="3" dependencies="2 4" dependenciesKind="dependent dependent"/>
     <InitialUnknown valueReference="5" dependencies="2 4" dependenciesKind="dependent dependent"/>
+    <InitialUnknown valueReference="6" dependencies="2 4" dependenciesKind="constant constant"/>
     <EventIndicator valueReference="9" dependencies="2" dependenciesKind="constant"/>
     <EventIndicator valueReference="10" dependencies="6" dependenciesKind="constant"/>
   </ModelStructure>
