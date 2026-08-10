@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  fmiVersion="3.0"
+  modelName="Robertson Problem"
+  description="A system of semi-explicit differential-algebraic equations (DAEs) due to Robertson"
+  generationTool="Reference FMUs (development build)"
+  instantiationToken="{1AE5E10D-9521-4DE3-80B9-D0EAAA7D5AF2}">
+
+  <ModelExchange
+    modelIdentifier="Roberts"
+    canGetAndSetFMUState="true"
+    canSerializeFMUState="true"
+    providesDirectionalDerivatives="true"
+    providesAdjointDerivatives="true"/>
+
+  <CoSimulation
+    modelIdentifier="Roberts"
+    canGetAndSetFMUState="true"
+    canSerializeFMUState="true"
+    canHandleVariableCommunicationStepSize="true"
+    providesIntermediateUpdate="true"
+    mightReturnEarlyFromDoStep="true"
+    canReturnEarlyAfterIntermediateUpdate="true"
+    fixedInternalStepSize="1e-3"
+    hasEventMode="true"/>
+
+  <LogCategories>
+    <Category name="logEvents" description="Log events"/>
+    <Category name="logStatusError" description="Log error messages"/>
+  </LogCategories>
+
+  <DefaultExperiment startTime="1e-5" stopTime="1e7" tolerance="1e-4"/>
+
+  <ModelVariables>
+      <Float64 name="time" valueReference="0" causality="independent" description="Simulation time"/>
+      <Boolean name="dae" valueReference="1" causality="structuralParameter" variability="tunable" start="false"/>
+      <Float64 name="y1" valueReference="2" causality="output" initial="exact" start="1" nominal="1e-4"/>
+      <Float64 name="der(y1)" valueReference="3" derivative="2"/>
+      <Float64 name="y2" valueReference="4" causality="output" initial="exact" start="0" nominal="1e-2"/>
+      <Float64 name="der(y2)" valueReference="5" derivative="4"/>
+      <Float64 name="y3" valueReference="6" causality="output" initial="approx" start="0" nominal="1e-2"/>
+      <Float64 name="y3_nominal" valueReference="7" variability="constant" start="1e-2"/>
+      <Float64 name="r" valueReference="8"/>
+      <Float64 name="g1" valueReference="9"/>
+      <Float64 name="g2" valueReference="10"/>
+  </ModelVariables>
+
+  <ModelStructure>
+    <Output valueReference="2" dependencies=""/>
+    <Output valueReference="4" dependencies=""/>
+    <Output valueReference="6" dependencies=""/>
+    <ContinuousStateDerivative valueReference="3" dependencies="2 4" dependenciesKind="dependent dependent"/>
+    <ContinuousStateDerivative valueReference="5" dependencies="2 4" dependenciesKind="dependent dependent"/>
+    <InitialUnknown valueReference="3" dependencies="2 4" dependenciesKind="dependent dependent"/>
+    <InitialUnknown valueReference="5" dependencies="2 4" dependenciesKind="dependent dependent"/>
+    <InitialUnknown valueReference="6" dependencies="2 4" dependenciesKind="constant constant"/>
+    <EventIndicator valueReference="9" dependencies="2" dependenciesKind="constant"/>
+    <EventIndicator valueReference="10" dependencies="6" dependenciesKind="constant"/>
+  </ModelStructure>
+
+</fmiModelDescription>

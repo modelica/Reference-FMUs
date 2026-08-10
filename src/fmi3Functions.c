@@ -1248,17 +1248,7 @@ fmi3Status fmi3GetNominalsOfContinuousStates(fmi3Instance instance,
     BEGIN_FUNCTION(GetNominalsOfContinuousStates);
 
 #if MAX_CONTINUOUS_STATES > 0
-    if (invalidNumber(S, "fmi3GetNominalContinuousStates", "nContinuousStates", nContinuousStates, getNumberOfContinuousStates(instance)))
-        return fmi3Error;
-
-    if (nullPointer(S, "fmi3GetNominalContinuousStates", "nominals[]", nominals))
-        return fmi3Error;
-
-    for (size_t i = 0; i < nContinuousStates; i++) {
-        nominals[i] = 1;
-    }
-
-    return fmi3OK;
+    CALL(getNominalsOfContinuousStates(S, nominals, nContinuousStates));
 #else
     UNUSED(nominals);
     UNUSED(nContinuousStates);

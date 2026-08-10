@@ -71,6 +71,13 @@ Status getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
     return OK;
 }
 
+Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], size_t nx) {
+    UNUSED(comp);
+    UNUSED(nx);
+    nominals[0] = 1.0;
+    return OK;
+}
+
 Status setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
     UNUSED(nx);
     M(x) = x[0];

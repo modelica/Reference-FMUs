@@ -84,6 +84,14 @@ Status getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
     return OK;
 }
 
+Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], size_t nx) {
+    UNUSED(comp);
+    UNUSED(nx);
+    nominals[0] = 1.0;
+    nominals[1] = 1.0;
+    return OK;
+}
+
 Status setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
     UNUSED(nx);
     M(x0) = x[0];
@@ -100,7 +108,6 @@ Status getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
     return OK;
 }
 
-#if FMI_VERSION > 1
 Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative) {
 
     if (unknown == vr_der_x0 && known == vr_x0) {
@@ -119,7 +126,6 @@ Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueRe
 
     return OK;
 }
-#endif
 
 Status eventUpdate(ModelInstance *comp) {
 
