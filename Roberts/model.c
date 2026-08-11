@@ -1,4 +1,3 @@
-#include <math.h>  // for fabs()
 #include "config.h"
 #include "model.h"
 
@@ -6,38 +5,22 @@
 #define Y2_NOMINAL (1e-2)
 #define Y3_NOMINAL (1e-2)
 
-void setStartValues(ModelInstance *comp) {
-    M(y1) = 1;
-    M(der_y1) = 0;
-    M(y2) = 0;
-    M(der_y2) = 0;
-    M(y3) = 0;
-    M(r) = 0;
+Status setStartValues(ModelInstance *comp) {
+    ASSERT_NOT_NULL2(comp);
+
+    M(y1)  = 1.0;
+    M(y2)  = 0.0;
+    M(y3)  = 0.0;
     M(dae) = false;
+
+    comp->isDirtyValues = true;
+
+    return OK;
 }
 
-// dy1 / dt = -0.04 * y1 + 1e4 * y2 * y3
-// dy2 / dt =  0.04 * y1 - 1e4 * y2 * y3 - 3.e7 * y2 * y2
-// 0        = y1 + y2 + y3 - 1
-
-//int resrob(sunrealtype tres, N_Vector yy, N_Vector yp, N_Vector rr,
-//    void* user_data)
-//{
-//    sunrealtype* yval, * ypval, * rval;
-//
-//    yval = N_VGetArrayPointer(yy);
-//    ypval = N_VGetArrayPointer(yp);
-//    rval = N_VGetArrayPointer(rr);
-//
-//    rval[0] = SUN_RCONST(-0.04) * yval[0] + SUN_RCONST(1.0e4) * yval[1] * yval[2];
-//    rval[1] = -rval[0] - SUN_RCONST(3.0e7) * yval[1] * yval[1] - ypval[1];
-//    rval[0] -= ypval[0];
-//    rval[2] = yval[0] + yval[1] + yval[2] - ONE;
-//
-//    return (0);
-//}
-
 Status calculateValues(ModelInstance *comp) {
+    ASSERT_NOT_NULL2(comp);
+
     if (!M(dae)) {
         M(y3) = 1.0 - M(y1) - M(y2);
     }
@@ -47,11 +30,16 @@ Status calculateValues(ModelInstance *comp) {
 
     M(r) = M(y1) + M(y2) + M(y3) - 1.0;
 
+    comp->isDirtyValues = false;
+
     return OK;
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
-    ASSERT_NVALUES(1);
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(values);
+    ASSERT_SIZE_T(nValues, 1);
+    ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
@@ -92,18 +80,21 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
     }
 }
 
-Status setFloat64(ModelInstance* comp, ValueReference vr, const double value[], size_t nValues, size_t* index) {
-    ASSERT_NVALUES(1);
+Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(values);
+    ASSERT_SIZE_T(nValues, 1);
+    ASSERT_NOT_NULL2(index);
 
     switch (vr) {
     case vr_y1:
-        M(y1) = value[(*index)++];
+        M(y1) = values[(*index)++];
         break;
     case vr_y2:
-        M(y2) = value[(*index)++];
+        M(y2) = values[(*index)++];
         break;
     case vr_y3:
-        M(y3) = value[(*index)++];
+        M(y3) = values[(*index)++];
         break;
     default:
         logError(comp, "Unexpected value reference: %u.", vr);
@@ -116,7 +107,10 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double value[], 
 }
 
 Status getBoolean(ModelInstance* comp, ValueReference vr, bool values[], size_t nValues, size_t* index) {
-    ASSERT_NVALUES(1);
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(values);
+    ASSERT_SIZE_T(nValues, 1);
+    ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
@@ -133,7 +127,10 @@ Status getBoolean(ModelInstance* comp, ValueReference vr, bool values[], size_t 
 }
 
 Status setBoolean(ModelInstance* comp, ValueReference vr, const bool values[], size_t nValues, size_t* index) {
-    ASSERT_NVALUES(1);
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(values);
+    ASSERT_SIZE_T(nValues, 1);
+    ASSERT_NOT_NULL2(index);
 
     switch (vr) {
     case vr_dae:
@@ -151,15 +148,17 @@ Status setBoolean(ModelInstance* comp, ValueReference vr, const bool values[], s
 
 size_t getNumberOfContinuousStates(ModelInstance* comp) {
     UNUSED(comp);
-    return 2;
+    return MAX_CONTINUOUS_STATES;
 }
 
 size_t getNumberOfEventIndicators(ModelInstance* comp) {
     UNUSED(comp);
-    return 2;
+    return MAX_EVENT_INDICATORS;
 }
 
 Status getPartialDerivative(ModelInstance* comp, ValueReference unknown, ValueReference known, double* partialDerivative) {
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(partialDerivative);
 
     calculateValues(comp);
 
@@ -189,7 +188,9 @@ Status getPartialDerivative(ModelInstance* comp, ValueReference unknown, ValueRe
 }
 
 Status getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
-    UNUSED(nx);
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(x);
+    ASSERT_SIZE_T(nx, MAX_CONTINUOUS_STATES);
 
     calculateValues(comp);
 
@@ -200,10 +201,9 @@ Status getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
 }
 
 Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], size_t nx) {
-    if (nx != 2) {
-        logError(comp, "Expected nx = 2 but was %zu.", nx);
-        return Error;
-    }
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(nominals);
+    ASSERT_SIZE_T(nx, MAX_CONTINUOUS_STATES);
 
     calculateValues(comp);
 
@@ -214,7 +214,9 @@ Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], siz
 }
 
 Status setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
-    UNUSED(nx);
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(x);
+    ASSERT_SIZE_T(nx, MAX_CONTINUOUS_STATES);
 
     M(y1) = x[0];
     M(y2) = x[1];
@@ -225,7 +227,9 @@ Status setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
 }
 
 Status getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
-    UNUSED(nx);
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(dx);
+    ASSERT_SIZE_T(nx, MAX_CONTINUOUS_STATES);
 
     calculateValues(comp);
 
@@ -236,10 +240,11 @@ Status getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
 }
 
 Status getEventIndicators(ModelInstance* comp, double z[], size_t nz) {
-    if (nz != 2) {
-        logError(comp, "Expected nz = 2 but was %zu.", nz);
-        return Error;
-    }
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(z);
+    ASSERT_SIZE_T(nz, MAX_EVENT_INDICATORS);
+
+    calculateValues(comp);
 
     z[0] = M(y1) - 0.0001;
     z[1] = M(y3) - 0.01;

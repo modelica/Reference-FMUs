@@ -1,20 +1,13 @@
 #include "model.h"
 
 
-static void calculateCounter(ModelInstance* comp) {
-
-    if (comp->nextEventTimeDefined && isClose(comp->time, comp->nextEventTime)) {
-        M(counter)++;
-        comp->nextEventTime += 1;
-    }
-}
-
-void setStartValues(ModelInstance *comp) {
+Status setStartValues(ModelInstance *comp) {
     M(counter) = 1;
 
-    // TODO: move this to initialize()?
     comp->nextEventTime        = 1;
     comp->nextEventTimeDefined = true;
+
+    return OK;
 }
 
 Status calculateValues(ModelInstance *comp) {
@@ -24,8 +17,12 @@ Status calculateValues(ModelInstance *comp) {
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(values);
+    ASSERT_SIZE_T(nValues, 1);
+    ASSERT_NOT_NULL2(index);
 
-    ASSERT_NVALUES(1);
+    calculateValues(comp);
 
     switch (vr) {
     case vr_time:
@@ -38,16 +35,15 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
 }
 
 Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(values);
+    ASSERT_SIZE_T(nValues, 1);
+    ASSERT_NOT_NULL2(index);
 
-    ASSERT_NVALUES(1);
+    calculateValues(comp);
 
     switch (vr) {
         case vr_counter:
-#if FMI_VERSION == 3
-            if (comp->state == EventMode) {
-                calculateCounter(comp);
-            }
-#endif
             values[(*index)++] = M(counter);
             return OK;
         default:
@@ -57,8 +53,10 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t
 }
 
 Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], size_t nValues, size_t* index) {
-
-    ASSERT_NVALUES(1);
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(values);
+    ASSERT_SIZE_T(nValues, 1);
+    ASSERT_NOT_NULL2(index);
 
     switch (vr) {
     case vr_counter:
@@ -74,16 +72,24 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], 
 
         M(counter) = values[(*index)++];
 
-        return OK;
+        break;
     default:
         logError(comp, "Set Int32 is not allowed for value reference %u.", vr);
         return Error;
     }
+
+    comp->isDirtyValues = true;
+
+    return OK;
 }
 
 Status eventUpdate(ModelInstance *comp) {
+    ASSERT_NOT_NULL2(comp);
 
-    calculateCounter(comp);
+    if (comp->nextEventTimeDefined && isClose(comp->time, comp->nextEventTime)) {
+        M(counter)++;
+        comp->nextEventTime += 1;
+    }
 
     if (M(counter) > 10) {
         logError(comp, "Variable \"counter\" cannot be incremented for values >= 10.");

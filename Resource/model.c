@@ -12,13 +12,19 @@
 
 #define MAX_PATH_LENGTH 4096
 
-void setStartValues(ModelInstance *comp) {
+Status setStartValues(ModelInstance *comp) {
+    ASSERT_NOT_NULL2(comp);
+
     M(y) = 0;
+
+    comp->isDirtyValues = true;
+
+    return OK;
 }
 
 Status calculateValues(ModelInstance *comp) {
+    ASSERT_NOT_NULL2(comp);
 
-    // load the file
     FILE *file = NULL;
     char path[MAX_PATH_LENGTH] = "";
     char c = '\0';
@@ -111,13 +117,19 @@ Status calculateValues(ModelInstance *comp) {
     // close the file
     fclose(file);
 
+    comp->isDirtyValues = false;
+
     return OK;
 }
 
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(values);
+    ASSERT_SIZE_T(nValues, 1);
+    ASSERT_NOT_NULL2(index);
 
-    ASSERT_NVALUES(1);
+    calculateValues(comp);
 
     switch (vr) {
     case vr_time:
@@ -131,8 +143,12 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
 
 
 Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(values);
+    ASSERT_SIZE_T(nValues, 1);
+    ASSERT_NOT_NULL2(index);
 
-    ASSERT_NVALUES(1);
+    calculateValues(comp);
 
     switch (vr) {
         case vr_y:
@@ -145,11 +161,14 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t
 }
 
 Status eventUpdate(ModelInstance *comp) {
+    ASSERT_NOT_NULL2(comp);
 
     comp->valuesOfContinuousStatesChanged   = false;
     comp->nominalsOfContinuousStatesChanged = false;
     comp->terminateSimulation               = false;
     comp->nextEventTimeDefined              = false;
+
+    comp->isDirtyValues = true;
 
     return OK;
 }

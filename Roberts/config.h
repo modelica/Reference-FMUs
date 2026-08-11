@@ -3,7 +3,6 @@
 
 #include <stdbool.h>
 
-// define class name and unique id
 #define MODEL_IDENTIFIER Roberts
 #define INSTANTIATION_TOKEN "{1AE5E10D-9521-4DE3-80B9-D0EAAA7D5AF2}"
 
@@ -11,7 +10,7 @@
 #define MODEL_EXCHANGE
 
 #define MAX_CONTINUOUS_STATES 2
-#define MAX_EVENT_INDICATORS 1
+#define MAX_EVENT_INDICATORS 2
 
 #define FIXED_SOLVER_STEP 1e-6
 #define DEFAULT_STOP_TIME 1

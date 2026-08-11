@@ -492,6 +492,66 @@ Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], co
 }
 #endif
 
+#ifndef MAX_CONTINUOUS_STATES
+size_t getNumberOfContinuousStates(ModelInstance* comp) {
+    UNUSED(comp);
+    return 0;
+}
+
+Status getContinuousStates(ModelInstance* comp, double x[], size_t nx) {
+    ASSERT_NOT_NULL2(comp);
+    UNUSED(x);
+    ASSERT_SIZE_T(nx, 0);
+    return OK;
+}
+
+Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], size_t nx) {
+    ASSERT_NOT_NULL2(comp);
+    UNUSED(nominals);
+    ASSERT_SIZE_T(nx, 0);
+    return OK;
+}
+
+Status setContinuousStates(ModelInstance* comp, const double x[], size_t nx) {
+    ASSERT_NOT_NULL2(comp);
+    UNUSED(x);
+    ASSERT_SIZE_T(nx, 0);
+    return OK;
+}
+
+Status getDerivatives(ModelInstance* comp, double dx[], size_t nx) {
+    ASSERT_NOT_NULL2(comp);
+    UNUSED(dx);
+    ASSERT_SIZE_T(nx, 0);
+    return OK;
+}
+#endif
+
+#ifndef MAX_EVENT_INDICATORS
+size_t getNumberOfEventIndicators(ModelInstance* comp) {
+    UNUSED(comp);
+    return 0;
+}
+
+Status getEventIndicators(ModelInstance* comp, double z[], size_t nz) {
+    ASSERT_NOT_NULL2(comp);
+    UNUSED(z);
+    ASSERT_SIZE_T(nz, 0);
+    return OK;
+}
+#endif
+
+#ifndef GET_PARTIAL_DERIVATIVE
+Status getPartialDerivative(ModelInstance* comp, ValueReference unknown, ValueReference known, double* partialDerivative) {
+    UNUSED(comp);
+    UNUSED(unknown);
+    UNUSED(known);
+    UNUSED(partialDerivative);
+    logError(comp, "Directional derivatives are not supported.");
+    return Error;
+}
+#endif
+
 #ifndef ACTIVATE_CLOCK
 Status activateClock(ModelInstance* comp, ValueReference vr) {
     UNUSED(comp);
@@ -528,17 +588,6 @@ Status activateModelPartition(ModelInstance* comp, ValueReference vr, double act
 }
 #endif
 
-#ifndef GET_PARTIAL_DERIVATIVE
-Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative) {
-    UNUSED(comp);
-    UNUSED(unknown);
-    UNUSED(known);
-    UNUSED(partialDerivative);
-    logError(comp, "Directional derivatives are not supported.");
-    return Error;
-}
-#endif
-
 Status getFMUState(ModelInstance* comp, void** FMUState) {
 
     CALL(s_reallocate(comp, FMUState, sizeof(ModelInstance)));
@@ -549,6 +598,9 @@ Status getFMUState(ModelInstance* comp, void** FMUState) {
 }
 
 Status setFMUState(ModelInstance* comp, void* FMUState) {
+
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(FMUState);
 
     ModelInstance* s = (ModelInstance*)FMUState;
 

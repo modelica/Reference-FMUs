@@ -29,7 +29,7 @@
     <Category name="logStatusError" description="Log error messages"/>
   </LogCategories>
 
-  <DefaultExperiment startTime="1e-5" stopTime="1e7" tolerance="1e-4"/>
+  <DefaultExperiment startTime="1e-5" stopTime="1e8" tolerance="1e-4"/>
 
   <ModelVariables>
       <Float64 name="time" valueReference="0" causality="independent" description="Simulation time"/>
