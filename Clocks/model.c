@@ -116,17 +116,23 @@ static void activateModelPartition3(ModelInstance *comp, double time) {
     }
 }
 
-void setStartValues(ModelInstance *comp) {
-    M(inClock3_interval) = 0.0;
-    M(inClock3_qualifier)= 0; // fmi3IntervalNotYetKnown
-    M(outClock)          = 0;
-    M(inClock1Ticks)     = 0;
-    M(inClock2Ticks)     = 0;
-    M(inClock3Ticks)     = 0;
-    M(totalInClockTicks) = 0;
-    M(result2)           = 0;
-    M(input2)            = 0;
-    M(output3)           = 0;
+Status setStartValues(ModelInstance *comp) {
+    ASSERT_NOT_NULL2(comp);
+
+    M(inClock3_interval)  = 0.0;
+    M(inClock3_qualifier) = 0; // fmi3IntervalNotYetKnown
+    M(outClock)           = 0;
+    M(inClock1Ticks)      = 0;
+    M(inClock2Ticks)      = 0;
+    M(inClock3Ticks)      = 0;
+    M(totalInClockTicks)  = 0;
+    M(result2)            = 0;
+    M(input2)             = 0;
+    M(output3)            = 0;
+
+    comp->isDirtyValues = true;
+
+    return OK;
 }
 
 Status calculateValues(ModelInstance *comp) {

@@ -175,7 +175,7 @@ Status configurate(ModelInstance* comp);
 
 Status reset(ModelInstance* comp);
 
-void setStartValues(ModelInstance* comp);
+Status setStartValues(ModelInstance* comp);
 
 Status calculateValues(ModelInstance *comp);
 
@@ -245,11 +245,24 @@ Status setFMUState(ModelInstance* comp, void* FMUState);
 #define xstr(s) str(s)
 #define str(s) #s
 
-// assert size of nValues for scalar variables
-#define ASSERT_NVALUES(N) do { \
-    const size_t expected_nValues = *index + (N); \
-    if (expected_nValues > nValues) { \
-        logError(comp, "Expected nValues >= %zu but was %zu.", expected_nValues, nValues); \
+#define ASSERT_NOT_NULL2(V) \
+    if (!V) { \
+        logError(comp, "Argument '" xstr(V) "' must not be NULL"); \
         return Error; \
-    } \
-} while (0)
+    }
+
+// assert size of nValues for scalar variables
+#define ASSERT_NVALUES(N) \
+    do { \
+        const size_t expected_nValues = *index + (N); \
+        if (expected_nValues > nValues) { \
+            logError(comp, "Expected nValues >= %zu but was %zu.", expected_nValues, nValues); \
+            return Error; \
+        } \
+    } while (0)
+
+#define ASSERT_SIZE_T(A, E) \
+    if (A != E) { \
+        logError(comp, "Expected " xstr(A) " = %zu but was %zu.", E, A); \
+        return Error; \
+    }

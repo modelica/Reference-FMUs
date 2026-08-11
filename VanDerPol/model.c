@@ -2,21 +2,34 @@
 #include "model.h"
 
 
-void setStartValues(ModelInstance *comp) {
+Status setStartValues(ModelInstance *comp) {
+    ASSERT_NOT_NULL2(comp);
+
     M(x0) = 2;
     M(x1) = 0;
     M(mu) = 1;
+
+    comp->isDirtyValues = true;
+
+    return OK;
 }
 
 Status calculateValues(ModelInstance *comp) {
+    ASSERT_NOT_NULL2(comp);
+
     M(der_x0) = M(x1);
     M(der_x1) = M(mu) * ((1.0 - M(x0) * M(x0)) * M(x1)) - M(x0);
+
+    comp->isDirtyValues = false;
+
     return OK;
 }
 
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
-
-    ASSERT_NVALUES(1);
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(values);
+    ASSERT_SIZE_T(nValues, 1);
+    ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
@@ -46,16 +59,18 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
 }
 
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
-
-    ASSERT_NVALUES(1);
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(values);
+    ASSERT_SIZE_T(nValues, 1);
+    ASSERT_NOT_NULL2(index);
 
     switch (vr) {
         case vr_x0:
             M(x0) = values[(*index)++];
-            return OK;
+            break;
         case vr_x1:
             M(x1) = values[(*index)++];
-            return OK;
+            break;
         case vr_mu:
             if (comp->type == ModelExchange &&
                 comp->state != Instantiated &&
@@ -65,50 +80,77 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
                 return Error;
             }
             M(mu) = values[(*index)++];
-            return OK;
+            break;
         default:
             logError(comp, "Set Float64 is not allowed for value reference %u.", vr);
             return Error;
     }
+
+    comp->isDirtyValues = true;
+
+    return OK;
 }
 
 size_t getNumberOfContinuousStates(ModelInstance* comp) {
     UNUSED(comp);
-    return 2;
+    return MAX_CONTINUOUS_STATES;
 }
 
 Status getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
-    UNUSED(nx);
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(x);
+    ASSERT_SIZE_T(nx, MAX_CONTINUOUS_STATES);
+
+    calculateValues(comp);
+
     x[0] = M(x0);
     x[1] = M(x1);
+
     return OK;
 }
 
 Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], size_t nx) {
-    UNUSED(comp);
-    UNUSED(nx);
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(nominals);
+    ASSERT_SIZE_T(nx, MAX_CONTINUOUS_STATES);
+
+    calculateValues(comp);
+
     nominals[0] = 1.0;
     nominals[1] = 1.0;
+
     return OK;
 }
 
 Status setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
-    UNUSED(nx);
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(x);
+    ASSERT_SIZE_T(nx, MAX_CONTINUOUS_STATES);
+
     M(x0) = x[0];
     M(x1) = x[1];
-    calculateValues(comp);
+
+    comp->isDirtyValues = true;
+
     return OK;
 }
 
 Status getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
-    UNUSED(nx);
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(dx);
+    ASSERT_SIZE_T(nx, MAX_CONTINUOUS_STATES);
+
     calculateValues(comp);
+
     dx[0] = M(der_x0);
     dx[1] = M(der_x1);
+
     return OK;
 }
 
 Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative) {
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(partialDerivative);
 
     if (unknown == vr_der_x0 && known == vr_x0) {
         *partialDerivative = 0;
@@ -128,6 +170,7 @@ Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueRe
 }
 
 Status eventUpdate(ModelInstance *comp) {
+    ASSERT_NOT_NULL2(comp);
 
     comp->valuesOfContinuousStatesChanged   = false;
     comp->nominalsOfContinuousStatesChanged = false;

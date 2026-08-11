@@ -246,11 +246,8 @@ fmi3Status fmi3SetDebugLogging(fmi3Instance instance,
                                fmi3Boolean loggingOn,
                                size_t nCategories,
                                const fmi3String categories[]) {
-
     BEGIN_FUNCTION(SetDebugLogging);
-
     CALL(setDebugLogging(S, loggingOn, nCategories, categories));
-
     END_FUNCTION();
 }
 
@@ -393,7 +390,6 @@ fmi3Status fmi3EnterInitializationMode(fmi3Instance instance,
                                        fmi3Float64 startTime,
                                        fmi3Boolean stopTimeDefined,
                                        fmi3Float64 stopTime) {
-
     UNUSED(toleranceDefined);
     UNUSED(tolerance);
 
@@ -409,7 +405,6 @@ fmi3Status fmi3EnterInitializationMode(fmi3Instance instance,
 }
 
 fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
-
     BEGIN_FUNCTION(ExitInitializationMode);
 
     // if values were set and no fmi3GetXXX triggered update before,
@@ -437,29 +432,20 @@ fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
 }
 
 fmi3Status fmi3EnterEventMode(fmi3Instance instance) {
-
     BEGIN_FUNCTION(EnterEventMode);
-
     S->state = EventMode;
-
     END_FUNCTION();
 }
 
 fmi3Status fmi3Terminate(fmi3Instance instance) {
-
     BEGIN_FUNCTION(Terminate);
-
     S->state = Terminated;
-
     END_FUNCTION();
 }
 
 fmi3Status fmi3Reset(fmi3Instance instance) {
-
     BEGIN_FUNCTION(Reset);
-
     CALL(reset(S));
-
     END_FUNCTION();
 }
 
@@ -565,7 +551,6 @@ fmi3Status fmi3GetBinary(fmi3Instance instance,
     size_t valueSizes[],
     fmi3Binary values[],
     size_t nValues) {
-
     BEGIN_FUNCTION(GetBinary);
 
     if (nValueReferences == 0) {
@@ -596,12 +581,12 @@ fmi3Status fmi3GetClock(fmi3Instance instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3Clock values[]) {
-
     BEGIN_FUNCTION(GetClock);
 
     for (size_t i = 0; i < nValueReferences; i++) {
         CALL(getClock(instance, (ValueReference)valueReferences[i], &values[i]));
     }
+
     END_FUNCTION();
 }
 
@@ -738,7 +723,6 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3Clock values[]) {
-
     BEGIN_FUNCTION(SetClock);
 
     for (size_t i = 0; i < nValueReferences; i++) {
@@ -778,42 +762,27 @@ fmi3Status fmi3GetVariableDependencies(fmi3Instance instance,
 }
 
 fmi3Status fmi3GetFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
-
     BEGIN_FUNCTION(GetFMUState);
-
     CALL(getFMUState(S, FMUState));
-
     END_FUNCTION();
 }
 
 fmi3Status fmi3SetFMUState(fmi3Instance instance, fmi3FMUState FMUState) {
-
     BEGIN_FUNCTION(SetFMUState);
-
-    if (nullPointer(S, "fmi3SetFMUState", "FMUState", FMUState)) {
-        return fmi3Error;
-    }
-
     CALL(setFMUState(S, FMUState));
-
     END_FUNCTION();
 }
 
 fmi3Status fmi3FreeFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
-
     BEGIN_FUNCTION(FreeFMUState);
-
     free(*FMUState);
-
     *FMUState = NULL;
-
     END_FUNCTION();
 }
 
 fmi3Status fmi3SerializedFMUStateSize(fmi3Instance instance,
     fmi3FMUState  FMUState,
     size_t* size) {
-
     UNUSED(instance);
     UNUSED(FMUState);
 
@@ -828,7 +797,6 @@ fmi3Status fmi3SerializeFMUState(fmi3Instance instance,
     fmi3FMUState  FMUState,
     fmi3Byte serializedState[],
     size_t size) {
-
     BEGIN_FUNCTION(SerializeFMUState);
 
     if (nullPointer(S, "fmi3SerializeFMUState", "FMUstate", FMUState)) {
@@ -848,7 +816,6 @@ fmi3Status fmi3DeserializeFMUState(fmi3Instance instance,
     const fmi3Byte serializedState[],
     size_t size,
     fmi3FMUState* FMUState) {
-
     BEGIN_FUNCTION(DeserializeFMUState);
 
     if (invalidNumber(S, "fmi3DeserializeFMUState", "size", size, sizeof(ModelInstance))) {
@@ -929,16 +896,12 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
 }
 
 fmi3Status fmi3EnterConfigurationMode(fmi3Instance instance) {
-
     BEGIN_FUNCTION(EnterConfigurationMode);
-
     S->state = (S->state == Instantiated) ? ConfigurationMode : ReconfigurationMode;
-
     END_FUNCTION();
 }
 
 fmi3Status fmi3ExitConfigurationMode(fmi3Instance instance) {
-
     BEGIN_FUNCTION(ExitConfigurationMode);
 
     if (S->state == ConfigurationMode) {
@@ -1086,7 +1049,6 @@ fmi3Status fmi3UpdateDiscreteStates(fmi3Instance instance,
     fmi3Boolean* valuesOfContinuousStatesChanged,
     fmi3Boolean* nextEventTimeDefined,
     fmi3Float64* nextEventTime) {
-
     BEGIN_FUNCTION(NewDiscreteStates);
 
 #ifdef EVENT_UPDATE
@@ -1109,11 +1071,8 @@ fmi3Status fmi3UpdateDiscreteStates(fmi3Instance instance,
  ****************************************************/
 
 fmi3Status fmi3EnterContinuousTimeMode(fmi3Instance instance) {
-
     BEGIN_FUNCTION(EnterContinuousTimeMode);
-
     S->state = ContinuousTimeMode;
-
     END_FUNCTION();
 }
 
@@ -1121,7 +1080,6 @@ fmi3Status fmi3CompletedIntegratorStep(fmi3Instance instance,
     fmi3Boolean  noSetFMUStatePriorToCurrentPoint,
     fmi3Boolean* enterEventMode,
     fmi3Boolean* terminateSimulation) {
-
     UNUSED(noSetFMUStatePriorToCurrentPoint);
 
     BEGIN_FUNCTION(CompletedIntegratorStep);
@@ -1137,35 +1095,16 @@ fmi3Status fmi3CompletedIntegratorStep(fmi3Instance instance,
 
 /* Providing independent variables and re-initialization of caching */
 fmi3Status fmi3SetTime(fmi3Instance instance, fmi3Float64 time) {
-
     BEGIN_FUNCTION(SetTime);
-
     S->time = time;
-
     END_FUNCTION();
 }
 
 fmi3Status fmi3SetContinuousStates(fmi3Instance instance,
     const fmi3Float64 continuousStates[],
     size_t nContinuousStates) {
-
     BEGIN_FUNCTION(SetContinuousStates);
-
-#if MAX_CONTINUOUS_STATES > 0
-    if (invalidNumber(S, "fmi3SetContinuousStates", "nContinuousStates", nContinuousStates, getNumberOfContinuousStates(S)))
-        CALL(Error);
-
-    if (nullPointer(S, "fmi3SetContinuousStates", "continuousStates", continuousStates))
-        CALL(Error);
-
     CALL(setContinuousStates(S, continuousStates, nContinuousStates));
-#else
-    UNUSED(continuousStates);
-
-    if (invalidNumber(S, "fmi3SetContinuousStates", "nContinuousStates", nContinuousStates, 0))
-        CALL(Error);
-#endif
-
     END_FUNCTION();
 }
 
@@ -1173,121 +1112,46 @@ fmi3Status fmi3SetContinuousStates(fmi3Instance instance,
 fmi3Status fmi3GetContinuousStateDerivatives(fmi3Instance instance,
     fmi3Float64 derivatives[],
     size_t nContinuousStates) {
-
     BEGIN_FUNCTION(GetContinuousStateDerivatives);
-
-#if MAX_CONTINUOUS_STATES > 0
-    if (invalidNumber(S, "fmi3GetContinuousStateDerivatives", "nContinuousStates", nContinuousStates, getNumberOfContinuousStates(S)))
-        return fmi3Error;
-
-    if (nullPointer(S, "fmi3GetContinuousStateDerivatives", "derivatives[]", derivatives))
-        return fmi3Error;
-
     CALL(getDerivatives(S, derivatives, nContinuousStates));
-#else
-    UNUSED(derivatives);
-    UNUSED(nContinuousStates);
-    return fmi3Error;
-#endif
-
     END_FUNCTION();
 }
 
 fmi3Status fmi3GetEventIndicators(fmi3Instance instance,
     fmi3Float64 eventIndicators[],
     size_t nEventIndicators) {
-
     BEGIN_FUNCTION(GetEventIndicators);
-
-#if MAX_EVENT_INDICATORS > 0
-    if (invalidNumber(S, "fmi3GetEventIndicators", "nEventIndicators", nEventIndicators, getNumberOfEventIndicators(S))) {
-        return fmi3Error;
-    }
-
     CALL(getEventIndicators(S, eventIndicators, nEventIndicators));
-#else
-
-    UNUSED(eventIndicators);
-
-    if (nEventIndicators > 0) {
-        // TODO: log error
-        return fmi3Error;
-    }
-#endif
-
     END_FUNCTION();
 }
 
 fmi3Status fmi3GetContinuousStates(fmi3Instance instance,
     fmi3Float64 continuousStates[],
     size_t nContinuousStates) {
-
     BEGIN_FUNCTION(GetContinuousStates);
-
-#if MAX_CONTINUOUS_STATES > 0
-    if (invalidNumber(S, "fmi3GetContinuousStates", "nContinuousStates", nContinuousStates, getNumberOfContinuousStates(S)))
-        return fmi3Error;
-
-    if (nullPointer(S, "fmi3GetContinuousStates", "continuousStates[]", continuousStates))
-        return fmi3Error;
-
     CALL(getContinuousStates(S, continuousStates, nContinuousStates));
-#else
-    UNUSED(continuousStates);
-    UNUSED(nContinuousStates);
-    return fmi3Error;
-#endif
-
     END_FUNCTION();
 }
 
 fmi3Status fmi3GetNominalsOfContinuousStates(fmi3Instance instance,
     fmi3Float64 nominals[],
     size_t nContinuousStates) {
-
     BEGIN_FUNCTION(GetNominalsOfContinuousStates);
-
-#if MAX_CONTINUOUS_STATES > 0
     CALL(getNominalsOfContinuousStates(S, nominals, nContinuousStates));
-#else
-    UNUSED(nominals);
-    UNUSED(nContinuousStates);
-    return fmi3Error;
-#endif
-
     END_FUNCTION();
 }
 
 fmi3Status fmi3GetNumberOfEventIndicators(fmi3Instance instance,
     size_t* nEventIndicators) {
-
     BEGIN_FUNCTION(GetNumberOfEventIndicators);
-
-    ASSERT_NOT_NULL(nEventIndicators);
-
-#if MAX_EVENT_INDICATORS > 0
     *nEventIndicators = getNumberOfEventIndicators(instance);
-#else
-    *nEventIndicators = 0;
-#endif
-
-
     END_FUNCTION();
 }
 
 fmi3Status fmi3GetNumberOfContinuousStates(fmi3Instance instance,
     size_t* nContinuousStates) {
-
     BEGIN_FUNCTION(GetNumberOfContinuousStates);
-
-    ASSERT_NOT_NULL(nContinuousStates);
-
-#if MAX_CONTINUOUS_STATES > 0
     *nContinuousStates = getNumberOfContinuousStates(instance);
-#else
-    *nContinuousStates = 0;
-#endif
-
     END_FUNCTION();
 }
 
@@ -1296,11 +1160,8 @@ fmi3Status fmi3GetNumberOfContinuousStates(fmi3Instance instance,
  ****************************************************/
 
 fmi3Status fmi3EnterStepMode(fmi3Instance instance) {
-
     BEGIN_FUNCTION(EnterStepMode);
-
     S->state = StepMode;
-
     END_FUNCTION();
 }
 
@@ -1310,7 +1171,6 @@ fmi3Status fmi3GetOutputDerivatives(fmi3Instance instance,
     const fmi3Int32 orders[],
     fmi3Float64 values[],
     size_t nValues) {
-
     UNUSED(nValues);
 
     BEGIN_FUNCTION(GetOutputDerivatives);
@@ -1339,7 +1199,6 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
     fmi3Boolean* terminateSimulation,
     fmi3Boolean* earlyReturn,
     fmi3Float64* lastSuccessfulTime) {
-
     UNUSED(noSetFMUStatePriorToCurrentPoint);
 
     BEGIN_FUNCTION(DoStep);
@@ -1429,10 +1288,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
     fmi3ValueReference clockReference,
     fmi3Float64 activationTime) {
-
     BEGIN_FUNCTION(ActivateModelPartition);
-
     CALL(activateModelPartition(S, (ValueReference)clockReference, activationTime));
-
     END_FUNCTION();
 }

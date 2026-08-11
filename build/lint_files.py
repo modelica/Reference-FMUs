@@ -2,7 +2,7 @@ import os
 import sys
 
 
-autofix = False
+autofix = True
 
 
 def lint_file(filename):
