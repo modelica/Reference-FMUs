@@ -6,6 +6,7 @@ A set of hand-coded FMUs for development, testing, and debugging of the [Functio
 - [Dahlquist](Dahlquist) - Dahlquist test equation
 - [Feedthrough](Feedthrough) - all variable types
 - [Resource](Resource) - load data from a file
+- [Roberts](Roberts) - differential-algebraic equations
 - [Stair](Stair) - a counter with time events
 - [StateSpace](StateSpace) - arrays and structural parameters
 - [VanDerPol](VanDerPol) - Van der Pol test equation
