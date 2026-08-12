@@ -31,30 +31,35 @@ Status calculateValues(ModelInstance *comp) {
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_time:
+            ASSERT_NVALUES(1);
             values[(*index)++] = comp->time;
             return OK;
         case vr_h:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(h);
             return OK;
         case vr_der_h:
         case vr_v:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(v);
             return OK;
         case vr_der_v:
         case vr_g:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(g);
             return OK;
         case vr_e:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(e);
             return OK;
         case vr_v_min:
+            ASSERT_NVALUES(1);
             values[(*index)++] = V_MIN;
             return OK;
         default:
@@ -66,7 +71,6 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
@@ -79,6 +83,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
                 logError(comp, "Variable \"h\" can only be set in Instantiated Mode, Initialization Mode, Continuous Time Mode, and Event Mode.");
                 return Error;
             }
+            ASSERT_NVALUES(1);
             M(h) = values[(*index)++];
             break;
 
@@ -90,6 +95,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
                 logError(comp, "Variable \"v\" can only be set in Instantiated Mode, Initialization Mode, Continuous Time Mode, and Event Mode.");
                 return Error;
             }
+            ASSERT_NVALUES(1);
             M(v) = values[(*index)++];
             break;
 
@@ -100,6 +106,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
                 logError(comp, "Variable g can only be set after instantiation or in initialization mode.");
                 return Error;
             }
+            ASSERT_NVALUES(1);
             M(g) = values[(*index)++];
             break;
 
@@ -111,6 +118,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
                 logError(comp, "Variable e can only be set after instantiation, in initialization mode or event mode.");
                 return Error;
             }
+            ASSERT_NVALUES(1);
             M(e) = values[(*index)++];
             break;
 

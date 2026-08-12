@@ -26,22 +26,25 @@ Status calculateValues(ModelInstance *comp) {
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_time:
+            ASSERT_NVALUES(1);
             values[(*index)++] = comp->time;
             return OK;
         case vr_x:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(x);
             return OK;
         case vr_der_x:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(der_x);
             return OK;
         case vr_k:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(k);
             return OK;
         default:
@@ -53,11 +56,11 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
         case vr_x:
+            ASSERT_NVALUES(1);
             M(x) = values[(*index)++];
             break;
         case vr_k:
@@ -67,6 +70,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
                 logError(comp, "Variable k can only be set after instantiation or in initialization mode.");
                 return Error;
             }
+            ASSERT_NVALUES(1);
             M(k) = values[(*index)++];
             break;
         default:

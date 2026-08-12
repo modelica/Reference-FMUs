@@ -38,40 +38,49 @@ Status calculateValues(ModelInstance *comp) {
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_time:
+            ASSERT_NVALUES(1);
             values[(*index)++] = comp->time;
             return OK;
         case vr_y1:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(y1);
             return OK;
         case vr_der_y1:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(der_y1);
             return OK;
         case vr_y2:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(y2);
             return OK;
         case vr_der_y2:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(der_y2);
             return OK;
         case vr_y3:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(y3);
             return OK;
         case vr_y3_nominal:
+            ASSERT_NVALUES(1);
             values[(*index)++] = Y3_NOMINAL;
             return OK;
         case vr_r:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(r);
             return OK;
         case vr_g1:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(g1);
             return OK;
         case vr_g2:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(g2);
             return OK;
         default:
@@ -83,17 +92,19 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
     case vr_y1:
+        ASSERT_NVALUES(1);
         M(y1) = values[(*index)++];
         break;
     case vr_y2:
+        ASSERT_NVALUES(1);
         M(y2) = values[(*index)++];
         break;
     case vr_y3:
+        ASSERT_NVALUES(1);
         M(y3) = values[(*index)++];
         break;
     default:
@@ -109,13 +120,13 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
 Status getBoolean(ModelInstance* comp, ValueReference vr, bool values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
     case vr_dae:
+        ASSERT_NVALUES(1);
         values[(*index)++] = M(dae);
         break;
     default:
@@ -129,11 +140,11 @@ Status getBoolean(ModelInstance* comp, ValueReference vr, bool values[], size_t 
 Status setBoolean(ModelInstance* comp, ValueReference vr, const bool values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
     case vr_dae:
+        ASSERT_NVALUES(1);
         M(dae) = values[(*index)++];
         break;
     default:

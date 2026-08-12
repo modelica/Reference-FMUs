@@ -109,22 +109,25 @@ Status calculateValues(ModelInstance *comp) {
 Status getFloat32(ModelInstance* comp, ValueReference vr, float values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_Float32_continuous_input:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Float32_continuous_input);
             break;
         case vr_Float32_continuous_output:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Float32_continuous_output);
             break;
         case vr_Float32_discrete_input:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Float32_discrete_input);
             break;
         case vr_Float32_discrete_output:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Float32_discrete_output);
             break;
         default:
@@ -138,31 +141,37 @@ Status getFloat32(ModelInstance* comp, ValueReference vr, float values[], size_t
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_time:
+            ASSERT_NVALUES(1);
             values[(*index)++] = comp->time;
             break;
         case vr_Float64_fixed_parameter:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Float64_fixed_parameter);
             break;
         case vr_Float64_tunable_parameter:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Float64_tunable_parameter);
             break;
         case vr_Float64_continuous_input:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Float64_continuous_input);
             break;
         case vr_Float64_continuous_output:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Float64_continuous_output);
             break;
         case vr_Float64_discrete_input:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Float64_discrete_input);
             break;
         case vr_Float64_discrete_output:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Float64_discrete_output);
             break;
         default:
@@ -176,16 +185,17 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
 Status getInt8(ModelInstance* comp, ValueReference vr, int8_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_Int8_input:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Int8_input);
             break;
         case vr_Int8_output:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Int8_output);
             break;
         default:
@@ -199,16 +209,17 @@ Status getInt8(ModelInstance* comp, ValueReference vr, int8_t values[], size_t n
 Status getUInt8(ModelInstance* comp, ValueReference vr, uint8_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_UInt8_input:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(UInt8_input);
             break;
         case vr_UInt8_output:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(UInt8_output);
             break;
         default:
@@ -222,16 +233,17 @@ Status getUInt8(ModelInstance* comp, ValueReference vr, uint8_t values[], size_t
 Status getInt16(ModelInstance* comp, ValueReference vr, int16_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_Int16_input:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Int16_input);
             break;
         case vr_Int16_output:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Int16_output);
             break;
         default:
@@ -245,16 +257,17 @@ Status getInt16(ModelInstance* comp, ValueReference vr, int16_t values[], size_t
 Status getUInt16(ModelInstance* comp, ValueReference vr, uint16_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_UInt16_input:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(UInt16_input);
             break;
         case vr_UInt16_output:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(UInt16_output);
             break;
         default:
@@ -268,23 +281,26 @@ Status getUInt16(ModelInstance* comp, ValueReference vr, uint16_t values[], size
 Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_Int32_input:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Int32_input);
             break;
         case vr_Int32_output:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Int32_output);
             break;
-#if FMI_VERSION == 1 || FMI_VERSION == 2
+#if FMI_VERSION == 2
         case vr_Enumeration_input:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Enumeration_input);
             break;
         case vr_Enumeration_output:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Enumeration_output);
             break;
 #endif
@@ -299,16 +315,17 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t
 Status getUInt32(ModelInstance* comp, ValueReference vr, uint32_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_UInt32_input:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(UInt32_input);
             break;
         case vr_UInt32_output:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(UInt32_output);
             break;
         default:
@@ -322,23 +339,26 @@ Status getUInt32(ModelInstance* comp, ValueReference vr, uint32_t values[], size
 Status getInt64(ModelInstance* comp, ValueReference vr, int64_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_Int64_input:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Int64_input);
             break;
         case vr_Int64_output:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Int64_output);
             break;
 #if FMI_VERSION == 3
         case vr_Enumeration_input:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Enumeration_input);
             break;
         case vr_Enumeration_output:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Enumeration_output);
             break;
 #endif
@@ -353,16 +373,17 @@ Status getInt64(ModelInstance* comp, ValueReference vr, int64_t values[], size_t
 Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_UInt64_input:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(UInt64_input);
             break;
         case vr_UInt64_output:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(UInt64_output);
             break;
         default:
@@ -376,16 +397,17 @@ Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t values[], size
 Status getBoolean(ModelInstance* comp, ValueReference vr, bool values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_Boolean_input:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Boolean_input);
             break;
         case vr_Boolean_output:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(Boolean_output);
             break;
         default:
@@ -399,17 +421,18 @@ Status getBoolean(ModelInstance* comp, ValueReference vr, bool values[], size_t 
 Status getBinary(ModelInstance* comp, ValueReference vr, size_t sizes[], const char* values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_Binary_input:
+            ASSERT_NVALUES(1);
             values[*index]    = M(Binary_input);
             sizes[(*index)++] = M(Binary_input_size);
             break;
         case vr_Binary_output:
+            ASSERT_NVALUES(1);
             values[*index]    = M(Binary_output);
             sizes[(*index)++] = M(Binary_output_size);
             break;
@@ -424,16 +447,17 @@ Status getBinary(ModelInstance* comp, ValueReference vr, size_t sizes[], const c
 Status getString(ModelInstance* comp, ValueReference vr, const char* values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_String_input:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(String_input);
             break;
         case vr_String_output:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(String_output);
             break;
         default:
@@ -447,11 +471,11 @@ Status getString(ModelInstance* comp, ValueReference vr, const char* values[], s
 Status setFloat32(ModelInstance* comp, ValueReference vr, const float values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
         case vr_Float32_continuous_input:
+            ASSERT_NVALUES(1);
             M(Float32_continuous_input) = values[(*index)++];
             break;
         case vr_Float32_discrete_input:
@@ -462,6 +486,7 @@ Status setFloat32(ModelInstance* comp, ValueReference vr, const float values[], 
                 logError(comp, "Variable Float32_discrete_input can only be set in after instantiation, in Initialization Mode, and in Event Mode.");
                 return Error;
             }
+            ASSERT_NVALUES(1);
             M(Float32_discrete_input) = values[(*index)++];
             break;
         default:
@@ -477,7 +502,6 @@ Status setFloat32(ModelInstance* comp, ValueReference vr, const float values[], 
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
@@ -489,6 +513,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
                 logError(comp, "Variable Float64_fixed_parameter can only be set after instantiation or in initialization mode.");
                 return Error;
             }
+            ASSERT_NVALUES(1);
             M(Float64_fixed_parameter) = values[(*index)++];
             break;
 
@@ -500,10 +525,12 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
                 logError(comp, "Variable Float64_tunable_parameter can only be set after instantiation, in initialization mode or event mode.");
                 return Error;
             }
+            ASSERT_NVALUES(1);
             M(Float64_tunable_parameter) = values[(*index)++];
             break;
 
         case vr_Float64_continuous_input:
+            ASSERT_NVALUES(1);
             M(Float64_continuous_input) = values[(*index)++];
             break;
 
@@ -515,6 +542,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
                 logError(comp, "Variable Float64_discrete_input can only be set after instantiation, in initialization mode or event mode.");
                 return Error;
             }
+            ASSERT_NVALUES(1);
             M(Float64_discrete_input) = values[(*index)++];
             break;
 
@@ -531,11 +559,11 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
 Status setInt8(ModelInstance* comp, ValueReference vr, const int8_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
         case vr_Int8_input:
+            ASSERT_NVALUES(1);
             M(Int8_input) = values[(*index)++];
             break;
         default:
@@ -551,11 +579,11 @@ Status setInt8(ModelInstance* comp, ValueReference vr, const int8_t values[], si
 Status setUInt8(ModelInstance* comp, ValueReference vr, const uint8_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
         case vr_UInt8_input:
+            ASSERT_NVALUES(1);
             M(UInt8_input) = values[(*index)++];
             break;
         default:
@@ -571,11 +599,11 @@ Status setUInt8(ModelInstance* comp, ValueReference vr, const uint8_t values[], 
 Status setInt16(ModelInstance* comp, ValueReference vr, const int16_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
         case vr_Int16_input:
+            ASSERT_NVALUES(1);
             M(Int16_input) = values[(*index)++];
             break;
         default:
@@ -591,11 +619,11 @@ Status setInt16(ModelInstance* comp, ValueReference vr, const int16_t values[], 
 Status setUInt16(ModelInstance* comp, ValueReference vr, const uint16_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
         case vr_UInt16_input:
+            ASSERT_NVALUES(1);
             M(UInt16_input) = values[(*index)++];
             break;
         default:
@@ -611,11 +639,11 @@ Status setUInt16(ModelInstance* comp, ValueReference vr, const uint16_t values[]
 Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
         case vr_Int32_input:
+            ASSERT_NVALUES(1);
             M(Int32_input) = values[(*index)++];
             break;
 #if FMI_VERSION == 2
@@ -624,6 +652,7 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], 
                 logError(comp, "%d is not a legal value for Enumeration_input.", values[*index]);
                 return Error;
             }
+            ASSERT_NVALUES(1);
             M(Enumeration_input) = values[(*index)++];
             break;
 #endif
@@ -640,11 +669,11 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], 
 Status setUInt32(ModelInstance* comp, ValueReference vr, const uint32_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
         case vr_UInt32_input:
+            ASSERT_NVALUES(1);
             M(UInt32_input) = values[(*index)++];
             break;
         default:
@@ -660,11 +689,11 @@ Status setUInt32(ModelInstance* comp, ValueReference vr, const uint32_t values[]
 Status setInt64(ModelInstance* comp, ValueReference vr, const int64_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
         case vr_Int64_input:
+            ASSERT_NVALUES(1);
             M(Int64_input) = values[(*index)++];
             break;
 #if FMI_VERSION == 3
@@ -673,6 +702,7 @@ Status setInt64(ModelInstance* comp, ValueReference vr, const int64_t values[], 
                 logError(comp, "%llu is not a legal value for Enumeration_input.", values[*index]);
                 return Error;
             }
+            ASSERT_NVALUES(1);
             M(Enumeration_input) = values[(*index)++];
             break;
 #endif
@@ -689,11 +719,11 @@ Status setInt64(ModelInstance* comp, ValueReference vr, const int64_t values[], 
 Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
         case vr_UInt64_input:
+            ASSERT_NVALUES(1);
             M(UInt64_input) = values[(*index)++];
             break;
         default:
@@ -709,14 +739,15 @@ Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[]
 Status setBoolean(ModelInstance* comp, ValueReference vr, const bool values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
         case vr_Boolean_input:
+            ASSERT_NVALUES(1);
             M(Boolean_input) = values[(*index)++];
             break;
         case vr_Boolean_output:
+            ASSERT_NVALUES(1);
             M(Boolean_output) = values[(*index)++];
             break;
         default:
@@ -732,7 +763,6 @@ Status setBoolean(ModelInstance* comp, ValueReference vr, const bool values[], s
 Status setString(ModelInstance* comp, ValueReference vr, const char *const values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
@@ -741,6 +771,7 @@ Status setString(ModelInstance* comp, ValueReference vr, const char *const value
                 logError(comp, "Max. string length is %d bytes.", STRING_MAX_LEN);
                 return Error;
             }
+            ASSERT_NVALUES(1);
             strcpy(M(String_input), values[(*index)++]);
             break;
         default:
@@ -756,7 +787,6 @@ Status setString(ModelInstance* comp, ValueReference vr, const char *const value
 Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], const char* const values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
@@ -765,6 +795,7 @@ Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], co
                 logError(comp, "Max. binary size is %d bytes.", BINARY_MAX_LEN);
                 return Error;
             }
+            ASSERT_NVALUES(1);
             M(Binary_input_size) = size[*index];
             memcpy((void *)M(Binary_input), values[(*index)++], M(Binary_input_size));
             break;

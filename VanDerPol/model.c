@@ -28,28 +28,33 @@ Status calculateValues(ModelInstance *comp) {
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_time:
+            ASSERT_NVALUES(1);
             values[(*index)++] = comp->time;
             return OK;
         case vr_x0:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(x0);
             return OK;
         case vr_der_x0 :
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(der_x0);
             return OK;
         case vr_x1:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(x1);
             return OK;
         case vr_der_x1:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(der_x1);
             return OK;
         case vr_mu:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(mu);
             return OK;
         default:
@@ -61,14 +66,15 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
 Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
         case vr_x0:
+            ASSERT_NVALUES(1);
             M(x0) = values[(*index)++];
             break;
         case vr_x1:
+            ASSERT_NVALUES(1);
             M(x1) = values[(*index)++];
             break;
         case vr_mu:
@@ -79,6 +85,7 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
                 logError(comp, "Variable mu can only be set after instantiation, in initialization mode or event mode.");
                 return Error;
             }
+            ASSERT_NVALUES(1);
             M(mu) = values[(*index)++];
             break;
         default:
