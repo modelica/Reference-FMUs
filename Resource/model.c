@@ -126,13 +126,13 @@ Status calculateValues(ModelInstance *comp) {
 Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
     case vr_time:
+        ASSERT_NVALUES(1);
         values[(*index)++] = comp->time;
         return OK;
     default:
@@ -145,13 +145,13 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
 Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     calculateValues(comp);
 
     switch (vr) {
         case vr_y:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(y);
             return OK;
         default:

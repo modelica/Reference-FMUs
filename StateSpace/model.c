@@ -231,17 +231,19 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
 Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     switch (vr) {
         case vr_m:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(m);
             return OK;
         case vr_n:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(n);
             return OK;
         case vr_r:
+            ASSERT_NVALUES(1);
             values[(*index)++] = M(r);
             return OK;
         default:
@@ -253,7 +255,6 @@ Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t values[], size
 Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(values);
-    ASSERT_SIZE_T(nValues, 1);
     ASSERT_NOT_NULL2(index);
 
     if (comp->state != ConfigurationMode && comp->state != ReconfigurationMode) {
@@ -269,6 +270,7 @@ Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[]
                 logError(comp, "Variable m must not be greater than " xstr(M_MAX) ".");
                 return Error;
             }
+            ASSERT_NVALUES(1);
             M(m) = v;
             break;
         case vr_n:
@@ -276,6 +278,7 @@ Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[]
                 logError(comp, "Variable n must not be greater than " xstr(N_MAX) ".");
                 return Error;
             }
+            ASSERT_NVALUES(1);
             M(n) = v;
             break;
         case vr_r:
@@ -283,6 +286,7 @@ Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[]
                 logError(comp, "Variable r must not be greater than " xstr(R_MAX) ".");
                 return Error;
             }
+            ASSERT_NVALUES(1);
             M(r) = v;
             break;
         default:
