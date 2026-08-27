@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fmiLayeredStandardManifest
+<fmiDAEManifest
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://fmi-standard.org/fmi-ls-manifest"
   xmlns:fmi-ls="http://fmi-standard.org/fmi-ls-manifest"
   fmi-ls:fmi-ls-name="fmi-ls-dae"
-  fmi-ls:fmi-ls-version=""
+  fmi-ls:fmi-ls-version="1.0.0-alpha.1"
   fmi-ls:fmi-ls-description="Layered standard for DAE support in FMI">
   <EnableDAE valueReference="1"/>
-  <AlgebraicVariables>
-    <AlgebraicVariable
-      valueReference="6"
-      nominal="7"/>
-  </AlgebraicVariables>
+  <AlgebraicVariable
+    valueReference="6"
+    nominal="7"/>
   <ModelStructure>
     <ContinuousStateDerivative
       valueReference="3"
@@ -41,12 +39,9 @@
       valueReference="10"
       dependencies="6"
       dependenciesKind="constant"/>
-    <Residual>
-      <Formulation
-        index="1"
-        valueReference="8"
-        dependencies="2 4 6"
-        dependenciesKind="constant constant constant"/>
-    </Residual>
+    <Residual
+      valueReference="8"
+      dependencies="2 4 6"
+      dependenciesKind="constant constant constant"/>
   </ModelStructure>
-</fmiLayeredStandardManifest>
+</fmiDAEManifest>
