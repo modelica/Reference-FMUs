@@ -67,10 +67,6 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
             ASSERT_NVALUES(1);
             values[(*index)++] = M(y3);
             return OK;
-        case vr_y3_nominal:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = Y3_NOMINAL;
-            return OK;
         case vr_r:
             ASSERT_NVALUES(1);
             values[(*index)++] = M(r);

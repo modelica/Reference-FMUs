@@ -29,7 +29,6 @@ typedef enum {
     vr_y2,
     vr_der_y2,
     vr_y3,
-    vr_y3_nominal,
     vr_r,
     vr_g1,
     vr_g2,
