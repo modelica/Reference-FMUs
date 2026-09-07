@@ -26,7 +26,7 @@
       dependencies="2 4 6"
       dependenciesKind="constant constant constant"/>
     <InitialUnknown
-      valueReference="7"
+      valueReference="6"
       dependencies="2 4 6"
       dependenciesKind="constant constant constant"/>
     <EventIndicator
