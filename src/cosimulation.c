@@ -34,7 +34,7 @@ ModelInstance *createModelInstance(
     ModelInstance *comp = NULL;
 
     if (!instanceName || strlen(instanceName) == 0) {
-        if (cbLogger) {
+        if (cbLogger && loggingOn) {
 #if FMI_VERSION < 3
             cbLogger(componentEnvironment, "?", Error, "error", "Missing instance name.");
 #else
@@ -45,7 +45,7 @@ ModelInstance *createModelInstance(
     }
 
     if (!instantiationToken || strlen(instantiationToken) == 0) {
-        if (cbLogger) {
+        if (cbLogger && loggingOn) {
 #if FMI_VERSION < 3
             cbLogger(componentEnvironment, instanceName, Error, "error", "Missing GUID.");
 #else
@@ -56,7 +56,7 @@ ModelInstance *createModelInstance(
     }
 
     if (strcmp(instantiationToken, INSTANTIATION_TOKEN)) {
-        if (cbLogger) {
+        if (cbLogger && loggingOn) {
 #if FMI_VERSION < 3
             cbLogger(componentEnvironment, instanceName, Error, "error", "Wrong GUID.");
 #else
@@ -78,7 +78,7 @@ ModelInstance *createModelInstance(
         comp->resourceLocation     = resourceLocation ? strdup(resourceLocation) : NULL;
         comp->status               = OK;
         comp->logEvents            = loggingOn;
-        comp->logErrors            = true; // always log errors
+        comp->logErrors            = loggingOn;
         comp->nSteps               = 0;
         comp->earlyReturnAllowed   = false;
         comp->eventModeUsed        = false;
