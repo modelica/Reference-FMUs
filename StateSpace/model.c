@@ -262,31 +262,34 @@ Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[]
         return Error;
     }
 
-    const uint64_t v = values[(*index)++];
+    uint64_t v;
 
     switch (vr) {
         case vr_m:
+            ASSERT_NVALUES(1);
+            v = values[(*index)++];
             if (v > M_MAX) {
                 logError(comp, "Variable m must not be greater than " xstr(M_MAX) ".");
                 return Error;
             }
-            ASSERT_NVALUES(1);
             M(m) = v;
             break;
         case vr_n:
+            ASSERT_NVALUES(1);
+            v = values[(*index)++];
             if (v > N_MAX) {
                 logError(comp, "Variable n must not be greater than " xstr(N_MAX) ".");
                 return Error;
             }
-            ASSERT_NVALUES(1);
             M(n) = v;
             break;
         case vr_r:
+            ASSERT_NVALUES(1);
+            v = values[(*index)++];
             if (v > R_MAX) {
                 logError(comp, "Variable r must not be greater than " xstr(R_MAX) ".");
                 return Error;
             }
-            ASSERT_NVALUES(1);
             M(r) = v;
             break;
         default:
