@@ -18,10 +18,10 @@ set_property(CACHE FMI_ARCHITECTURE PROPERTY STRINGS "" "aarch64" "x86" "x86_64"
 if (NOT FMI_ARCHITECTURE)
   if (${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "AMD64|x86_64")
     set(FMI_ARCHITECTURE "x86_64")
-  elseif (${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "aarch64")
+  elseif (${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "aarch64|arm64")
     set(FMI_ARCHITECTURE "aarch64")
   else ()
-    message(FATAL_ERROR "Unknown System Architecture: ${CMAKE_SYSTEM_PROCESSOR}")
+    message(FATAL_ERROR "Unknown System Architecture: ${CMAKE_HOST_SYSTEM_PROCESSOR}")
   endif ()
 endif ()
 
