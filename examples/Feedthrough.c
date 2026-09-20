@@ -218,7 +218,7 @@ FMIStatus recordVariables(FMIInstance *S, double time, FILE *outputFile) {
     fprintf(outputFile, "%.16g,", Float64_values[1]);
     fprintf(outputFile, "%" PRId32 ",", Int32_values[0]);
     fprintf(outputFile, "%d,", Boolean_values[0]);
-    fprintf(outputFile, "%\"%s\",", String_values[0]);
+    fprintf(outputFile, "%s", String_values[0]);
     fprintf(outputFile, ",%" PRId32 "\n", Int32_values[1]);
 
 #elif FMI_VERSION == 2
@@ -244,7 +244,7 @@ FMIStatus recordVariables(FMIInstance *S, double time, FILE *outputFile) {
     fprintf(outputFile, "%.16g,", Float64_values[1]);
     fprintf(outputFile, "%" PRId32 ",", Int32_values[0]);
     fprintf(outputFile, "%d,", Boolean_values[0]);
-    fprintf(outputFile, "%\"%s\",", String_values[0]);
+    fprintf(outputFile, "%s", String_values[0]);
     fprintf(outputFile, ",%" PRId32 "\n", Int32_values[1]);
 
 #elif FMI_VERSION == 3
@@ -316,7 +316,7 @@ FMIStatus recordVariables(FMIInstance *S, double time, FILE *outputFile) {
     fprintf(outputFile, "%" PRId64 ",", Int64_values[0]);
     fprintf(outputFile, "%" PRIu64 ",", UInt64_values[0]);
     fprintf(outputFile, "%d,", Boolean_values[0]);
-    fprintf(outputFile, "%\"%s\",", String_values[0]);
+    fprintf(outputFile, "%s", String_values[0]);
 
     for (size_t i = 0; i < Binary_sizes[0]; i++) {
 
