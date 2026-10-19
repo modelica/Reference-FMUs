@@ -589,9 +589,7 @@ Status activateModelPartition(ModelInstance* comp, ValueReference vr, double act
 }
 #endif
 
-/* Portable FMU state blob (little-endian, no pointers). */
-#define SERIALIZED_FMU_STATE_MAGIC   0x52464D55u  /* 'RFMU' */
-#define SERIALIZED_FMU_STATE_VERSION 4u
+/* FMU state blob (little-endian wire format, no pointers). */
 
 typedef struct {
     uint8_t *data;
@@ -716,6 +714,31 @@ static bool sb_read_bytes(const SerializedBuffer *sb, size_t *pos, void *dst, si
     return true;
 }
 
+static size_t serialized_instantiation_token_size(void) {
+    return sizeof(uint32_t) + strlen(INSTANTIATION_TOKEN);
+}
+
+static bool sb_write_instantiation_token(SerializedBuffer *sb) {
+    const char *token = INSTANTIATION_TOKEN;
+    const uint32_t len = (uint32_t)strlen(token);
+    return sb_write_u32(sb, len) && sb_write_bytes(sb, token, len);
+}
+
+static bool sb_read_instantiation_token(const SerializedBuffer *sb, size_t *pos) {
+    uint32_t len = 0;
+    const char *expected = INSTANTIATION_TOKEN;
+    const size_t expected_len = strlen(expected);
+
+    if (!sb_read_u32(sb, pos, &len) || len != expected_len || *pos + len > sb->size) {
+        return false;
+    }
+    if (memcmp(sb->data + *pos, expected, len) != 0) {
+        return false;
+    }
+    *pos += len;
+    return true;
+}
+
 size_t serializedFMUStateSize(const ModelInstance *comp) {
     size_t size = 0;
 #if MAX_EVENT_INDICATORS > 0
@@ -729,7 +752,7 @@ size_t serializedFMUStateSize(const ModelInstance *comp) {
     const size_t nx = 0;
 #endif
 
-    size += sizeof(uint32_t) + sizeof(uint32_t); /* magic, version */
+    size += serialized_instantiation_token_size();
     size += 3 * sizeof(double); /* startTime, stopTime, time */
     size += 2 * sizeof(uint32_t); /* status, state */
     size += 7 * sizeof(uint8_t); /* event / dirty flags */
@@ -755,8 +778,7 @@ Status serializeFMUState(const ModelInstance *comp, uint8_t *buffer, size_t size
         return Error;
     }
 
-    if (!sb_write_u32(&sb, SERIALIZED_FMU_STATE_MAGIC)
-        || !sb_write_u32(&sb, SERIALIZED_FMU_STATE_VERSION)
+    if (!sb_write_instantiation_token(&sb)
         || !sb_write_f64(&sb, comp->startTime)
         || !sb_write_f64(&sb, comp->stopTime)
         || !sb_write_f64(&sb, comp->time)
@@ -822,8 +844,6 @@ Status serializeFMUState(const ModelInstance *comp, uint8_t *buffer, size_t size
 Status deserializeFMUState(ModelInstance *comp, const uint8_t *buffer, size_t size) {
     SerializedBuffer sb;
     size_t pos = 0;
-    uint32_t magic = 0;
-    uint32_t version = 0;
     uint32_t modelDataSize = 0;
     uint32_t status = 0;
     uint32_t state = 0;
@@ -834,10 +854,7 @@ Status deserializeFMUState(ModelInstance *comp, const uint8_t *buffer, size_t si
 
     sb_init(&sb, (uint8_t *)buffer, size);
 
-    if (!sb_read_u32(&sb, &pos, &magic)
-        || magic != SERIALIZED_FMU_STATE_MAGIC
-        || !sb_read_u32(&sb, &pos, &version)
-        || version != SERIALIZED_FMU_STATE_VERSION) {
+    if (!sb_read_instantiation_token(&sb, &pos)) {
         return Error;
     }
 
