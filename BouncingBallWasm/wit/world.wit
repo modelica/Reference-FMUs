@@ -1,0 +1,77 @@
+
+package fmi:fmi3@3.0.0;
+
+// ── Model Exchange FMU ────────────────────────────────────────────────────────
+
+// World implemented by a Model Exchange FMU component.
+//
+// The FMU exports the `common` and `model-exchange` interfaces.
+// The host provides logging callbacks.
+world model-exchange-fmu {
+  // ── Imports (host provides) ──────────────────────────────────────────────
+  import callbacks;
+
+  // ── Exports (FMU provides) ───────────────────────────────────────────────
+
+  /// Common variable access, lifecycle, and state-save/restore functions.
+  export common;
+
+  /// Model-Exchange–specific functions (set-time, derivatives, event indicators).
+  export model-exchange;
+}
+
+// ── Co-Simulation FMU ─────────────────────────────────────────────────────────
+
+// World implemented by a Co-Simulation FMU component.
+//
+// The FMU exports the `common` and `co-simulation` interfaces.
+// The host provides logging and (optionally) intermediate-update callbacks.
+world co-simulation-fmu {
+  // ── Imports (host provides) ──────────────────────────────────────────────
+  import callbacks;
+
+  /// Optional: only required when instantiate-co-simulation is called with
+  /// early-return-allowed = true.
+  import intermediate-update-callbacks;
+
+  // ── Exports (FMU provides) ───────────────────────────────────────────────
+  export common;
+  export co-simulation;
+}
+
+// ── Scheduled Execution FMU ───────────────────────────────────────────────────
+
+// World implemented by a Scheduled Execution FMU component.
+//
+// The FMU exports the `common` and `scheduled-execution` interfaces.
+// The host provides logging, clock-update, and preemption callbacks.
+world scheduled-execution-fmu {
+  // ── Imports (host provides) ──────────────────────────────────────────────
+
+  /// All four callbacks (log-message, clock-update,
+  /// lock-preemption, unlock-preemption) are mandatory for SE.
+  import callbacks;
+
+  // ── Exports (FMU provides) ───────────────────────────────────────────────
+  export common;
+  export scheduled-execution;
+}
+
+// ── Master Algorithm (importer) ───────────────────────────────────────────────
+
+// World implemented by a master algorithm / simulation environment that
+// can host all three FMU types simultaneously.
+//
+// This is a convenience world for toolchain authors; real masters typically
+// target one interface kind at a time.
+world master-algorithm {
+  // The master imports (i.e. uses) each FMU interface kind.
+  import common;
+  import model-exchange;
+  import co-simulation;
+  import scheduled-execution;
+
+  // The master exports the callback interfaces so FMUs can call back into it.
+  export callbacks;
+  export intermediate-update-callbacks;
+}
