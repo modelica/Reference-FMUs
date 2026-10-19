@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <stdint.h>
 #include "config.h"
 #include "cosimulation.h"
 
@@ -588,11 +589,358 @@ Status activateModelPartition(ModelInstance* comp, ValueReference vr, double act
 }
 #endif
 
+/* Portable FMU state blob (little-endian, no pointers). */
+#define SERIALIZED_FMU_STATE_MAGIC   0x52464D55u  /* 'RFMU' */
+#define SERIALIZED_FMU_STATE_VERSION 4u
+
+typedef struct {
+    uint8_t *data;
+    size_t size;
+    size_t pos;
+} SerializedBuffer;
+
+static void sb_init(SerializedBuffer *sb, uint8_t *data, size_t size) {
+    sb->data = data;
+    sb->size = size;
+    sb->pos = 0;
+}
+
+static bool sb_remaining(const SerializedBuffer *sb, size_t n) {
+    return sb->pos + n <= sb->size;
+}
+
+static bool sb_write_u8(SerializedBuffer *sb, uint8_t value) {
+    if (!sb_remaining(sb, 1)) {
+        return false;
+    }
+    sb->data[sb->pos++] = value;
+    return true;
+}
+
+static bool sb_read_u8(const SerializedBuffer *sb, size_t *pos, uint8_t *value) {
+    if (*pos + 1 > sb->size) {
+        return false;
+    }
+    *value = sb->data[(*pos)++];
+    return true;
+}
+
+static bool sb_write_u32(SerializedBuffer *sb, uint32_t value) {
+    if (!sb_remaining(sb, 4)) {
+        return false;
+    }
+    sb->data[sb->pos++] = (uint8_t)(value);
+    sb->data[sb->pos++] = (uint8_t)(value >> 8);
+    sb->data[sb->pos++] = (uint8_t)(value >> 16);
+    sb->data[sb->pos++] = (uint8_t)(value >> 24);
+    return true;
+}
+
+static bool sb_read_u32(const SerializedBuffer *sb, size_t *pos, uint32_t *value) {
+    if (*pos + 4 > sb->size) {
+        return false;
+    }
+    *value = (uint32_t)sb->data[*pos]
+        | ((uint32_t)sb->data[*pos + 1] << 8)
+        | ((uint32_t)sb->data[*pos + 2] << 16)
+        | ((uint32_t)sb->data[*pos + 3] << 24);
+    *pos += 4;
+    return true;
+}
+
+static bool sb_write_u64(SerializedBuffer *sb, uint64_t value) {
+    if (!sb_remaining(sb, 8)) {
+        return false;
+    }
+    for (int i = 0; i < 8; i++) {
+        sb->data[sb->pos++] = (uint8_t)(value >> (8 * i));
+    }
+    return true;
+}
+
+static bool sb_read_u64(const SerializedBuffer *sb, size_t *pos, uint64_t *value) {
+    if (*pos + 8 > sb->size) {
+        return false;
+    }
+    *value = 0;
+    for (int i = 0; i < 8; i++) {
+        *value |= (uint64_t)sb->data[*pos + i] << (8 * i);
+    }
+    *pos += 8;
+    return true;
+}
+
+static bool sb_write_f64(SerializedBuffer *sb, double value) {
+    uint64_t bits = 0;
+    memcpy(&bits, &value, sizeof(bits));
+    return sb_write_u64(sb, bits);
+}
+
+static bool sb_read_f64(const SerializedBuffer *sb, size_t *pos, double *value) {
+    uint64_t bits = 0;
+    if (!sb_read_u64(sb, pos, &bits)) {
+        return false;
+    }
+    memcpy(value, &bits, sizeof(*value));
+    return true;
+}
+
+static bool sb_write_bool(SerializedBuffer *sb, bool value) {
+    return sb_write_u8(sb, value ? 1u : 0u);
+}
+
+static bool sb_read_bool(const SerializedBuffer *sb, size_t *pos, bool *value) {
+    uint8_t b = 0;
+    if (!sb_read_u8(sb, pos, &b)) {
+        return false;
+    }
+    *value = b != 0;
+    return true;
+}
+
+static bool sb_write_bytes(SerializedBuffer *sb, const void *src, size_t n) {
+    if (!sb_remaining(sb, n)) {
+        return false;
+    }
+    memcpy(sb->data + sb->pos, src, n);
+    sb->pos += n;
+    return true;
+}
+
+static bool sb_read_bytes(const SerializedBuffer *sb, size_t *pos, void *dst, size_t n) {
+    if (*pos + n > sb->size) {
+        return false;
+    }
+    memcpy(dst, sb->data + *pos, n);
+    *pos += n;
+    return true;
+}
+
+size_t serializedFMUStateSize(const ModelInstance *comp) {
+    size_t size = 0;
+#if MAX_EVENT_INDICATORS > 0
+    const size_t nz = comp ? comp->nz : 0;
+#else
+    const size_t nz = 0;
+#endif
+#if MAX_CONTINUOUS_STATES > 0
+    const size_t nx = comp ? comp->nx : 0;
+#else
+    const size_t nx = 0;
+#endif
+
+    size += sizeof(uint32_t) + sizeof(uint32_t); /* magic, version */
+    size += 3 * sizeof(double); /* startTime, stopTime, time */
+    size += 2 * sizeof(uint32_t); /* status, state */
+    size += 7 * sizeof(uint8_t); /* event / dirty flags */
+    size += sizeof(double); /* nextEventTime */
+    size += sizeof(uint64_t); /* nSteps */
+    size += 2 * sizeof(uint8_t); /* earlyReturnAllowed, eventModeUsed */
+    size += sizeof(double); /* nextCommunicationPoint */
+    size += sizeof(uint32_t) + nz * 2 * sizeof(double);
+    size += sizeof(uint32_t) + nx * 2 * sizeof(double);
+    size += sizeof(uint32_t) + sizeof(ModelData);
+    return size;
+}
+
+Status serializeFMUState(const ModelInstance *comp, uint8_t *buffer, size_t size) {
+    SerializedBuffer sb;
+    sb_init(&sb, buffer, size);
+
+    if (!comp || !buffer) {
+        return Error;
+    }
+
+    if (size != serializedFMUStateSize(comp)) {
+        return Error;
+    }
+
+    if (!sb_write_u32(&sb, SERIALIZED_FMU_STATE_MAGIC)
+        || !sb_write_u32(&sb, SERIALIZED_FMU_STATE_VERSION)
+        || !sb_write_f64(&sb, comp->startTime)
+        || !sb_write_f64(&sb, comp->stopTime)
+        || !sb_write_f64(&sb, comp->time)
+        || !sb_write_u32(&sb, (uint32_t)comp->status)
+        || !sb_write_u32(&sb, (uint32_t)comp->state)
+        || !sb_write_bool(&sb, comp->newDiscreteStatesNeeded)
+        || !sb_write_bool(&sb, comp->terminateSimulation)
+        || !sb_write_bool(&sb, comp->nominalsOfContinuousStatesChanged)
+        || !sb_write_bool(&sb, comp->valuesOfContinuousStatesChanged)
+        || !sb_write_bool(&sb, comp->nextEventTimeDefined)
+        || !sb_write_bool(&sb, comp->clocksTicked)
+        || !sb_write_bool(&sb, comp->isDirtyValues)
+        || !sb_write_f64(&sb, comp->nextEventTime)
+        || !sb_write_u64(&sb, comp->nSteps)
+        || !sb_write_bool(&sb, comp->earlyReturnAllowed)
+        || !sb_write_bool(&sb, comp->eventModeUsed)
+        || !sb_write_f64(&sb, comp->nextCommunicationPoint)) {
+        return Error;
+    }
+
+    {
+#if MAX_EVENT_INDICATORS > 0
+        if (!sb_write_u32(&sb, (uint32_t)comp->nz)) {
+            return Error;
+        }
+        for (size_t i = 0; i < comp->nz; i++) {
+            if (!sb_write_f64(&sb, comp->z[i]) || !sb_write_f64(&sb, comp->prez[i])) {
+                return Error;
+            }
+        }
+#else
+        if (!sb_write_u32(&sb, 0)) {
+            return Error;
+        }
+#endif
+    }
+
+    {
+#if MAX_CONTINUOUS_STATES > 0
+        if (!sb_write_u32(&sb, (uint32_t)comp->nx)) {
+            return Error;
+        }
+        for (size_t i = 0; i < comp->nx; i++) {
+            if (!sb_write_f64(&sb, comp->x[i]) || !sb_write_f64(&sb, comp->dx[i])) {
+                return Error;
+            }
+        }
+#else
+        if (!sb_write_u32(&sb, 0)) {
+            return Error;
+        }
+#endif
+    }
+
+    if (!sb_write_u32(&sb, (uint32_t)sizeof(ModelData))
+        || !sb_write_bytes(&sb, &comp->modelData, sizeof(ModelData))) {
+        return Error;
+    }
+
+    return OK;
+}
+
+Status deserializeFMUState(ModelInstance *comp, const uint8_t *buffer, size_t size) {
+    SerializedBuffer sb;
+    size_t pos = 0;
+    uint32_t magic = 0;
+    uint32_t version = 0;
+    uint32_t modelDataSize = 0;
+    uint32_t status = 0;
+    uint32_t state = 0;
+
+    if (!comp || !buffer) {
+        return Error;
+    }
+
+    sb_init(&sb, (uint8_t *)buffer, size);
+
+    if (!sb_read_u32(&sb, &pos, &magic)
+        || magic != SERIALIZED_FMU_STATE_MAGIC
+        || !sb_read_u32(&sb, &pos, &version)
+        || version != SERIALIZED_FMU_STATE_VERSION) {
+        return Error;
+    }
+
+    if (!sb_read_f64(&sb, &pos, &comp->startTime)
+        || !sb_read_f64(&sb, &pos, &comp->stopTime)
+        || !sb_read_f64(&sb, &pos, &comp->time)
+        || !sb_read_u32(&sb, &pos, &status)
+        || !sb_read_u32(&sb, &pos, &state)
+        || !sb_read_bool(&sb, &pos, &comp->newDiscreteStatesNeeded)
+        || !sb_read_bool(&sb, &pos, &comp->terminateSimulation)
+        || !sb_read_bool(&sb, &pos, &comp->nominalsOfContinuousStatesChanged)
+        || !sb_read_bool(&sb, &pos, &comp->valuesOfContinuousStatesChanged)
+        || !sb_read_bool(&sb, &pos, &comp->nextEventTimeDefined)
+        || !sb_read_bool(&sb, &pos, &comp->clocksTicked)
+        || !sb_read_bool(&sb, &pos, &comp->isDirtyValues)
+        || !sb_read_f64(&sb, &pos, &comp->nextEventTime)
+        || !sb_read_u64(&sb, &pos, &comp->nSteps)
+        || !sb_read_bool(&sb, &pos, &comp->earlyReturnAllowed)
+        || !sb_read_bool(&sb, &pos, &comp->eventModeUsed)
+        || !sb_read_f64(&sb, &pos, &comp->nextCommunicationPoint)) {
+        return Error;
+    }
+
+    comp->status = (Status)status;
+    comp->state = (ModelState)state;
+
+    {
+        uint32_t nz = 0;
+        if (!sb_read_u32(&sb, &pos, &nz)) {
+            return Error;
+        }
+#if MAX_EVENT_INDICATORS > 0
+        if (nz > MAX_EVENT_INDICATORS) {
+            return Error;
+        }
+        comp->nz = nz;
+#else
+        if (nz != 0) {
+            return Error;
+        }
+#endif
+        for (size_t i = 0; i < nz; i++) {
+            double z = 0.0;
+            double prez = 0.0;
+            if (!sb_read_f64(&sb, &pos, &z) || !sb_read_f64(&sb, &pos, &prez)) {
+                return Error;
+            }
+#if MAX_EVENT_INDICATORS > 0
+            comp->z[i] = z;
+            comp->prez[i] = prez;
+#endif
+        }
+    }
+
+    {
+        uint32_t nx = 0;
+        if (!sb_read_u32(&sb, &pos, &nx)) {
+            return Error;
+        }
+#if MAX_CONTINUOUS_STATES > 0
+        if (nx > MAX_CONTINUOUS_STATES) {
+            return Error;
+        }
+        comp->nx = nx;
+#else
+        if (nx != 0) {
+            return Error;
+        }
+#endif
+        for (size_t i = 0; i < nx; i++) {
+            double x = 0.0;
+            double dx = 0.0;
+            if (!sb_read_f64(&sb, &pos, &x) || !sb_read_f64(&sb, &pos, &dx)) {
+                return Error;
+            }
+#if MAX_CONTINUOUS_STATES > 0
+            comp->x[i] = x;
+            comp->dx[i] = dx;
+#endif
+        }
+    }
+
+    if (!sb_read_u32(&sb, &pos, &modelDataSize) || modelDataSize != (uint32_t)sizeof(ModelData)) {
+        return Error;
+    }
+    if (!sb_read_bytes(&sb, &pos, &comp->modelData, sizeof(ModelData))) {
+        return Error;
+    }
+
+    if (pos != size || size != serializedFMUStateSize(comp)) {
+        return Error;
+    }
+
+    return OK;
+}
+
 Status getFMUState(ModelInstance* comp, void** FMUState) {
 
-    CALL(s_reallocate(comp, FMUState, sizeof(ModelInstance)));
+    const size_t stateSize = serializedFMUStateSize(comp);
 
-    memcpy(*FMUState, comp, sizeof(ModelInstance));
+    CALL(s_reallocate(comp, FMUState, stateSize));
+
+    CALL(serializeFMUState(comp, (uint8_t *)*FMUState, stateSize));
 
     return OK;
 }
@@ -602,63 +950,7 @@ Status setFMUState(ModelInstance* comp, void* FMUState) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(FMUState);
 
-    ModelInstance* s = (ModelInstance*)FMUState;
-
-    comp->startTime = s->startTime;
-    comp->stopTime = s->stopTime;
-    comp->time = s->time;
-    // instanceName
-    // type
-    // resourceLocation
-
-    comp->status = s->status;
-
-    // logger
-    // intermediateUpdate
-    // clockUpdate
-
-    // lockPreemption
-    // unlockPreemption
-
-    // logEvents
-    // logErrors
-
-    // componentEnvironment
-    comp->state = s->state;
-
-    comp->newDiscreteStatesNeeded = s->newDiscreteStatesNeeded;
-    comp->terminateSimulation = s->terminateSimulation;
-    comp->nominalsOfContinuousStatesChanged = s->nominalsOfContinuousStatesChanged;
-    comp->valuesOfContinuousStatesChanged = s->valuesOfContinuousStatesChanged;
-    comp->nextEventTimeDefined = s->nextEventTimeDefined;
-    comp->nextEventTime = s->nextEventTime;
-    comp->clocksTicked = s->clocksTicked;
-
-    comp->isDirtyValues = s->isDirtyValues;
-
-    memcpy(& comp->modelData, & s->modelData, sizeof(ModelData));
-
-    comp->nSteps = s->nSteps;
-
-    comp->earlyReturnAllowed = s->earlyReturnAllowed;
-    comp->eventModeUsed = s->eventModeUsed;
-    comp->nextCommunicationPoint = s->nextCommunicationPoint;
-
-#if MAX_EVENT_INDICATORS > 0
-    comp->nz = s->nz;
-    memcpy(comp->z, s->z, s->nz * sizeof(double));
-    memcpy(comp->prez, s->prez, s->nz * sizeof(double));
-#endif
-
-#if MAX_CONTINUOUS_STATES > 0
-    comp->nx = s->nx;
-    memcpy(comp->x, s->x, s->nx * sizeof(double));
-    memcpy(comp->dx, s->dx, s->nx * sizeof(double));
-#endif
-
-    comp->nSteps = s->nSteps;
-
-    return OK;
+    return deserializeFMUState(comp, (const uint8_t *)FMUState, serializedFMUStateSize(comp));
 }
 
 Status doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {

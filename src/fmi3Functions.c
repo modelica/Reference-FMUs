@@ -783,12 +783,11 @@ fmi3Status fmi3FreeFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
 fmi3Status fmi3SerializedFMUStateSize(fmi3Instance instance,
     fmi3FMUState  FMUState,
     size_t* size) {
-    UNUSED(instance);
     UNUSED(FMUState);
 
     BEGIN_FUNCTION(SerializedFMUStateSize);
 
-    *size = sizeof(ModelInstance);
+    *size = serializedFMUStateSize((const ModelInstance *)instance);
 
     END_FUNCTION();
 }
@@ -803,11 +802,11 @@ fmi3Status fmi3SerializeFMUState(fmi3Instance instance,
         return fmi3Error;
     }
 
-    if (invalidNumber(S, "fmi3SerializeFMUState", "size", size, sizeof(ModelInstance))) {
+    if (invalidNumber(S, "fmi3SerializeFMUState", "size", size, serializedFMUStateSize(S))) {
         return fmi3Error;
     }
 
-    memcpy(serializedState, FMUState, sizeof(ModelInstance));
+    memcpy(serializedState, FMUState, size);
 
     END_FUNCTION();
 }
@@ -818,19 +817,19 @@ fmi3Status fmi3DeserializeFMUState(fmi3Instance instance,
     fmi3FMUState* FMUState) {
     BEGIN_FUNCTION(DeserializeFMUState);
 
-    if (invalidNumber(S, "fmi3DeserializeFMUState", "size", size, sizeof(ModelInstance))) {
+    if (invalidNumber(S, "fmi3DeserializeFMUState", "size", size, serializedFMUStateSize(S))) {
         return fmi3Error;
     }
 
     if (*FMUState == NULL) {
-        *FMUState = calloc(1, sizeof(ModelInstance));
+        *FMUState = calloc(1, size);
         if (*FMUState == NULL) {
-            printf("Failed to allocate memory for FMUState.\n");
+            logError(S, "Failed to allocate memory for FMUState.");
             return fmi3Error;
         }
     }
 
-    memcpy(*FMUState, serializedState, sizeof(ModelInstance));
+    memcpy(*FMUState, serializedState, size);
 
     END_FUNCTION();
 }

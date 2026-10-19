@@ -385,10 +385,9 @@ fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate* FMUstate) {
 }
 
 fmi2Status fmi2SerializedFMUstateSize(fmi2Component c, fmi2FMUstate FMUstate, size_t *size) {
-    UNUSED(c);
     UNUSED(FMUstate);
     BEGIN_FUNCTION(SerializedFMUstateSize);
-    *size = sizeof(ModelInstance);
+    *size = serializedFMUStateSize((const ModelInstance *)c);
     END_FUNCTION();
 }
 
@@ -399,11 +398,11 @@ fmi2Status fmi2SerializeFMUstate(fmi2Component c, fmi2FMUstate FMUstate, fmi2Byt
         return fmi2Error;
     }
 
-    if (invalidNumber(S, "fmi2SerializeFMUstate", "size", size, sizeof(ModelInstance))) {
+    if (invalidNumber(S, "fmi2SerializeFMUstate", "size", size, serializedFMUStateSize(S))) {
         return fmi2Error;
     }
 
-    memcpy(serializedState, FMUstate, sizeof(ModelInstance));
+    memcpy(serializedState, FMUstate, size);
 
     END_FUNCTION();
 }
@@ -411,15 +410,19 @@ fmi2Status fmi2SerializeFMUstate(fmi2Component c, fmi2FMUstate FMUstate, fmi2Byt
 fmi2Status fmi2DeSerializeFMUstate (fmi2Component c, const fmi2Byte serializedState[], size_t size, fmi2FMUstate* FMUstate) {
     BEGIN_FUNCTION(DeSerializeFMUstate);
 
-    if (invalidNumber(S, "fmi2DeSerializeFMUstate", "size", size, sizeof(ModelInstance))) {
+    if (invalidNumber(S, "fmi2DeSerializeFMUstate", "size", size, serializedFMUStateSize(S))) {
         return fmi2Error;
     }
 
     if (*FMUstate == NULL) {
-        *FMUstate = calloc(1, sizeof(ModelInstance));
+        *FMUstate = calloc(1, size);
+        if (*FMUstate == NULL) {
+            logError(S, "Failed to allocate memory for FMUstate.");
+            return fmi2Error;
+        }
     }
 
-    memcpy(*FMUstate, serializedState, sizeof(ModelInstance));
+    memcpy(*FMUstate, serializedState, size);
 
     END_FUNCTION();
 }
