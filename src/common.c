@@ -17,6 +17,26 @@
 #define CALL(f) do { const Status status = f; if (status != OK) return status; } while (false)
 
 
+
+static bool resourceLocationEndsWithFileSeparator(const char *resourceLocation) {
+
+    if (!resourceLocation) {
+        return true;
+    }
+
+    const size_t len = strlen(resourceLocation);
+
+    if (len == 0) {
+        return false;
+    }
+
+#ifdef _WIN32
+    return resourceLocation[len - 1] == '\\' || resourceLocation[len - 1] == '/';
+#else
+    return resourceLocation[len - 1] == '/';
+#endif
+}
+
 ModelInstance *createModelInstance(
     loggerType cbLogger,
     intermediateUpdateType intermediateUpdate,
@@ -51,12 +71,25 @@ ModelInstance *createModelInstance(
         return NULL;
     }
 
+    
     if (strcmp(instantiationToken, INSTANTIATION_TOKEN)) {
         if (cbLogger) {
 #if FMI_VERSION < 3
             cbLogger(componentEnvironment, instanceName, Error, "error", "Wrong GUID.");
 #else
             cbLogger(componentEnvironment, Error, "error", "Wrong instantiationToken.");
+#endif
+        }
+        return NULL;
+    }
+    if (resourceLocation && !resourceLocationEndsWithFileSeparator(resourceLocation)) {
+        if (cbLogger) {
+#if FMI_VERSION < 3
+            cbLogger(componentEnvironment, instanceName, Error, "error",
+                "resourceLocation must end with a file separator.");
+#else
+            cbLogger(componentEnvironment, Error, "error",
+                "resourceLocation must end with a file separator.");
 #endif
         }
         return NULL;
