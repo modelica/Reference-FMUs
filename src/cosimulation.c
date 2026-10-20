@@ -740,17 +740,10 @@ static bool sb_read_instantiation_token(const SerializedBuffer *sb, size_t *pos)
 }
 
 size_t serializedFMUStateSize(const ModelInstance *comp) {
+
+    if (!comp) return 0;
+
     size_t size = 0;
-#if MAX_EVENT_INDICATORS > 0
-    const size_t nz = comp ? comp->nz : 0;
-#else
-    const size_t nz = 0;
-#endif
-#if MAX_CONTINUOUS_STATES > 0
-    const size_t nx = comp ? comp->nx : 0;
-#else
-    const size_t nx = 0;
-#endif
 
     size += serialized_instantiation_token_size();
     size += 3 * sizeof(double); /* startTime, stopTime, time */
@@ -760,8 +753,8 @@ size_t serializedFMUStateSize(const ModelInstance *comp) {
     size += sizeof(uint64_t); /* nSteps */
     size += 2 * sizeof(uint8_t); /* earlyReturnAllowed, eventModeUsed */
     size += sizeof(double); /* nextCommunicationPoint */
-    size += sizeof(uint32_t) + nz * 2 * sizeof(double);
-    size += sizeof(uint32_t) + nx * 2 * sizeof(double);
+    size += sizeof(uint32_t) + comp->nz * 2 * sizeof(double);
+    size += sizeof(uint32_t) + comp->nx * 2 * sizeof(double);
     size += sizeof(uint32_t) + sizeof(ModelData);
     return size;
 }
@@ -799,38 +792,24 @@ Status serializeFMUState(const ModelInstance *comp, uint8_t *buffer, size_t size
         return Error;
     }
 
-    {
-#if MAX_EVENT_INDICATORS > 0
-        if (!sb_write_u32(&sb, (uint32_t)comp->nz)) {
-            return Error;
-        }
-        for (size_t i = 0; i < comp->nz; i++) {
-            if (!sb_write_f64(&sb, comp->z[i]) || !sb_write_f64(&sb, comp->prez[i])) {
-                return Error;
-            }
-        }
-#else
-        if (!sb_write_u32(&sb, 0)) {
-            return Error;
-        }
-#endif
+    if (!sb_write_u32(&sb, (uint32_t)comp->nz)) {
+        return Error;
     }
 
-    {
-#if MAX_CONTINUOUS_STATES > 0
-        if (!sb_write_u32(&sb, (uint32_t)comp->nx)) {
+    for (size_t i = 0; i < comp->nz; i++) {
+        if (!sb_write_f64(&sb, comp->z[i]) || !sb_write_f64(&sb, comp->prez[i])) {
             return Error;
         }
-        for (size_t i = 0; i < comp->nx; i++) {
-            if (!sb_write_f64(&sb, comp->x[i]) || !sb_write_f64(&sb, comp->dx[i])) {
-                return Error;
-            }
-        }
-#else
-        if (!sb_write_u32(&sb, 0)) {
+    }
+
+    if (!sb_write_u32(&sb, (uint32_t)comp->nx)) {
+        return Error;
+    }
+    
+    for (size_t i = 0; i < comp->nx; i++) {
+        if (!sb_write_f64(&sb, comp->x[i]) || !sb_write_f64(&sb, comp->dx[i])) {
             return Error;
         }
-#endif
     }
 
     if (!sb_write_u32(&sb, (uint32_t)sizeof(ModelData))
