@@ -3,6 +3,7 @@
   fmiVersion="3.0"
   modelName="Resource"
   description="This model loads data from a resource file"
+  license="2-Clause BSD License"
   generationTool="Reference FMUs (development build)"
   instantiationToken="{7b9c2114-2ce5-4076-a138-2cbc69e069e5}">
 

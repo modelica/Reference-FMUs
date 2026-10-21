@@ -3,6 +3,7 @@
   fmiVersion="3.0"
   modelName="Dahlquist"
   description="This model implements the Dahlquist test equation"
+  license="2-Clause BSD License"
   generationTool="Reference FMUs (development build)"
   instantiationToken="{221063D2-EF4A-45FE-B954-B5BFEEA9A59B}">
 

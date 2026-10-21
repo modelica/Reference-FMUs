@@ -3,6 +3,7 @@
   fmiVersion="3.0"
   modelName="Stair"
   description="This model generates a stair signal using time events"
+  license="2-Clause BSD License"
   generationTool="Reference FMUs (development build)"
   instantiationToken="{BD403596-3166-4232-ABC2-132BDF73E644}">
 
