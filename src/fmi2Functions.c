@@ -471,18 +471,20 @@ fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t
 
 fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {
     BEGIN_FUNCTION(GetFMUstate);
-    getFMUState(S, FMUstate);
+    ASSERT_NOT_NULL(FMUstate);
+    CALL(getFMUState(S, FMUstate));
     END_FUNCTION();
 }
 
 fmi2Status fmi2SetFMUstate(fmi2Component c, fmi2FMUstate FMUstate) {
     BEGIN_FUNCTION(SetFMUstate);
-    setFMUState(S, FMUstate);
+    CALL(setFMUState(S, FMUstate));
     END_FUNCTION();
 }
 
 fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate* FMUstate) {
     BEGIN_FUNCTION(FreeFMUstate);
+    ASSERT_NOT_NULL(FMUstate);
     free(*FMUstate);
     *FMUstate = NULL;
     END_FUNCTION();
@@ -492,6 +494,7 @@ fmi2Status fmi2SerializedFMUstateSize(fmi2Component c, fmi2FMUstate FMUstate, si
     UNUSED(c);
     UNUSED(FMUstate);
     BEGIN_FUNCTION(SerializedFMUstateSize);
+    ASSERT_NOT_NULL(size);
     *size = sizeof(ModelInstance);
     END_FUNCTION();
 }
@@ -500,6 +503,10 @@ fmi2Status fmi2SerializeFMUstate(fmi2Component c, fmi2FMUstate FMUstate, fmi2Byt
     BEGIN_FUNCTION(SerializeFMUstate);
 
     if (nullPointer(S, "fmi2SerializeFMUstate", "FMUstate", FMUstate)) {
+        return fmi2Error;
+    }
+
+    if (nullPointer(S, "fmi2SerializeFMUstate", "serializedState", serializedState)) {
         return fmi2Error;
     }
 
@@ -514,6 +521,14 @@ fmi2Status fmi2SerializeFMUstate(fmi2Component c, fmi2FMUstate FMUstate, fmi2Byt
 
 fmi2Status fmi2DeSerializeFMUstate (fmi2Component c, const fmi2Byte serializedState[], size_t size, fmi2FMUstate* FMUstate) {
     BEGIN_FUNCTION(DeSerializeFMUstate);
+
+    if (nullPointer(S, "fmi2DeSerializeFMUstate", "FMUstate", FMUstate)) {
+        return fmi2Error;
+    }
+
+    if (nullPointer(S, "fmi2DeSerializeFMUstate", "serializedState", serializedState)) {
+        return fmi2Error;
+    }
 
     if (invalidNumber(S, "fmi2DeSerializeFMUstate", "size", size, sizeof(ModelInstance))) {
         return fmi2Error;
@@ -532,6 +547,16 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReferenc
                                         const fmi2ValueReference vKnown_ref[] , size_t nKnown,
                                         const fmi2Real dvKnown[], fmi2Real dvUnknown[]) {
     BEGIN_FUNCTION(GetDirectionalDerivative);
+
+    if (nUnknown > 0) {
+        ASSERT_NOT_NULL(vUnknown_ref);
+        ASSERT_NOT_NULL(dvUnknown);
+    }
+
+    if (nKnown > 0) {
+        ASSERT_NOT_NULL(vKnown_ref);
+        ASSERT_NOT_NULL(dvKnown);
+    }
 
     // TODO: check value references
     // TODO: assert nUnknowns == nDeltaOfUnknowns
@@ -574,6 +599,12 @@ fmi2Status fmi2GetRealOutputDerivatives(fmi2Component c, const fmi2ValueReferenc
     BEGIN_FUNCTION(GetRealOutputDerivatives);
 
 #ifdef GET_OUTPUT_DERIVATIVE
+    if (nvr > 0) {
+        ASSERT_NOT_NULL(vr);
+        ASSERT_NOT_NULL(order);
+        ASSERT_NOT_NULL(value);
+    }
+
     for (size_t i = 0; i < nvr; i++) {
         CALL(getOutputDerivative(S, vr[i], order[i], &value[i]));
     }
@@ -691,6 +722,8 @@ fmi2Status fmi2GetStatus(fmi2Component c, const fmi2StatusKind s, fmi2Status *va
 fmi2Status fmi2GetRealStatus(fmi2Component c, const fmi2StatusKind s, fmi2Real *value) {
     BEGIN_FUNCTION(GetRealStatus);
 
+    ASSERT_NOT_NULL(value);
+
     if (s == fmi2LastSuccessfulTime) {
         *value = S->time;
         goto TERMINATE;
@@ -713,6 +746,8 @@ fmi2Status fmi2GetIntegerStatus(fmi2Component c, const fmi2StatusKind s, fmi2Int
 
 fmi2Status fmi2GetBooleanStatus(fmi2Component c, const fmi2StatusKind s, fmi2Boolean *value) {
     BEGIN_FUNCTION(GetBooleanStatus);
+
+    ASSERT_NOT_NULL(value);
 
     if (s == fmi2Terminated) {
         *value = S->terminateSimulation;
@@ -748,6 +783,8 @@ fmi2Status fmi2EnterEventMode(fmi2Component c) {
 
 fmi2Status fmi2NewDiscreteStates(fmi2Component c, fmi2EventInfo *eventInfo) {
     BEGIN_FUNCTION(NewDiscreteStates);
+
+    ASSERT_NOT_NULL(eventInfo);
 
 #ifdef EVENT_UPDATE
     CALL(eventUpdate(S));

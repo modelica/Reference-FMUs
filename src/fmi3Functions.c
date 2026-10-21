@@ -559,6 +559,8 @@ fmi3Status fmi3GetBinary(fmi3Instance instance,
         ASSERT_NOT_NULL(valueReferences);
     }
 
+    ASSERT_NOT_NULL(valueSizes);
+
     if (nValues > 0) {
         ASSERT_NOT_NULL(values);
     }
@@ -582,6 +584,11 @@ fmi3Status fmi3GetClock(fmi3Instance instance,
     size_t nValueReferences,
     fmi3Clock values[]) {
     BEGIN_FUNCTION(GetClock);
+
+    if (nValueReferences > 0) {
+        ASSERT_NOT_NULL(valueReferences);
+        ASSERT_NOT_NULL(values);
+    }
 
     for (size_t i = 0; i < nValueReferences; i++) {
         CALL(getClock(instance, (ValueReference)valueReferences[i], &values[i]));
@@ -700,6 +707,11 @@ fmi3Status fmi3SetBinary(fmi3Instance instance,
     }
 
     ASSERT_NOT_NULL(valueReferences);
+    ASSERT_NOT_NULL(valueSizes);
+
+    if (nValues > 0) {
+        ASSERT_NOT_NULL(values);
+    }
 
     size_t index = 0;
 
@@ -724,6 +736,11 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
     size_t nValueReferences,
     const fmi3Clock values[]) {
     BEGIN_FUNCTION(SetClock);
+
+    if (nValueReferences > 0) {
+        ASSERT_NOT_NULL(valueReferences);
+        ASSERT_NOT_NULL(values);
+    }
 
     for (size_t i = 0; i < nValueReferences; i++) {
         if (values[i]) {
@@ -763,6 +780,7 @@ fmi3Status fmi3GetVariableDependencies(fmi3Instance instance,
 
 fmi3Status fmi3GetFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
     BEGIN_FUNCTION(GetFMUState);
+    ASSERT_NOT_NULL(FMUState);
     CALL(getFMUState(S, FMUState));
     END_FUNCTION();
 }
@@ -775,6 +793,7 @@ fmi3Status fmi3SetFMUState(fmi3Instance instance, fmi3FMUState FMUState) {
 
 fmi3Status fmi3FreeFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
     BEGIN_FUNCTION(FreeFMUState);
+    ASSERT_NOT_NULL(FMUState);
     free(*FMUState);
     *FMUState = NULL;
     END_FUNCTION();
@@ -788,6 +807,8 @@ fmi3Status fmi3SerializedFMUStateSize(fmi3Instance instance,
 
     BEGIN_FUNCTION(SerializedFMUStateSize);
 
+    ASSERT_NOT_NULL(size);
+
     *size = sizeof(ModelInstance);
 
     END_FUNCTION();
@@ -800,6 +821,10 @@ fmi3Status fmi3SerializeFMUState(fmi3Instance instance,
     BEGIN_FUNCTION(SerializeFMUState);
 
     if (nullPointer(S, "fmi3SerializeFMUState", "FMUstate", FMUState)) {
+        return fmi3Error;
+    }
+
+    if (nullPointer(S, "fmi3SerializeFMUState", "serializedState", serializedState)) {
         return fmi3Error;
     }
 
@@ -817,6 +842,14 @@ fmi3Status fmi3DeserializeFMUState(fmi3Instance instance,
     size_t size,
     fmi3FMUState* FMUState) {
     BEGIN_FUNCTION(DeserializeFMUState);
+
+    if (nullPointer(S, "fmi3DeserializeFMUState", "FMUstate", FMUState)) {
+        return fmi3Error;
+    }
+
+    if (nullPointer(S, "fmi3DeserializeFMUState", "serializedState", serializedState)) {
+        return fmi3Error;
+    }
 
     if (invalidNumber(S, "fmi3DeserializeFMUState", "size", size, sizeof(ModelInstance))) {
         return fmi3Error;
@@ -850,6 +883,16 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance,
 
     BEGIN_FUNCTION(GetDirectionalDerivative);
 
+    if (nUnknowns > 0) {
+        ASSERT_NOT_NULL(unknowns);
+        ASSERT_NOT_NULL(sensitivity);
+    }
+
+    if (nKnowns > 0) {
+        ASSERT_NOT_NULL(knowns);
+        ASSERT_NOT_NULL(seed);
+    }
+
     // TODO: check value references
     // TODO: assert nUnknowns == nDeltaOfUnknowns
     // TODO: assert nKnowns == nDeltaKnowns
@@ -880,6 +923,16 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
     UNUSED(nSensitivity);
 
     BEGIN_FUNCTION(GetAdjointDerivative);
+
+    if (nKnowns > 0) {
+        ASSERT_NOT_NULL(knowns);
+        ASSERT_NOT_NULL(sensitivity);
+    }
+
+    if (nUnknowns > 0) {
+        ASSERT_NOT_NULL(unknowns);
+        ASSERT_NOT_NULL(seed);
+    }
 
     // TODO: check value references
 
@@ -936,6 +989,12 @@ fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
     BEGIN_FUNCTION(GetIntervalDecimal);
 
     // TODO: Check nValueReferences != nValues ?
+
+    if (nValueReferences > 0) {
+        ASSERT_NOT_NULL(valueReferences);
+        ASSERT_NOT_NULL(intervals);
+        ASSERT_NOT_NULL(qualifiers);
+    }
 
     for (size_t i = 0; i < nValueReferences; i++) {
         CALL(getInterval(instance, (ValueReference)valueReferences[i], &intervals[i], (int*)&qualifiers[i]));
@@ -1144,6 +1203,7 @@ fmi3Status fmi3GetNominalsOfContinuousStates(fmi3Instance instance,
 fmi3Status fmi3GetNumberOfEventIndicators(fmi3Instance instance,
     size_t* nEventIndicators) {
     BEGIN_FUNCTION(GetNumberOfEventIndicators);
+    ASSERT_NOT_NULL(nEventIndicators);
     *nEventIndicators = getNumberOfEventIndicators(instance);
     END_FUNCTION();
 }
@@ -1151,6 +1211,7 @@ fmi3Status fmi3GetNumberOfEventIndicators(fmi3Instance instance,
 fmi3Status fmi3GetNumberOfContinuousStates(fmi3Instance instance,
     size_t* nContinuousStates) {
     BEGIN_FUNCTION(GetNumberOfContinuousStates);
+    ASSERT_NOT_NULL(nContinuousStates);
     *nContinuousStates = getNumberOfContinuousStates(instance);
     END_FUNCTION();
 }
@@ -1176,6 +1237,12 @@ fmi3Status fmi3GetOutputDerivatives(fmi3Instance instance,
     BEGIN_FUNCTION(GetOutputDerivatives);
 
 #ifdef GET_OUTPUT_DERIVATIVE
+    if (nValueReferences > 0) {
+        ASSERT_NOT_NULL(valueReferences);
+        ASSERT_NOT_NULL(orders);
+        ASSERT_NOT_NULL(values);
+    }
+
     for (size_t i = 0; i < nValueReferences; i++) {
         CALL(getOutputDerivative(S, (ValueReference)valueReferences[i], orders[i], &values[i]));
     }
@@ -1202,6 +1269,11 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
     UNUSED(noSetFMUStatePriorToCurrentPoint);
 
     BEGIN_FUNCTION(DoStep);
+
+    ASSERT_NOT_NULL(eventHandlingNeeded);
+    ASSERT_NOT_NULL(terminateSimulation);
+    ASSERT_NOT_NULL(earlyReturn);
+    ASSERT_NOT_NULL(lastSuccessfulTime);
 
     if (!isClose(currentCommunicationPoint, S->nextCommunicationPoint)) {
         logError(S, "Expected currentCommunicationPoint = %.16g but was %.16g.",
