@@ -47,7 +47,7 @@ parameters = {
 
 
 def set_tool_version(filename, git_executable='git'):
-    """ Set the Git tag or hash in the generationTool and generationDateAndTime attributes
+    """ Set the Git tag or hash in the version attribute and the generationDateAndTime attribute
         if the repo is clean """
 
     cwd = os.path.dirname(__file__)
@@ -72,8 +72,8 @@ def set_tool_version(filename, git_executable='git'):
 
     isodate = datetime.now(pytz.utc).isoformat()
 
-    lines = lines.replace('"Reference FMUs (development build)"',
-                          f'"Reference FMUs ({version})"\n  generationDateAndTime="{isodate}"')
+    lines = lines.replace('generationTool="Reference FMUs (development build)"',
+                          f'generationTool="Reference FMUs"\n  version="{version}"\n  generationDateAndTime="{isodate}"')
 
     with open(filename, 'w') as f:
         f.write(lines)
@@ -153,8 +153,8 @@ def merge_fmus(version):
                 for svg_file in glob(f'{str(root / model_name)}/*.svg'):
                     shutil.copy(svg_file, tempdir / 'documentation')
 
-                # set tool version
-                set_tool_version(tempdir / 'modelDescription.xml')
+            # set tool version
+            set_tool_version(tempdir / 'modelDescription.xml')
 
             # create archive
             merged_fmu = os.path.join(root, 'dist-merged', version, filename)
