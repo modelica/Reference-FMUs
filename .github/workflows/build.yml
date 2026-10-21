@@ -9,6 +9,18 @@ on:
 
 jobs:
 
+  check-trailing-spaces:
+    runs-on: ubuntu-latest
+    steps:
+
+    - uses: actions/checkout@v7
+
+    - name: Check for trailing spaces
+      run: |
+        ! grep -rIn ' $' --include="*.c" --include="*.h" --include="*.xml" \
+          --include="*.yml" --include="*.txt" --include="*.py" \
+          --include="*.cmake" --include="*.html" .
+
   lint-files:
     runs-on: ubuntu-latest
     steps:
@@ -38,7 +50,7 @@ jobs:
             image: macos-14
             arch: aarch64
     runs-on: ${{ matrix.image }}
-    needs: lint-files
+    needs: [check-trailing-spaces, lint-files]
     steps:
     - uses: actions/checkout@v7
     - uses: actions/setup-python@v6
@@ -67,7 +79,7 @@ jobs:
     - name: Install fmusim
       run: |
         curl -LsSf https://raw.githubusercontent.com/modelica/fmusim/refs/heads/main/install.sh | sh
-    
+
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
@@ -77,14 +89,14 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install fmpy==0.3.20 pytest scipy kaleido markdown2 plotly pytz
-   
+
     - uses: actions/checkout@v7
-    
+
     - uses: actions/download-artifact@v8
       with:
         name: x86-windows
         path: dist-x86-windows
-    
+
     - uses: actions/download-artifact@v8
       with:
         name: x86_64-windows

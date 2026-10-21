@@ -7,4 +7,3 @@ for root, _dirs, files in os.walk("."):
         if file.endswith(".fmu"):
             fmu_path = os.path.join(root, file)
             out = subprocess.check_output(["fmusim", "validate", fmu_path])
-            
