@@ -42,6 +42,7 @@ do { \
         goto TERMINATE; \
     } else if (status == Fatal) { \
         S->state = StartAndEnd; \
+        S->status = Fatal; \
         goto TERMINATE; \
     } \
 } while (false)
@@ -223,6 +224,11 @@ TERMINATE: \
 static bool allowedState(ModelInstance *instance, int statesExpected, char *name) {
 
     if (!instance) {
+        return false;
+    }
+
+    if (instance->status == Fatal) {
+        logError(instance, "fmi3%s: Illegal call sequence. The FMU is in a fatal error state; no further calls are allowed for this instance.", name);
         return false;
     }
 
