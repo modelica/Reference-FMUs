@@ -36,16 +36,8 @@ Status calculateValues(ModelInstance *comp) {
 
 #ifdef _WIN32
 
-#if FMI_VERSION < 3
-    DWORD pathLen = MAX_PATH_LENGTH;
-
-    if (PathCreateFromUrlA(comp->resourceLocation, path, &pathLen, 0) != S_OK) {
-        logError(comp, "Failed to convert resource location to file system path.");
-        return Error;
-    }
-#else
     strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
-#endif
+    path[MAX_PATH_LENGTH - 1] = '\0';
 
 #if FMI_VERSION == 2
     if (!PathAppendA(path, "y.txt")) return Error;
@@ -55,42 +47,8 @@ Status calculateValues(ModelInstance *comp) {
 
 #else
 
-#if FMI_VERSION < 3
-    const char *scheme1 = "file:///";
-    const char *scheme2 = "file:/";
-
-    if (strncmp(comp->resourceLocation, scheme1, strlen(scheme1)) == 0) {
-        strncpy(path, &comp->resourceLocation[strlen(scheme1)] - 1, MAX_PATH_LENGTH-1);
-    } else if (strncmp(comp->resourceLocation, scheme2, strlen(scheme2)) == 0) {
-        strncpy(path, &comp->resourceLocation[strlen(scheme2) - 1], MAX_PATH_LENGTH-1);
-    } else {
-        logError(comp, "The resourceLocation must start with \"file:/\" or \"file:///\"");
-        return Error;
-    }
-
-    // decode percent encoded characters
-    char* src = path;
-    char* dst = path;
-
-    char buf[3] = { '\0', '\0', '\0' };
-
-    while (*src) {
-
-        if (*src == '%' && (buf[0] = src[1]) && (buf[1] = src[2])) {
-            *dst = strtol(buf, NULL, 16);
-            src += 3;
-        } else {
-            *dst = *src;
-            src++;
-        }
-
-        dst++;
-    }
-
-    *dst = '\0';
-#else
     strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
-#endif
+    path[MAX_PATH_LENGTH - 1] = '\0';
 
 #if FMI_VERSION == 2
     strncat(path, "/y.txt", MAX_PATH_LENGTH-strlen(path)-1);

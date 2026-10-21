@@ -29,6 +29,7 @@ if (${FMI_VERSION} EQUAL 3)
         VanDerPol/config.h
         src/fmi3Functions.c
         VanDerPol/model.c
+        src/common.c
         src/cosimulation.c
         examples/import_static_library.c
     )

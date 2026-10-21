@@ -3,10 +3,16 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 #include <assert.h>
 #include <math.h>
+
+#ifdef _WIN32
+#include <shlwapi.h>
+#pragma comment(lib, "shlwapi.lib")
+#endif
 
 #include "config.h"
 #include "model.h"
@@ -210,6 +216,88 @@ static bool allowedState(ModelInstance *instance, int statesExpected, char *name
 // FMI functions
 // ---------------------------------------------------------------------------
 
+static void percentDecodePath(char *path) {
+    char *src = path;
+    char *dst = path;
+    char hex[3] = { '\0', '\0', '\0' };
+
+    while (*src) {
+        if (*src == '%' && src[1] && src[2]) {
+            hex[0] = src[1];
+            hex[1] = src[2];
+            *dst = (char)strtol(hex, NULL, 16);
+            src += 3;
+        } else {
+            *dst = *src;
+            src++;
+        }
+        dst++;
+    }
+    *dst = '\0';
+}
+
+static bool fmi2ResourceLocationToPath(const char *resourceLocation, char *path, size_t pathSize) {
+
+    if (!resourceLocation || !path || pathSize == 0) {
+        return false;
+    }
+
+#ifdef _WIN32
+    DWORD pathLen = (DWORD)pathSize;
+
+    if (PathCreateFromUrlA(resourceLocation, path, &pathLen, 0) != S_OK) {
+        return false;
+    }
+#else
+    const char *scheme1 = "file:///";
+    const char *scheme2 = "file:/";
+    const char *start = NULL;
+
+    if (strncmp(resourceLocation, scheme1, strlen(scheme1)) == 0) {
+        start = &resourceLocation[strlen(scheme1)] - 1;
+    } else if (strncmp(resourceLocation, scheme2, strlen(scheme2)) == 0) {
+        start = &resourceLocation[strlen(scheme2)] - 1;
+    } else {
+        return false;
+    }
+
+    if (strlen(start) + 2 > pathSize) {
+        return false;
+    }
+
+    strcpy(path, start);
+    percentDecodePath(path);
+#endif
+
+    {
+        const size_t len = strlen(path);
+
+        if (len == 0 || len >= pathSize) {
+            return false;
+        }
+
+#ifdef _WIN32
+        if (path[len - 1] != '\\' && path[len - 1] != '/') {
+            if (len + 2 > pathSize) {
+                return false;
+            }
+            path[len] = '\\';
+            path[len + 1] = '\0';
+        }
+#else
+        if (path[len - 1] != '/') {
+            if (len + 2 > pathSize) {
+                return false;
+            }
+            path[len] = '/';
+            path[len + 1] = '\0';
+        }
+#endif
+    }
+
+    return true;
+}
+
 fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2String fmuGUID,
                             fmi2String fmuResourceLocation, const fmi2CallbackFunctions *functions,
                             fmi2Boolean visible, fmi2Boolean loggingOn) {
@@ -220,13 +308,29 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
         return NULL;
     }
 
+    const char *resourcePath = NULL;
+    char resourcePathBuffer[4096];
+
+    if (fmuResourceLocation) {
+        if (!fmi2ResourceLocationToPath(fmuResourceLocation, resourcePathBuffer, sizeof(resourcePathBuffer))) {
+            functions->logger(
+                functions->componentEnvironment,
+                instanceName,
+                fmi2Error,
+                "error",
+                "Failed to convert fmuResourceLocation to a file path.");
+            return NULL;
+        }
+        resourcePath = resourcePathBuffer;
+    }
+
     return createModelInstance(
         (loggerType)functions->logger,
         NULL,
         functions->componentEnvironment,
         instanceName,
         fmuGUID,
-        fmuResourceLocation,
+        resourcePath,
         loggingOn,
         (InterfaceType)fmuType);
 }
