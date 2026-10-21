@@ -1,5 +1,6 @@
 #include "model.h"
 
+#define COUNTER_MAX 10
 
 Status setStartValues(ModelInstance *comp) {
     M(counter) = 1;
@@ -64,12 +65,12 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], 
             return Error;
         }
 
-        if (values[*index] >= 10) {
-            logError(comp, "The maximum value for variable \"counter\" is 10.");
+        ASSERT_NVALUES(1);
+        if (values[*index] > COUNTER_MAX) {
+            logError(comp, "Variable \"counter\" must be at most %d but was %d.",
+                COUNTER_MAX, values[*index]);
             return Error;
         }
-
-        ASSERT_NVALUES(1);
         M(counter) = values[(*index)++];
 
         break;

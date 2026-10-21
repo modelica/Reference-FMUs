@@ -4,6 +4,8 @@
 #include "model.h"
 
 #define V_MIN (0.1)
+#define E_MIN (0.5)
+#define E_MAX (1.0)
 #define EVENT_EPSILON (1e-10)
 
 
@@ -119,6 +121,11 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
                 return Error;
             }
             ASSERT_NVALUES(1);
+            if (values[*index] < E_MIN || values[*index] > E_MAX) {
+                logError(comp, "Variable \"e\" must be in the range [%g, %g] but was %g.",
+                    E_MIN, E_MAX, values[*index]);
+                return Error;
+            }
             M(e) = values[(*index)++];
             break;
 
