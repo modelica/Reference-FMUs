@@ -37,6 +37,10 @@ parameters = {
     'Resource': [
         '--output-interval', '1',
     ],
+    'Roberts': [
+        '--stop-time', '50',
+        '--output-interval', '0.01',
+    ],
     'Stair':  [
         '--output-interval', '1',
     ],
