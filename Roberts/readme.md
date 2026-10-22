@@ -21,3 +21,9 @@ and roots at
 y1 = 1e-4
 y3 = 0.01
 ```
+
+The reference output was computed with fmusim.
+
+```
+fmusim simulate --interface-type=me --log-time-scale --show-plot --show-markers --output-interval=2 --output-file Roberts_out.csv Roberts.fmu
+```
