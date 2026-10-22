@@ -31,9 +31,6 @@ jobs:
           - name: aarch64-linux
             image: ubuntu-22.04
             arch: aarch64
-          - name: x86_64-darwin
-            image: macos-14
-            arch: x86_64
           - name: aarch64-darwin
             image: macos-14
             arch: aarch64
@@ -99,11 +96,6 @@ jobs:
       with:
         name: aarch64-linux
         path: dist-aarch64-linux
-
-    - uses: actions/download-artifact@v8
-      with:
-        name: x86_64-darwin
-        path: dist-x86_64-darwin
 
     - uses: actions/download-artifact@v8
       with:

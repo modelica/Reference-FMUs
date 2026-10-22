@@ -92,7 +92,7 @@ def merge_fmus(version):
 
             tempdir = Path(mkdtemp())
 
-            platforms = ['x86-windows', 'x86_64-windows', 'x86_64-linux', 'x86_64-darwin']
+            platforms = ['x86-windows', 'x86_64-windows', 'x86_64-linux']
 
             if version == '3.0':
                 platforms += ['aarch64-linux', 'aarch64-darwin']
