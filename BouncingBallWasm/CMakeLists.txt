@@ -44,7 +44,7 @@ set(SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/bouncing_ball_wasm.c"
     "${BINDGEN_C}"
     "${REFERENCE_FMU_ROOT}/BouncingBall/model.c"
-    "${REFERENCE_FMU_ROOT}/src/fmi3Functions.c"
+    "${REFERENCE_FMU_ROOT}/src/common.c"
     "${REFERENCE_FMU_ROOT}/src/cosimulation.c"
 )
 
@@ -67,7 +67,7 @@ add_custom_command(
         "${BINDGEN_OBJ}"
         "${CMAKE_CURRENT_SOURCE_DIR}/bouncing_ball_wasm.c"
         "${REFERENCE_FMU_ROOT}/BouncingBall/model.c"
-        "${REFERENCE_FMU_ROOT}/src/fmi3Functions.c"
+        "${REFERENCE_FMU_ROOT}/src/common.c"
         "${REFERENCE_FMU_ROOT}/src/cosimulation.c"
     COMMENT "Building BouncingBall Wasm component"
 )
