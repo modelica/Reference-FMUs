@@ -12,7 +12,8 @@
     canNotUseMemoryManagementFunctions="true"
     canGetAndSetFMUstate="true"
     canSerializeFMUstate="true"
-    providesDirectionalDerivative="true">
+    providesDirectionalDerivative="true"
+    completedIntegratorStepNotNeeded="true">
     <SourceFiles>
       <File name="all.c"/>
     </SourceFiles>

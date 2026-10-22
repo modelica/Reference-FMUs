@@ -11,7 +11,8 @@
     modelIdentifier="Resource"
     canNotUseMemoryManagementFunctions="true"
     canGetAndSetFMUstate="true"
-    canSerializeFMUstate="true">
+    canSerializeFMUstate="true"
+    completedIntegratorStepNotNeeded="true">
     <SourceFiles>
       <File name="all.c"/>
     </SourceFiles>
