@@ -12,7 +12,7 @@ parent_dir = Path(__file__).parent
 parser = argparse.ArgumentParser()
 parser.add_argument(
     'platform',
-    choices={'x86-windows', 'x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'x86_64-darwin', 'aarch64-darwin'},
+    choices={'x86-windows', 'x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'aarch64-darwin'},
     help="Platform to build for, e.g. x86_64-windows"
 )
 parser.add_argument(
@@ -78,10 +78,6 @@ def build_fmus(fmi_version):
         toolchain_file = parent_dir / 'aarch64-linux-toolchain.cmake'
         cmake_args += ['-D', f'CMAKE_TOOLCHAIN_FILE={ toolchain_file }']
 
-    elif fmi_platform == 'x86_64-darwin':
-
-        cmake_args += ['-D', 'CMAKE_OSX_ARCHITECTURES=x86_64']
-
     elif fmi_platform == 'aarch64-darwin':
 
         cmake_args += ['-D', 'CMAKE_OSX_ARCHITECTURES=arm64']
@@ -114,7 +110,7 @@ def build_fmus(fmi_version):
 
 if __name__ == '__main__':
 
-    if args.platform in {'x86_64-linux', 'x86-windows', 'x86_64-windows', 'x86_64-darwin'}:
+    if args.platform in {'x86_64-linux', 'aarch64-linux', 'x86-windows', 'x86_64-windows', 'aarch64-darwin'}:
         build_fmus(fmi_version=2)
 
     build_fmus(fmi_version=3)
