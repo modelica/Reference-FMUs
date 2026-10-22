@@ -110,7 +110,7 @@ def build_fmus(fmi_version):
 
 if __name__ == '__main__':
 
-    if args.platform in {'x86_64-linux', 'x86-windows', 'x86_64-windows'}:
+    if args.platform in {'x86_64-linux', 'x86-windows', 'x86_64-windows', 'aarch64-darwin'}:
         build_fmus(fmi_version=2)
 
     build_fmus(fmi_version=3)
