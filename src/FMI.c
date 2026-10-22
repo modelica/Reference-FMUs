@@ -83,6 +83,11 @@ FMIStatus FMIRealloc(void** memory, size_t size) {
 
 void FMIFree(void** memory) {
 
+    if (!memory) {
+        FMILogError("Pointer to memory must not be NULL.");
+        return;
+    }
+
     if (*memory) {
         free(*memory);
         *memory = NULL;
@@ -90,6 +95,11 @@ void FMIFree(void** memory) {
 }
 
 FMIInstance *FMICreateInstance(const char *instanceName, FMILogMessage *logMessage, FMILogFunctionCall *logFunctionCall) {
+
+    if (!instanceName) {
+        FMILogError("Argument instanceName must not be NULL.");
+        return NULL;
+    }
 
     FMIInstance* instance = (FMIInstance*)calloc(1, sizeof(FMIInstance));
 
@@ -104,9 +114,20 @@ FMIInstance *FMICreateInstance(const char *instanceName, FMILogMessage *logMessa
 
     instance->logMessageBufferSize = 1024;
     instance->logMessageBuffer = (char*)calloc(instance->logMessageBufferSize, sizeof(char));
+
+    if (!instance->logMessageBuffer) {
+        FMIFreeInstance(instance);
+        return NULL;
+    }
+
     instance->logMessageBufferPosition = 0;
 
     instance->name = strdup(instanceName);
+
+    if (!instance->name) {
+        FMIFreeInstance(instance);
+        return NULL;
+    }
 
     instance->status = FMIOK;
 
@@ -114,6 +135,16 @@ FMIInstance *FMICreateInstance(const char *instanceName, FMILogMessage *logMessa
 }
 
 FMIStatus FMILoadPlatformBinary(FMIInstance* instance, const char* libraryPath) {
+
+    if (!instance) {
+        FMILogError("Argument instance must not be NULL.");
+        return FMIError;
+    }
+
+    if (!libraryPath) {
+        FMILogError("Argument libraryPath must not be NULL.");
+        return FMIError;
+    }
 
 # ifdef _WIN32
     WCHAR dllDirectory[MAX_PATH];
@@ -340,6 +371,16 @@ void FMIAppendArrayToLogMessageBuffer(FMIInstance* instance, const void* values,
 
 FMIStatus FMIPathToURI(const char *path, char *uri, const size_t uriLength) {
 
+    if (!path) {
+        FMILogError("Argument path must not be NULL.");
+        return FMIError;
+    }
+
+    if (!uri) {
+        FMILogError("Argument uri must not be NULL.");
+        return FMIError;
+    }
+
     const size_t pathLen = strlen(path);
 
     if (uriLength < strlen(path) + 8) {
@@ -397,6 +438,21 @@ FMIStatus FMIPathToURI(const char *path, char *uri, const size_t uriLength) {
 }
 
 FMIStatus FMIPlatformBinaryPath(const char *unzipdir, const char *modelIdentifier, FMIMajorVersion fmiMajorVersion, char *platformBinaryPath, size_t size) {
+
+    if (!unzipdir) {
+        FMILogError("Argument unzipdir must not be NULL.");
+        return FMIError;
+    }
+
+    if (!modelIdentifier) {
+        FMILogError("Argument modelIdentifier must not be NULL.");
+        return FMIError;
+    }
+
+    if (!platformBinaryPath) {
+        FMILogError("Argument platformBinaryPath must not be NULL.");
+        return FMIError;
+    }
 
     char* separator = ""; // optional separator after the unzipdir
 
