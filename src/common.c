@@ -71,7 +71,7 @@ ModelInstance *createModelInstance(
         return NULL;
     }
 
-    
+
     if (strcmp(instantiationToken, INSTANTIATION_TOKEN)) {
         if (cbLogger) {
 #if FMI_VERSION < 3

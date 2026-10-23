@@ -1,5 +1,5 @@
 /*
- * Reference FMUs — FMI 3.0 Co-Simulation as a WebAssembly component.
+ * Reference FMUs - FMI 3.0 Co-Simulation as a WebAssembly component.
  *
  * WIT exports delegate to the selected model via model.h / common.c.
  * Build with -I pointing at the model directory for config.h.
