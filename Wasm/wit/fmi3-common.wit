@@ -1,0 +1,12 @@
+
+package fmi:fmi3@3.0.0;
+
+interface common {
+  // ── Version query ────────────────────────────────────────────────────────────
+
+  /// Return the FMI version string implemented by this FMU (always "3.0" for
+  /// FMI 3.0 compliant components).
+  ///
+  /// FMI C: fmi3String fmi3GetVersion(void);
+  get-version: func() -> string;
+}

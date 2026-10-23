@@ -1,7 +1,8 @@
 /*
- * BouncingBallWasm — FMI 3.0 Co-Simulation FMU as a WebAssembly component.
+ * Reference FMUs — FMI 3.0 Co-Simulation as a WebAssembly component.
  *
- * WIT exports delegate to the BouncingBall model via model.h / common.c.
+ * WIT exports delegate to the selected model via model.h / common.c.
+ * Build with -I pointing at the model directory for config.h.
  */
 
 #include <stdlib.h>
@@ -17,9 +18,9 @@ struct exports_fmi_fmi3_co_simulation_co_simulation_instance_t {
 #include "co_simulation_fmu.h"
 
 #define FMI_VERSION 3
-#include "../BouncingBall/config.h"
-#include "../include/model.h"
-#include "../include/cosimulation.h"
+#include "config.h"
+#include "model.h"
+#include "cosimulation.h"
 
 static const char WASM_FMI_VERSION[] = "3.0";
 

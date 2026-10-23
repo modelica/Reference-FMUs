@@ -1,0 +1,88 @@
+
+package fmi:fmi3@3.0.0;
+
+interface callbacks {
+  use types.{status};
+
+  // ── Logging ──────────────────────────────────────────────────────────────────
+
+  /// Deliver a log message from the FMU to the master algorithm.
+  ///
+  /// FMI C signature:
+  ///   void fmi3LogMessageCallback(
+  ///       fmi3InstanceEnvironment instanceEnvironment,
+  ///       fmi3Status              status,
+  ///       fmi3String              category,
+  ///       fmi3String              message);
+  ///
+  /// Mapping notes:
+  ///   • instanceEnvironment is implicit (handled by the component runtime).
+  ///   • instance-name is added for diagnostics; it corresponds to the
+  ///     instanceName passed to fmi3Instantiate*.
+  log-message: func(
+    instance-name: string,
+    status:        status,
+    category:      string,
+    message:       string,
+  );
+
+  // ── Clock update (Scheduled Execution & Co-Simulation with event mode) ───────
+
+  /// Notify the master that one or more output clocks have ticked and that the
+  /// master should call fmi3GetClock to determine which ones.
+  ///
+  /// FMI C signature:
+  ///   void fmi3ClockUpdateCallback(
+  ///       fmi3InstanceEnvironment instanceEnvironment);
+  clock-update: func();
+
+  // ── Scheduled Execution preemption lock / unlock ─────────────────────────────
+
+  /// Prevent preemption of the currently executing model partition.
+  ///
+  /// FMI C signature:
+  ///   void fmi3LockPreemptionCallback(void);
+  lock-preemption: func();
+
+  /// Re-enable preemption after a critical section.
+  ///
+  /// FMI C signature:
+  ///   void fmi3UnlockPreemptionCallback(void);
+  unlock-preemption: func();
+}
+
+// Callbacks required only by Co-Simulation FMUs that support
+// intermediate-update mode (canReturnEarlyAfterIntermediateUpdate = true).
+//
+// Separated from the base `callbacks` interface so that simpler CS FMUs
+// do not need to depend on it.
+interface intermediate-update-callbacks {
+  use types.{status};
+
+  /// Notify the master of an intermediate internal state that can optionally
+  /// be observed or rolled back to.
+  ///
+  /// FMI C signature:
+  ///   void fmi3IntermediateUpdateCallback(
+  ///       fmi3InstanceEnvironment instanceEnvironment,
+  ///       fmi3Float64             intermediateUpdateTime,
+  ///       fmi3Boolean             intermediateVariableSetRequested,
+  ///       fmi3Boolean             intermediateVariableGetAllowed,
+  ///       fmi3Boolean             intermediateStepFinished,
+  ///       fmi3Boolean             canReturnEarly,
+  ///       fmi3Boolean*            earlyReturnRequested,
+  ///       fmi3Float64*            earlyReturnTime);
+  ///
+  /// Mapping notes:
+  ///   • Output parameters earlyReturnRequested and earlyReturnTime are
+  ///     modelled as fields in the returned record rather than out-pointers.
+  intermediate-update: func(
+    intermediate-update-time:              f64,
+    intermediate-variable-set-requested:   bool,
+    intermediate-variable-get-allowed:     bool,
+    intermediate-step-finished:            bool,
+    can-return-early:                      bool,
+  ) -> tuple<bool, f64>;
+  //          ^           ^
+  //  early-return-requested  early-return-time
+}
