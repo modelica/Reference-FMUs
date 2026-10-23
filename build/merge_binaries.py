@@ -100,9 +100,15 @@ def merge_fmus(version):
                 'aarch64-darwin',
             ]
 
+            if version == '3.0':
+                platforms.append('wasm32-wasip2')
+
             for platform in platforms:
 
                 platform_fmu = root / f'dist-{platform}' / version / filename
+
+                if not platform_fmu.is_file():
+                    continue
 
                 with zipfile.ZipFile(platform_fmu, 'r') as archive:
                     archive.extractall(path=tempdir)

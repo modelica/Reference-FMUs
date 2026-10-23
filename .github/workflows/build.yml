@@ -34,6 +34,9 @@ jobs:
           - name: aarch64-darwin
             image: macos-14
             arch: aarch64
+          - name: wasm32-wasip2
+            image: ubuntu-22.04
+            arch: x86_64
     runs-on: ${{ matrix.image }}
     needs: lint-files
     steps:
@@ -47,6 +50,20 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install gcc-aarch64-linux-gnu qemu-user
+    - if: matrix.name == 'wasm32-wasip2'
+      uses: dtolnay/rust-toolchain@stable
+    - if: matrix.name == 'wasm32-wasip2'
+      uses: Swatinem/rust-cache@v2
+      with:
+        cache-on-failure: true
+    - if: matrix.name == 'wasm32-wasip2'
+      run: cargo install wit-bindgen-cli wasm-tools --locked
+    - if: matrix.name == 'wasm32-wasip2'
+      run: |
+        curl -sL -o wasi-sdk.tar.gz \
+          https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-34/wasi-sdk-34.0-x86_64-linux.tar.gz
+        tar xzf wasi-sdk.tar.gz
+        echo "WASI_SDK_PATH=${{ github.workspace }}/wasi-sdk-34.0-x86_64-linux" >> $GITHUB_ENV
     - run: cmake --version
     - run: python build/build.py ${{ matrix.name }}
     # - if: matrix.name != 'aarch64-darwin'
@@ -101,6 +118,11 @@ jobs:
       with:
         name: aarch64-darwin
         path: dist-aarch64-darwin
+
+    - uses: actions/download-artifact@v8
+      with:
+        name: wasm32-wasip2
+        path: dist-wasm32-wasip2
 
     - run: git status --porcelain --untracked=no
     - run: git tag --contains

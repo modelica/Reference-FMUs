@@ -12,8 +12,15 @@ parent_dir = Path(__file__).parent
 parser = argparse.ArgumentParser()
 parser.add_argument(
     'platform',
-    choices={'x86-windows', 'x86_64-windows', 'x86_64-linux', 'aarch64-linux', 'aarch64-darwin'},
-    help="Platform to build for, e.g. x86_64-windows"
+    choices={
+        'x86-windows',
+        'x86_64-windows',
+        'x86_64-linux',
+        'aarch64-linux',
+        'aarch64-darwin',
+        'wasm32-wasip2',
+    },
+    help="Platform to build for, e.g. x86_64-windows or wasm32-wasip2",
 )
 parser.add_argument(
     '--cmake-generator',
@@ -47,6 +54,9 @@ def get_version():
 
 def build_fmus(fmi_version):
 
+    if args.platform == 'wasm32-wasip2' and fmi_version != 3:
+        return
+
     build_dir = parent_dir / f'fmi{fmi_version}-{args.platform}'
 
     if build_dir.exists():
@@ -62,9 +72,17 @@ def build_fmus(fmi_version):
         version = 'development build'
 
     fmi_platform = args.platform
-    fmi_architecture, fmi_system = fmi_platform.split('-')
 
-    if fmi_system == 'windows':
+    if fmi_platform == 'wasm32-wasip2':
+        if not os.environ.get('WASI_SDK_PATH'):
+            raise RuntimeError('WASI_SDK_PATH must be set to build wasm32-wasip2 FMUs')
+        cmake_args += ['-D', 'FMI_TARGET=wasm']
+    else:
+        fmi_architecture, fmi_system = fmi_platform.split('-', 1)
+
+    if fmi_platform == 'wasm32-wasip2':
+        pass
+    elif fmi_system == 'windows':
 
         cmake_args += ['-G', args.cmake_generator]
 
@@ -87,10 +105,12 @@ def build_fmus(fmi_version):
     cmake_args += [
         '-D', f'CMAKE_INSTALL_PREFIX={install_dir}',
         '-D', f'FMI_VERSION={fmi_version}',
-        '-D', f'FMI_ARCHITECTURE={fmi_architecture}',
         '-B', build_dir,
-        parent_dir.parent
+        parent_dir.parent,
     ]
+
+    if fmi_platform != 'wasm32-wasip2':
+        cmake_args += ['-D', f'FMI_ARCHITECTURE={fmi_architecture}']
 
     subprocess.check_call(['cmake'] + cmake_args)
     subprocess.check_call(['cmake', '--build', build_dir, '--target', 'install', '--config', 'Release'])
@@ -110,7 +130,10 @@ def build_fmus(fmi_version):
 
 if __name__ == '__main__':
 
-    if args.platform in {'x86_64-linux', 'aarch64-linux', 'x86-windows', 'x86_64-windows', 'aarch64-darwin'}:
-        build_fmus(fmi_version=2)
+    if args.platform == 'wasm32-wasip2':
+        build_fmus(fmi_version=3)
+    else:
+        if args.platform in {'x86_64-linux', 'aarch64-linux', 'x86-windows', 'x86_64-windows', 'aarch64-darwin'}:
+            build_fmus(fmi_version=2)
 
-    build_fmus(fmi_version=3)
+        build_fmus(fmi_version=3)
