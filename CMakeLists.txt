@@ -12,6 +12,9 @@ project (Reference-FMUs)
 set(FMI_VERSION 3 CACHE STRING "FMI Version")
 set_property(CACHE FMI_VERSION PROPERTY STRINGS 2 3)
 
+set(FMI_TARGET "native" CACHE STRING "Build native shared libraries or WebAssembly FMUs")
+set_property(CACHE FMI_TARGET PROPERTY STRINGS native wasm)
+
 set(FMI_ARCHITECTURE "" CACHE STRING "FMI Architecture")
 set_property(CACHE FMI_ARCHITECTURE PROPERTY STRINGS "" "aarch64" "x86" "x86_64")
 
@@ -40,7 +43,12 @@ if (UNIX AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden")
 endif()
 
-if (${FMI_VERSION} EQUAL 2 AND "${FMI_ARCHITECTURE}" STREQUAL "x86" AND WIN32)
+if (FMI_TARGET STREQUAL "wasm")
+  if (NOT ${FMI_VERSION} EQUAL 3)
+    message(FATAL_ERROR "FMI_TARGET=wasm requires FMI_VERSION=3.")
+  endif ()
+  set(FMI_PLATFORM "wasm32-wasip2")
+elseif (${FMI_VERSION} EQUAL 2 AND "${FMI_ARCHITECTURE}" STREQUAL "x86" AND WIN32)
   set(FMI_PLATFORM "win32")
 elseif (${FMI_VERSION} EQUAL 2 AND "${FMI_ARCHITECTURE}" STREQUAL "x86_64" AND WIN32)
   set(FMI_PLATFORM "win64")
@@ -50,6 +58,10 @@ elseif (${FMI_VERSION} EQUAL 2 AND "${FMI_ARCHITECTURE}" STREQUAL "x86_64" AND U
   set(FMI_PLATFORM "linux64")
 elseif (${FMI_VERSION} EQUAL 2 AND "${FMI_ARCHITECTURE}" STREQUAL "x86_64" AND APPLE)
   set(FMI_PLATFORM "darwin64")
+elseif (${FMI_VERSION} EQUAL 2 AND "${FMI_ARCHITECTURE}" STREQUAL "aarch64" AND UNIX AND NOT APPLE)
+  set(FMI_PLATFORM "aarch64-linux")
+elseif (${FMI_VERSION} EQUAL 2 AND "${FMI_ARCHITECTURE}" STREQUAL "aarch64" AND APPLE)
+  set(FMI_PLATFORM "aarch64-darwin")
 else ()
   if (WIN32)
     set(FMI_PLATFORM "${FMI_ARCHITECTURE}-windows")
@@ -76,6 +88,11 @@ set (MODEL_NAMES BouncingBall Dahlquist Feedthrough Resource Stair VanDerPol)
 
 if (${FMI_VERSION} GREATER 2)
   set (MODEL_NAMES ${MODEL_NAMES} Clocks Roberts StateSpace)
+endif ()
+
+if (FMI_TARGET STREQUAL "wasm")
+  list(REMOVE_ITEM MODEL_NAMES Clocks)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/Wasm/WasmFMU.cmake)
 endif ()
 
 foreach (MODEL_NAME ${MODEL_NAMES})
@@ -125,9 +142,13 @@ if("${MODEL_NAME}" STREQUAL "Roberts")
   list(APPEND SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/${MODEL_NAME}/fmi-ls-dae.xml")
 endif()
 
-add_library(${TARGET_NAME} SHARED ${HEADERS} ${SOURCES})
-
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/fmus)
+
+set(FMU_BUILD_DIR temp/${MODEL_NAME})
+
+if (FMI_TARGET STREQUAL "native")
+
+add_library(${TARGET_NAME} SHARED ${HEADERS} ${SOURCES})
 
 target_compile_definitions(${TARGET_NAME} PRIVATE
   FMI_VERSION=${FMI_VERSION}
@@ -153,8 +174,6 @@ target_include_directories(${TARGET_NAME} PRIVATE
   ${MODEL_NAME}
 )
 
-set(FMU_BUILD_DIR temp/${MODEL_NAME})
-
 set_target_properties(${TARGET_NAME} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY         "${FMU_BUILD_DIR}/binaries/${FMI_PLATFORM}"
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   "${FMU_BUILD_DIR}/binaries/${FMI_PLATFORM}"
@@ -169,6 +188,12 @@ set_target_properties(${TARGET_NAME} PROPERTIES
 
 set_target_properties(${TARGET_NAME} PROPERTIES PREFIX "")
 set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME ${MODEL_NAME})
+
+elseif (FMI_TARGET STREQUAL "wasm")
+
+reference_fmu_add_wasm_component(${MODEL_NAME})
+
+endif ()
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
@@ -222,12 +247,31 @@ foreach (SOURCE_FILE model.h cosimulation.h)
 endforeach(SOURCE_FILE)
 
 # common sources
-foreach (SOURCE_FILE fmi${FMI_VERSION}Functions.c common.c cosimulation.c)
+if (FMI_TARGET STREQUAL "wasm")
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/${SOURCE_FILE}"
-    "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Wasm/fmu_wasm.c"
+    "${FMU_BUILD_DIR}/sources/fmu_wasm.c"
   )
-endforeach(SOURCE_FILE)
+  foreach (SOURCE_FILE common.c cosimulation.c)
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/${SOURCE_FILE}"
+      "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"
+    )
+  endforeach(SOURCE_FILE)
+  foreach (SOURCE_FILE co_simulation_fmu.c co_simulation_fmu.h)
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+      "${WASM_BINDGEN_DIR}/${SOURCE_FILE}"
+      "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"
+    )
+  endforeach(SOURCE_FILE)
+else()
+  foreach (SOURCE_FILE fmi${FMI_VERSION}Functions.c common.c cosimulation.c)
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+      "${CMAKE_CURRENT_SOURCE_DIR}/src/${SOURCE_FILE}"
+      "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"
+    )
+  endforeach(SOURCE_FILE)
+endif()
 
 # all.c / buildDescription.xml
 if (${FMI_VERSION} LESS 3)
@@ -252,7 +296,7 @@ if("${MODEL_NAME}" STREQUAL "Resource")
 endif()
 
 # delete unintended files from binaries (Release configuration only)
-if (MSVC)
+if (MSVC AND FMI_TARGET STREQUAL "native")
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND if $<CONFIG:Release> neq 0 (
       ${CMAKE_COMMAND} -E rm -f
       "${FMU_BUILD_DIR}/binaries/${FMI_PLATFORM}/${MODEL_NAME}.exp"
@@ -272,5 +316,7 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fmus/${MODEL_NAME}.fmu DESTINATION ${C
 
 endforeach(MODEL_NAME)
 
-# Examples
-include(examples/Examples.cmake)
+# Examples (native shared libraries only)
+if (FMI_TARGET STREQUAL "native")
+  include(examples/Examples.cmake)
+endif ()
