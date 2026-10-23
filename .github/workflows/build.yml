@@ -57,7 +57,9 @@ jobs:
       with:
         cache-on-failure: true
     - if: matrix.name == 'wasm32-wasip2'
-      run: cargo install wit-bindgen-cli wasm-tools --locked
+      run: |
+        cargo install wit-bindgen-cli --locked
+        cargo install wasm-tools --locked
     - if: matrix.name == 'wasm32-wasip2'
       run: |
         curl -sL -o wasi-sdk.tar.gz \

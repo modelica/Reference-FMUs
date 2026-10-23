@@ -299,7 +299,7 @@ bool exports_fmi_fmi3_co_simulation_static_co_simulation_instance_instantiate_co
     bool logging_on,
     bool event_mode_used,
     bool early_return_allowed,
-    co_simulation_fmu_list_value_reference_t *required_intermediate_variables,
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *required_intermediate_variables,
     exports_fmi_fmi3_co_simulation_own_co_simulation_instance_t *ret)
 {
     exports_fmi_fmi3_co_simulation_co_simulation_instance_t *inst =
@@ -513,7 +513,7 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_exit_configuration_
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_float64(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    co_simulation_fmu_list_value_reference_t *value_references,
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
     co_simulation_fmu_list_f64_t *ret,
     exports_fmi_fmi3_co_simulation_status_t *err)
 {
@@ -538,7 +538,7 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_float64(
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_float64(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    co_simulation_fmu_list_value_reference_t *value_references,
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
     co_simulation_fmu_list_f64_t *values)
 {
     if (value_references->len != values->len) {
@@ -555,7 +555,7 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_float64(
 #define STUB_GET(T, list_type) \
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_##T( \
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self, \
-    co_simulation_fmu_list_value_reference_t *value_references, \
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references, \
     co_simulation_fmu_list_##list_type##_t *ret, \
     exports_fmi_fmi3_co_simulation_status_t *err) \
 { \
@@ -582,7 +582,7 @@ STUB_GET(clock, bool)
 exports_fmi_fmi3_co_simulation_status_t \
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_##T( \
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self, \
-    co_simulation_fmu_list_value_reference_t *value_references, \
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references, \
     co_simulation_fmu_list_##list_type##_t *values) \
 { \
     (void)self; (void)value_references; (void)values; \
@@ -660,8 +660,8 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_fmu_state(
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_directional_derivative(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    co_simulation_fmu_list_value_reference_t *unknowns,
-    co_simulation_fmu_list_value_reference_t *knowns,
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *unknowns,
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *knowns,
     co_simulation_fmu_list_f64_t *seed,
     co_simulation_fmu_list_f64_t *ret,
     exports_fmi_fmi3_co_simulation_status_t *err)
@@ -697,8 +697,8 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_directiona
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_adjoint_derivative(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    co_simulation_fmu_list_value_reference_t *unknowns,
-    co_simulation_fmu_list_value_reference_t *knowns,
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *unknowns,
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *knowns,
     co_simulation_fmu_list_f64_t *seed,
     co_simulation_fmu_list_f64_t *ret,
     exports_fmi_fmi3_co_simulation_status_t *err)
@@ -735,34 +735,34 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_adjoint_de
 #define STUB_GET_INTERVAL(name) \
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_##name( \
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self, \
-    co_simulation_fmu_list_value_reference_t *vrs, void *ret, \
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *vrs, void *ret, \
     exports_fmi_fmi3_co_simulation_status_t *err) \
 { (void)self;(void)vrs;(void)ret; *err=FMI_FMI3_TYPES_STATUS_ERROR; return false; }
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_interval_decimal(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    co_simulation_fmu_list_value_reference_t *value_references,
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
     exports_fmi_fmi3_co_simulation_list_tuple2_f64_interval_qualifier_t *ret,
     exports_fmi_fmi3_co_simulation_status_t *err)
 { (void)self;(void)value_references;(void)ret; *err=FMI_FMI3_TYPES_STATUS_ERROR; return false; }
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_interval_fraction(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    co_simulation_fmu_list_value_reference_t *value_references,
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
     exports_fmi_fmi3_co_simulation_list_tuple2_interval_fraction_interval_qualifier_t *ret,
     exports_fmi_fmi3_co_simulation_status_t *err)
 { (void)self;(void)value_references;(void)ret; *err=FMI_FMI3_TYPES_STATUS_ERROR; return false; }
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_shift_decimal(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    co_simulation_fmu_list_value_reference_t *value_references,
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
     co_simulation_fmu_list_f64_t *ret,
     exports_fmi_fmi3_co_simulation_status_t *err)
 { (void)self;(void)value_references;(void)ret; *err=FMI_FMI3_TYPES_STATUS_ERROR; return false; }
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_shift_fraction(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    co_simulation_fmu_list_value_reference_t *value_references,
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
     exports_fmi_fmi3_co_simulation_list_interval_fraction_t *ret,
     exports_fmi_fmi3_co_simulation_status_t *err)
 { (void)self;(void)value_references;(void)ret; *err=FMI_FMI3_TYPES_STATUS_ERROR; return false; }
@@ -770,28 +770,28 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_shift_frac
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_interval_decimal(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    co_simulation_fmu_list_value_reference_t *value_references,
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
     co_simulation_fmu_list_f64_t *intervals)
 { (void)self;(void)value_references;(void)intervals; return FMI_FMI3_TYPES_STATUS_ERROR; }
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_interval_fraction(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    co_simulation_fmu_list_value_reference_t *value_references,
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
     exports_fmi_fmi3_co_simulation_list_interval_fraction_t *intervals)
 { (void)self;(void)value_references;(void)intervals; return FMI_FMI3_TYPES_STATUS_ERROR; }
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_shift_decimal(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    co_simulation_fmu_list_value_reference_t *value_references,
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
     co_simulation_fmu_list_f64_t *shifts)
 { (void)self;(void)value_references;(void)shifts; return FMI_FMI3_TYPES_STATUS_ERROR; }
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_shift_fraction(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    co_simulation_fmu_list_value_reference_t *value_references,
+    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
     exports_fmi_fmi3_co_simulation_list_interval_fraction_t *shifts)
 { (void)self;(void)value_references;(void)shifts; return FMI_FMI3_TYPES_STATUS_ERROR; }
 
@@ -807,7 +807,7 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_evaluate_discrete_s
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_input_derivatives(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    co_simulation_fmu_list_tuple2_value_reference_u32_t *requests,
+    exports_fmi_fmi3_co_simulation_list_tuple2_value_reference_u32_t *requests,
     co_simulation_fmu_list_f64_t *values)
 {
     (void)self;
@@ -818,7 +818,7 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_input_derivativ
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_output_derivatives(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    co_simulation_fmu_list_tuple2_value_reference_u32_t *requests,
+    exports_fmi_fmi3_co_simulation_list_tuple2_value_reference_u32_t *requests,
     co_simulation_fmu_list_f64_t *ret,
     exports_fmi_fmi3_co_simulation_status_t *err)
 {
