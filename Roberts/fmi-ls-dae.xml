@@ -3,7 +3,7 @@
   xmlns:fmi-ls="http://fmi-standard.org/fmi-ls-manifest"
   fmi-ls:fmi-ls-name="org.fmi-standard.fmi-ls-dae"
   fmi-ls:fmi-ls-version="1.0.0-alpha.1"
-  fmi-ls:fmi-ls-description="Layered standard for DAE support in FMI 3">
+  fmi-ls:fmi-ls-description="Layered standard for DAE support in FMI.">
   <EnableDAEParameter valueReference="1"/>
   <AlgebraicVariables>
     <AlgebraicVariable valueReference="6"/>
