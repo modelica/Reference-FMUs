@@ -222,7 +222,7 @@ Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], siz
 Status setContinuousStates(ModelInstance *comp, const double x[], size_t nx);
 Status getDerivatives(ModelInstance *comp, double dx[], size_t nx);
 Status getOutputDerivative(ModelInstance *comp, ValueReference valueReference, int order, double *value);
-Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative);
+Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double *partialDerivative);
 Status getEventIndicators(ModelInstance *comp, double z[], size_t nz);
 Status eventUpdate(ModelInstance *comp);
 

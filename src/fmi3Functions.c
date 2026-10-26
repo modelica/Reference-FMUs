@@ -835,6 +835,16 @@ fmi3Status fmi3DeserializeFMUState(fmi3Instance instance,
     END_FUNCTION();
 }
 
+static size_t valueReferenceElementIndex(const fmi3ValueReference valueReferences[], size_t position) {
+    size_t index = 0;
+    for (size_t k = 0; k < position; k++) {
+        if (valueReferences[k] == valueReferences[position]) {
+            index++;
+        }
+    }
+    return index;
+}
+
 fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance,
     const fmi3ValueReference unknowns[],
     size_t nUnknowns,
@@ -858,7 +868,12 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance,
         sensitivity[i] = 0;
         for (size_t j = 0; j < nKnowns; j++) {
             double partialDerivative = 0;
-            CALL(getPartialDerivative(S, (ValueReference)unknowns[i], (ValueReference)knowns[j], &partialDerivative));
+            CALL(getPartialDerivative(S,
+                (ValueReference)unknowns[i],
+                valueReferenceElementIndex(unknowns, i),
+                (ValueReference)knowns[j],
+                valueReferenceElementIndex(knowns, j),
+                &partialDerivative));
             sensitivity[i] += partialDerivative * seed[j];
         }
     }
@@ -887,7 +902,12 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
         sensitivity[i] = 0;
         for (size_t j = 0; j < nUnknowns; j++) {
             double partialDerivative = 0;
-            CALL(getPartialDerivative(S, (ValueReference)unknowns[j], (ValueReference)knowns[i], &partialDerivative));
+            CALL(getPartialDerivative(S,
+                (ValueReference)unknowns[j],
+                valueReferenceElementIndex(unknowns, j),
+                (ValueReference)knowns[i],
+                valueReferenceElementIndex(knowns, i),
+                &partialDerivative));
             sensitivity[i] += partialDerivative * seed[j];
         }
     }

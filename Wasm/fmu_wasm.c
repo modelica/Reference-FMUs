@@ -658,6 +658,16 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_fmu_state(
     return map_status(wasm_apply_status(comp, st));
 }
 
+static size_t valueReferenceElementIndex(const exports_fmi_fmi3_co_simulation_value_reference_t *valueReferences, size_t position) {
+    size_t index = 0;
+    for (size_t k = 0; k < position; k++) {
+        if (valueReferences[k] == valueReferences[position]) {
+            index++;
+        }
+    }
+    return index;
+}
+
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_directional_derivative(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     exports_fmi_fmi3_co_simulation_list_value_reference_t *unknowns,
@@ -680,7 +690,9 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_directiona
             Status st = getPartialDerivative(
                 comp,
                 (ValueReference)unknowns->ptr[i],
+                valueReferenceElementIndex(unknowns->ptr, i),
                 (ValueReference)knowns->ptr[j],
+                valueReferenceElementIndex(knowns->ptr, j),
                 &partialDerivative);
             if (st != OK) {
                 free(buf);
@@ -717,7 +729,9 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_adjoint_de
             Status st = getPartialDerivative(
                 comp,
                 (ValueReference)unknowns->ptr[j],
+                valueReferenceElementIndex(unknowns->ptr, j),
                 (ValueReference)knowns->ptr[i],
+                valueReferenceElementIndex(knowns->ptr, i),
                 &partialDerivative);
             if (st != OK) {
                 free(buf);

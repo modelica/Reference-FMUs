@@ -541,7 +541,7 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReferenc
         dvUnknown[i] = 0;
         for (size_t j = 0; j < nKnown; j++) {
             double partialDerivative = 0;
-            CALL(getPartialDerivative(S, vUnknown_ref[i], vKnown_ref[j], &partialDerivative));
+            CALL(getPartialDerivative(S, vUnknown_ref[i], 0, vKnown_ref[j], 0, &partialDerivative));
             dvUnknown[i] += partialDerivative * dvKnown[j];
         }
     }

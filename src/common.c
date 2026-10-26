@@ -571,10 +571,12 @@ Status getEventIndicators(ModelInstance* comp, double z[], size_t nz) {
 #endif
 
 #ifndef GET_PARTIAL_DERIVATIVE
-Status getPartialDerivative(ModelInstance* comp, ValueReference unknown, ValueReference known, double* partialDerivative) {
+Status getPartialDerivative(ModelInstance* comp, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double* partialDerivative) {
     UNUSED(comp);
     UNUSED(unknown);
+    UNUSED(unknownIndex);
     UNUSED(known);
+    UNUSED(knownIndex);
     UNUSED(partialDerivative);
     logError(comp, "Directional derivatives are not supported.");
     return Error;

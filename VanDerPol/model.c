@@ -155,9 +155,11 @@ Status getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
     return OK;
 }
 
-Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, ValueReference known, double *partialDerivative) {
+Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double *partialDerivative) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(partialDerivative);
+    UNUSED(unknownIndex);
+    UNUSED(knownIndex);
 
     if (unknown == vr_der_x0 && known == vr_x0) {
         *partialDerivative = 0;
