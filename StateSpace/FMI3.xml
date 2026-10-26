@@ -9,7 +9,9 @@
     <ModelExchange
       modelIdentifier="StateSpace"
       canGetAndSetFMUState="true"
-      canSerializeFMUState="true"/>
+      canSerializeFMUState="true"
+      providesDirectionalDerivatives="true"
+      providesAdjointDerivatives="true"/>
 
     <CoSimulation
       modelIdentifier="StateSpace"
@@ -19,7 +21,9 @@
       providesIntermediateUpdate="true"
       canReturnEarlyAfterIntermediateUpdate="true"
       fixedInternalStepSize="1"
-      hasEventMode="true"/>
+      hasEventMode="true"
+      providesDirectionalDerivatives="true"
+      providesAdjointDerivatives="true"/>
 
     <LogCategories>
         <Category name="logEvents" description="Log events"/>

@@ -163,9 +163,11 @@ size_t getNumberOfEventIndicators(ModelInstance* comp) {
     return MAX_EVENT_INDICATORS;
 }
 
-Status getPartialDerivative(ModelInstance* comp, ValueReference unknown, ValueReference known, double* partialDerivative) {
+Status getPartialDerivative(ModelInstance* comp, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double* partialDerivative) {
     ASSERT_NOT_NULL2(comp);
     ASSERT_NOT_NULL2(partialDerivative);
+    UNUSED(unknownIndex);
+    UNUSED(knownIndex);
 
     calculateValues(comp);
 

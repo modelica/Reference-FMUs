@@ -385,3 +385,68 @@ Status getDerivatives(ModelInstance* comp, double dx[], size_t nx) {
 
     return OK;
 }
+
+Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double *partialDerivative) {
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(partialDerivative);
+
+    const size_t n = (size_t)M(n);
+    const size_t m = (size_t)M(m);
+    const size_t r = (size_t)M(r);
+
+    calculateValues(comp);
+
+    *partialDerivative = 0.0;
+
+    if (unknown == vr_der_x && known == vr_x) {
+        if (unknownIndex < n && knownIndex < n) {
+            *partialDerivative = M(A)[unknownIndex][knownIndex];
+        }
+    } else if (unknown == vr_der_x && known == vr_u) {
+        if (unknownIndex < n && knownIndex < m) {
+            *partialDerivative = M(B)[unknownIndex][knownIndex];
+        }
+    } else if (unknown == vr_y && known == vr_x) {
+        if (unknownIndex < r && knownIndex < n) {
+            *partialDerivative = M(C)[unknownIndex][knownIndex];
+        }
+    } else if (unknown == vr_y && known == vr_u) {
+        if (unknownIndex < r && knownIndex < m) {
+            *partialDerivative = M(D)[unknownIndex][knownIndex];
+        }
+    } else if (unknown == vr_der_x && known == vr_A) {
+        if (unknownIndex < n && knownIndex < n * n) {
+            const size_t row = knownIndex % n;
+            const size_t col = knownIndex / n;
+            if (row < n && col < n && unknownIndex == row) {
+                *partialDerivative = M(x)[col];
+            }
+        }
+    } else if (unknown == vr_der_x && known == vr_B) {
+        if (unknownIndex < n && knownIndex < n * m) {
+            const size_t row = knownIndex % n;
+            const size_t col = knownIndex / n;
+            if (row < n && col < m && unknownIndex == row) {
+                *partialDerivative = M(u)[col];
+            }
+        }
+    } else if (unknown == vr_y && known == vr_C) {
+        if (unknownIndex < r && knownIndex < r * n) {
+            const size_t row = knownIndex % r;
+            const size_t col = knownIndex / r;
+            if (row < r && col < n && unknownIndex == row) {
+                *partialDerivative = M(x)[col];
+            }
+        }
+    } else if (unknown == vr_y && known == vr_D) {
+        if (unknownIndex < r && knownIndex < r * m) {
+            const size_t row = knownIndex % r;
+            const size_t col = knownIndex / r;
+            if (row < r && col < m && unknownIndex == row) {
+                *partialDerivative = M(u)[col];
+            }
+        }
+    }
+
+    return OK;
+}
