@@ -13,7 +13,7 @@ import os
 import fmpy
 import jinja2
 import markdown2
-from fmpy import read_csv, plot_result, read_model_description
+from fmpy import read_model_description
 
 root = Path(__file__).parent.parent
 
@@ -21,27 +21,44 @@ dist_merged = root / 'dist-merged'
 
 os.makedirs(dist_merged, exist_ok=True)
 
-parameters = {
+fmusim_args = {
     'BouncingBall': [
-        '--output-interval', '0.05',
+        '--interface-type=me',
+        '--output-interval=0.05',
     ],
     'Dahlquist': [
-        '--output-interval', '0.2',
+        '--interface-type=me',
+        '--output-interval=0.2',
     ],
     'Feedthrough': [
-        '--output-interval', '1',
-    ],
-    'StateSpace': [
-        '--output-interval', '1',
+        '--interface-type=me',
+        '--output-interval=1',
     ],
     'Resource': [
-        '--output-interval', '1',
+        '--interface-type=me',
+        '--output-interval=1',
+    ],
+    'Roberts':  [
+        '--interface-type=me',
+        '--start-time=1e-6',
+        '--stop-time=1e8',
+        '--output-interval=2',
+        '--tolerance=1e-4',
+        '--solver=ida',
+        '--enable-dae',
+        '--log-time-scale'
     ],
     'Stair':  [
-        '--output-interval', '1',
+        '--interface-type=me',
+        '--output-interval=1',
+    ],
+    'StateSpace': [
+        '--interface-type=me',
+        '--output-interval=1',
     ],
     'VanDerPol':  [
-        '--output-interval', '0.2',
+        '--interface-type=me',
+        '--output-interval=0.2',
     ]
 }
 
@@ -81,7 +98,7 @@ def set_tool_version(filename, git_executable='git'):
 
 def merge_fmus(version):
 
-    for dirpath, dirnames, filenames in os.walk(root / 'dist-x86_64-windows' / version):
+    for _dirpath, _dirnames, filenames in os.walk(root / 'dist-x86_64-windows' / version):
 
         for filename in filenames:
 
@@ -113,26 +130,21 @@ def merge_fmus(version):
                 with zipfile.ZipFile(platform_fmu, 'r') as archive:
                     archive.extractall(path=tempdir)
 
-            if model_name in parameters:
+            if model_name in fmusim_args:
 
                 output_filename = root / f'dist-{fmpy.platform_tuple}' / version / f'{model_name}_ref.csv'
                 os.makedirs(tempdir / 'documentation', exist_ok=True)
-                plot_filename = tempdir / 'documentation' / 'result.svg'
+                plot_filename = tempdir / 'documentation' / 'result.html'
 
-                params = ['--interface-type', 'me', '--solver', 'cvode']
+                fmusim_command = ['fmusim', 'simulate'] + fmusim_args[model_name] + [
+                    f'--output-file={str(output_filename)}', 
+                    f'--plot-file={str(plot_filename)}',
+                    str(root / f'dist-{fmpy.platform_tuple}' / version / filename)
+                ]
 
-                params += parameters[model_name]
+                print(' '.join(fmusim_command))
 
-                command = ['fmusim', 'simulate'] + params + ['--output-file', str(output_filename), str(root / f'dist-{fmpy.platform_tuple}' / version / filename)]
-
-                print(' '.join(command))
-
-                check_call(command)
-
-                result = read_csv(output_filename)
-
-                # create plot
-                plot_result(result, markers=True, events=True, filename=plot_filename)
+                check_call(fmusim_command)
 
                 def get_unit(variable):
                     if variable.unit is not None:
@@ -155,7 +167,7 @@ def merge_fmus(version):
                     model_name=model_name,
                     content=content,
                     model_description=model_description,
-                    params=' '.join(params)
+                    fmusim_args=' '.join(fmusim_args[model_name])
                 )
                 with open(html_file, 'w') as f:
                     f.write(html)
