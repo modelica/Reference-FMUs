@@ -167,7 +167,7 @@ def merge_fmus(version):
                     model_name=model_name,
                     content=content,
                     model_description=model_description,
-                    fmusim_args=' '.join(fmusim_args)
+                    fmusim_args=' '.join(fmusim_args[model_name])
                 )
                 with open(html_file, 'w') as f:
                     f.write(html)
