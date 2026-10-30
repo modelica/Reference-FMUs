@@ -73,7 +73,7 @@
 
       <p>The plot shows the trajectories of the output variables computed with <a href="https://modelica.github.io/fmusim/">fmusim</a>.</p>
 
-      <pre><code>{{ fmusim_command }}</code></pre>
+      <pre><code>fmusim simulate {{ fmusim_args }} --show-plot {{ model_name }}.fmu</code></pre>
 
       <p><iframe src="result.html" title="plot" width="100%" height="600" style="border: none;"></iframe></p>
     </div>

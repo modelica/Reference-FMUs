@@ -21,20 +21,25 @@ dist_merged = root / 'dist-merged'
 
 os.makedirs(dist_merged, exist_ok=True)
 
-parameters = {
+fmusim_args = {
     'BouncingBall': [
+        '--interface-type=me',
         '--output-interval=0.05',
     ],
     'Dahlquist': [
+        '--interface-type=me',
         '--output-interval=0.2',
     ],
     'Feedthrough': [
+        '--interface-type=me',
         '--output-interval=1',
     ],
     'Resource': [
+        '--interface-type=me',
         '--output-interval=1',
     ],
     'Roberts':  [
+        '--interface-type=me',
         '--start-time=1e-6',
         '--stop-time=1e8',
         '--output-interval=2',
@@ -44,12 +49,15 @@ parameters = {
         '--log-time-scale'
     ],
     'Stair':  [
+        '--interface-type=me',
         '--output-interval=1',
     ],
     'StateSpace': [
+        '--interface-type=me',
         '--output-interval=1',
     ],
     'VanDerPol':  [
+        '--interface-type=me',
         '--output-interval=0.2',
     ]
 }
@@ -90,7 +98,7 @@ def set_tool_version(filename, git_executable='git'):
 
 def merge_fmus(version):
 
-    for dirpath, dirnames, filenames in os.walk(root / 'dist-x86_64-windows' / version):
+    for _dirpath, _dirnames, filenames in os.walk(root / 'dist-x86_64-windows' / version):
 
         for filename in filenames:
 
@@ -122,14 +130,13 @@ def merge_fmus(version):
                 with zipfile.ZipFile(platform_fmu, 'r') as archive:
                     archive.extractall(path=tempdir)
 
-            if model_name in parameters:
+            if model_name in fmusim_args:
 
                 output_filename = root / f'dist-{fmpy.platform_tuple}' / version / f'{model_name}_ref.csv'
                 os.makedirs(tempdir / 'documentation', exist_ok=True)
                 plot_filename = tempdir / 'documentation' / 'result.html'
 
-                fmusim_command = ['fmusim', 'simulate'] + parameters[model_name] + [
-                    '--interface-type=me',
+                fmusim_command = ['fmusim', 'simulate'] + fmusim_args[model_name] + [
                     f'--output-file={str(output_filename)}', 
                     f'--plot-file={str(plot_filename)}',
                     str(root / f'dist-{fmpy.platform_tuple}' / version / filename)
@@ -160,7 +167,7 @@ def merge_fmus(version):
                     model_name=model_name,
                     content=content,
                     model_description=model_description,
-                    fmusim_command=' '.join(fmusim_command)
+                    fmusim_args=' '.join(fmusim_args)
                 )
                 with open(html_file, 'w') as f:
                     f.write(html)
