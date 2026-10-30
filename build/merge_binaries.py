@@ -13,7 +13,7 @@ import os
 import fmpy
 import jinja2
 import markdown2
-from fmpy import read_csv, plot_result, read_model_description
+from fmpy import read_model_description
 
 root = Path(__file__).parent.parent
 
@@ -23,25 +23,34 @@ os.makedirs(dist_merged, exist_ok=True)
 
 parameters = {
     'BouncingBall': [
-        '--output-interval', '0.05',
+        '--output-interval=0.05',
     ],
     'Dahlquist': [
-        '--output-interval', '0.2',
+        '--output-interval=0.2',
     ],
     'Feedthrough': [
-        '--output-interval', '1',
-    ],
-    'StateSpace': [
-        '--output-interval', '1',
+        '--output-interval=1',
     ],
     'Resource': [
-        '--output-interval', '1',
+        '--output-interval=1',
+    ],
+    'Roberts':  [
+        '--start-time=1e-6',
+        '--stop-time=1e8',
+        '--output-interval=2',
+        '--tolerance=1e-4',
+        '--solver=ida',
+        '--enable-dae',
+        '--log-time-scale'
     ],
     'Stair':  [
-        '--output-interval', '1',
+        '--output-interval=1',
+    ],
+    'StateSpace': [
+        '--output-interval=1',
     ],
     'VanDerPol':  [
-        '--output-interval', '0.2',
+        '--output-interval=0.2',
     ]
 }
 
@@ -117,22 +126,18 @@ def merge_fmus(version):
 
                 output_filename = root / f'dist-{fmpy.platform_tuple}' / version / f'{model_name}_ref.csv'
                 os.makedirs(tempdir / 'documentation', exist_ok=True)
-                plot_filename = tempdir / 'documentation' / 'result.svg'
+                plot_filename = tempdir / 'documentation' / 'result.html'
 
-                params = ['--interface-type', 'me', '--solver', 'cvode']
+                fmusim_command = ['fmusim', 'simulate'] + parameters[model_name] + [
+                    '--interface-type=me',
+                    f'--output-file={str(output_filename)}', 
+                    f'--plot-file={str(plot_filename)}',
+                    str(root / f'dist-{fmpy.platform_tuple}' / version / filename)
+                ]
 
-                params += parameters[model_name]
+                print(' '.join(fmusim_command))
 
-                command = ['fmusim', 'simulate'] + params + ['--output-file', str(output_filename), str(root / f'dist-{fmpy.platform_tuple}' / version / filename)]
-
-                print(' '.join(command))
-
-                check_call(command)
-
-                result = read_csv(output_filename)
-
-                # create plot
-                plot_result(result, markers=True, events=True, filename=plot_filename)
+                check_call(fmusim_command)
 
                 def get_unit(variable):
                     if variable.unit is not None:
@@ -155,7 +160,7 @@ def merge_fmus(version):
                     model_name=model_name,
                     content=content,
                     model_description=model_description,
-                    params=' '.join(params)
+                    fmusim_command=' '.join(fmusim_command)
                 )
                 with open(html_file, 'w') as f:
                     f.write(html)
