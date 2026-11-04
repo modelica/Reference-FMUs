@@ -215,7 +215,10 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t
     }
 }
 
-Status getClock(ModelInstance* comp, ValueReference vr, _Bool *value) {
+Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
+
+    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(value);
 
     switch (vr) {
     case vr_outClock:

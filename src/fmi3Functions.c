@@ -58,14 +58,6 @@ do { \
 #define DT_EVENT_DETECT 1e-10
 #endif
 
-// ---------------------------------------------------------------------------
-// Function calls allowed state masks for both Model-exchange and Co-simulation
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// Private helpers used below to validate function arguments
-// ---------------------------------------------------------------------------
-
 #define NOT_IMPLEMENTED \
 do { \
     ModelInstance *comp = (ModelInstance *)instance; \
@@ -364,14 +356,13 @@ fmi3Status fmi3GetClock(fmi3Instance instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     fmi3Clock values[]) {
-    NOT_IMPLEMENTED;
-//    BEGIN_FUNCTION(GetClock);
-//
-//    for (size_t i = 0; i < nValueReferences; i++) {
-//        CALL(getClock(instance, (ValueReference)valueReferences[i], &values[i]));
-//    }
-//
-//    END_FUNCTION();
+    for (size_t i = 0; i < nValueReferences; i++) {
+        fmi3Status result = map_status(getClock(instance, (ValueReference)valueReferences[i], &values[i]));
+        if (result != fmi3OK) {
+            return result;
+        }
+    }
+    return fmi3OK;
 }
 
 fmi3Status fmi3SetFloat32(fmi3Instance instance,
@@ -490,16 +481,15 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
     const fmi3ValueReference valueReferences[],
     size_t nValueReferences,
     const fmi3Clock values[]) {
-    NOT_IMPLEMENTED;
-    //BEGIN_FUNCTION(SetClock);
-//
-//    for (size_t i = 0; i < nValueReferences; i++) {
-//        if (values[i]) {
-//            CALL(activateClock(instance, (ValueReference)valueReferences[i]));
-//        }
-//    }
-//
-//    END_FUNCTION();
+    for (size_t i = 0; i < nValueReferences; i++) {
+        if (values[i]) {
+            fmi3Status result = map_status(activateClock(instance, (ValueReference)valueReferences[i]));
+            if (result != fmi3OK) {
+                return result;
+            }
+        }
+    }
+    return fmi3OK;
 }
 
 fmi3Status fmi3GetNumberOfVariableDependencies(fmi3Instance instance,
