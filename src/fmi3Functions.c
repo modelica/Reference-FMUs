@@ -30,22 +30,6 @@ do { \
     } \
 } while (0)
 
-//#define CALL(f) do { \
-//    const Status s = f; \
-//    if (s > status) { \
-//        status = s; \
-//    } \
-//    if (status == Discard) { \
-//        goto TERMINATE; \
-//    } else if (status == Error) { \
-//        S->state = Terminated; \
-//        goto TERMINATE; \
-//    } else if (status == Fatal) { \
-//        S->state = StartAndEnd; \
-//        goto TERMINATE; \
-//    } \
-//} while (false)
-
 #define GET_VARIABLES(T) \
     size_t index = 0; \
     for (size_t i = 0; i < nValueReferences; i++) { \
@@ -55,23 +39,6 @@ do { \
         } \
     } \
     return fmi3OK;
-//BEGIN_FUNCTION(Get ## T); \
-//if (nValueReferences == 0) goto TERMINATE; \
-//ASSERT_NOT_NULL(valueReferences); \
-//if (nValues > 0) ASSERT_NOT_NULL(values); \
-//if (S->isDirtyValues) { \
-//    CALL(calculateValues(S)); \
-//    S->isDirtyValues = false; \
-//} \
-//size_t index = 0; \
-//for (size_t i = 0; i < nValueReferences; i++) { \
-//    CALL(get ## T(S, (ValueReference)valueReferences[i], values, nValues, &index)); \
-//} \
-//if (index != nValues) { \
-//    logError(S, "Expected nValues = %zu but was %zu.", index, nValues); \
-//    CALL(Error); \
-//} \
-//END_FUNCTION()
 
 #define SET_VARIABLES(T) \
     size_t index = 0; \
@@ -82,19 +49,6 @@ do { \
         } \
     } \
     return fmi3OK;
-//BEGIN_FUNCTION(Set ## T); \
-//if (nValueReferences == 0) goto TERMINATE; \
-//ASSERT_NOT_NULL(valueReferences); \
-//size_t index = 0; \
-//for (size_t i = 0; i < nValueReferences; i++) { \
-//    CALL(set ## T(S, (ValueReference)valueReferences[i], values, nValues, &index)); \
-//} \
-//if (nValueReferences > 0) S->isDirtyValues = true; \
-//if (index != nValues) { \
-//    logError(S, "Expected nValues = %zu but was %zu.", index, nValues); \
-//    CALL(Error); \
-//} \
-//END_FUNCTION()
 
 #ifndef max
 #define max(a,b) ((a)>(b) ? (a) : (b))
@@ -118,30 +72,6 @@ do { \
     logError(comp, "Function is not implemented."); \
     return fmi3Error; \
 } while (0)
-
-//#define BEGIN_FUNCTION(F) \
-//Status status = OK; \
-//if (!instance) return fmi3Error; \
-//ModelInstance *S = (ModelInstance *)instance; \
-//if (!allowedState(S, MASK_fmi3##F, #F)) CALL(Error);
-//
-//#define END_FUNCTION() \
-//TERMINATE: \
-//    return (fmi3Status)status;
-//
-//static bool allowedState(ModelInstance *instance, int statesExpected, char *name) {
-//
-//    if (!instance) {
-//        return false;
-//    }
-//
-//    if (!(instance->state & statesExpected)) {
-//        logError(instance, "fmi3%s: Illegal call sequence.", name);
-//        return false;
-//    }
-//
-//    return true;
-//}
 
 /***************************************************
  Common Functions
