@@ -350,31 +350,14 @@ fmi3Status fmi3GetBinary(fmi3Instance instance,
     size_t valueSizes[],
     fmi3Binary values[],
     size_t nValues) {
-    NOT_IMPLEMENTED;
-//    BEGIN_FUNCTION(GetBinary);
-//
-//    if (nValueReferences == 0) {
-//        goto TERMINATE;
-//    } else {
-//        ASSERT_NOT_NULL(valueReferences);
-//    }
-//
-//    if (nValues > 0) {
-//        ASSERT_NOT_NULL(values);
-//    }
-//
-//    if (S->isDirtyValues) {
-//        CALL(calculateValues(S));
-//        S->isDirtyValues = false;
-//    }
-//
-//    size_t index = 0;
-//
-//    for (size_t i = 0; i < nValueReferences; i++) {
-//        CALL(getBinary(S, (ValueReference)valueReferences[i], valueSizes, (const char**)values, nValues, &index));
-//    }
-//
-//    END_FUNCTION();
+    size_t index = 0;
+    for (size_t i = 0; i < nValueReferences; i++) {
+        fmi3Status result = map_status(getBinary(instance, (ValueReference)valueReferences[i], valueSizes, (const char**)values, nValues, &index));
+        if (result != fmi3OK) {
+            return result;
+        }
+    }
+    return fmi3OK;
 }
 
 fmi3Status fmi3GetClock(fmi3Instance instance,
@@ -493,32 +476,14 @@ fmi3Status fmi3SetBinary(fmi3Instance instance,
     const size_t valueSizes[],
     const fmi3Binary values[],
     size_t nValues) {
-    NOT_IMPLEMENTED;
-//
-//    BEGIN_FUNCTION(SetBinary);
-//
-//    if (nValueReferences == 0) {
-//        goto TERMINATE;
-//    }
-//
-//    ASSERT_NOT_NULL(valueReferences);
-//
-//    size_t index = 0;
-//
-//    for (size_t i = 0; i < nValueReferences; i++) {
-//        CALL(setBinary(S, (ValueReference)valueReferences[i], valueSizes, (const char* const*)values, nValues, &index));
-//    }
-//
-//    if (nValueReferences > 0) {
-//        S->isDirtyValues = true;
-//    }
-//
-//    if (index != nValues) {
-//        logError(S, "Expected nValues = %zu but was %zu.", index, nValues); \
-//        CALL(Error);
-//    }
-//
-//    END_FUNCTION();
+    size_t index = 0;
+    for (size_t i = 0; i < nValueReferences; i++) {
+        fmi3Status result = map_status(setBinary(instance, (ValueReference)valueReferences[i], valueSizes, (const char* const*)values, nValues, &index));
+        if (result != fmi3OK) {
+            return result;
+        }
+    }
+    return fmi3OK;
 }
 
 fmi3Status fmi3SetClock(fmi3Instance instance,

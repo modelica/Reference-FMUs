@@ -420,6 +420,7 @@ Status getBoolean(ModelInstance* comp, ValueReference vr, bool values[], size_t 
 
 Status getBinary(ModelInstance* comp, ValueReference vr, size_t sizes[], const char* values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(sizes);
     ASSERT_NOT_NULL2(values);
     ASSERT_NOT_NULL2(index);
 
@@ -786,6 +787,7 @@ Status setString(ModelInstance* comp, ValueReference vr, const char *const value
 
 Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], const char* const values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(size);
     ASSERT_NOT_NULL2(values);
     ASSERT_NOT_NULL2(index);
 
