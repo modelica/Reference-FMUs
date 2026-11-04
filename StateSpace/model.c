@@ -1,5 +1,5 @@
 #include "config.h"
-#include "model.h"
+#include "model_instance.h"
 
 
 Status setStartValues(ModelInstance *comp) {

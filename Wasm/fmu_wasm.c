@@ -20,6 +20,7 @@ struct exports_fmi_fmi3_co_simulation_co_simulation_instance_t {
 #define FMI_VERSION 3
 #include "config.h"
 #include "model.h"
+#include "model_instance.h"
 #include "cosimulation.h"
 
 static const char WASM_FMI_VERSION[] = "3.0";

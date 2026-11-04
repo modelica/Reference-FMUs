@@ -1,5 +1,5 @@
 #include "config.h"
-#include "model.h"
+#include "model_instance.h"
 
 #define Y1_NOMINAL (1e-4)
 #define Y2_NOMINAL (1e-2)

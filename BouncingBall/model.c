@@ -1,7 +1,7 @@
 #include <math.h>  // for fabs()
 #include <float.h> // for DBL_MIN
 #include "config.h"
-#include "model.h"
+#include "model_instance.h"
 
 #define V_MIN (0.1)
 #define E_MIN (0.5)

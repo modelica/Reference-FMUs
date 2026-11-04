@@ -4,7 +4,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include "config.h"
-#include "model.h"
+#include "model_instance.h"
 
 #ifdef _MSC_VER
 #define strdup _strdup

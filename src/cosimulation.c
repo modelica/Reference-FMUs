@@ -1,6 +1,7 @@
 #include <string.h>
 #include "config.h"
 #include "cosimulation.h"
+#include "model_instance.h"
 
 #ifdef CALL
 #undef CALL
