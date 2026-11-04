@@ -22,15 +22,6 @@
 #endif
 #include "fmi3Functions.h"
 
-#define ASSERT_NOT_NULL(p) \
-do { \
-    if (!p) { \
-        logError(S, "Argument %s must not be NULL.", xstr(p)); \
-        S->state = Terminated; \
-        return (fmi3Status)Error; \
-    } \
-} while (0)
-
 #define GET_VARIABLES(T) \
     size_t index = 0; \
     for (size_t i = 0; i < nValueReferences; i++) { \
@@ -50,14 +41,6 @@ do { \
         } \
     } \
     return fmi3OK;
-
-#ifndef max
-#define max(a,b) ((a)>(b) ? (a) : (b))
-#endif
-
-#ifndef DT_EVENT_DETECT
-#define DT_EVENT_DETECT 1e-10
-#endif
 
 #define NOT_IMPLEMENTED \
 do { \
@@ -544,16 +527,6 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance,
     size_t nSeed,
     fmi3Float64 sensitivity[],
     size_t nSensitivity) {
-    //NOT_IMPLEMENTED;
-//
-//    UNUSED(nSeed);
-//    UNUSED(nSensitivity);
-//
-//    BEGIN_FUNCTION(GetDirectionalDerivative);
-//
-    // TODO: check value references
-    // TODO: assert nUnknowns == nDeltaOfUnknowns
-    // TODO: assert nKnowns == nDeltaKnowns
 
     for (size_t i = 0; i < nUnknowns; i++) {
         sensitivity[i] = 0;
@@ -626,16 +599,6 @@ fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
     fmi3Float64 intervals[],
     fmi3IntervalQualifier qualifiers[]) {
     NOT_IMPLEMENTED;
-
-//    BEGIN_FUNCTION(GetIntervalDecimal);
-//
-//    // TODO: Check nValueReferences != nValues ?
-//
-//    for (size_t i = 0; i < nValueReferences; i++) {
-//        CALL(getInterval(instance, (ValueReference)valueReferences[i], &intervals[i], (int*)&qualifiers[i]));
-//    }
-//
-//    END_FUNCTION();
 }
 
 fmi3Status fmi3GetIntervalFraction(fmi3Instance instance,

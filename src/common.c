@@ -17,7 +17,6 @@
 #define CALL(f) do { const Status status = f; if (status != OK) return status; } while (false)
 
 
-
 static bool resourceLocationEndsWithFileSeparator(const char *resourceLocation) {
 
     if (!resourceLocation) {
