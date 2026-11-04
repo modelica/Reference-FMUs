@@ -70,3 +70,122 @@ Status doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
 
     return OK;
 }
+
+Status doStep(
+    ModelInstance* comp,
+    double currentCommunicationPoint,
+    double communicationStepSize,
+    bool noSetFMUStatePriorToCurrentPoint,
+    bool* eventHandlingNeeded,
+    bool* terminateSimulation,
+    bool* earlyReturn,
+    double* lastSuccessfulTime) {
+    UNUSED(noSetFMUStatePriorToCurrentPoint);
+
+    //if (!isClose(currentCommunicationPoint, comp->nextCommunicationPoint)) {
+    //    logError(comp, "Expected currentCommunicationPoint = %.16g but was %.16g.",
+    //        comp->nextCommunicationPoint, currentCommunicationPoint);
+    //    CALL(Error);
+    //}
+
+    if (communicationStepSize <= 0) {
+        logError(comp, "Communication step size must be > 0 but was %.16g.", communicationStepSize);
+        CALL(Error);
+    }
+
+    const double nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
+
+    if (comp->stopTimeDefined
+        && nextCommunicationPoint > comp->stopTime
+        && !isClose(nextCommunicationPoint, comp->stopTime)
+        ) {
+        logError(comp, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
+            currentCommunicationPoint, communicationStepSize, comp->stopTime);
+        CALL(Error);
+    }
+
+    bool nextCommunicationPointReached;
+
+    *eventHandlingNeeded = false;
+    *terminateSimulation = false;
+    *earlyReturn = false;
+
+    while (true) {
+
+        const double nextSolverStepTime = comp->time + FIXED_SOLVER_STEP;
+
+        nextCommunicationPointReached = nextSolverStepTime > nextCommunicationPoint && !isClose(nextSolverStepTime, nextCommunicationPoint);
+
+        if (nextCommunicationPointReached || (*eventHandlingNeeded && comp->earlyReturnAllowed)) {
+            break;
+        }
+
+#ifdef EVENT_UPDATE
+        bool nominalsOfContinuousStatesChanged = false;
+        bool valuesOfContinuousStatesChanged = false;
+        bool nextEventTimeDefined = false;
+        double nextEventTime = 0.0;
+
+        if (*eventHandlingNeeded) {
+            updateDiscreteStates(
+                comp,
+                eventHandlingNeeded,
+                terminateSimulation,
+                &nominalsOfContinuousStatesChanged,
+                &valuesOfContinuousStatesChanged,
+                &nextEventTimeDefined,
+                &nextEventTime
+            );
+        }
+#endif
+
+        bool stateEvent = false;
+        bool timeEvent = false;
+
+        CALL(doFixedStep(comp, &stateEvent, &timeEvent));
+
+#ifdef EVENT_UPDATE
+        if (stateEvent || timeEvent) {
+
+            if (comp->eventModeUsed) {
+                *eventHandlingNeeded = true;
+            }
+            else {
+                updateDiscreteStates(
+                    comp,
+                    eventHandlingNeeded,
+                    terminateSimulation,
+                    &nominalsOfContinuousStatesChanged,
+                    &valuesOfContinuousStatesChanged,
+                    &nextEventTimeDefined,
+                    &nextEventTime
+                );
+#if MAX_EVENT_INDICATORS > 0
+                CALL(getEventIndicators(comp, comp->prez, comp->nz));
+#endif
+            }
+
+            if (comp->earlyReturnAllowed) {
+                break;
+            }
+        }
+#endif
+
+        if (*terminateSimulation) {
+            break;
+        }
+    }
+
+    //*terminateSimulation = comp->terminateSimulation;
+    *earlyReturn = comp->earlyReturnAllowed && !nextCommunicationPointReached;
+    *lastSuccessfulTime = comp->time;
+
+    if (nextCommunicationPointReached) {
+        comp->nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
+    }
+    else {
+        comp->nextCommunicationPoint = comp->time;
+    }
+
+    return OK;
+}

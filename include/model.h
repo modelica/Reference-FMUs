@@ -1,7 +1,7 @@
 #pragma once
 
-#if FMI_VERSION != 1 && FMI_VERSION != 2 && FMI_VERSION != 3
-#error FMI_VERSION must be one of 1, 2 or 3
+#if FMI_VERSION != 2 && FMI_VERSION != 3
+#error FMI_VERSION must be either 2 or 3
 #endif
 
 #define UNUSED(x) (void)(x)
@@ -12,55 +12,25 @@
 
 #include "config.h"
 
-#if FMI_VERSION == 1
-
-#define not_modelError (Instantiated| Initialized | Terminated)
-
 typedef enum {
-    Instantiated = 1<<0,
-    Initialized  = 1<<1,
-    Terminated   = 1<<2,
-    modelError   = 1<<3
-} ModelState;
-
-#elif FMI_VERSION == 2
-
-typedef enum {
-    StartAndEnd        = 1<<0,
-    Instantiated       = 1<<1,
-    InitializationMode = 1<<2,
-
-    // ME states
-    EventMode          = 1<<3,
-    ContinuousTimeMode = 1<<4,
-
-    // CS states
-    StepComplete       = 1<<5,
-    StepInProgress     = 1<<6,
-    StepFailed         = 1<<7,
-    StepCanceled       = 1<<8,
-
-    Terminated         = 1<<9,
-} ModelState;
-
-#else
-
-typedef enum {
-    StartAndEnd            = 1 << 0,
+    Instantiated           = 1 << 0,
     ConfigurationMode      = 1 << 1,
-    Instantiated           = 1 << 2,
-    InitializationMode     = 1 << 3,
+    InitializationMode     = 1 << 2,
+    ReconfigurationMode    = 1 << 3,
     EventMode              = 1 << 4,
-    ContinuousTimeMode     = 1 << 5,
-    StepMode               = 1 << 6,
-    ClockActivationMode    = 1 << 7,
-    StepDiscarded          = 1 << 8,
-    ReconfigurationMode    = 1 << 9,
-    IntermediateUpdateMode = 1 << 10,
-    Terminated             = 1 << 11,
-} ModelState;
+    Terminated             = 1 << 5,
 
-#endif
+    // Model Exchange
+    ContinuousTimeMode     = 1 << 6,
+
+    // Co-Simulation
+    StepMode               = 1 << 7,
+    IntermediateUpdateMode = 1 << 8,
+
+    // Scheduled Execution
+    ClockActivationMode    = 1 << 9,
+    ClockUpdateMode        = 1 << 10,
+} ModelState;
 
 typedef enum {
     ModelExchange,
@@ -101,6 +71,7 @@ typedef void(*clockUpdateType) (void *instanceEnvironment);
 typedef struct {
 
     double startTime;
+    bool stopTimeDefined;
     double stopTime;
     double time;
     const char *instanceName;
@@ -123,11 +94,6 @@ typedef struct {
     void *componentEnvironment;
     ModelState state;
 
-    // event info
-    bool newDiscreteStatesNeeded;
-    bool terminateSimulation;
-    bool nominalsOfContinuousStatesChanged;
-    bool valuesOfContinuousStatesChanged;
     bool nextEventTimeDefined;
     double nextEventTime;
     bool clocksTicked;
@@ -175,6 +141,38 @@ Status configurate(ModelInstance* comp);
 
 Status reset(ModelInstance* comp);
 
+Status setupExperiment(
+    ModelInstance* comp,
+    bool toleranceDefined,
+    double tolerance,
+    double startTime,
+    bool stopTimeDefined,
+    double stopTime
+);
+
+Status enterConfigurationMode(ModelInstance* comp);
+
+Status exitConfigurationMode(ModelInstance* comp);
+
+Status enterInitializationMode(ModelInstance* comp);
+
+Status exitInitializationMode(ModelInstance* comp);
+
+Status enterEventMode(ModelInstance* comp);
+
+Status enterContinuousTimeMode(ModelInstance* comp);
+
+Status terminate(ModelInstance* comp);
+
+Status completedIntegratorStep(ModelInstance* comp,
+    bool  noSetFMUStatePriorToCurrentPoint,
+    bool* enterEventMode,
+    bool* terminateSimulation);
+
+Status setTime(ModelInstance* comp, double time);
+
+Status enterStepMode(ModelInstance* comp);
+
 Status setStartValues(ModelInstance* comp);
 
 Status calculateValues(ModelInstance *comp);
@@ -215,8 +213,8 @@ Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int
 
 Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime);
 
-size_t getNumberOfEventIndicators(ModelInstance* comp);
-size_t getNumberOfContinuousStates(ModelInstance* comp);
+Status getNumberOfEventIndicators(ModelInstance* comp, size_t* nEventIndicators);
+Status getNumberOfContinuousStates(ModelInstance* comp, size_t* nContinuousStates);
 Status getContinuousStates(ModelInstance *comp, double x[], size_t nx);
 Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], size_t nx);
 Status setContinuousStates(ModelInstance *comp, const double x[], size_t nx);
@@ -224,7 +222,16 @@ Status getDerivatives(ModelInstance *comp, double dx[], size_t nx);
 Status getOutputDerivative(ModelInstance *comp, ValueReference valueReference, int order, double *value);
 Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double *partialDerivative);
 Status getEventIndicators(ModelInstance *comp, double z[], size_t nz);
-Status eventUpdate(ModelInstance *comp);
+
+Status updateDiscreteStates(
+    ModelInstance* comp,
+    bool* discreteStatesNeedUpdate,
+    bool* terminateSimulation,
+    bool* nominalsOfContinuousStatesChanged,
+    bool* valuesOfContinuousStatesChanged,
+    bool* nextEventTimeDefined,
+    double* nextEventTime
+);
 
 bool isClose(double a, double b);
 bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected);
@@ -237,6 +244,17 @@ void logError(ModelInstance *comp, const char *message, ...);
 
 Status getFMUState(ModelInstance* comp, void** FMUState);
 Status setFMUState(ModelInstance* comp, void* FMUState);
+Status serializeFMUState(
+    ModelInstance* comp,
+    void* FMUState,
+    uint8_t serializedState[],
+    size_t size);
+Status deserializeFMUState(
+    ModelInstance* comp,
+    const uint8_t serializedState[],
+    size_t size,
+    void** FMUState);
+
 
 // shorthand to access the variables
 #define M(v) (comp->modelData.v)

@@ -166,9 +166,15 @@ Status getOutputDerivative(ModelInstance *comp, ValueReference valueReference, i
     }
 }
 
-Status eventUpdate(ModelInstance *comp) {
-    ASSERT_NOT_NULL2(comp);
-
+Status updateDiscreteStates(
+    ModelInstance* comp,
+    bool* discreteStatesNeedUpdate,
+    bool* terminateSimulation,
+    bool* nominalsOfContinuousStatesChanged,
+    bool* valuesOfContinuousStatesChanged,
+    bool* nextEventTimeDefined,
+    double* nextEventTime
+) {
     if (M(h) <= 0 && M(v) < 0) {
 
         M(h) = DBL_MIN;  // slightly above 0 to avoid zero-crossing
@@ -180,28 +186,30 @@ Status eventUpdate(ModelInstance *comp) {
             M(g) = 0;
         }
 
-        comp->valuesOfContinuousStatesChanged = true;
+        comp->isDirtyValues = true;
+
+        *valuesOfContinuousStatesChanged = true;
     } else {
-        comp->valuesOfContinuousStatesChanged = false;
+        *valuesOfContinuousStatesChanged = false;
     }
 
-    comp->nominalsOfContinuousStatesChanged = false;
-    comp->terminateSimulation  = false;
-    comp->nextEventTimeDefined = false;
-
-    comp->isDirtyValues = true;
+    *nominalsOfContinuousStatesChanged = false;
+    *terminateSimulation  = false;
+    *nextEventTimeDefined = false;
 
     return OK;
 }
 
-size_t getNumberOfEventIndicators(ModelInstance* comp) {
+Status getNumberOfEventIndicators(ModelInstance* comp, size_t* nEventIndicators) {
     UNUSED(comp);
-    return MAX_EVENT_INDICATORS;
+    *nEventIndicators = MAX_EVENT_INDICATORS;
+    return OK;
 }
 
-size_t getNumberOfContinuousStates(ModelInstance* comp) {
+Status getNumberOfContinuousStates(ModelInstance* comp, size_t* nContinuousStates) {
     UNUSED(comp);
-    return MAX_CONTINUOUS_STATES;
+    *nContinuousStates = MAX_CONTINUOUS_STATES;
+    return OK;
 }
 
 Status getContinuousStates(ModelInstance *comp, double x[], size_t nx) {

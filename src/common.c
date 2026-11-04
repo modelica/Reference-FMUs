@@ -123,12 +123,12 @@ ModelInstance *createModelInstance(
 
     comp->state                             = Instantiated;
 
-    comp->newDiscreteStatesNeeded           = false;
-    comp->terminateSimulation               = false;
-    comp->nominalsOfContinuousStatesChanged = false;
-    comp->valuesOfContinuousStatesChanged   = false;
-    comp->nextEventTimeDefined              = false;
-    comp->nextEventTime                     = 0;
+    //comp->newDiscreteStatesNeeded           = false;
+    //comp->terminateSimulation               = false;
+    //comp->nominalsOfContinuousStatesChanged = false;
+    //comp->valuesOfContinuousStatesChanged   = false;
+    //comp->nextEventTimeDefined              = false;
+    //comp->nextEventTime                     = 0;
 
     setStartValues(comp);
 
@@ -175,28 +175,26 @@ Status configurate(ModelInstance* comp) {
     (void)comp;
 
 #ifdef MAX_EVENT_INDICATORS
-    comp->nz = getNumberOfEventIndicators(comp);
+    CALL(getNumberOfEventIndicators(comp, &comp->nz));
     CALL(getEventIndicators(comp, comp->prez, comp->nz));
 #endif
 
 #if MAX_CONTINUOUS_STATES > 0
-    comp->nx = getNumberOfContinuousStates(comp);
+    CALL(getNumberOfContinuousStates(comp, &comp->nx));
 #endif
 
     return OK;
 }
 
 Status reset(ModelInstance* comp) {
-
     comp->state = Instantiated;
     comp->startTime = 0.0;
     comp->time = 0.0;
     comp->nSteps = 0;
     comp->status = OK;
-    setStartValues(comp);
     comp->isDirtyValues = true;
 
-    return OK;
+    return setStartValues(comp);
 }
 
 #define EPSILON (1.0e-5)
@@ -259,6 +257,259 @@ bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void
     }
 
     return false;
+}
+
+Status setupExperiment(
+    ModelInstance* comp,
+    bool toleranceDefined,
+    double tolerance,
+    double startTime,
+    bool stopTimeDefined,
+    double stopTime
+) {
+    // TODO: check comp != NULL
+    if (comp->state != Instantiated) {
+        logError(comp, "setupExperiment() may only be called in Instantiated Mode");
+        return Discard;
+    }
+
+    // TODO: check values
+    comp->startTime = startTime;
+    comp->stopTimeDefined = stopTimeDefined;
+    comp->stopTime = stopTime;
+    comp->nextCommunicationPoint = startTime;
+
+    return OK;
+}
+
+Status enterConfigurationMode(ModelInstance* comp) {
+    switch (comp->type) {
+    case ModelExchange:
+        switch (comp->state) {
+        case Instantiated:
+            comp->state = ConfigurationMode;
+            return OK;
+        case EventMode:
+            comp->state = ReconfigurationMode;
+            return OK;
+        default:
+            logError(comp, "enterConfigurationMode() may only be called in Instantiated and Event Mode");
+        }
+        break;
+    case CoSimulation:
+        switch (comp->state) {
+        case Instantiated:
+            comp->state = ConfigurationMode;
+            return OK;
+        case StepMode:
+            comp->state = ReconfigurationMode;
+            return OK;
+        default:
+            logError(comp, "enterConfigurationMode() may only be called in Instantiated and Step Mode");
+        }
+        break;
+    case ScheduledExecution:
+        switch (comp->state) {
+        case Instantiated:
+            comp->state = ConfigurationMode;
+            return OK;
+        case ClockActivationMode:
+            comp->state = ReconfigurationMode;
+            return OK;
+        default:
+            logError(comp, "enterConfigurationMode() may only be called in Instantiated and Clock Activation Mode");
+        }
+        break;
+    }
+
+    return Discard;
+}
+
+Status exitConfigurationMode(ModelInstance* comp) {
+
+    switch (comp->state) {
+    case ConfigurationMode:
+    case ReconfigurationMode:
+        break;
+    default:
+        logError(comp, "exitConfigurationMode() may only be called in Configuration and Reconfiguration Mode");
+        return Discard;
+    }
+
+    const Status status = configurate(comp);
+
+    if (status == OK) {
+        switch (comp->state) {
+        case ConfigurationMode:
+            comp->state = Instantiated;
+            break;
+        case ReconfigurationMode:
+            switch (comp->type) {
+            case ModelExchange:
+                comp->state = EventMode;
+                break;
+            case CoSimulation:
+                comp->state = StepMode;
+                break;
+            case ScheduledExecution:
+                comp->state = ClockActivationMode;
+                break;
+            }
+            break;
+        }
+    }
+
+    return status;
+}
+
+Status enterInitializationMode(ModelInstance* comp) {
+    if (comp->state != Instantiated) {
+        logError(comp, "enterInitializationMode() may only be called in Instantiated Mode");
+        return Discard;
+    }
+
+    comp->state = InitializationMode;
+
+    return OK;
+}
+
+Status exitInitializationMode(ModelInstance* comp) {
+    if (comp->state != InitializationMode) {
+        logError(comp, "exitInitializationMode() may only be called in Initialization Mode");
+        return Discard;
+    }
+
+    const Status status = configurate(comp);
+
+    if (status == OK) {
+        switch (comp->type) {
+            case CoSimulation:
+                comp->state = comp->eventModeUsed ? EventMode : StepMode;
+                break;
+            case ModelExchange:
+                comp->state = EventMode;
+                break;
+            case ScheduledExecution:
+                comp->state = ClockActivationMode;
+                break;
+        }
+    }
+    
+    return status;
+}
+
+Status enterEventMode(ModelInstance* comp) {
+    switch (comp->type) {
+        case CoSimulation: 
+            if (comp->state != StepMode) {
+                logError(comp, "enterEventMode() may only be called in Step Mode");
+                return Discard;
+            } else if (!comp->eventModeUsed) {
+                logError(comp, "enterEventMode() may only be called if eventModeUsed is true");
+                return Discard;
+            }
+            break;
+        case ModelExchange: 
+            if (comp->state != ContinuousTimeMode) {
+                logError(comp, "enterEventMode() may only be called in Continuous Time Mode");
+                return Discard;
+            }
+            break;
+        case ScheduledExecution: 
+            logError(comp, "enterEventMode() may not be called in Scheduled Execution");
+            return Discard;
+    }
+
+    comp->state = EventMode;
+
+    return OK;
+}
+
+Status enterContinuousTimeMode(ModelInstance* comp) {
+    switch (comp->type) {
+        case ModelExchange:
+            if (comp->state != EventMode) {
+                logError(comp, "enterContinuousTimeMode() may only be called in Event Mode");
+                return Discard;
+            }
+            comp->state = ContinuousTimeMode;
+            return OK;
+        default:
+            logError(comp, "enterContinuousTimeMode() is only allowed in Model Exchange");
+            return Discard;
+    }
+}
+
+Status terminate(ModelInstance* comp) {
+    switch (comp->type) {
+        case CoSimulation: {
+            switch (comp->state) {
+            case StepMode:
+            case EventMode:
+                break;
+            default:
+                logError(comp, "terminate() may only be called in Step Mode and Event Mode");
+                return Discard;
+            }
+            break;
+        }
+        case ModelExchange: {
+            switch (comp->state) {
+            case ContinuousTimeMode:
+            case EventMode:
+                break;
+            default:
+                logError(comp, "terminate() may only be called in Continuous Time Mode and Event Mode");
+                return Discard;
+            }
+            break;
+        }
+        case ScheduledExecution: {
+            switch (comp->state) {
+            case ClockActivationMode:
+                break;
+            default:
+                logError(comp, "terminate() may only be called in Clock Activation Mode");
+                return Discard;
+            }
+            break;
+        }
+    }
+
+    comp->state = Terminated;
+
+    return OK;
+}
+
+Status completedIntegratorStep(ModelInstance* comp,
+    bool  noSetFMUStatePriorToCurrentPoint,
+    bool* enterEventMode,
+    bool* terminateSimulation) {
+    return OK;
+}
+
+Status setTime(ModelInstance* comp, double time) {
+    comp->time = time;
+    return OK;
+}
+
+Status enterStepMode(ModelInstance* comp) {
+    switch (comp->type) {
+    case CoSimulation: {
+        if (comp->state != EventMode) {
+            logError(comp, "enterStepMode() may only be called in Event Mode");
+            return Discard;
+        }
+        break;
+    }
+    default:
+        logError(comp, "enterEventMode() may not be called in Scheduled Execution");
+        return Discard;
+    }
+
+    comp->state = StepMode;
+
+    return OK;
 }
 
 Status setDebugLogging(ModelInstance *comp, bool loggingOn, size_t nCategories, const char * const categories[]) {
@@ -657,10 +908,10 @@ Status setFMUState(ModelInstance* comp, void* FMUState) {
     // componentEnvironment
     comp->state = s->state;
 
-    comp->newDiscreteStatesNeeded = s->newDiscreteStatesNeeded;
-    comp->terminateSimulation = s->terminateSimulation;
-    comp->nominalsOfContinuousStatesChanged = s->nominalsOfContinuousStatesChanged;
-    comp->valuesOfContinuousStatesChanged = s->valuesOfContinuousStatesChanged;
+    //comp->newDiscreteStatesNeeded = s->newDiscreteStatesNeeded;
+    //comp->terminateSimulation = s->terminateSimulation;
+    //comp->nominalsOfContinuousStatesChanged = s->nominalsOfContinuousStatesChanged;
+    //comp->valuesOfContinuousStatesChanged = s->valuesOfContinuousStatesChanged;
     comp->nextEventTimeDefined = s->nextEventTimeDefined;
     comp->nextEventTime = s->nextEventTime;
     comp->clocksTicked = s->clocksTicked;
@@ -688,6 +939,34 @@ Status setFMUState(ModelInstance* comp, void* FMUState) {
 #endif
 
     comp->nSteps = s->nSteps;
+
+    return OK;
+}
+
+Status serializeFMUState(
+    ModelInstance* comp,
+    void*  FMUState,
+    uint8_t serializedState[],
+    size_t size) {
+    memcpy(serializedState, FMUState, sizeof(ModelInstance));
+    return OK;
+}
+
+Status deserializeFMUState(
+    ModelInstance* comp,
+    const uint8_t serializedState[],
+    size_t size,
+    void** FMUState
+) {
+    if (*FMUState == NULL) {
+        *FMUState = calloc(1, sizeof(ModelInstance));
+        if (*FMUState == NULL) {
+            printf("Failed to allocate memory for FMUState.\n");
+            return Discard;
+        }
+    }
+
+    memcpy(*FMUState, serializedState, sizeof(ModelInstance));
 
     return OK;
 }
