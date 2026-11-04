@@ -30,28 +30,28 @@ do { \
     } \
 } while (0)
 
-#define CALL(f) do { \
-    const Status s = f; \
-    if (s > status) { \
-        status = s; \
-    } \
-    if (status == Discard) { \
-        goto TERMINATE; \
-    } else if (status == Error) { \
-        S->state = Terminated; \
-        goto TERMINATE; \
-    } else if (status == Fatal) { \
-        S->state = StartAndEnd; \
-        goto TERMINATE; \
-    } \
-} while (false)
+//#define CALL(f) do { \
+//    const Status s = f; \
+//    if (s > status) { \
+//        status = s; \
+//    } \
+//    if (status == Discard) { \
+//        goto TERMINATE; \
+//    } else if (status == Error) { \
+//        S->state = Terminated; \
+//        goto TERMINATE; \
+//    } else if (status == Fatal) { \
+//        S->state = StartAndEnd; \
+//        goto TERMINATE; \
+//    } \
+//} while (false)
 
 #define GET_VARIABLES(T) \
     size_t index = 0; \
     for (size_t i = 0; i < nValueReferences; i++) { \
-        const Status status = get ## T(instance, (ValueReference)valueReferences[i], values, nValues, &index); \
-        if (status != OK) { \
-            return map_status(status); \
+        fmi3Status result = map_status(get ## T(instance, (ValueReference)valueReferences[i], values, nValues, &index)); \
+        if (result != fmi3OK) { \
+            return result; \
         } \
     } \
     return fmi3OK;
@@ -76,9 +76,9 @@ do { \
 #define SET_VARIABLES(T) \
     size_t index = 0; \
     for (size_t i = 0; i < nValueReferences; i++) { \
-        const Status status = set ## T(instance, (ValueReference)valueReferences[i], values, nValues, &index); \
-        if (status != OK) { \
-            return map_status(status); \
+        fmi3Status result = map_status(set ## T(instance, (ValueReference)valueReferences[i], values, nValues, &index)); \
+        if (result != fmi3OK) { \
+            return result; \
         } \
     } \
     return fmi3OK;
@@ -151,25 +151,11 @@ const char* fmi3GetVersion(void) {
     return fmi3Version;
 }
 
-#define CALL2(s) \
-    switch (s) { \
-    case OK: return fmi3OK; \
-    default: return fmi3Fatal; \
-    }
-
-#define CALL(s) \
-    if (s != OK) { \
-        return map_status(s); \
-    }
-
 fmi3Status fmi3SetDebugLogging(fmi3Instance instance,
                                fmi3Boolean loggingOn,
                                size_t nCategories,
                                const fmi3String categories[]) {
-    //BEGIN_FUNCTION(SetDebugLogging);
-    CALL2(setDebugLogging(instance, loggingOn, nCategories, categories));
-
-    //END_FUNCTION();
+    return map_status(setDebugLogging(instance, loggingOn, nCategories, categories));
 }
 
 fmi3Instance fmi3InstantiateModelExchange(
@@ -308,35 +294,28 @@ fmi3Status fmi3EnterInitializationMode(fmi3Instance instance,
                                        fmi3Boolean stopTimeDefined,
                                        fmi3Float64 stopTime) {
 
-    Status status = setupExperiment(instance, toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime);
-
-    if (status != OK) {
-        return map_status(status);
+    fmi3Status result = map_status(setupExperiment(instance, toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime));
+    if (result != fmi3OK) {
+        return result;
     }
 
-    status = enterInitializationMode(instance);
-
-    return map_status(status);
+    return map_status(enterInitializationMode(instance));
 }
 
 fmi3Status fmi3ExitInitializationMode(fmi3Instance instance) {
-    const Status status = exitInitializationMode(instance);
-    return map_status(status);
+    return map_status(exitInitializationMode(instance));
 }
 
 fmi3Status fmi3EnterEventMode(fmi3Instance instance) {
-    const Status status = enterEventMode(instance);
-    return map_status(status);
+    return map_status(enterEventMode(instance));
 }
 
 fmi3Status fmi3Terminate(fmi3Instance instance) {
-    const Status status = terminate(instance);
-    return map_status(status);
+    return map_status(terminate(instance));
 }
 
 fmi3Status fmi3Reset(fmi3Instance instance) {
-    const Status status = reset(instance);
-    return map_status(status);
+    return map_status(reset(instance));
 }
 
 fmi3Status fmi3GetFloat32(fmi3Instance instance,
@@ -656,13 +635,11 @@ fmi3Status fmi3GetVariableDependencies(fmi3Instance instance,
 }
 
 fmi3Status fmi3GetFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
-    const Status status = getFMUState(instance, FMUState);
-    return map_status(status);
+    return map_status(getFMUState(instance, FMUState));
 }
 
 fmi3Status fmi3SetFMUState(fmi3Instance instance, fmi3FMUState FMUState) {
-    const Status status = setFMUState(instance, FMUState);
-    return map_status(status);
+    return map_status(setFMUState(instance, FMUState));
 }
 
 fmi3Status fmi3FreeFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
@@ -679,16 +656,14 @@ fmi3Status fmi3SerializeFMUState(fmi3Instance instance,
     fmi3FMUState  FMUState,
     fmi3Byte serializedState[],
     size_t size) {
-    const Status status = serializeFMUState(instance, FMUState, serializedState, size);
-    return map_status(status);
+    return map_status(serializeFMUState(instance, FMUState, serializedState, size));
 }
 
 fmi3Status fmi3DeserializeFMUState(fmi3Instance instance,
     const fmi3Byte serializedState[],
     size_t size,
     fmi3FMUState* FMUState) {
-    const Status status = deserializeFMUState(instance, serializedState, size, FMUState);
-    return map_status(status);
+    return map_status(deserializeFMUState(instance, serializedState, size, FMUState));
 }
 
 static size_t valueReferenceElementIndex(const fmi3ValueReference valueReferences[], size_t position) {
@@ -725,20 +700,20 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance,
         sensitivity[i] = 0;
         for (size_t j = 0; j < nKnowns; j++) {
             double partialDerivative = 0;
-            const Status status = getPartialDerivative(instance,
+            fmi3Status result = map_status(getPartialDerivative(instance,
                 (ValueReference)unknowns[i],
                 valueReferenceElementIndex(unknowns, i),
                 (ValueReference)knowns[j],
                 valueReferenceElementIndex(knowns, j),
-                &partialDerivative);
-            if (status != OK) {
-                return map_status(status);
+                &partialDerivative));
+            if (result != fmi3OK) {
+                return result;
             }
             sensitivity[i] += partialDerivative * seed[j];
         }
     }
-//
-//    END_FUNCTION();
+
+    return fmi3OK;
 }
 
 fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
@@ -758,19 +733,19 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
         for (size_t j = 0; j < nUnknowns; j++) {
             double partialDerivative = 0;
             
-            const Status status = getPartialDerivative(
+            fmi3Status result = map_status(getPartialDerivative(
                 instance,
                 (ValueReference)unknowns[j],
                 valueReferenceElementIndex(unknowns, j),
                 (ValueReference)knowns[i],
                 valueReferenceElementIndex(knowns, i),
                 &partialDerivative
-            );
+            ));
 
-            if (status != OK) {
-                return map_status(status);
+            if (result != fmi3OK) {
+                return result;
             }
-            
+
             sensitivity[i] += partialDerivative * seed[j];
         }
     }
@@ -779,12 +754,11 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
 }
 
 fmi3Status fmi3EnterConfigurationMode(fmi3Instance instance) {
-    CALL(enterConfigurationMode(instance));
+    return map_status(enterConfigurationMode(instance));
 }
 
 fmi3Status fmi3ExitConfigurationMode(fmi3Instance instance) {
-    const Status status = exitConfigurationMode(instance);
-    return map_status(status);
+    return map_status(exitConfigurationMode(instance));
 }
 
 fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
@@ -910,7 +884,7 @@ fmi3Status fmi3UpdateDiscreteStates(fmi3Instance instance,
     fmi3Boolean* valuesOfContinuousStatesChanged,
     fmi3Boolean* nextEventTimeDefined,
     fmi3Float64* nextEventTime) {
-    const Status status = updateDiscreteStates(
+    return map_status(updateDiscreteStates(
         instance,
         discreteStatesNeedUpdate,
         terminateSimulation,
@@ -918,8 +892,7 @@ fmi3Status fmi3UpdateDiscreteStates(fmi3Instance instance,
         valuesOfContinuousStatesChanged,
         nextEventTimeDefined,
         nextEventTime
-    );
-    return map_status(status);
+    ));
 }
 
 /***************************************************
@@ -927,70 +900,60 @@ fmi3Status fmi3UpdateDiscreteStates(fmi3Instance instance,
  ****************************************************/
 
 fmi3Status fmi3EnterContinuousTimeMode(fmi3Instance instance) {
-    const Status status = enterContinuousTimeMode(instance);
-    return map_status(status);
+    return map_status(enterContinuousTimeMode(instance));
 }
 
 fmi3Status fmi3CompletedIntegratorStep(fmi3Instance instance,
     fmi3Boolean  noSetFMUStatePriorToCurrentPoint,
     fmi3Boolean* enterEventMode,
     fmi3Boolean* terminateSimulation) {
-    const Status status = completedIntegratorStep(instance, noSetFMUStatePriorToCurrentPoint, enterEventMode, terminateSimulation);
-    return map_status(status);
+    return map_status(completedIntegratorStep(instance, noSetFMUStatePriorToCurrentPoint, enterEventMode, terminateSimulation));
 }
 
 /* Providing independent variables and re-initialization of caching */
 fmi3Status fmi3SetTime(fmi3Instance instance, fmi3Float64 time) {
-    const Status status = setTime(instance, time);
-    return map_status(status);
+    return map_status(setTime(instance, time));
 }
 
 fmi3Status fmi3SetContinuousStates(fmi3Instance instance,
     const fmi3Float64 continuousStates[],
     size_t nContinuousStates) {
-    const Status status = setContinuousStates(instance, continuousStates, nContinuousStates);
-    return map_status(status);
+    return map_status(setContinuousStates(instance, continuousStates, nContinuousStates));
 }
 
 /* Evaluation of the model equations */
 fmi3Status fmi3GetContinuousStateDerivatives(fmi3Instance instance,
     fmi3Float64 derivatives[],
     size_t nContinuousStates) {
-    const Status status = getDerivatives(instance, derivatives, nContinuousStates);
-    return map_status(status);
+    return map_status(getDerivatives(instance, derivatives, nContinuousStates));
 }
 
 fmi3Status fmi3GetEventIndicators(fmi3Instance instance,
     fmi3Float64 eventIndicators[],
     size_t nEventIndicators) {
-    const Status status = getEventIndicators(instance, eventIndicators, nEventIndicators);
-    return map_status(status);
+    return map_status(getEventIndicators(instance, eventIndicators, nEventIndicators));
 }
 
 fmi3Status fmi3GetContinuousStates(fmi3Instance instance,
     fmi3Float64 continuousStates[],
     size_t nContinuousStates) {
-    const Status status = getContinuousStates(instance, continuousStates, nContinuousStates);
-    return map_status(status);
+    return map_status(getContinuousStates(instance, continuousStates, nContinuousStates));
 }
 
 fmi3Status fmi3GetNominalsOfContinuousStates(fmi3Instance instance,
     fmi3Float64 nominals[],
     size_t nContinuousStates) {
-    const Status status = getNominalsOfContinuousStates(instance, nominals, nContinuousStates);
-    return map_status(status);
+    return map_status(getNominalsOfContinuousStates(instance, nominals, nContinuousStates));
 }
 
 fmi3Status fmi3GetNumberOfEventIndicators(fmi3Instance instance,
     size_t* nEventIndicators) {
-    const Status status = getNumberOfEventIndicators(instance, nEventIndicators);
-    return map_status(status);
+    return map_status(getNumberOfEventIndicators(instance, nEventIndicators));
 }
 
 fmi3Status fmi3GetNumberOfContinuousStates(fmi3Instance instance,
     size_t* nContinuousStates) {
-    const Status status = getNumberOfContinuousStates(instance, nContinuousStates);
-    return map_status(status);
+    return map_status(getNumberOfContinuousStates(instance, nContinuousStates));
 }
 
 /***************************************************
@@ -998,8 +961,7 @@ fmi3Status fmi3GetNumberOfContinuousStates(fmi3Instance instance,
  ****************************************************/
 
 fmi3Status fmi3EnterStepMode(fmi3Instance instance) {
-    const Status status = enterStepMode(instance);
-    return map_status(status);
+    return map_status(enterStepMode(instance));
 }
 
 fmi3Status fmi3GetOutputDerivatives(fmi3Instance instance,
@@ -1011,16 +973,14 @@ fmi3Status fmi3GetOutputDerivatives(fmi3Instance instance,
     UNUSED(nValues);
 
 #ifdef GET_OUTPUT_DERIVATIVE
-    Status status = OK;
-
     for (size_t i = 0; i < nValueReferences; i++) {
-        const Status status = getOutputDerivative(instance, (ValueReference)valueReferences[i], orders[i], &values[i]);
-        if (status != OK) {
-            break;
+        fmi3Status result = map_status(getOutputDerivative(instance, (ValueReference)valueReferences[i], orders[i], &values[i]));
+        if (result != fmi3OK) {
+            return result;
         }
     }
 
-    return map_status(status);
+    return fmi3OK;
 #else
     UNUSED(valueReferences);
     UNUSED(nValueReferences);
@@ -1039,7 +999,7 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
     fmi3Boolean* terminateSimulation,
     fmi3Boolean* earlyReturn,
     fmi3Float64* lastSuccessfulTime) {
-    const Status status = doStep(
+    return map_status(doStep(
         instance,
         currentCommunicationPoint,
         communicationStepSize,
@@ -1048,13 +1008,11 @@ fmi3Status fmi3DoStep(fmi3Instance instance,
         terminateSimulation,
         earlyReturn,
         lastSuccessfulTime
-    );
-    return map_status(status);
+    ));
 }
 
 fmi3Status fmi3ActivateModelPartition(fmi3Instance instance,
     fmi3ValueReference clockReference,
     fmi3Float64 activationTime) {
-    const Status status = activateModelPartition(instance, (ValueReference)clockReference, activationTime);
-    return map_status(status);
+    return map_status(activateModelPartition(instance, (ValueReference)clockReference, activationTime));
 }
