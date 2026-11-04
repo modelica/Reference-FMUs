@@ -91,15 +91,13 @@ fmi3Instance fmi3InstantiateModelExchange(
 
     UNUSED(visible);
 
-    return createModelInstance(
+    return createModelExchangeInstance(
         (loggerType)logMessage,
-        NULL,
         instanceEnvironment,
         instanceName,
         instantiationToken,
         resourcePath,
-        loggingOn,
-        ModelExchange);
+        loggingOn);
 }
 
 fmi3Instance fmi3InstantiateCoSimulation(
@@ -120,16 +118,7 @@ fmi3Instance fmi3InstantiateCoSimulation(
     UNUSED(requiredIntermediateVariables);
     UNUSED(nRequiredIntermediateVariables);
 
-#ifndef EVENT_UPDATE
-    if (eventModeUsed) {
-        if (logMessage) {
-            logMessage(instanceEnvironment, fmi3Error, "error", "Event Mode is not supported.");
-        }
-        return NULL;
-    }
-#endif
-
-    ModelInstance *instance = createModelInstance(
+    return createCoSimulationInstance(
         (loggerType)logMessage,
         (intermediateUpdateType)intermediateUpdate,
         instanceEnvironment,
@@ -137,15 +126,8 @@ fmi3Instance fmi3InstantiateCoSimulation(
         instantiationToken,
         resourcePath,
         loggingOn,
-        CoSimulation);
-
-    if (instance) {
-        instance->earlyReturnAllowed = earlyReturnAllowed;
-        instance->eventModeUsed      = eventModeUsed;
-        instance->state              = Instantiated;
-    }
-
-    return instance;
+        earlyReturnAllowed,
+        eventModeUsed);
 }
 
 fmi3Instance fmi3InstantiateScheduledExecution(
@@ -176,25 +158,16 @@ fmi3Instance fmi3InstantiateScheduledExecution(
 
     return NULL;
 #else
-    ModelInstance *instance = createModelInstance(
+    return createScheduledExecutionInstance(
         (loggerType)logMessage,
-        NULL,
         instanceEnvironment,
         instanceName,
         instantiationToken,
         resourcePath,
         loggingOn,
-        ScheduledExecution
-    );
-
-    if (instance) {
-        instance->state = Instantiated;
-        instance->clockUpdate = clockUpdate;
-        instance->lockPreemption = lockPreemption;
-        instance->unlockPreemption = unlockPreemption;
-    }
-
-    return instance;
+        clockUpdate,
+        lockPreemption,
+        unlockPreemption);
 #endif
 }
 

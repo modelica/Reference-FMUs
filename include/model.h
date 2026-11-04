@@ -125,6 +125,36 @@ typedef struct {
 
 } ModelInstance;
 
+ModelInstance *createModelExchangeInstance(
+    loggerType logger,
+    void *componentEnvironment,
+    const char *instanceName,
+    const char *instantiationToken,
+    const char *resourceLocation,
+    bool loggingOn);
+
+ModelInstance *createCoSimulationInstance(
+    loggerType logger,
+    intermediateUpdateType intermediateUpdate,
+    void *componentEnvironment,
+    const char *instanceName,
+    const char *instantiationToken,
+    const char *resourceLocation,
+    bool loggingOn,
+    bool earlyReturnAllowed,
+    bool eventModeUsed);
+
+ModelInstance *createScheduledExecutionInstance(
+    loggerType logger,
+    void *componentEnvironment,
+    const char *instanceName,
+    const char *instantiationToken,
+    const char *resourceLocation,
+    bool loggingOn,
+    clockUpdateType clockUpdate,
+    lockPreemptionType lockPreemption,
+    unlockPreemptionType unlockPreemption);
+
 ModelInstance *createModelInstance(
     loggerType logger,
     intermediateUpdateType intermediateUpdate,

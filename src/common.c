@@ -37,7 +37,7 @@ static bool resourceLocationEndsWithFileSeparator(const char *resourceLocation) 
 #endif
 }
 
-ModelInstance *createModelInstance(
+static ModelInstance *createModelInstanceImpl(
     loggerType cbLogger,
     intermediateUpdateType intermediateUpdate,
     void *componentEnvironment,
@@ -135,6 +135,118 @@ ModelInstance *createModelInstance(
     comp->isDirtyValues = true;
 
     return comp;
+}
+
+ModelInstance *createModelExchangeInstance(
+    loggerType logger,
+    void *componentEnvironment,
+    const char *instanceName,
+    const char *instantiationToken,
+    const char *resourceLocation,
+    bool loggingOn) {
+
+    return createModelInstanceImpl(
+        logger,
+        NULL,
+        componentEnvironment,
+        instanceName,
+        instantiationToken,
+        resourceLocation,
+        loggingOn,
+        ModelExchange);
+}
+
+ModelInstance *createCoSimulationInstance(
+    loggerType logger,
+    intermediateUpdateType intermediateUpdate,
+    void *componentEnvironment,
+    const char *instanceName,
+    const char *instantiationToken,
+    const char *resourceLocation,
+    bool loggingOn,
+    bool earlyReturnAllowed,
+    bool eventModeUsed) {
+
+#ifndef EVENT_UPDATE
+    if (eventModeUsed) {
+        if (logger) {
+#if FMI_VERSION < 3
+            logger(componentEnvironment, instanceName, Error, "error", "Event Mode is not supported.");
+#else
+            logger(componentEnvironment, Error, "error", "Event Mode is not supported.");
+#endif
+        }
+        return NULL;
+    }
+#endif
+
+    ModelInstance *comp = createModelInstanceImpl(
+        logger,
+        intermediateUpdate,
+        componentEnvironment,
+        instanceName,
+        instantiationToken,
+        resourceLocation,
+        loggingOn,
+        CoSimulation);
+
+    if (comp) {
+        comp->earlyReturnAllowed = earlyReturnAllowed;
+        comp->eventModeUsed      = eventModeUsed;
+    }
+
+    return comp;
+}
+
+ModelInstance *createScheduledExecutionInstance(
+    loggerType logger,
+    void *componentEnvironment,
+    const char *instanceName,
+    const char *instantiationToken,
+    const char *resourceLocation,
+    bool loggingOn,
+    clockUpdateType clockUpdate,
+    lockPreemptionType lockPreemption,
+    unlockPreemptionType unlockPreemption) {
+
+    ModelInstance *comp = createModelInstanceImpl(
+        logger,
+        NULL,
+        componentEnvironment,
+        instanceName,
+        instantiationToken,
+        resourceLocation,
+        loggingOn,
+        ScheduledExecution);
+
+    if (comp) {
+        comp->clockUpdate      = clockUpdate;
+        comp->lockPreemption   = lockPreemption;
+        comp->unlockPreemption = unlockPreemption;
+    }
+
+    return comp;
+}
+
+ModelInstance *createModelInstance(
+    loggerType cbLogger,
+    intermediateUpdateType intermediateUpdate,
+    void *componentEnvironment,
+    const char *instanceName,
+    const char *instantiationToken,
+    const char *resourceLocation,
+    bool loggingOn,
+    InterfaceType interfaceType) {
+
+    return createModelInstanceImpl(
+        cbLogger,
+        intermediateUpdate,
+        componentEnvironment,
+        instanceName,
+        instantiationToken,
+        resourceLocation,
+        loggingOn,
+        interfaceType);
 }
 
 void freeModelInstance(ModelInstance *comp) {
