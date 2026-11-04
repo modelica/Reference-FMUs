@@ -1040,7 +1040,16 @@ Status serializeFMUState(
     void*  FMUState,
     uint8_t serializedState[],
     size_t size) {
-    memcpy(serializedState, FMUState, sizeof(ModelInstance));
+
+    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL2(FMUState);
+    ASSERT_NOT_NULL2(serializedState);
+
+    if (invalidNumber(instance, "serializeFMUState", "size", size, sizeof(ModelInstance))) {
+        return Error;
+    }
+
+    memcpy(serializedState, FMUState, size);
     return OK;
 }
 
@@ -1050,15 +1059,22 @@ Status deserializeFMUState(
     size_t size,
     void** FMUState
 ) {
+    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL2(serializedState);
+    ASSERT_NOT_NULL2(FMUState);
+
+    if (invalidNumber(instance, "deserializeFMUState", "size", size, sizeof(ModelInstance))) {
+        return Error;
+    }
+
     if (*FMUState == NULL) {
         *FMUState = calloc(1, sizeof(ModelInstance));
         if (*FMUState == NULL) {
-            printf("Failed to allocate memory for FMUState.\n");
-            return Discard;
+            logError(instance, "Failed to allocate memory for FMUState.");
+            return Error;
         }
     }
 
-    memcpy(*FMUState, serializedState, sizeof(ModelInstance));
-
+    memcpy(*FMUState, serializedState, size);
     return OK;
 }
