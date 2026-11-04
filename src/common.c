@@ -377,6 +377,13 @@ Status setupExperiment(
         return Discard;
     }
 
+    if (toleranceDefined) {
+        logError(instance, "Relative tolerance is not supported.");
+        return Error;
+    }
+
+    UNUSED(tolerance);
+
     // TODO: check values
     instance->startTime = startTime;
     instance->stopTimeDefined = stopTimeDefined;
@@ -589,6 +596,10 @@ Status completedIntegratorStep(ModelInstance *instance,
     bool  noSetFMUStatePriorToCurrentPoint,
     bool* enterEventMode,
     bool* terminateSimulation) {
+    UNUSED(instance);
+    UNUSED(noSetFMUStatePriorToCurrentPoint);
+    UNUSED(enterEventMode);
+    UNUSED(terminateSimulation);
     return OK;
 }
 
