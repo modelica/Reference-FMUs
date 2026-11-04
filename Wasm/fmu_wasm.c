@@ -40,26 +40,26 @@ static exports_fmi_fmi3_co_simulation_status_t map_status(Status s) {
     }
 }
 
-static Status wasm_apply_status(ModelInstance *comp, Status status) {
-    if (!comp) {
+static Status wasm_apply_status(ModelInstance *instance, Status status) {
+    if (!instance) {
         return status;
     }
     if (status == Discard) {
         return status;
     }
     if (status == Error) {
-        comp->state = Terminated;
+        instance->state = Terminated;
         return status;
     }
     if (status == Fatal) {
-        comp->state = StartAndEnd;
+        instance->state = StartAndEnd;
         return status;
     }
     return status;
 }
 
 static Status wasm_get_float64(
-    ModelInstance *comp,
+    ModelInstance *instance,
     const ValueReference *value_references,
     size_t n,
     double values[])
@@ -67,29 +67,29 @@ static Status wasm_get_float64(
     if (n == 0) {
         return OK;
     }
-    if (comp->isDirtyValues) {
-        Status status = calculateValues(comp);
+    if (instance->isDirtyValues) {
+        Status status = calculateValues(instance);
         if (status != OK) {
-            return wasm_apply_status(comp, status);
+            return wasm_apply_status(instance, status);
         }
-        comp->isDirtyValues = false;
+        instance->isDirtyValues = false;
     }
     size_t index = 0;
     for (size_t i = 0; i < n; i++) {
-        Status status = getFloat64(comp, value_references[i], values, n, &index);
+        Status status = getFloat64(instance, value_references[i], values, n, &index);
         if (status != OK) {
-            return wasm_apply_status(comp, status);
+            return wasm_apply_status(instance, status);
         }
     }
     if (index != n) {
-        logError(comp, "Expected nValues = %zu but was %zu.", n, index);
-        return wasm_apply_status(comp, Error);
+        logError(instance, "Expected nValues = %zu but was %zu.", n, index);
+        return wasm_apply_status(instance, Error);
     }
     return OK;
 }
 
 static Status wasm_set_float64(
-    ModelInstance *comp,
+    ModelInstance *instance,
     const ValueReference *value_references,
     size_t n,
     const double values[])
@@ -99,16 +99,16 @@ static Status wasm_set_float64(
     }
     size_t index = 0;
     for (size_t i = 0; i < n; i++) {
-        Status status = setFloat64(comp, value_references[i], values, n, &index);
+        Status status = setFloat64(instance, value_references[i], values, n, &index);
         if (status != OK) {
-            return wasm_apply_status(comp, status);
+            return wasm_apply_status(instance, status);
         }
     }
     if (index != n) {
-        logError(comp, "Expected nValues = %zu but was %zu.", n, index);
-        return wasm_apply_status(comp, Error);
+        logError(instance, "Expected nValues = %zu but was %zu.", n, index);
+        return wasm_apply_status(instance, Error);
     }
-    comp->isDirtyValues = true;
+    instance->isDirtyValues = true;
     return OK;
 }
 
@@ -231,13 +231,13 @@ static void wasm_log_message(
 {
     exports_fmi_fmi3_co_simulation_co_simulation_instance_t *wrap =
         (exports_fmi_fmi3_co_simulation_co_simulation_instance_t *)instanceEnvironment;
-    ModelInstance *comp = wrap ? (ModelInstance *)wrap->comp : NULL;
+    ModelInstance *instance = wrap ? (ModelInstance *)wrap->comp : NULL;
     co_simulation_fmu_string_t name;
     co_simulation_fmu_string_t cat;
     co_simulation_fmu_string_t msg;
 
-    if (comp && comp->instanceName) {
-        co_simulation_fmu_string_dup(&name, comp->instanceName);
+    if (instance && instance->instanceName) {
+        co_simulation_fmu_string_dup(&name, instance->instanceName);
     } else {
         co_simulation_fmu_string_dup(&name, "?");
     }
@@ -328,7 +328,7 @@ bool exports_fmi_fmi3_co_simulation_static_co_simulation_instance_instantiate_co
         resource_location = resources;
     }
 
-    ModelInstance *comp = createModelInstance(
+    ModelInstance *instance = createModelInstance(
         wasm_log_message,
         wasm_intermediate_update,
         inst,
@@ -342,15 +342,15 @@ bool exports_fmi_fmi3_co_simulation_static_co_simulation_instance_instantiate_co
     free(token);
     free(resources);
 
-    if (!comp) {
+    if (!instance) {
         free(inst);
         return false;
     }
 
-    comp->earlyReturnAllowed = early_return_allowed;
-    comp->eventModeUsed = event_mode_used;
-    comp->state = Instantiated;
-    inst->comp = comp;
+    instance->earlyReturnAllowed = early_return_allowed;
+    instance->eventModeUsed = event_mode_used;
+    instance->state = Instantiated;
+    inst->comp = instance;
 
     *ret = exports_fmi_fmi3_co_simulation_co_simulation_instance_new(inst);
     return true;
@@ -412,13 +412,13 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_enter_initializatio
     double start_time,
     double *maybe_stop_time)
 {
-    ModelInstance *comp = wasm_comp(self);
+    ModelInstance *instance = wasm_comp(self);
     (void)maybe_tolerance;
-    comp->startTime = start_time;
-    comp->stopTime = maybe_stop_time ? *maybe_stop_time : INFINITY;
-    comp->time = start_time;
-    comp->nextCommunicationPoint = start_time;
-    comp->state = InitializationMode;
+    instance->startTime = start_time;
+    instance->stopTime = maybe_stop_time ? *maybe_stop_time : INFINITY;
+    instance->time = start_time;
+    instance->nextCommunicationPoint = start_time;
+    instance->state = InitializationMode;
     return map_status(OK);
 }
 
@@ -426,25 +426,25 @@ exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_exit_initialization_mode(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
 {
-    ModelInstance *comp = wasm_comp(self);
+    ModelInstance *instance = wasm_comp(self);
     Status status = OK;
-    if (comp->isDirtyValues) {
-        status = calculateValues(comp);
-        comp->isDirtyValues = false;
+    if (instance->isDirtyValues) {
+        status = calculateValues(instance);
+        instance->isDirtyValues = false;
     }
     if (status == OK) {
-        comp->state = comp->eventModeUsed ? EventMode : StepMode;
-        status = configurate(comp);
+        instance->state = instance->eventModeUsed ? EventMode : StepMode;
+        status = configurate(instance);
     }
-    return map_status(wasm_apply_status(comp, status));
+    return map_status(wasm_apply_status(instance, status));
 }
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_enter_event_mode(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
 {
-    ModelInstance *comp = wasm_comp(self);
-    comp->state = EventMode;
+    ModelInstance *instance = wasm_comp(self);
+    instance->state = EventMode;
     return map_status(OK);
 }
 
@@ -453,23 +453,23 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_update_discret
     exports_fmi_fmi3_co_simulation_discrete_states_info_t *ok,
     exports_fmi_fmi3_co_simulation_status_t *err)
 {
-    ModelInstance *comp = wasm_comp(self);
+    ModelInstance *instance = wasm_comp(self);
 #ifdef EVENT_UPDATE
-    Status st = eventUpdate(comp);
+    Status st = eventUpdate(instance);
     if (st != OK && st != Warning) {
-        *err = map_status(wasm_apply_status(comp, st));
+        *err = map_status(wasm_apply_status(instance, st));
         return false;
     }
 #else
     Status st = OK;
 #endif
 
-    ok->new_discrete_states_needed = comp->newDiscreteStatesNeeded;
-    ok->terminate_simulation = comp->terminateSimulation;
-    ok->nominals_of_continuous_states_changed = comp->nominalsOfContinuousStatesChanged;
-    ok->values_of_continuous_states_changed = comp->valuesOfContinuousStatesChanged;
-    ok->next_event_time_defined = comp->nextEventTimeDefined;
-    ok->next_event_time = comp->nextEventTime;
+    ok->new_discrete_states_needed = instance->newDiscreteStatesNeeded;
+    ok->terminate_simulation = instance->terminateSimulation;
+    ok->nominals_of_continuous_states_changed = instance->nominalsOfContinuousStatesChanged;
+    ok->values_of_continuous_states_changed = instance->valuesOfContinuousStatesChanged;
+    ok->next_event_time_defined = instance->nextEventTimeDefined;
+    ok->next_event_time = instance->nextEventTime;
     (void)st;
     return true;
 }
@@ -486,16 +486,16 @@ exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_reset(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
 {
-    ModelInstance *comp = wasm_comp(self);
-    return map_status(wasm_apply_status(comp, reset(comp)));
+    ModelInstance *instance = wasm_comp(self);
+    return map_status(wasm_apply_status(instance, reset(instance)));
 }
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_enter_configuration_mode(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
 {
-    ModelInstance *comp = wasm_comp(self);
-    comp->state = (comp->state == Instantiated) ? ConfigurationMode : ReconfigurationMode;
+    ModelInstance *instance = wasm_comp(self);
+    instance->state = (instance->state == Instantiated) ? ConfigurationMode : ReconfigurationMode;
     return map_status(OK);
 }
 
@@ -503,11 +503,11 @@ exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_exit_configuration_mode(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
 {
-    ModelInstance *comp = wasm_comp(self);
-    if (comp->state == ConfigurationMode) {
-        comp->state = Instantiated;
+    ModelInstance *instance = wasm_comp(self);
+    if (instance->state == ConfigurationMode) {
+        instance->state = Instantiated;
     } else {
-        comp->state = StepMode;
+        instance->state = StepMode;
     }
     return map_status(OK);
 }
@@ -524,8 +524,8 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_float64(
         *err = FMI_FMI3_TYPES_STATUS_ERROR;
         return false;
     }
-    ModelInstance *comp = wasm_comp(self);
-    Status st = wasm_get_float64(comp, value_references->ptr, n, buf);
+    ModelInstance *instance = wasm_comp(self);
+    Status st = wasm_get_float64(instance, value_references->ptr, n, buf);
     if (st != OK && st != Warning) {
         free(buf);
         *err = map_status(st);
@@ -545,9 +545,9 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_float64(
     if (value_references->len != values->len) {
         return FMI_FMI3_TYPES_STATUS_ERROR;
     }
-    ModelInstance *comp = wasm_comp(self);
+    ModelInstance *instance = wasm_comp(self);
     return map_status(wasm_set_float64(
-        comp,
+        instance,
         value_references->ptr,
         value_references->len,
         values->ptr));
@@ -610,10 +610,10 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_number_of_
     uint64_t *ret,
     exports_fmi_fmi3_co_simulation_status_t *err)
 {
-    ModelInstance *comp = wasm_comp(self);
+    ModelInstance *instance = wasm_comp(self);
     (void)vr;
-    logError(comp, "Function is not implemented.");
-    *err = map_status(wasm_apply_status(comp, Error));
+    logError(instance, "Function is not implemented.");
+    *err = map_status(wasm_apply_status(instance, Error));
     return false;
 }
 
@@ -623,11 +623,11 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_variable_d
     exports_fmi_fmi3_co_simulation_list_variable_dependency_t *ret,
     exports_fmi_fmi3_co_simulation_status_t *err)
 {
-    ModelInstance *comp = wasm_comp(self);
+    ModelInstance *instance = wasm_comp(self);
     (void)dependent;
     (void)ret;
-    logError(comp, "Function is not implemented.");
-    *err = map_status(wasm_apply_status(comp, Error));
+    logError(instance, "Function is not implemented.");
+    *err = map_status(wasm_apply_status(instance, Error));
     return false;
 }
 
@@ -636,11 +636,11 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_fmu_state(
     exports_fmi_fmi3_co_simulation_fmu_state_t *ret,
     exports_fmi_fmi3_co_simulation_status_t *err)
 {
-    ModelInstance *comp = wasm_comp(self);
+    ModelInstance *instance = wasm_comp(self);
     void *state = NULL;
-    Status st = getFMUState(comp, &state);
+    Status st = getFMUState(instance, &state);
     if (st != OK && st != Warning) {
-        *err = map_status(wasm_apply_status(comp, st));
+        *err = map_status(wasm_apply_status(instance, st));
         return false;
     }
 
@@ -654,9 +654,9 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_fmu_state(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     exports_fmi_fmi3_co_simulation_fmu_state_t *state)
 {
-    ModelInstance *comp = wasm_comp(self);
-    Status st = setFMUState(comp, state->ptr);
-    return map_status(wasm_apply_status(comp, st));
+    ModelInstance *instance = wasm_comp(self);
+    Status st = setFMUState(instance, state->ptr);
+    return map_status(wasm_apply_status(instance, st));
 }
 
 static size_t valueReferenceElementIndex(const exports_fmi_fmi3_co_simulation_value_reference_t *valueReferences, size_t position) {
@@ -683,13 +683,13 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_directiona
         *err = FMI_FMI3_TYPES_STATUS_ERROR;
         return false;
     }
-    ModelInstance *comp = wasm_comp(self);
+    ModelInstance *instance = wasm_comp(self);
     for (size_t i = 0; i < n; i++) {
         buf[i] = 0.0;
         for (size_t j = 0; j < knowns->len; j++) {
             double partialDerivative = 0.0;
             Status st = getPartialDerivative(
-                comp,
+                instance,
                 (ValueReference)unknowns->ptr[i],
                 valueReferenceElementIndex(unknowns->ptr, i),
                 (ValueReference)knowns->ptr[j],
@@ -697,7 +697,7 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_directiona
                 &partialDerivative);
             if (st != OK) {
                 free(buf);
-                *err = map_status(wasm_apply_status(comp, st));
+                *err = map_status(wasm_apply_status(instance, st));
                 return false;
             }
             buf[i] += partialDerivative * seed->ptr[j];
@@ -722,13 +722,13 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_adjoint_de
         *err = FMI_FMI3_TYPES_STATUS_ERROR;
         return false;
     }
-    ModelInstance *comp = wasm_comp(self);
+    ModelInstance *instance = wasm_comp(self);
     for (size_t i = 0; i < n; i++) {
         buf[i] = 0.0;
         for (size_t j = 0; j < unknowns->len; j++) {
             double partialDerivative = 0.0;
             Status st = getPartialDerivative(
-                comp,
+                instance,
                 (ValueReference)unknowns->ptr[j],
                 valueReferenceElementIndex(unknowns->ptr, j),
                 (ValueReference)knowns->ptr[i],
@@ -736,7 +736,7 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_adjoint_de
                 &partialDerivative);
             if (st != OK) {
                 free(buf);
-                *err = map_status(wasm_apply_status(comp, st));
+                *err = map_status(wasm_apply_status(instance, st));
                 return false;
             }
             buf[i] += partialDerivative * seed->ptr[j];
@@ -814,9 +814,9 @@ exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_evaluate_discrete_states(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
 {
-    ModelInstance *comp = wasm_comp(self);
-    logError(comp, "Function is not implemented.");
-    return map_status(wasm_apply_status(comp, Error));
+    ModelInstance *instance = wasm_comp(self);
+    logError(instance, "Function is not implemented.");
+    return map_status(wasm_apply_status(instance, Error));
 }
 
 exports_fmi_fmi3_co_simulation_status_t
@@ -838,7 +838,7 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_output_der
     exports_fmi_fmi3_co_simulation_status_t *err)
 {
     size_t n = requests->len;
-    ModelInstance *comp = wasm_comp(self);
+    ModelInstance *instance = wasm_comp(self);
     double *buf = calloc(n, sizeof(double));
     if (!buf) {
         *err = FMI_FMI3_TYPES_STATUS_ERROR;
@@ -847,20 +847,20 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_output_der
 #ifdef GET_OUTPUT_DERIVATIVE
     for (size_t i = 0; i < n; i++) {
         Status st = getOutputDerivative(
-            comp,
+            instance,
             (ValueReference)requests->ptr[i].f0,
             (int)requests->ptr[i].f1,
             &buf[i]);
         if (st != OK && st != Warning) {
             free(buf);
-            *err = map_status(wasm_apply_status(comp, st));
+            *err = map_status(wasm_apply_status(instance, st));
             return false;
         }
     }
 #else
-    logError(comp, "Function is not implemented.");
+    logError(instance, "Function is not implemented.");
     free(buf);
-    *err = map_status(wasm_apply_status(comp, Error));
+    *err = map_status(wasm_apply_status(instance, Error));
     return false;
 #endif
     ret->ptr = buf;
@@ -878,14 +878,14 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_do_step(
 {
     (void)no_set_fmu_state_prior_to_current_point;
 
-    ModelInstance *comp = wasm_comp(self);
+    ModelInstance *instance = wasm_comp(self);
     bool eventHandlingNeeded = false;
     bool terminateSimulation = false;
     bool earlyReturn = false;
     double lastSuccessfulTime = 0.0;
 
     Status st = wasm_do_step(
-        comp,
+        instance,
         current_communication_point,
         communication_step_size,
         &eventHandlingNeeded,

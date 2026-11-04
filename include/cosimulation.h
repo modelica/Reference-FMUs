@@ -3,13 +3,13 @@
 #include "model.h"
 
 Status doFixedStep(
-    ModelInstance *comp,
+    ModelInstance *instance,
     bool* stateEvent,
     bool* timeEvent
 );
 
 Status doStep(
-    ModelInstance* comp,
+    ModelInstance *instance,
     double currentCommunicationPoint,
     double communicationStepSize,
     bool noSetFMUStatePriorToCurrentPoint,

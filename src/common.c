@@ -46,7 +46,7 @@ static ModelInstance *createModelInstanceImpl(
     bool loggingOn,
     InterfaceType interfaceType) {
 
-    ModelInstance *comp = NULL;
+    ModelInstance *instance = NULL;
 
     if (!instanceName || strlen(instanceName) == 0) {
         if (cbLogger) {
@@ -94,38 +94,38 @@ static ModelInstance *createModelInstanceImpl(
         return NULL;
     }
 
-    comp = (ModelInstance *)calloc(1, sizeof(ModelInstance));
+    instance = (ModelInstance *)calloc(1, sizeof(ModelInstance));
 
-    if (comp) {
-        comp->componentEnvironment = componentEnvironment;
-        comp->logger               = cbLogger;
-        comp->intermediateUpdate   = intermediateUpdate;
-        comp->lockPreemption       = NULL;
-        comp->unlockPreemption     = NULL;
-        comp->instanceName         = strdup(instanceName);
-        comp->resourceLocation     = resourceLocation ? strdup(resourceLocation) : NULL;
-        comp->status               = OK;
-        comp->logEvents            = loggingOn;
-        comp->logErrors            = true;
-        comp->nSteps               = 0;
-        comp->earlyReturnAllowed   = false;
-        comp->eventModeUsed        = false;
+    if (instance) {
+        instance->componentEnvironment = componentEnvironment;
+        instance->logger               = cbLogger;
+        instance->intermediateUpdate   = intermediateUpdate;
+        instance->lockPreemption       = NULL;
+        instance->unlockPreemption     = NULL;
+        instance->instanceName         = strdup(instanceName);
+        instance->resourceLocation     = resourceLocation ? strdup(resourceLocation) : NULL;
+        instance->status               = OK;
+        instance->logEvents            = loggingOn;
+        instance->logErrors            = true;
+        instance->nSteps               = 0;
+        instance->earlyReturnAllowed   = false;
+        instance->eventModeUsed        = false;
     }
 
-    if (!comp || !comp->instanceName) {
-        logError(comp, "Out of memory.");
+    if (!instance || !instance->instanceName) {
+        logError(instance, "Out of memory.");
         return NULL;
     }
 
-    comp->time = 0.0;
-    comp->type = interfaceType;
-    comp->state = Instantiated;
+    instance->time = 0.0;
+    instance->type = interfaceType;
+    instance->state = Instantiated;
 
-    setStartValues(comp);
+    setStartValues(instance);
 
-    comp->isDirtyValues = true;
+    instance->isDirtyValues = true;
 
-    return comp;
+    return instance;
 }
 
 ModelInstance *createModelExchangeInstance(
@@ -171,7 +171,7 @@ ModelInstance *createCoSimulationInstance(
     }
 #endif
 
-    ModelInstance *comp = createModelInstanceImpl(
+    ModelInstance *instance = createModelInstanceImpl(
         logger,
         intermediateUpdate,
         componentEnvironment,
@@ -181,12 +181,12 @@ ModelInstance *createCoSimulationInstance(
         loggingOn,
         CoSimulation);
 
-    if (comp) {
-        comp->earlyReturnAllowed = earlyReturnAllowed;
-        comp->eventModeUsed      = eventModeUsed;
+    if (instance) {
+        instance->earlyReturnAllowed = earlyReturnAllowed;
+        instance->eventModeUsed      = eventModeUsed;
     }
 
-    return comp;
+    return instance;
 }
 
 ModelInstance *createScheduledExecutionInstance(
@@ -200,7 +200,7 @@ ModelInstance *createScheduledExecutionInstance(
     lockPreemptionType lockPreemption,
     unlockPreemptionType unlockPreemption) {
 
-    ModelInstance *comp = createModelInstanceImpl(
+    ModelInstance *instance = createModelInstanceImpl(
         logger,
         NULL,
         componentEnvironment,
@@ -210,13 +210,13 @@ ModelInstance *createScheduledExecutionInstance(
         loggingOn,
         ScheduledExecution);
 
-    if (comp) {
-        comp->clockUpdate      = clockUpdate;
-        comp->lockPreemption   = lockPreemption;
-        comp->unlockPreemption = unlockPreemption;
+    if (instance) {
+        instance->clockUpdate      = clockUpdate;
+        instance->lockPreemption   = lockPreemption;
+        instance->unlockPreemption = unlockPreemption;
     }
 
-    return comp;
+    return instance;
 }
 
 ModelInstance *createModelInstance(
@@ -240,18 +240,18 @@ ModelInstance *createModelInstance(
         interfaceType);
 }
 
-void freeModelInstance(ModelInstance *comp) {
+void freeModelInstance(ModelInstance *instance) {
 
-    if (!comp) return;
+    if (!instance) return;
 
-    if (comp->instanceName) free((void*)comp->instanceName);
+    if (instance->instanceName) free((void*)instance->instanceName);
 
-    if (comp->resourceLocation) free((void*)comp->resourceLocation);
+    if (instance->resourceLocation) free((void*)instance->resourceLocation);
 
-    free(comp);
+    free(instance);
 }
 
-static Status s_reallocate(ModelInstance* comp, void** memory, size_t size) {
+static Status s_reallocate(ModelInstance *instance, void** memory, size_t size) {
 
     if (size == 0) {
         if (*memory) {
@@ -264,7 +264,7 @@ static Status s_reallocate(ModelInstance* comp, void** memory, size_t size) {
     void* temp = realloc(*memory, size);
 
     if (!temp) {
-        logError(comp, "Failed to allocate memory.");
+        logError(instance, "Failed to allocate memory.");
         return Error;
     }
 
@@ -273,31 +273,31 @@ static Status s_reallocate(ModelInstance* comp, void** memory, size_t size) {
     return OK;
 }
 
-Status configurate(ModelInstance* comp) {
+Status configurate(ModelInstance *instance) {
 
-    (void)comp;
+    (void)instance;
 
 #ifdef MAX_EVENT_INDICATORS
-    CALL(getNumberOfEventIndicators(comp, &comp->nz));
-    CALL(getEventIndicators(comp, comp->prez, comp->nz));
+    CALL(getNumberOfEventIndicators(instance, &instance->nz));
+    CALL(getEventIndicators(instance, instance->prez, instance->nz));
 #endif
 
 #if MAX_CONTINUOUS_STATES > 0
-    CALL(getNumberOfContinuousStates(comp, &comp->nx));
+    CALL(getNumberOfContinuousStates(instance, &instance->nx));
 #endif
 
     return OK;
 }
 
-Status reset(ModelInstance* comp) {
-    comp->state = Instantiated;
-    comp->startTime = 0.0;
-    comp->time = 0.0;
-    comp->nSteps = 0;
-    comp->status = OK;
-    comp->isDirtyValues = true;
+Status reset(ModelInstance *instance) {
+    instance->state = Instantiated;
+    instance->startTime = 0.0;
+    instance->time = 0.0;
+    instance->nSteps = 0;
+    instance->status = OK;
+    instance->isDirtyValues = true;
 
-    return setStartValues(comp);
+    return setStartValues(instance);
 }
 
 #define EPSILON (1.0e-5)
@@ -319,43 +319,43 @@ bool isClose(double a, double b) {
     return fmiAbs(a - b) <= EPSILON * fmiMax(fmiAbs(a), fmiAbs(b));
 }
 
-bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected) {
+bool invalidNumber(ModelInstance *instance, const char *f, const char *arg, size_t actual, size_t expected) {
 
     if (actual != expected) {
-        comp->state = Terminated;
-        logError(comp, "%s: Invalid argument %s = %d. Expected %d.", f, arg, actual, expected);
+        instance->state = Terminated;
+        logError(instance, "%s: Invalid argument %s = %d. Expected %d.", f, arg, actual, expected);
         return true;
     }
 
     return false;
 }
 
-bool invalidState(ModelInstance *comp, const char *f, int statesExpected) {
+bool invalidState(ModelInstance *instance, const char *f, int statesExpected) {
 
     UNUSED(f);
     UNUSED(statesExpected);
 
-    if (!comp) {
+    if (!instance) {
         return true;
     }
 
     // TODO: add missing states and check state
     return false;
 
-//    if (!(comp->state & statesExpected)) {
-//        comp->state = modelError;
-//        logError(comp, "%s: Illegal call sequence.", f);
+//    if (!(instance->state & statesExpected)) {
+//        instance->state = modelError;
+//        logError(instance, "%s: Illegal call sequence.", f);
 //        return true;
 //    }
 //
 //    return false;
 }
 
-bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void *p) {
+bool nullPointer(ModelInstance *instance, const char *f, const char *arg, const void *p) {
 
     if (!p) {
-        comp->state = Terminated;
-        logError(comp, "%s: Invalid argument %s = NULL.", f, arg);
+        instance->state = Terminated;
+        logError(instance, "%s: Invalid argument %s = NULL.", f, arg);
         return true;
     }
 
@@ -363,64 +363,65 @@ bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void
 }
 
 Status setupExperiment(
-    ModelInstance* comp,
+    ModelInstance *instance,
     bool toleranceDefined,
     double tolerance,
     double startTime,
     bool stopTimeDefined,
     double stopTime
 ) {
-    // TODO: check comp != NULL
-    if (comp->state != Instantiated) {
-        logError(comp, "setupExperiment() may only be called in Instantiated Mode");
+
+    // TODO: check instance != NULL
+    if (instance->state != Instantiated) {
+        logError(instance, "setupExperiment() may only be called in Instantiated Mode");
         return Discard;
     }
 
     // TODO: check values
-    comp->startTime = startTime;
-    comp->stopTimeDefined = stopTimeDefined;
-    comp->stopTime = stopTime;
-    comp->nextCommunicationPoint = startTime;
+    instance->startTime = startTime;
+    instance->stopTimeDefined = stopTimeDefined;
+    instance->stopTime = stopTime;
+    instance->nextCommunicationPoint = startTime;
 
     return OK;
 }
 
-Status enterConfigurationMode(ModelInstance* comp) {
-    switch (comp->type) {
+Status enterConfigurationMode(ModelInstance *instance) {
+    switch (instance->type) {
     case ModelExchange:
-        switch (comp->state) {
+        switch (instance->state) {
         case Instantiated:
-            comp->state = ConfigurationMode;
+            instance->state = ConfigurationMode;
             return OK;
         case EventMode:
-            comp->state = ReconfigurationMode;
+            instance->state = ReconfigurationMode;
             return OK;
         default:
-            logError(comp, "enterConfigurationMode() may only be called in Instantiated and Event Mode");
+            logError(instance, "enterConfigurationMode() may only be called in Instantiated and Event Mode");
         }
         break;
     case CoSimulation:
-        switch (comp->state) {
+        switch (instance->state) {
         case Instantiated:
-            comp->state = ConfigurationMode;
+            instance->state = ConfigurationMode;
             return OK;
         case StepMode:
-            comp->state = ReconfigurationMode;
+            instance->state = ReconfigurationMode;
             return OK;
         default:
-            logError(comp, "enterConfigurationMode() may only be called in Instantiated and Step Mode");
+            logError(instance, "enterConfigurationMode() may only be called in Instantiated and Step Mode");
         }
         break;
     case ScheduledExecution:
-        switch (comp->state) {
+        switch (instance->state) {
         case Instantiated:
-            comp->state = ConfigurationMode;
+            instance->state = ConfigurationMode;
             return OK;
         case ClockActivationMode:
-            comp->state = ReconfigurationMode;
+            instance->state = ReconfigurationMode;
             return OK;
         default:
-            logError(comp, "enterConfigurationMode() may only be called in Instantiated and Clock Activation Mode");
+            logError(instance, "enterConfigurationMode() may only be called in Instantiated and Clock Activation Mode");
         }
         break;
     }
@@ -428,34 +429,34 @@ Status enterConfigurationMode(ModelInstance* comp) {
     return Discard;
 }
 
-Status exitConfigurationMode(ModelInstance* comp) {
+Status exitConfigurationMode(ModelInstance *instance) {
 
-    switch (comp->state) {
+    switch (instance->state) {
     case ConfigurationMode:
     case ReconfigurationMode:
         break;
     default:
-        logError(comp, "exitConfigurationMode() may only be called in Configuration and Reconfiguration Mode");
+        logError(instance, "exitConfigurationMode() may only be called in Configuration and Reconfiguration Mode");
         return Discard;
     }
 
-    const Status status = configurate(comp);
+    const Status status = configurate(instance);
 
     if (status == OK) {
-        switch (comp->state) {
+        switch (instance->state) {
         case ConfigurationMode:
-            comp->state = Instantiated;
+            instance->state = Instantiated;
             break;
         case ReconfigurationMode:
-            switch (comp->type) {
+            switch (instance->type) {
             case ModelExchange:
-                comp->state = EventMode;
+                instance->state = EventMode;
                 break;
             case CoSimulation:
-                comp->state = StepMode;
+                instance->state = StepMode;
                 break;
             case ScheduledExecution:
-                comp->state = ClockActivationMode;
+                instance->state = ClockActivationMode;
                 break;
             }
             break;
@@ -465,35 +466,35 @@ Status exitConfigurationMode(ModelInstance* comp) {
     return status;
 }
 
-Status enterInitializationMode(ModelInstance* comp) {
-    if (comp->state != Instantiated) {
-        logError(comp, "enterInitializationMode() may only be called in Instantiated Mode");
+Status enterInitializationMode(ModelInstance *instance) {
+    if (instance->state != Instantiated) {
+        logError(instance, "enterInitializationMode() may only be called in Instantiated Mode");
         return Discard;
     }
 
-    comp->state = InitializationMode;
+    instance->state = InitializationMode;
 
     return OK;
 }
 
-Status exitInitializationMode(ModelInstance* comp) {
-    if (comp->state != InitializationMode) {
-        logError(comp, "exitInitializationMode() may only be called in Initialization Mode");
+Status exitInitializationMode(ModelInstance *instance) {
+    if (instance->state != InitializationMode) {
+        logError(instance, "exitInitializationMode() may only be called in Initialization Mode");
         return Discard;
     }
 
-    const Status status = configurate(comp);
+    const Status status = configurate(instance);
 
     if (status == OK) {
-        switch (comp->type) {
+        switch (instance->type) {
             case CoSimulation:
-                comp->state = comp->eventModeUsed ? EventMode : StepMode;
+                instance->state = instance->eventModeUsed ? EventMode : StepMode;
                 break;
             case ModelExchange:
-                comp->state = EventMode;
+                instance->state = EventMode;
                 break;
             case ScheduledExecution:
-                comp->state = ClockActivationMode;
+                instance->state = ClockActivationMode;
                 break;
         }
     }
@@ -501,157 +502,157 @@ Status exitInitializationMode(ModelInstance* comp) {
     return status;
 }
 
-Status enterEventMode(ModelInstance* comp) {
-    switch (comp->type) {
+Status enterEventMode(ModelInstance *instance) {
+    switch (instance->type) {
         case CoSimulation: 
-            if (comp->state != StepMode) {
-                logError(comp, "enterEventMode() may only be called in Step Mode");
+            if (instance->state != StepMode) {
+                logError(instance, "enterEventMode() may only be called in Step Mode");
                 return Discard;
-            } else if (!comp->eventModeUsed) {
-                logError(comp, "enterEventMode() may only be called if eventModeUsed is true");
+            } else if (!instance->eventModeUsed) {
+                logError(instance, "enterEventMode() may only be called if eventModeUsed is true");
                 return Discard;
             }
             break;
         case ModelExchange: 
-            if (comp->state != ContinuousTimeMode) {
-                logError(comp, "enterEventMode() may only be called in Continuous Time Mode");
+            if (instance->state != ContinuousTimeMode) {
+                logError(instance, "enterEventMode() may only be called in Continuous Time Mode");
                 return Discard;
             }
             break;
         case ScheduledExecution: 
-            logError(comp, "enterEventMode() may not be called in Scheduled Execution");
+            logError(instance, "enterEventMode() may not be called in Scheduled Execution");
             return Discard;
     }
 
-    comp->state = EventMode;
+    instance->state = EventMode;
 
     return OK;
 }
 
-Status enterContinuousTimeMode(ModelInstance* comp) {
-    switch (comp->type) {
+Status enterContinuousTimeMode(ModelInstance *instance) {
+    switch (instance->type) {
         case ModelExchange:
-            if (comp->state != EventMode) {
-                logError(comp, "enterContinuousTimeMode() may only be called in Event Mode");
+            if (instance->state != EventMode) {
+                logError(instance, "enterContinuousTimeMode() may only be called in Event Mode");
                 return Discard;
             }
-            comp->state = ContinuousTimeMode;
+            instance->state = ContinuousTimeMode;
             return OK;
         default:
-            logError(comp, "enterContinuousTimeMode() is only allowed in Model Exchange");
+            logError(instance, "enterContinuousTimeMode() is only allowed in Model Exchange");
             return Discard;
     }
 }
 
-Status terminate(ModelInstance* comp) {
-    switch (comp->type) {
+Status terminate(ModelInstance *instance) {
+    switch (instance->type) {
         case CoSimulation: {
-            switch (comp->state) {
+            switch (instance->state) {
             case StepMode:
             case EventMode:
                 break;
             default:
-                logError(comp, "terminate() may only be called in Step Mode and Event Mode");
+                logError(instance, "terminate() may only be called in Step Mode and Event Mode");
                 return Discard;
             }
             break;
         }
         case ModelExchange: {
-            switch (comp->state) {
+            switch (instance->state) {
             case ContinuousTimeMode:
             case EventMode:
                 break;
             default:
-                logError(comp, "terminate() may only be called in Continuous Time Mode and Event Mode");
+                logError(instance, "terminate() may only be called in Continuous Time Mode and Event Mode");
                 return Discard;
             }
             break;
         }
         case ScheduledExecution: {
-            switch (comp->state) {
+            switch (instance->state) {
             case ClockActivationMode:
                 break;
             default:
-                logError(comp, "terminate() may only be called in Clock Activation Mode");
+                logError(instance, "terminate() may only be called in Clock Activation Mode");
                 return Discard;
             }
             break;
         }
     }
 
-    comp->state = Terminated;
+    instance->state = Terminated;
 
     return OK;
 }
 
-Status completedIntegratorStep(ModelInstance* comp,
+Status completedIntegratorStep(ModelInstance *instance,
     bool  noSetFMUStatePriorToCurrentPoint,
     bool* enterEventMode,
     bool* terminateSimulation) {
     return OK;
 }
 
-Status setTime(ModelInstance* comp, double time) {
-    comp->time = time;
+Status setTime(ModelInstance *instance, double time) {
+    instance->time = time;
     return OK;
 }
 
-Status enterStepMode(ModelInstance* comp) {
-    switch (comp->type) {
+Status enterStepMode(ModelInstance *instance) {
+    switch (instance->type) {
     case CoSimulation: {
-        if (comp->state != EventMode) {
-            logError(comp, "enterStepMode() may only be called in Event Mode");
+        if (instance->state != EventMode) {
+            logError(instance, "enterStepMode() may only be called in Event Mode");
             return Discard;
         }
         break;
     }
     default:
-        logError(comp, "enterEventMode() may not be called in Scheduled Execution");
+        logError(instance, "enterEventMode() may not be called in Scheduled Execution");
         return Discard;
     }
 
-    comp->state = StepMode;
+    instance->state = StepMode;
 
     return OK;
 }
 
-Status setDebugLogging(ModelInstance *comp, bool loggingOn, size_t nCategories, const char * const categories[]) {
+Status setDebugLogging(ModelInstance *instance, bool loggingOn, size_t nCategories, const char * const categories[]) {
 
     if (nCategories > 0) {
 
         if (categories == NULL) {
-            logError(comp, "Argument categories must not be NULL.");
+            logError(instance, "Argument categories must not be NULL.");
             return Error;
         }
 
         for (size_t i = 0; i < nCategories; i++) {
 
             if (categories[i] == NULL) {
-                logError(comp, "Argument categories[%zu] must not be NULL.", i);
+                logError(instance, "Argument categories[%zu] must not be NULL.", i);
                 return Error;
             } else if (strcmp(categories[i], "logEvents") == 0) {
-                comp->logEvents = loggingOn;
+                instance->logEvents = loggingOn;
             } else if (strcmp(categories[i], "logStatusError") == 0) {
-                comp->logErrors = loggingOn;
+                instance->logErrors = loggingOn;
             } else {
-                logError(comp, "Log categories[%zu] must be one of \"logEvents\" or \"logStatusError\" but was \"%s\".", i, categories[i]);
+                logError(instance, "Log categories[%zu] must be one of \"logEvents\" or \"logStatusError\" but was \"%s\".", i, categories[i]);
                 return Error;
             }
         }
 
     } else {
 
-        comp->logEvents = loggingOn;
-        comp->logErrors = loggingOn;
+        instance->logEvents = loggingOn;
+        instance->logErrors = loggingOn;
 
     }
 
     return OK;
 }
 
-static void logMessage(ModelInstance *comp, int status, const char *category, const char *message, va_list args) {
+static void logMessage(ModelInstance *instance, int status, const char *category, const char *message, va_list args) {
 
-    if (!comp->logger) {
+    if (!instance->logger) {
         return;
     }
 
@@ -675,32 +676,32 @@ static void logMessage(ModelInstance *comp, int status, const char *category, co
     if (len >= 0) {
         // no need to distinguish between FMI versions since we're not using variadic arguments
 #if FMI_VERSION < 3
-        comp->logger(comp->componentEnvironment, comp->instanceName, status, category, buf);
+        instance->logger(instance->componentEnvironment, instance->instanceName, status, category, buf);
 #else
-        comp->logger(comp->componentEnvironment, status, category, buf);
+        instance->logger(instance->componentEnvironment, status, category, buf);
 #endif
     }
 
     free(buf);
 }
 
-void logEvent(ModelInstance *comp, const char *message, ...) {
+void logEvent(ModelInstance *instance, const char *message, ...) {
 
-    if (!comp || !comp->logEvents) return;
+    if (!instance || !instance->logEvents) return;
 
     va_list args;
     va_start(args, message);
-    logMessage(comp, OK, "logEvents", message, args);
+    logMessage(instance, OK, "logEvents", message, args);
     va_end(args);
 }
 
-void logError(ModelInstance *comp, const char *message, ...) {
+void logError(ModelInstance *instance, const char *message, ...) {
 
-    if (!comp || !comp->logErrors) return;
+    if (!instance || !instance->logErrors) return;
 
     va_list args;
     va_start(args, message);
-    logMessage(comp, Error, "logStatusError", message, args);
+    logMessage(instance, Error, "logStatusError", message, args);
     va_end(args);
 }
 
@@ -709,79 +710,79 @@ void logError(ModelInstance *comp, const char *message, ...) {
     UNUSED(values); \
     UNUSED(nValues); \
     UNUSED(index); \
-    logError(comp, "Getting " t " is not allowed.");\
+    logError(instance, "Getting " t " is not allowed.");\
     return Error; \
 } while (false)
 
 #ifndef GET_FLOAT32
-Status getFloat32(ModelInstance* comp, ValueReference vr, float values[], size_t nValues, size_t* index) {
+Status getFloat32(ModelInstance *instance, ValueReference vr, float values[], size_t nValues, size_t* index) {
     GET_NOT_ALLOWED("Float32");
 }
 #endif
 
 #ifndef GET_INT8
-Status getInt8(ModelInstance* comp, ValueReference vr, int8_t values[], size_t nValues, size_t *index) {
+Status getInt8(ModelInstance *instance, ValueReference vr, int8_t values[], size_t nValues, size_t *index) {
     GET_NOT_ALLOWED("Int8");
 }
 #endif
 
 #ifndef GET_UINT8
-Status getUInt8(ModelInstance* comp, ValueReference vr, uint8_t values[], size_t nValues, size_t *index) {
+Status getUInt8(ModelInstance *instance, ValueReference vr, uint8_t values[], size_t nValues, size_t *index) {
     GET_NOT_ALLOWED("UInt8");
 }
 #endif
 
 #ifndef GET_INT16
-Status getInt16(ModelInstance* comp, ValueReference vr, int16_t values[], size_t nValues, size_t *index) {
+Status getInt16(ModelInstance *instance, ValueReference vr, int16_t values[], size_t nValues, size_t *index) {
     GET_NOT_ALLOWED("Int16");
 
 }
 #endif
 
 #ifndef GET_UINT16
-Status getUInt16(ModelInstance* comp, ValueReference vr, uint16_t values[], size_t nValues, size_t *index) {
+Status getUInt16(ModelInstance *instance, ValueReference vr, uint16_t values[], size_t nValues, size_t *index) {
     GET_NOT_ALLOWED("UInt16");
 }
 #endif
 
 #ifndef GET_INT32
-Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t nValues, size_t *index) {
+Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues, size_t *index) {
     GET_NOT_ALLOWED("Int32");
 }
 #endif
 
 #ifndef GET_UINT32
-Status getUInt32(ModelInstance* comp, ValueReference vr, uint32_t values[], size_t nValues, size_t *index) {
+Status getUInt32(ModelInstance *instance, ValueReference vr, uint32_t values[], size_t nValues, size_t *index) {
     GET_NOT_ALLOWED("UInt32");
 }
 #endif
 
 #ifndef GET_INT64
-Status getInt64(ModelInstance* comp, ValueReference vr, int64_t values[], size_t nValues, size_t *index) {
+Status getInt64(ModelInstance *instance, ValueReference vr, int64_t values[], size_t nValues, size_t *index) {
     GET_NOT_ALLOWED("Int64");
 }
 #endif
 
 #ifndef GET_UINT64
-Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t values[], size_t nValues, size_t *index) {
+Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], size_t nValues, size_t *index) {
     GET_NOT_ALLOWED("UInt64");
 }
 #endif
 
 #ifndef GET_BOOLEAN
-Status getBoolean(ModelInstance* comp, ValueReference vr, bool values[], size_t nValues, size_t *index) {
+Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], size_t nValues, size_t *index) {
     GET_NOT_ALLOWED("Boolean");
 }
 #endif
 
 #ifndef GET_STRING
-Status getString(ModelInstance* comp, ValueReference vr, const char* values[], size_t nValues, size_t *index) {
+Status getString(ModelInstance *instance, ValueReference vr, const char* values[], size_t nValues, size_t *index) {
     GET_NOT_ALLOWED("String");
 }
 #endif
 
 #ifndef GET_BINARY
-Status getBinary(ModelInstance* comp, ValueReference vr, size_t sizes[], const char* values[], size_t nValues, size_t *index) {
+Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], const char* values[], size_t nValues, size_t *index) {
     UNUSED(sizes);
     GET_NOT_ALLOWED("Binary");
 }
@@ -792,118 +793,118 @@ Status getBinary(ModelInstance* comp, ValueReference vr, size_t sizes[], const c
     UNUSED(values); \
     UNUSED(nValues); \
     UNUSED(index); \
-    logError(comp, "Setting " t " is not allowed.");\
+    logError(instance, "Setting " t " is not allowed.");\
     return Error; \
 } while (false)
 
 #ifndef SET_FLOAT32
-Status setFloat32(ModelInstance* comp, ValueReference vr, const float values[], size_t nValues, size_t* index) {
+Status setFloat32(ModelInstance *instance, ValueReference vr, const float values[], size_t nValues, size_t* index) {
     SET_NOT_ALLOWED("Float32");
 }
 #endif
 
 #ifndef SET_FLOAT64
-Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
+Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t* index) {
     SET_NOT_ALLOWED("Float64");
 }
 #endif
 
 #ifndef SET_INT8
-Status setInt8(ModelInstance* comp, ValueReference vr, const int8_t values[], size_t nValues, size_t* index) {
+Status setInt8(ModelInstance *instance, ValueReference vr, const int8_t values[], size_t nValues, size_t* index) {
     SET_NOT_ALLOWED("Int8");
 }
 #endif
 
 #ifndef SET_UINT8
-Status setUInt8(ModelInstance* comp, ValueReference vr, const uint8_t values[], size_t nValues, size_t* index) {
+Status setUInt8(ModelInstance *instance, ValueReference vr, const uint8_t values[], size_t nValues, size_t* index) {
     SET_NOT_ALLOWED("UInt8");
 }
 #endif
 
 #ifndef SET_INT16
-Status setInt16(ModelInstance* comp, ValueReference vr, const int16_t values[], size_t nValues, size_t* index) {
+Status setInt16(ModelInstance *instance, ValueReference vr, const int16_t values[], size_t nValues, size_t* index) {
     SET_NOT_ALLOWED("Int16");
 }
 #endif
 
 #ifndef SET_UINT16
-Status setUInt16(ModelInstance* comp, ValueReference vr, const uint16_t values[], size_t nValues, size_t* index) {
+Status setUInt16(ModelInstance *instance, ValueReference vr, const uint16_t values[], size_t nValues, size_t* index) {
     SET_NOT_ALLOWED("UInt16");
 }
 #endif
 
 #ifndef SET_INT32
-Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], size_t nValues, size_t* index) {
+Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues, size_t* index) {
     SET_NOT_ALLOWED("Int32");
 }
 #endif
 
 #ifndef SET_UINT32
-Status setUInt32(ModelInstance* comp, ValueReference vr, const uint32_t values[], size_t nValues, size_t* index) {
+Status setUInt32(ModelInstance *instance, ValueReference vr, const uint32_t values[], size_t nValues, size_t* index) {
     SET_NOT_ALLOWED("UInt32");
 }
 #endif
 
 #ifndef SET_INT64
-Status setInt64(ModelInstance* comp, ValueReference vr, const int64_t values[], size_t nValues, size_t* index) {
+Status setInt64(ModelInstance *instance, ValueReference vr, const int64_t values[], size_t nValues, size_t* index) {
     SET_NOT_ALLOWED("Int64");
 }
 #endif
 
 #ifndef SET_UINT64
-Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[], size_t nValues, size_t* index) {
+Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t values[], size_t nValues, size_t* index) {
     SET_NOT_ALLOWED("UInt64");
 }
 #endif
 
 #ifndef SET_BOOLEAN
-Status setBoolean(ModelInstance* comp, ValueReference vr, const bool values[], size_t nValues, size_t* index) {
+Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[], size_t nValues, size_t* index) {
     SET_NOT_ALLOWED("Boolean");
 }
 #endif
 
 #ifndef SET_STRING
-Status setString(ModelInstance* comp, ValueReference vr, const char *const values[], size_t nValues, size_t* index) {
+Status setString(ModelInstance *instance, ValueReference vr, const char *const values[], size_t nValues, size_t* index) {
     SET_NOT_ALLOWED("String");
 }
 #endif
 
 #ifndef SET_BINARY
-Status setBinary(ModelInstance* comp, ValueReference vr, const size_t size[], const char *const values[], size_t nValues, size_t* index) {
+Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[], const char *const values[], size_t nValues, size_t* index) {
     UNUSED(size);
     SET_NOT_ALLOWED("Binary");
 }
 #endif
 
 #ifndef MAX_CONTINUOUS_STATES
-size_t getNumberOfContinuousStates(ModelInstance* comp) {
-    UNUSED(comp);
+size_t getNumberOfContinuousStates(ModelInstance *instance) {
+    UNUSED(instance);
     return 0;
 }
 
-Status getContinuousStates(ModelInstance* comp, double x[], size_t nx) {
-    ASSERT_NOT_NULL2(comp);
+Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
+    ASSERT_NOT_NULL2(instance);
     UNUSED(x);
     ASSERT_SIZE_T(nx, 0);
     return OK;
 }
 
-Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], size_t nx) {
-    ASSERT_NOT_NULL2(comp);
+Status getNominalsOfContinuousStates(ModelInstance *instance, double nominals[], size_t nx) {
+    ASSERT_NOT_NULL2(instance);
     UNUSED(nominals);
     ASSERT_SIZE_T(nx, 0);
     return OK;
 }
 
-Status setContinuousStates(ModelInstance* comp, const double x[], size_t nx) {
-    ASSERT_NOT_NULL2(comp);
+Status setContinuousStates(ModelInstance *instance, const double x[], size_t nx) {
+    ASSERT_NOT_NULL2(instance);
     UNUSED(x);
     ASSERT_SIZE_T(nx, 0);
     return OK;
 }
 
-Status getDerivatives(ModelInstance* comp, double dx[], size_t nx) {
-    ASSERT_NOT_NULL2(comp);
+Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
+    ASSERT_NOT_NULL2(instance);
     UNUSED(dx);
     ASSERT_SIZE_T(nx, 0);
     return OK;
@@ -911,13 +912,13 @@ Status getDerivatives(ModelInstance* comp, double dx[], size_t nx) {
 #endif
 
 #ifndef MAX_EVENT_INDICATORS
-size_t getNumberOfEventIndicators(ModelInstance* comp) {
-    UNUSED(comp);
+size_t getNumberOfEventIndicators(ModelInstance *instance) {
+    UNUSED(instance);
     return 0;
 }
 
-Status getEventIndicators(ModelInstance* comp, double z[], size_t nz) {
-    ASSERT_NOT_NULL2(comp);
+Status getEventIndicators(ModelInstance *instance, double z[], size_t nz) {
+    ASSERT_NOT_NULL2(instance);
     UNUSED(z);
     ASSERT_SIZE_T(nz, 0);
     return OK;
@@ -925,29 +926,29 @@ Status getEventIndicators(ModelInstance* comp, double z[], size_t nz) {
 #endif
 
 #ifndef GET_PARTIAL_DERIVATIVE
-Status getPartialDerivative(ModelInstance* comp, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double* partialDerivative) {
-    UNUSED(comp);
+Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double* partialDerivative) {
+    UNUSED(instance);
     UNUSED(unknown);
     UNUSED(unknownIndex);
     UNUSED(known);
     UNUSED(knownIndex);
     UNUSED(partialDerivative);
-    logError(comp, "Directional derivatives are not supported.");
+    logError(instance, "Directional derivatives are not supported.");
     return Error;
 }
 #endif
 
 #ifndef ACTIVATE_CLOCK
-Status activateClock(ModelInstance* comp, ValueReference vr) {
-    UNUSED(comp);
+Status activateClock(ModelInstance *instance, ValueReference vr) {
+    UNUSED(instance);
     UNUSED(vr);
     return Error;
 }
 #endif
 
 #ifndef GET_CLOCK
-Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
-    UNUSED(comp);
+Status getClock(ModelInstance *instance, ValueReference vr, bool* value) {
+    UNUSED(instance);
     UNUSED(vr);
     UNUSED(value);
     return Error;
@@ -955,8 +956,8 @@ Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
 #endif
 
 #ifndef GET_INTERVAL
-Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier) {
-    UNUSED(comp);
+Status getInterval(ModelInstance *instance, ValueReference vr, double* interval, int* qualifier) {
+    UNUSED(instance);
     UNUSED(vr);
     UNUSED(interval);
     UNUSED(qualifier);
@@ -965,68 +966,66 @@ Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int
 #endif
 
 #ifndef ACTIVATE_MODEL_PARTITION
-Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime) {
-    UNUSED(comp);
+Status activateModelPartition(ModelInstance *instance, ValueReference vr, double activationTime) {
+    UNUSED(instance);
     UNUSED(vr);
     UNUSED(activationTime);
     return Error;
 }
 #endif
 
-Status getFMUState(ModelInstance* comp, void** FMUState) {
+Status getFMUState(ModelInstance *instance, void** FMUState) {
 
-    CALL(s_reallocate(comp, FMUState, sizeof(ModelInstance)));
+    CALL(s_reallocate(instance, FMUState, sizeof(ModelInstance)));
 
-    memcpy(*FMUState, comp, sizeof(ModelInstance));
+    memcpy(*FMUState, instance, sizeof(ModelInstance));
 
     return OK;
 }
 
-Status setFMUState(ModelInstance* comp, void* FMUState) {
+Status setFMUState(ModelInstance *instance, void* FMUState) {
 
-    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(FMUState);
 
     ModelInstance* s = (ModelInstance*)FMUState;
 
-    comp->startTime = s->startTime;
-    comp->stopTime = s->stopTime;
-    comp->time = s->time;
-    comp->status = s->status;
-    comp->state = s->state;
-    comp->nextEventTimeDefined = s->nextEventTimeDefined;
-    comp->nextEventTime = s->nextEventTime;
-    comp->clocksTicked = s->clocksTicked;
+    instance->startTime = s->startTime;
+    instance->stopTime = s->stopTime;
+    instance->time = s->time;
+    instance->status = s->status;
+    instance->state = s->state;
+    instance->clocksTicked = s->clocksTicked;
 
-    comp->isDirtyValues = s->isDirtyValues;
+    instance->isDirtyValues = s->isDirtyValues;
 
-    memcpy(& comp->modelData, & s->modelData, sizeof(ModelData));
+    memcpy(& instance->modelData, & s->modelData, sizeof(ModelData));
 
-    comp->nSteps = s->nSteps;
+    instance->nSteps = s->nSteps;
 
-    comp->earlyReturnAllowed = s->earlyReturnAllowed;
-    comp->eventModeUsed = s->eventModeUsed;
-    comp->nextCommunicationPoint = s->nextCommunicationPoint;
+    instance->earlyReturnAllowed = s->earlyReturnAllowed;
+    instance->eventModeUsed = s->eventModeUsed;
+    instance->nextCommunicationPoint = s->nextCommunicationPoint;
 
 #if MAX_EVENT_INDICATORS > 0
-    comp->nz = s->nz;
-    memcpy(comp->z, s->z, s->nz * sizeof(double));
-    memcpy(comp->prez, s->prez, s->nz * sizeof(double));
+    instance->nz = s->nz;
+    memcpy(instance->z, s->z, s->nz * sizeof(double));
+    memcpy(instance->prez, s->prez, s->nz * sizeof(double));
 #endif
 
 #if MAX_CONTINUOUS_STATES > 0
-    comp->nx = s->nx;
-    memcpy(comp->x, s->x, s->nx * sizeof(double));
-    memcpy(comp->dx, s->dx, s->nx * sizeof(double));
+    instance->nx = s->nx;
+    memcpy(instance->x, s->x, s->nx * sizeof(double));
+    memcpy(instance->dx, s->dx, s->nx * sizeof(double));
 #endif
 
-    comp->nSteps = s->nSteps;
+    instance->nSteps = s->nSteps;
 
     return OK;
 }
 
 Status serializeFMUState(
-    ModelInstance* comp,
+    ModelInstance *instance,
     void*  FMUState,
     uint8_t serializedState[],
     size_t size) {
@@ -1035,7 +1034,7 @@ Status serializeFMUState(
 }
 
 Status deserializeFMUState(
-    ModelInstance* comp,
+    ModelInstance *instance,
     const uint8_t serializedState[],
     size_t size,
     void** FMUState

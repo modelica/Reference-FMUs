@@ -20,7 +20,7 @@ ModelPartition 1 does the following:
   - if time is 4, countdown clock inClock3's interval is set (which will trigger Model Partition 3)
   - triggers outClock, if the number of totalInTicks is a multiple of 5
 **************************************/
-static void activateModelPartition1(ModelInstance* comp, double time) {
+static void activateModelPartition1(ModelInstance *instance, double time) {
 
     /* Note: model partition of highest priority
         -> no interruption by other model partitions possible
@@ -40,7 +40,7 @@ static void activateModelPartition1(ModelInstance* comp, double time) {
     M(outClock) = ((M(outClock) == false) && (M(totalInClockTicks) % 5 == 0));
 
     if (M(inClock3_qualifier) == 2 || M(outClock)) {
-        comp->clockUpdate(comp->componentEnvironment);
+        instance->clockUpdate(instance->componentEnvironment);
     }
 }
 
@@ -50,12 +50,12 @@ ModelPartition 2 does the following:
   - gets an input value
   - triggers outClock, if the number of totalInTicks is a multiple of 5
 **************************************/
-static void activateModelPartition2(ModelInstance* comp, double time) {
+static void activateModelPartition2(ModelInstance *instance, double time) {
 
     UNUSED(time);
 
-    if (comp->lockPreemption) {
-        comp->lockPreemption();
+    if (instance->lockPreemption) {
+        instance->lockPreemption();
     }
 
     // increment the counters
@@ -68,12 +68,12 @@ static void activateModelPartition2(ModelInstance* comp, double time) {
     // set output clocks
     M(outClock) = ((M(outClock) == false) && (M(totalInClockTicks) % 5 == 0));
 
-    if (comp->unlockPreemption) {
-        comp->unlockPreemption();
+    if (instance->unlockPreemption) {
+        instance->unlockPreemption();
     }
 
     if (M(outClock)) {
-        comp->clockUpdate(comp->componentEnvironment);
+        instance->clockUpdate(instance->componentEnvironment);
     }
 }
 
@@ -84,7 +84,7 @@ ModelPartition 3 does the following:
   - sets an output variable that is supposed to find its way into ModelPartition 2
   - triggers outClock, if the number of totalInTicks is a multiple of 5
 **************************************/
-static void activateModelPartition3(ModelInstance *comp, double time) {
+static void activateModelPartition3(ModelInstance *instance, double time) {
 
     UNUSED(time);
 
@@ -100,24 +100,24 @@ static void activateModelPartition3(ModelInstance *comp, double time) {
 
     M(output3) = 1000;
 
-    if (comp->lockPreemption) {
-        comp->lockPreemption();
+    if (instance->lockPreemption) {
+        instance->lockPreemption();
     }
 
     M(totalInClockTicks)++;
     M(outClock) = ((M(outClock) == false) && (M(totalInClockTicks) % 5 == 0));
 
-    if (comp->unlockPreemption) {
-        comp->unlockPreemption();
+    if (instance->unlockPreemption) {
+        instance->unlockPreemption();
     }
 
     if (M(outClock)) {
-        comp->clockUpdate(comp->componentEnvironment);
+        instance->clockUpdate(instance->componentEnvironment);
     }
 }
 
-Status setStartValues(ModelInstance *comp) {
-    ASSERT_NOT_NULL2(comp);
+Status setStartValues(ModelInstance *instance) {
+    ASSERT_NOT_NULL2(instance);
 
     M(inClock3_interval)  = 0.0;
     M(inClock3_qualifier) = 0; // fmi3IntervalNotYetKnown
@@ -130,46 +130,46 @@ Status setStartValues(ModelInstance *comp) {
     M(input2)             = 0;
     M(output3)            = 0;
 
-    comp->isDirtyValues = true;
+    instance->isDirtyValues = true;
 
     return OK;
 }
 
-Status calculateValues(ModelInstance *comp) {
+Status calculateValues(ModelInstance *instance) {
 
-    UNUSED(comp);
+    UNUSED(instance);
 
     return OK;
 }
 
-Status eventUpdate(ModelInstance *comp) {
-    UNUSED(comp);
+Status eventUpdate(ModelInstance *instance) {
+    UNUSED(instance);
     return OK;
 }
 
-Status activateClock(ModelInstance* comp, ValueReference vr) {
+Status activateClock(ModelInstance *instance, ValueReference vr) {
 
-    UNUSED(comp);
+    UNUSED(instance);
     UNUSED(vr);
 
     return OK;
 }
 
-Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t* index) {
 
     ASSERT_NVALUES(1);
 
     switch (vr) {
     case vr_time:
-        values[(*index)++] = comp->time;
+        values[(*index)++] = instance->time;
         return OK;
     default:
-        logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
+        logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
         return Error;
     }
 }
 
-Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], size_t nValues, size_t* index) {
+Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues, size_t* index) {
 
     ASSERT_NVALUES(1);
 
@@ -178,12 +178,12 @@ Status setInt32(ModelInstance* comp, ValueReference vr, const int32_t values[], 
         M(input2) = values[(*index)++];
         return OK;
     default:
-        logError(comp, "Set Int32 is not allowed for value reference %u.", vr);
+        logError(instance, "Set Int32 is not allowed for value reference %u.", vr);
         return Error;
     }
 }
 
-Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
+Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
 
     ASSERT_NVALUES(1);
 
@@ -210,14 +210,14 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t
         values[(*index)++] = M(output3);
         return OK;
     default:
-        logError(comp, "Get Int32 is not allowed for value reference %u.", vr);
+        logError(instance, "Get Int32 is not allowed for value reference %u.", vr);
         return Error;
     }
 }
 
-Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
+Status getClock(ModelInstance *instance, ValueReference vr, bool* value) {
 
-    ASSERT_NOT_NULL2(comp);
+    ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(value);
 
     switch (vr) {
@@ -226,12 +226,12 @@ Status getClock(ModelInstance* comp, ValueReference vr, bool* value) {
         M(outClock) = false;
         return OK;
     default:
-        logError(comp, "Get Clock is not allowed for value reference %u.", vr);
+        logError(instance, "Get Clock is not allowed for value reference %u.", vr);
         return Error;
     }
 }
 
-Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier) {
+Status getInterval(ModelInstance *instance, ValueReference vr, double* interval, int* qualifier) {
     switch (vr) {
     case vr_inClock3:
         *qualifier = M(inClock3_qualifier);
@@ -241,25 +241,25 @@ Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int
         }
         return OK;
     default:
-        logError(comp, "Get Interval is not allowed for value reference %u.", vr);
+        logError(instance, "Get Interval is not allowed for value reference %u.", vr);
         return Error;
     }
 }
 
-Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime) {
+Status activateModelPartition(ModelInstance *instance, ValueReference vr, double activationTime) {
 
     switch (vr) {
         case vr_inClock1:
-            activateModelPartition1(comp, activationTime);
+            activateModelPartition1(instance, activationTime);
             return OK;
         case vr_inClock2:
-            activateModelPartition2(comp, activationTime);
+            activateModelPartition2(instance, activationTime);
             return OK;
         case vr_inClock3:
-            activateModelPartition3(comp, activationTime);
+            activateModelPartition3(instance, activationTime);
             return OK;
         default:
-            logError(comp, "Activate model partition is not allowed for value reference %u.", vr);
+            logError(instance, "Activate model partition is not allowed for value reference %u.", vr);
             return Error;
     }
 }

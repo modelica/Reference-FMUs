@@ -110,14 +110,14 @@ ModelInstance *createModelInstance(
     bool loggingOn,
     InterfaceType interfaceType);
 
-void freeModelInstance(ModelInstance *comp);
+void freeModelInstance(ModelInstance *instance);
 
-Status configurate(ModelInstance* comp);
+Status configurate(ModelInstance *instance);
 
-Status reset(ModelInstance* comp);
+Status reset(ModelInstance *instance);
 
 Status setupExperiment(
-    ModelInstance* comp,
+    ModelInstance *instance,
     bool toleranceDefined,
     double tolerance,
     double startTime,
@@ -125,81 +125,81 @@ Status setupExperiment(
     double stopTime
 );
 
-Status enterConfigurationMode(ModelInstance* comp);
+Status enterConfigurationMode(ModelInstance *instance);
 
-Status exitConfigurationMode(ModelInstance* comp);
+Status exitConfigurationMode(ModelInstance *instance);
 
-Status enterInitializationMode(ModelInstance* comp);
+Status enterInitializationMode(ModelInstance *instance);
 
-Status exitInitializationMode(ModelInstance* comp);
+Status exitInitializationMode(ModelInstance *instance);
 
-Status enterEventMode(ModelInstance* comp);
+Status enterEventMode(ModelInstance *instance);
 
-Status enterContinuousTimeMode(ModelInstance* comp);
+Status enterContinuousTimeMode(ModelInstance *instance);
 
-Status terminate(ModelInstance* comp);
+Status terminate(ModelInstance *instance);
 
-Status completedIntegratorStep(ModelInstance* comp,
+Status completedIntegratorStep(ModelInstance *instance,
     bool  noSetFMUStatePriorToCurrentPoint,
     bool* enterEventMode,
     bool* terminateSimulation);
 
-Status setTime(ModelInstance* comp, double time);
+Status setTime(ModelInstance *instance, double time);
 
-Status enterStepMode(ModelInstance* comp);
+Status enterStepMode(ModelInstance *instance);
 
-Status setStartValues(ModelInstance* comp);
+Status setStartValues(ModelInstance *instance);
 
-Status calculateValues(ModelInstance *comp);
+Status calculateValues(ModelInstance *instance);
 
-Status getFloat32 (ModelInstance* comp, ValueReference vr, float       values[], size_t nValues, size_t *index);
-Status getFloat64 (ModelInstance* comp, ValueReference vr, double      values[], size_t nValues, size_t *index);
-Status getInt8    (ModelInstance* comp, ValueReference vr, int8_t      values[], size_t nValues, size_t *index);
-Status getUInt8   (ModelInstance* comp, ValueReference vr, uint8_t     values[], size_t nValues, size_t *index);
-Status getInt16   (ModelInstance* comp, ValueReference vr, int16_t     values[], size_t nValues, size_t *index);
-Status getUInt16  (ModelInstance* comp, ValueReference vr, uint16_t    values[], size_t nValues, size_t *index);
-Status getInt32   (ModelInstance* comp, ValueReference vr, int32_t     values[], size_t nValues, size_t *index);
-Status getUInt32  (ModelInstance* comp, ValueReference vr, uint32_t    values[], size_t nValues, size_t *index);
-Status getInt64   (ModelInstance* comp, ValueReference vr, int64_t     values[], size_t nValues, size_t *index);
-Status getUInt64  (ModelInstance* comp, ValueReference vr, uint64_t    values[], size_t nValues, size_t *index);
-Status getBoolean (ModelInstance* comp, ValueReference vr, bool        values[], size_t nValues, size_t *index);
-Status getString  (ModelInstance* comp, ValueReference vr, const char* values[], size_t nValues, size_t *index);
-Status getBinary  (ModelInstance* comp, ValueReference vr, size_t sizes[], const char* values[], size_t nValues, size_t *index);
+Status getFloat32 (ModelInstance *instance, ValueReference vr, float       values[], size_t nValues, size_t *index);
+Status getFloat64 (ModelInstance *instance, ValueReference vr, double      values[], size_t nValues, size_t *index);
+Status getInt8    (ModelInstance *instance, ValueReference vr, int8_t      values[], size_t nValues, size_t *index);
+Status getUInt8   (ModelInstance *instance, ValueReference vr, uint8_t     values[], size_t nValues, size_t *index);
+Status getInt16   (ModelInstance *instance, ValueReference vr, int16_t     values[], size_t nValues, size_t *index);
+Status getUInt16  (ModelInstance *instance, ValueReference vr, uint16_t    values[], size_t nValues, size_t *index);
+Status getInt32   (ModelInstance *instance, ValueReference vr, int32_t     values[], size_t nValues, size_t *index);
+Status getUInt32  (ModelInstance *instance, ValueReference vr, uint32_t    values[], size_t nValues, size_t *index);
+Status getInt64   (ModelInstance *instance, ValueReference vr, int64_t     values[], size_t nValues, size_t *index);
+Status getUInt64  (ModelInstance *instance, ValueReference vr, uint64_t    values[], size_t nValues, size_t *index);
+Status getBoolean (ModelInstance *instance, ValueReference vr, bool        values[], size_t nValues, size_t *index);
+Status getString  (ModelInstance *instance, ValueReference vr, const char* values[], size_t nValues, size_t *index);
+Status getBinary  (ModelInstance *instance, ValueReference vr, size_t sizes[], const char* values[], size_t nValues, size_t *index);
 
-Status setFloat32 (ModelInstance* comp, ValueReference vr, const float       values[], size_t nValues, size_t *index);
-Status setFloat64 (ModelInstance* comp, ValueReference vr, const double      values[], size_t nValues, size_t *index);
-Status setInt8    (ModelInstance* comp, ValueReference vr, const int8_t      values[], size_t nValues, size_t *index);
-Status setUInt8   (ModelInstance* comp, ValueReference vr, const uint8_t     values[], size_t nValues, size_t *index);
-Status setInt16   (ModelInstance* comp, ValueReference vr, const int16_t     values[], size_t nValues, size_t *index);
-Status setUInt16  (ModelInstance* comp, ValueReference vr, const uint16_t    values[], size_t nValues, size_t *index);
-Status setInt32   (ModelInstance* comp, ValueReference vr, const int32_t     values[], size_t nValues, size_t *index);
-Status setUInt32  (ModelInstance* comp, ValueReference vr, const uint32_t    values[], size_t nValues, size_t *index);
-Status setInt64   (ModelInstance* comp, ValueReference vr, const int64_t     values[], size_t nValues, size_t *index);
-Status setUInt64  (ModelInstance* comp, ValueReference vr, const uint64_t    values[], size_t nValues, size_t *index);
-Status setBoolean (ModelInstance* comp, ValueReference vr, const bool        values[], size_t nValues, size_t *index);
-Status setString  (ModelInstance* comp, ValueReference vr, const char* const values[], size_t nValues, size_t *index);
-Status setBinary  (ModelInstance* comp, ValueReference vr, const size_t sizes[], const char* const values[], size_t nValues, size_t *index);
+Status setFloat32 (ModelInstance *instance, ValueReference vr, const float       values[], size_t nValues, size_t *index);
+Status setFloat64 (ModelInstance *instance, ValueReference vr, const double      values[], size_t nValues, size_t *index);
+Status setInt8    (ModelInstance *instance, ValueReference vr, const int8_t      values[], size_t nValues, size_t *index);
+Status setUInt8   (ModelInstance *instance, ValueReference vr, const uint8_t     values[], size_t nValues, size_t *index);
+Status setInt16   (ModelInstance *instance, ValueReference vr, const int16_t     values[], size_t nValues, size_t *index);
+Status setUInt16  (ModelInstance *instance, ValueReference vr, const uint16_t    values[], size_t nValues, size_t *index);
+Status setInt32   (ModelInstance *instance, ValueReference vr, const int32_t     values[], size_t nValues, size_t *index);
+Status setUInt32  (ModelInstance *instance, ValueReference vr, const uint32_t    values[], size_t nValues, size_t *index);
+Status setInt64   (ModelInstance *instance, ValueReference vr, const int64_t     values[], size_t nValues, size_t *index);
+Status setUInt64  (ModelInstance *instance, ValueReference vr, const uint64_t    values[], size_t nValues, size_t *index);
+Status setBoolean (ModelInstance *instance, ValueReference vr, const bool        values[], size_t nValues, size_t *index);
+Status setString  (ModelInstance *instance, ValueReference vr, const char* const values[], size_t nValues, size_t *index);
+Status setBinary  (ModelInstance *instance, ValueReference vr, const size_t sizes[], const char* const values[], size_t nValues, size_t *index);
 
-Status activateClock(ModelInstance* comp, ValueReference vr);
-Status getClock(ModelInstance* comp, ValueReference vr, bool* value);
-Status setClock(ModelInstance* comp, ValueReference vr, const bool* value);
+Status activateClock(ModelInstance *instance, ValueReference vr);
+Status getClock(ModelInstance *instance, ValueReference vr, bool* value);
+Status setClock(ModelInstance *instance, ValueReference vr, const bool* value);
 
-Status getInterval(ModelInstance* comp, ValueReference vr, double* interval, int* qualifier);
+Status getInterval(ModelInstance *instance, ValueReference vr, double* interval, int* qualifier);
 
-Status activateModelPartition(ModelInstance* comp, ValueReference vr, double activationTime);
+Status activateModelPartition(ModelInstance *instance, ValueReference vr, double activationTime);
 
-Status getNumberOfEventIndicators(ModelInstance* comp, size_t* nEventIndicators);
-Status getNumberOfContinuousStates(ModelInstance* comp, size_t* nContinuousStates);
-Status getContinuousStates(ModelInstance *comp, double x[], size_t nx);
-Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], size_t nx);
-Status setContinuousStates(ModelInstance *comp, const double x[], size_t nx);
-Status getDerivatives(ModelInstance *comp, double dx[], size_t nx);
-Status getOutputDerivative(ModelInstance *comp, ValueReference valueReference, int order, double *value);
-Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double *partialDerivative);
-Status getEventIndicators(ModelInstance *comp, double z[], size_t nz);
+Status getNumberOfEventIndicators(ModelInstance *instance, size_t* nEventIndicators);
+Status getNumberOfContinuousStates(ModelInstance *instance, size_t* nContinuousStates);
+Status getContinuousStates(ModelInstance *instance, double x[], size_t nx);
+Status getNominalsOfContinuousStates(ModelInstance *instance, double nominals[], size_t nx);
+Status setContinuousStates(ModelInstance *instance, const double x[], size_t nx);
+Status getDerivatives(ModelInstance *instance, double dx[], size_t nx);
+Status getOutputDerivative(ModelInstance *instance, ValueReference valueReference, int order, double *value);
+Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double *partialDerivative);
+Status getEventIndicators(ModelInstance *instance, double z[], size_t nz);
 
 Status updateDiscreteStates(
-    ModelInstance* comp,
+    ModelInstance *instance,
     bool* discreteStatesNeedUpdate,
     bool* terminateSimulation,
     bool* nominalsOfContinuousStatesChanged,
@@ -209,30 +209,30 @@ Status updateDiscreteStates(
 );
 
 bool isClose(double a, double b);
-bool invalidNumber(ModelInstance *comp, const char *f, const char *arg, size_t actual, size_t expected);
-bool invalidState(ModelInstance *comp, const char *f, int statesExpected);
-bool nullPointer(ModelInstance* comp, const char *f, const char *arg, const void *p);
-void logError(ModelInstance *comp, const char *message, ...);
-Status setDebugLogging(ModelInstance *comp, bool loggingOn, size_t nCategories, const char * const categories[]);
-void logEvent(ModelInstance *comp, const char *message, ...);
-void logError(ModelInstance *comp, const char *message, ...);
+bool invalidNumber(ModelInstance *instance, const char *f, const char *arg, size_t actual, size_t expected);
+bool invalidState(ModelInstance *instance, const char *f, int statesExpected);
+bool nullPointer(ModelInstance *instance, const char *f, const char *arg, const void *p);
+void logError(ModelInstance *instance, const char *message, ...);
+Status setDebugLogging(ModelInstance *instance, bool loggingOn, size_t nCategories, const char * const categories[]);
+void logEvent(ModelInstance *instance, const char *message, ...);
+void logError(ModelInstance *instance, const char *message, ...);
 
-Status getFMUState(ModelInstance* comp, void** FMUState);
-Status setFMUState(ModelInstance* comp, void* FMUState);
+Status getFMUState(ModelInstance *instance, void** FMUState);
+Status setFMUState(ModelInstance *instance, void* FMUState);
 Status serializeFMUState(
-    ModelInstance* comp,
+    ModelInstance *instance,
     void* FMUState,
     uint8_t serializedState[],
     size_t size);
 Status deserializeFMUState(
-    ModelInstance* comp,
+    ModelInstance *instance,
     const uint8_t serializedState[],
     size_t size,
     void** FMUState);
 
 
 // shorthand to access the variables
-#define M(v) (comp->modelData.v)
+#define M(v) (instance->modelData.v)
 
 // "stringification" macros
 #define xstr(s) str(s)
@@ -240,7 +240,7 @@ Status deserializeFMUState(
 
 #define ASSERT_NOT_NULL2(V) \
     if (!V) { \
-        logError(comp, "Argument '" xstr(V) "' must not be NULL"); \
+        logError(instance, "Argument '" xstr(V) "' must not be NULL"); \
         return Error; \
     }
 
@@ -249,13 +249,13 @@ Status deserializeFMUState(
     do { \
         const size_t expected_nValues = *index + (N); \
         if (expected_nValues > nValues) { \
-            logError(comp, "Expected nValues >= %zu but was %zu.", expected_nValues, nValues); \
+            logError(instance, "Expected nValues >= %zu but was %zu.", expected_nValues, nValues); \
             return Error; \
         } \
     } while (0)
 
 #define ASSERT_SIZE_T(A, E) \
     if (A != E) { \
-        logError(comp, "Expected " xstr(A) " = %zu but was %zu.", E, A); \
+        logError(instance, "Expected " xstr(A) " = %zu but was %zu.", E, A); \
         return Error; \
     }

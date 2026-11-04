@@ -30,8 +30,6 @@ struct ModelInstance {
     void *componentEnvironment;
     ModelState state;
 
-    bool nextEventTimeDefined;
-    double nextEventTime;
     bool clocksTicked;
 
     bool isDirtyValues;

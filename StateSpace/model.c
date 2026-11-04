@@ -2,8 +2,8 @@
 #include "model_instance.h"
 
 
-Status setStartValues(ModelInstance *comp) {
-    ASSERT_NOT_NULL2(comp);
+Status setStartValues(ModelInstance *instance) {
+    ASSERT_NOT_NULL2(instance);
 
     M(m) = 3;
     M(n) = 3;
@@ -31,13 +31,13 @@ Status setStartValues(ModelInstance *comp) {
         M(x)[i] = 0;
     }
 
-    comp->isDirtyValues = true;
+    instance->isDirtyValues = true;
 
     return OK;
 }
 
-Status calculateValues(ModelInstance *comp) {
-    ASSERT_NOT_NULL2(comp);
+Status calculateValues(ModelInstance *instance) {
+    ASSERT_NOT_NULL2(instance);
 
     // der(x) = Ax + Bu
     for (size_t i = 0; i < M(n); i++) {
@@ -73,22 +73,22 @@ Status calculateValues(ModelInstance *comp) {
         }
     }
 
-    comp->isDirtyValues = false;
+    instance->isDirtyValues = false;
 
     return OK;
 }
 
-Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(comp);
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t* index) {
+    ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(values);
     ASSERT_NOT_NULL2(index);
 
-    calculateValues(comp);
+    calculateValues(instance);
 
     switch (vr) {
         case vr_time:
             ASSERT_NVALUES(1);
-            values[(*index)++] = comp->time;
+            values[(*index)++] = instance->time;
             return OK;
         case vr_A:
             ASSERT_NVALUES((size_t)(M(n) * M(n)));
@@ -153,13 +153,13 @@ Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_
             }
             return OK;
         default:
-            logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
+            logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
             return Error;
     }
 }
 
-Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(comp);
+Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t* index) {
+    ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(values);
     ASSERT_NOT_NULL2(index);
 
@@ -209,8 +209,8 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
         }
         break;
     case vr_x:
-        if (comp->state != ContinuousTimeMode && comp->state != EventMode) {
-            logError(comp, "Variable \"x\" can only be set in Continuous Time Mode and Event Mode.");
+        if (instance->state != ContinuousTimeMode && instance->state != EventMode) {
+            logError(instance, "Variable \"x\" can only be set in Continuous Time Mode and Event Mode.");
             return Error;
         }
         ASSERT_NVALUES((size_t)M(n));
@@ -219,17 +219,17 @@ Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[],
         }
         break;
     default:
-        logError(comp, "Set Float64 is not allowed for value reference %u.", vr);
+        logError(instance, "Set Float64 is not allowed for value reference %u.", vr);
         return Error;
     }
 
-    comp->isDirtyValues = true;
+    instance->isDirtyValues = true;
 
     return OK;
 }
 
-Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(comp);
+Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], size_t nValues, size_t* index) {
+    ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(values);
     ASSERT_NOT_NULL2(index);
 
@@ -247,18 +247,18 @@ Status getUInt64(ModelInstance* comp, ValueReference vr, uint64_t values[], size
             values[(*index)++] = M(r);
             return OK;
         default:
-            logError(comp, "Get UInt64 is not allowed for value reference %u.", vr);
+            logError(instance, "Get UInt64 is not allowed for value reference %u.", vr);
             return Error;
     }
 }
 
-Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(comp);
+Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t values[], size_t nValues, size_t* index) {
+    ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(values);
     ASSERT_NOT_NULL2(index);
 
-    if (comp->state != ConfigurationMode && comp->state != ReconfigurationMode) {
-        logError(comp, "Structural variables can only be set in Configuration Mode or Reconfiguration Mode.");
+    if (instance->state != ConfigurationMode && instance->state != ReconfigurationMode) {
+        logError(instance, "Structural variables can only be set in Configuration Mode or Reconfiguration Mode.");
         return Error;
     }
 
@@ -269,7 +269,7 @@ Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[]
             ASSERT_NVALUES(1);
             v = values[(*index)++];
             if (v > M_MAX) {
-                logError(comp, "Variable m must not be greater than " xstr(M_MAX) ".");
+                logError(instance, "Variable m must not be greater than " xstr(M_MAX) ".");
                 return Error;
             }
             M(m) = v;
@@ -278,7 +278,7 @@ Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[]
             ASSERT_NVALUES(1);
             v = values[(*index)++];
             if (v > N_MAX) {
-                logError(comp, "Variable n must not be greater than " xstr(N_MAX) ".");
+                logError(instance, "Variable n must not be greater than " xstr(N_MAX) ".");
                 return Error;
             }
             M(n) = v;
@@ -287,43 +287,43 @@ Status setUInt64(ModelInstance* comp, ValueReference vr, const uint64_t values[]
             ASSERT_NVALUES(1);
             v = values[(*index)++];
             if (v > R_MAX) {
-                logError(comp, "Variable r must not be greater than " xstr(R_MAX) ".");
+                logError(instance, "Variable r must not be greater than " xstr(R_MAX) ".");
                 return Error;
             }
             M(r) = v;
             break;
         default:
-            logError(comp, "Set UInt64 is not allowed for value reference %u.", vr);
+            logError(instance, "Set UInt64 is not allowed for value reference %u.", vr);
             return Error;
     }
 
-    comp->isDirtyValues = true;
+    instance->isDirtyValues = true;
 
     return OK;
 }
 
-Status eventUpdate(ModelInstance *comp) {
-    ASSERT_NOT_NULL2(comp);
+Status eventUpdate(ModelInstance *instance) {
+    ASSERT_NOT_NULL2(instance);
 
-    comp->valuesOfContinuousStatesChanged   = false;
-    comp->nominalsOfContinuousStatesChanged = false;
-    comp->terminateSimulation               = false;
-    comp->nextEventTimeDefined              = false;
+    instance->valuesOfContinuousStatesChanged   = false;
+    instance->nominalsOfContinuousStatesChanged = false;
+    instance->terminateSimulation               = false;
+    instance->nextEventTimeDefined              = false;
 
     return OK;
 }
 
-size_t getNumberOfContinuousStates(ModelInstance* comp) {
-    ASSERT_NOT_NULL2(comp);
+size_t getNumberOfContinuousStates(ModelInstance *instance) {
+    ASSERT_NOT_NULL2(instance);
     return (size_t)M(n);
 }
 
-Status getContinuousStates(ModelInstance* comp, double x[], size_t nx) {
-    ASSERT_NOT_NULL2(comp);
+Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
+    ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(x);
 
     if (nx != M(n)) {
-        logError(comp, "Expected nx=%zu but was %zu.", M(n), nx);
+        logError(instance, "Expected nx=%zu but was %zu.", M(n), nx);
         return Error;
     }
 
@@ -334,12 +334,12 @@ Status getContinuousStates(ModelInstance* comp, double x[], size_t nx) {
     return OK;
 }
 
-Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], size_t nx) {
-    ASSERT_NOT_NULL2(comp);
+Status getNominalsOfContinuousStates(ModelInstance *instance, double nominals[], size_t nx) {
+    ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(nominals);
 
     if (nx != M(n)) {
-        logError(comp, "Expected nx=%zu but was %zu.", M(n), nx);
+        logError(instance, "Expected nx=%zu but was %zu.", M(n), nx);
         return Error;
     }
 
@@ -350,12 +350,12 @@ Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], siz
     return OK;
 }
 
-Status setContinuousStates(ModelInstance* comp, const double x[], size_t nx) {
-    ASSERT_NOT_NULL2(comp);
+Status setContinuousStates(ModelInstance *instance, const double x[], size_t nx) {
+    ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(x);
 
     if (nx != M(n)) {
-        logError(comp, "Expected nx=%zu but was %zu.", M(n), nx);
+        logError(instance, "Expected nx=%zu but was %zu.", M(n), nx);
         return Error;
     }
 
@@ -363,21 +363,21 @@ Status setContinuousStates(ModelInstance* comp, const double x[], size_t nx) {
         M(x)[i] = x[i];
     }
 
-    comp->isDirtyValues = true;
+    instance->isDirtyValues = true;
 
     return OK;
 }
 
-Status getDerivatives(ModelInstance* comp, double dx[], size_t nx) {
-    ASSERT_NOT_NULL2(comp);
+Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
+    ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(dx);
 
     if (nx != M(n)) {
-        logError(comp, "Expected nx=%zu but was %zu.", M(n), nx);
+        logError(instance, "Expected nx=%zu but was %zu.", M(n), nx);
         return Error;
     }
 
-    calculateValues(comp);
+    calculateValues(instance);
 
     for (size_t i = 0; i < M(n); i++) {
         dx[i] = M(der_x)[i];
@@ -386,15 +386,15 @@ Status getDerivatives(ModelInstance* comp, double dx[], size_t nx) {
     return OK;
 }
 
-Status getPartialDerivative(ModelInstance *comp, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double *partialDerivative) {
-    ASSERT_NOT_NULL2(comp);
+Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double *partialDerivative) {
+    ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(partialDerivative);
 
     const size_t n = (size_t)M(n);
     const size_t m = (size_t)M(m);
     const size_t r = (size_t)M(r);
 
-    calculateValues(comp);
+    calculateValues(instance);
 
     *partialDerivative = 0.0;
 

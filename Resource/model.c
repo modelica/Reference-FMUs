@@ -12,31 +12,31 @@
 
 #define MAX_PATH_LENGTH 4096
 
-Status setStartValues(ModelInstance *comp) {
-    ASSERT_NOT_NULL2(comp);
+Status setStartValues(ModelInstance *instance) {
+    ASSERT_NOT_NULL2(instance);
 
     M(y) = 0;
 
-    comp->isDirtyValues = true;
+    instance->isDirtyValues = true;
 
     return OK;
 }
 
-Status calculateValues(ModelInstance *comp) {
-    ASSERT_NOT_NULL2(comp);
+Status calculateValues(ModelInstance *instance) {
+    ASSERT_NOT_NULL2(instance);
 
     FILE *file = NULL;
     char path[MAX_PATH_LENGTH] = "";
     char c = '\0';
 
-    if (!comp->resourceLocation) {
-        logError(comp, "Resource location must not be NULL.");
+    if (!instance->resourceLocation) {
+        logError(instance, "Resource location must not be NULL.");
         return Error;
     }
 
 #ifdef _WIN32
 
-    strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
+    strncpy(path, instance->resourceLocation, MAX_PATH_LENGTH);
     path[MAX_PATH_LENGTH - 1] = '\0';
 
 #if FMI_VERSION == 2
@@ -47,7 +47,7 @@ Status calculateValues(ModelInstance *comp) {
 
 #else
 
-    strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
+    strncpy(path, instance->resourceLocation, MAX_PATH_LENGTH);
     path[MAX_PATH_LENGTH - 1] = '\0';
 
 #if FMI_VERSION == 2
@@ -62,7 +62,7 @@ Status calculateValues(ModelInstance *comp) {
     file = fopen (path, "r");
 
     if (!file) {
-        logError(comp, "Failed to open resource file %s.", path);
+        logError(instance, "Failed to open resource file %s.", path);
         return Error;
     }
 
@@ -75,37 +75,37 @@ Status calculateValues(ModelInstance *comp) {
     // close the file
     fclose(file);
 
-    comp->isDirtyValues = false;
+    instance->isDirtyValues = false;
 
     return OK;
 }
 
 
-Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(comp);
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t* index) {
+    ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(values);
     ASSERT_NOT_NULL2(index);
 
-    calculateValues(comp);
+    calculateValues(instance);
 
     switch (vr) {
     case vr_time:
         ASSERT_NVALUES(1);
-        values[(*index)++] = comp->time;
+        values[(*index)++] = instance->time;
         return OK;
     default:
-        logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
+        logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
         return Error;
     }
 }
 
 
-Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(comp);
+Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
+    ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(values);
     ASSERT_NOT_NULL2(index);
 
-    calculateValues(comp);
+    calculateValues(instance);
 
     switch (vr) {
         case vr_y:
@@ -113,20 +113,20 @@ Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t
             values[(*index)++] = M(y);
             return OK;
         default:
-            logError(comp, "Get Int32 is not allowed for value reference %u.", vr);
+            logError(instance, "Get Int32 is not allowed for value reference %u.", vr);
             return Error;
     }
 }
 
-Status eventUpdate(ModelInstance *comp) {
-    ASSERT_NOT_NULL2(comp);
+Status eventUpdate(ModelInstance *instance) {
+    ASSERT_NOT_NULL2(instance);
 
-    comp->valuesOfContinuousStatesChanged   = false;
-    comp->nominalsOfContinuousStatesChanged = false;
-    comp->terminateSimulation               = false;
-    comp->nextEventTimeDefined              = false;
+    instance->valuesOfContinuousStatesChanged   = false;
+    instance->nominalsOfContinuousStatesChanged = false;
+    instance->terminateSimulation               = false;
+    instance->nextEventTimeDefined              = false;
 
-    comp->isDirtyValues = true;
+    instance->isDirtyValues = true;
 
     return OK;
 }

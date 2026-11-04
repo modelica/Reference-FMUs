@@ -22,6 +22,13 @@
 #endif
 #include "fmi3Functions.h"
 
+static fmi3Status map_status(Status status) {
+    switch (status) {
+    case OK: return fmi3OK;
+    default: return fmi3Discard;
+    }
+}
+
 #define GET_VARIABLES(T) \
     size_t index = 0; \
     for (size_t i = 0; i < nValueReferences; i++) { \
@@ -44,8 +51,7 @@
 
 #define NOT_IMPLEMENTED \
 do { \
-    ModelInstance *comp = (ModelInstance *)instance; \
-    logError(comp, "Function is not implemented."); \
+    logError((ModelInstance *)instance, "Function is not implemented."); \
     return fmi3Error; \
 } while (0)
 
@@ -157,13 +163,6 @@ fmi3Instance fmi3InstantiateScheduledExecution(
 
 void fmi3FreeInstance(fmi3Instance instance) {
     freeModelInstance((ModelInstance*)instance);
-}
-
-static fmi3Status map_status(Status status) {
-    switch (status) {
-    case OK: return fmi3OK;
-    default: return fmi3Discard;
-    }
 }
 
 fmi3Status fmi3EnterInitializationMode(fmi3Instance instance,
@@ -452,6 +451,7 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
 fmi3Status fmi3GetNumberOfVariableDependencies(fmi3Instance instance,
                                                fmi3ValueReference valueReference,
                                                size_t* nDependencies) {
+    UNUSED(instance);
     UNUSED(valueReference);
     UNUSED(nDependencies);
 
@@ -466,6 +466,7 @@ fmi3Status fmi3GetVariableDependencies(fmi3Instance instance,
     fmi3DependencyKind dependencyKinds[],
     size_t nDependencies) {
 
+    UNUSED(instance);
     UNUSED(dependent);
     UNUSED(elementIndicesOfDependent);
     UNUSED(independents);
@@ -485,12 +486,17 @@ fmi3Status fmi3SetFMUState(fmi3Instance instance, fmi3FMUState FMUState) {
 }
 
 fmi3Status fmi3FreeFMUState(fmi3Instance instance, fmi3FMUState* FMUState) {
+    UNUSED(instance);
+    UNUSED(FMUState);
     NOT_IMPLEMENTED;
 }
 
 fmi3Status fmi3SerializedFMUStateSize(fmi3Instance instance,
     fmi3FMUState  FMUState,
     size_t* size) {
+    UNUSED(instance);
+    UNUSED(FMUState);
+    UNUSED(size);
     NOT_IMPLEMENTED;
 }
 
@@ -598,6 +604,11 @@ fmi3Status fmi3GetIntervalDecimal(fmi3Instance instance,
     size_t nValueReferences,
     fmi3Float64 intervals[],
     fmi3IntervalQualifier qualifiers[]) {
+    UNUSED(instance);
+    UNUSED(valueReferences);
+    UNUSED(nValueReferences);
+    UNUSED(intervals);
+    UNUSED(qualifiers);
     NOT_IMPLEMENTED;
 }
 
@@ -607,7 +618,8 @@ fmi3Status fmi3GetIntervalFraction(fmi3Instance instance,
     fmi3UInt64 intervalCounters[],
     fmi3UInt64 resolutions[],
     fmi3IntervalQualifier qualifiers[]) {
-    
+
+    UNUSED(instance);
     UNUSED(valueReferences);
     UNUSED(nValueReferences);
     UNUSED(intervalCounters);
@@ -622,6 +634,7 @@ fmi3Status fmi3GetShiftDecimal(fmi3Instance instance,
     size_t nValueReferences,
     fmi3Float64 shifts[]) {
 
+    UNUSED(instance);
     UNUSED(valueReferences);
     UNUSED(nValueReferences);
     UNUSED(shifts);
@@ -635,6 +648,7 @@ fmi3Status fmi3GetShiftFraction(fmi3Instance instance,
     fmi3UInt64 shiftCounters[],
     fmi3UInt64 resolutions[]) {
 
+    UNUSED(instance);
     UNUSED(valueReferences);
     UNUSED(nValueReferences);
     UNUSED(shiftCounters);
@@ -648,6 +662,7 @@ fmi3Status fmi3SetIntervalDecimal(fmi3Instance instance,
     size_t nValueReferences,
     const fmi3Float64 intervals[]) {
 
+    UNUSED(instance);
     UNUSED(valueReferences);
     UNUSED(nValueReferences);
     UNUSED(intervals);
@@ -661,6 +676,7 @@ fmi3Status fmi3SetIntervalFraction(fmi3Instance instance,
     const fmi3UInt64 intervalCounters[],
     const fmi3UInt64 resolutions[]) {
 
+    UNUSED(instance);
     UNUSED(valueReferences);
     UNUSED(nValueReferences);
     UNUSED(intervalCounters);
@@ -674,6 +690,7 @@ fmi3Status fmi3SetShiftDecimal(fmi3Instance instance,
     size_t nValueReferences,
     const fmi3Float64 shifts[]) {
 
+    UNUSED(instance);
     UNUSED(valueReferences);
     UNUSED(nValueReferences);
     UNUSED(shifts);
@@ -687,6 +704,7 @@ fmi3Status fmi3SetShiftFraction(fmi3Instance instance,
     const fmi3UInt64 shiftCounters[],
     const fmi3UInt64 resolutions[]) {
 
+    UNUSED(instance);
     UNUSED(valueReferences);
     UNUSED(nValueReferences);
     UNUSED(shiftCounters);
@@ -696,6 +714,7 @@ fmi3Status fmi3SetShiftFraction(fmi3Instance instance,
 }
 
 fmi3Status fmi3EvaluateDiscreteStates(fmi3Instance instance) {
+    UNUSED(instance);
     NOT_IMPLEMENTED;
 }
 
@@ -804,6 +823,7 @@ fmi3Status fmi3GetOutputDerivatives(fmi3Instance instance,
 
     return fmi3OK;
 #else
+    UNUSED(instance);
     UNUSED(valueReferences);
     UNUSED(nValueReferences);
     UNUSED(orders);

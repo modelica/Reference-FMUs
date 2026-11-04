@@ -9,71 +9,72 @@
 
 #define CALL(f) do { const Status status = f; if (status != OK) return status; } while (false)
 
-Status doFixedStep(ModelInstance *comp, bool* stateEvent, bool* timeEvent) {
+Status doFixedStep(ModelInstance *instance, bool* stateEvent, bool* timeEvent) {
 
 #if MAX_CONTINUOUS_STATES > 0
-    if (comp->nx > 0) {
+    if (instance->nx > 0) {
 
-        CALL(getContinuousStates(comp, comp->x, comp->nx));
-        CALL(getDerivatives(comp, comp->dx, comp->nx));
+        CALL(getContinuousStates(instance, instance->x, instance->nx));
+        CALL(getDerivatives(instance, instance->dx, instance->nx));
 
         // forward Euler step
-        for (size_t i = 0; i < comp->nx; i++) {
-            comp->x[i] += FIXED_SOLVER_STEP * comp->dx[i];
+        for (size_t i = 0; i < instance->nx; i++) {
+            instance->x[i] += FIXED_SOLVER_STEP * instance->dx[i];
         }
 
-        CALL(setContinuousStates(comp, comp->x, comp->nx));
+        CALL(setContinuousStates(instance, instance->x, instance->nx));
     }
 #endif
 
-    comp->nSteps++;
+    instance->nSteps++;
 
-    comp->time = comp->startTime + comp->nSteps * FIXED_SOLVER_STEP;
+    instance->time = instance->startTime + instance->nSteps * FIXED_SOLVER_STEP;
 
     // state event
     *stateEvent = false;
 
 #if MAX_EVENT_INDICATORS > 0
-    if (comp->nz > 0) {
+    if (instance->nz > 0) {
 
-        CALL(getEventIndicators(comp, comp->z, comp->nz));
+        CALL(getEventIndicators(instance, instance->z, instance->nz));
 
         // check for zero-crossings
-        for (size_t i = 0; i < comp->nz; i++) {
+        for (size_t i = 0; i < instance->nz; i++) {
             *stateEvent |=
-                (comp->prez[i] <= 0 && comp->z[i] >  0) ||
-                (comp->prez[i] >  0 && comp->z[i] <= 0);
+                (instance->prez[i] <= 0 && instance->z[i] >  0) ||
+                (instance->prez[i] >  0 && instance->z[i] <= 0);
         }
 
         // remember the current event indicators
-        memcpy(comp->prez, comp->z, comp->nz * sizeof(double));
+        memcpy(instance->prez, instance->z, instance->nz * sizeof(double));
     }
 #endif
 
     // time event
-    *timeEvent = comp->nextEventTimeDefined && comp->time >= comp->nextEventTime;
+    // TODO:
+    // *timeEvent = instance->nextEventTimeDefined && instance->time >= instance->nextEventTime;
 
     bool earlyReturnRequested;
     double earlyReturnTime;
 
     // intermediate update
-    if (comp->intermediateUpdate) {
-        comp->intermediateUpdate(
-            comp->componentEnvironment, // instanceEnvironment
-            comp->time,                 // intermediateUpdateTime
-            false,                      // intermediateVariableSetRequested
-            true,                       // intermediateVariableGetAllowed
-            true,                       // intermediateStepFinished
-            false,                      // canReturnEarly
-            &earlyReturnRequested,      // earlyReturnRequested
-            &earlyReturnTime);          // earlyReturnTime
+    if (instance->intermediateUpdate) {
+        instance->intermediateUpdate(
+            instance->componentEnvironment, // instanceEnvironment
+            instance->time,                 // intermediateUpdateTime
+            false,                          // intermediateVariableSetRequested
+            true,                           // intermediateVariableGetAllowed
+            true,                           // intermediateStepFinished
+            false,                          // canReturnEarly
+            &earlyReturnRequested,          // earlyReturnRequested
+            &earlyReturnTime);              // earlyReturnTime
     }
 
     return OK;
 }
 
 Status doStep(
-    ModelInstance* comp,
+    ModelInstance *instance,
     double currentCommunicationPoint,
     double communicationStepSize,
     bool noSetFMUStatePriorToCurrentPoint,
@@ -83,25 +84,25 @@ Status doStep(
     double* lastSuccessfulTime) {
     UNUSED(noSetFMUStatePriorToCurrentPoint);
 
-    //if (!isClose(currentCommunicationPoint, comp->nextCommunicationPoint)) {
-    //    logError(comp, "Expected currentCommunicationPoint = %.16g but was %.16g.",
-    //        comp->nextCommunicationPoint, currentCommunicationPoint);
+    //if (!isClose(currentCommunicationPoint, instance->nextCommunicationPoint)) {
+    //    logError(instance, "Expected currentCommunicationPoint = %.16g but was %.16g.",
+    //        instance->nextCommunicationPoint, currentCommunicationPoint);
     //    CALL(Error);
     //}
 
     if (communicationStepSize <= 0) {
-        logError(comp, "Communication step size must be > 0 but was %.16g.", communicationStepSize);
+        logError(instance, "Communication step size must be > 0 but was %.16g.", communicationStepSize);
         CALL(Error);
     }
 
     const double nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
 
-    if (comp->stopTimeDefined
-        && nextCommunicationPoint > comp->stopTime
-        && !isClose(nextCommunicationPoint, comp->stopTime)
+    if (instance->stopTimeDefined
+        && nextCommunicationPoint > instance->stopTime
+        && !isClose(nextCommunicationPoint, instance->stopTime)
         ) {
-        logError(comp, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
-            currentCommunicationPoint, communicationStepSize, comp->stopTime);
+        logError(instance, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
+            currentCommunicationPoint, communicationStepSize, instance->stopTime);
         CALL(Error);
     }
 
@@ -113,11 +114,11 @@ Status doStep(
 
     while (true) {
 
-        const double nextSolverStepTime = comp->time + FIXED_SOLVER_STEP;
+        const double nextSolverStepTime = instance->time + FIXED_SOLVER_STEP;
 
         nextCommunicationPointReached = nextSolverStepTime > nextCommunicationPoint && !isClose(nextSolverStepTime, nextCommunicationPoint);
 
-        if (nextCommunicationPointReached || (*eventHandlingNeeded && comp->earlyReturnAllowed)) {
+        if (nextCommunicationPointReached || (*eventHandlingNeeded && instance->earlyReturnAllowed)) {
             break;
         }
 
@@ -129,7 +130,7 @@ Status doStep(
 
         if (*eventHandlingNeeded) {
             updateDiscreteStates(
-                comp,
+                instance,
                 eventHandlingNeeded,
                 terminateSimulation,
                 &nominalsOfContinuousStatesChanged,
@@ -143,17 +144,17 @@ Status doStep(
         bool stateEvent = false;
         bool timeEvent = false;
 
-        CALL(doFixedStep(comp, &stateEvent, &timeEvent));
+        CALL(doFixedStep(instance, &stateEvent, &timeEvent));
 
 #ifdef EVENT_UPDATE
         if (stateEvent || timeEvent) {
 
-            if (comp->eventModeUsed) {
+            if (instance->eventModeUsed) {
                 *eventHandlingNeeded = true;
             }
             else {
                 updateDiscreteStates(
-                    comp,
+                    instance,
                     eventHandlingNeeded,
                     terminateSimulation,
                     &nominalsOfContinuousStatesChanged,
@@ -162,11 +163,11 @@ Status doStep(
                     &nextEventTime
                 );
 #if MAX_EVENT_INDICATORS > 0
-                CALL(getEventIndicators(comp, comp->prez, comp->nz));
+                CALL(getEventIndicators(instance, instance->prez, instance->nz));
 #endif
             }
 
-            if (comp->earlyReturnAllowed) {
+            if (instance->earlyReturnAllowed) {
                 break;
             }
         }
@@ -177,15 +178,15 @@ Status doStep(
         }
     }
 
-    //*terminateSimulation = comp->terminateSimulation;
-    *earlyReturn = comp->earlyReturnAllowed && !nextCommunicationPointReached;
-    *lastSuccessfulTime = comp->time;
+    //*terminateSimulation = instance->terminateSimulation;
+    *earlyReturn = instance->earlyReturnAllowed && !nextCommunicationPointReached;
+    *lastSuccessfulTime = instance->time;
 
     if (nextCommunicationPointReached) {
-        comp->nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
+        instance->nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
     }
     else {
-        comp->nextCommunicationPoint = comp->time;
+        instance->nextCommunicationPoint = instance->time;
     }
 
     return OK;
