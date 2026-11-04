@@ -100,13 +100,13 @@ static ModelInstance *createModelInstanceImpl(
         comp->componentEnvironment = componentEnvironment;
         comp->logger               = cbLogger;
         comp->intermediateUpdate   = intermediateUpdate;
-        comp->lockPreemption        = NULL;
-        comp->unlockPreemption      = NULL;
+        comp->lockPreemption       = NULL;
+        comp->unlockPreemption     = NULL;
         comp->instanceName         = strdup(instanceName);
         comp->resourceLocation     = resourceLocation ? strdup(resourceLocation) : NULL;
         comp->status               = OK;
         comp->logEvents            = loggingOn;
-        comp->logErrors            = true; // always log errors
+        comp->logErrors            = true;
         comp->nSteps               = 0;
         comp->earlyReturnAllowed   = false;
         comp->eventModeUsed        = false;
@@ -117,17 +117,9 @@ static ModelInstance *createModelInstanceImpl(
         return NULL;
     }
 
-    comp->time                              = 0.0;  // overwrite in fmi*SetupExperiment, fmi*SetTime
-    comp->type                              = interfaceType;
-
-    comp->state                             = Instantiated;
-
-    //comp->newDiscreteStatesNeeded           = false;
-    //comp->terminateSimulation               = false;
-    //comp->nominalsOfContinuousStatesChanged = false;
-    //comp->valuesOfContinuousStatesChanged   = false;
-    //comp->nextEventTimeDefined              = false;
-    //comp->nextEventTime                     = 0;
+    comp->time = 0.0;
+    comp->type = interfaceType;
+    comp->state = Instantiated;
 
     setStartValues(comp);
 
@@ -1000,29 +992,8 @@ Status setFMUState(ModelInstance* comp, void* FMUState) {
     comp->startTime = s->startTime;
     comp->stopTime = s->stopTime;
     comp->time = s->time;
-    // instanceName
-    // type
-    // resourceLocation
-
     comp->status = s->status;
-
-    // logger
-    // intermediateUpdate
-    // clockUpdate
-
-    // lockPreemption
-    // unlockPreemption
-
-    // logEvents
-    // logErrors
-
-    // componentEnvironment
     comp->state = s->state;
-
-    //comp->newDiscreteStatesNeeded = s->newDiscreteStatesNeeded;
-    //comp->terminateSimulation = s->terminateSimulation;
-    //comp->nominalsOfContinuousStatesChanged = s->nominalsOfContinuousStatesChanged;
-    //comp->valuesOfContinuousStatesChanged = s->valuesOfContinuousStatesChanged;
     comp->nextEventTimeDefined = s->nextEventTimeDefined;
     comp->nextEventTime = s->nextEventTime;
     comp->clocksTicked = s->clocksTicked;
