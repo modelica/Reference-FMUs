@@ -302,20 +302,10 @@ Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t valu
     return OK;
 }
 
-Status eventUpdate(ModelInstance *instance) {
+Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
     ASSERT_NOT_NULL2(instance);
-
-    instance->valuesOfContinuousStatesChanged   = false;
-    instance->nominalsOfContinuousStatesChanged = false;
-    instance->terminateSimulation               = false;
-    instance->nextEventTimeDefined              = false;
-
+    *nContinuousStates = (size_t)M(n);
     return OK;
-}
-
-size_t getNumberOfContinuousStates(ModelInstance *instance) {
-    ASSERT_NOT_NULL2(instance);
-    return (size_t)M(n);
 }
 
 Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {

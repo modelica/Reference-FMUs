@@ -534,6 +534,14 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance,
     fmi3Float64 sensitivity[],
     size_t nSensitivity) {
 
+    if (invalidNumber((ModelInstance *)instance, "fmi3GetDirectionalDerivative", "nSensitivity", nSensitivity, nUnknowns)) {
+        return fmi3Error;
+    }
+
+    if (invalidNumber((ModelInstance *)instance, "fmi3GetDirectionalDerivative", "nSeed", nSeed, nKnowns)) {
+        return fmi3Error;
+    }
+
     for (size_t i = 0; i < nUnknowns; i++) {
         sensitivity[i] = 0;
         for (size_t j = 0; j < nKnowns; j++) {
@@ -563,6 +571,14 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
     size_t nSeed,
     fmi3Float64 sensitivity[],
     size_t nSensitivity) {
+
+    if (invalidNumber((ModelInstance *)instance, "fmi3GetAdjointDerivative", "nSensitivity", nSensitivity, nKnowns)) {
+        return fmi3Error;
+    }
+
+    if (invalidNumber((ModelInstance *)instance, "fmi3GetAdjointDerivative", "nSeed", nSeed, nUnknowns)) {
+        return fmi3Error;
+    }
 
     for (size_t i = 0; i < nKnowns; i++) {
 
@@ -718,13 +734,15 @@ fmi3Status fmi3EvaluateDiscreteStates(fmi3Instance instance) {
     NOT_IMPLEMENTED;
 }
 
-fmi3Status fmi3UpdateDiscreteStates(fmi3Instance instance,
+fmi3Status fmi3UpdateDiscreteStates(
+    fmi3Instance instance,
     fmi3Boolean* discreteStatesNeedUpdate,
     fmi3Boolean* terminateSimulation,
     fmi3Boolean* nominalsOfContinuousStatesChanged,
     fmi3Boolean* valuesOfContinuousStatesChanged,
     fmi3Boolean* nextEventTimeDefined,
     fmi3Float64* nextEventTime) {
+#ifdef EVENT_UPDATE
     return map_status(updateDiscreteStates(
         instance,
         discreteStatesNeedUpdate,
@@ -734,6 +752,16 @@ fmi3Status fmi3UpdateDiscreteStates(fmi3Instance instance,
         nextEventTimeDefined,
         nextEventTime
     ));
+#else
+    UNUSED(instance);
+    UNUSED(discreteStatesNeedUpdate);
+    UNUSED(terminateSimulation);
+    UNUSED(nominalsOfContinuousStatesChanged);
+    UNUSED(valuesOfContinuousStatesChanged);
+    UNUSED(nextEventTimeDefined);
+    UNUSED(nextEventTime);
+    return fmi3OK;
+#endif
 }
 
 /***************************************************

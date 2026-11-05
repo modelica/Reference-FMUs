@@ -15,7 +15,6 @@
 #define SET_FLOAT64
 #define GET_UINT64
 #define SET_UINT64
-#define EVENT_UPDATE
 #define GET_PARTIAL_DERIVATIVE
 
 #define FIXED_SOLVER_STEP 1e-3

@@ -93,40 +93,21 @@ Status updateDiscreteStates(
     bool* nextEventTimeDefined,
     double* nextEventTime
 ) {
-    if (instance->nextEventTimeDefined && isClose(instance->time, instance->nextEventTime)) {
+    if (isClose(instance->time, (double)M(counter)) || instance->time > M(counter)) {
         M(counter)++;
-        instance->nextEventTime += 1;
-    }
-    
-    if (M(counter) > 10) {
-        logError(instance, "Variable \"counter\" cannot be incremented for values >= 10.");
-        return Error;
+        
+        if (M(counter) > 10) {
+            logError(instance, "Variable \"counter\" cannot be incremented for values > 10.");
+            return Error;
+        }
     }
 
+    *discreteStatesNeedUpdate = false;
+    *terminateSimulation = M(counter) >= 10;
     *nominalsOfContinuousStatesChanged = false;
-    *terminateSimulation = false;
-    *nextEventTimeDefined = false;
+    *valuesOfContinuousStatesChanged = false;
+    *nextEventTimeDefined = true;
+    *nextEventTime = M(counter);
 
     return OK;
 }
-
-//Status eventUpdate(ModelInstance *instance) {
-//    ASSERT_NOT_NULL2(instance);
-//
-//    if (instance->nextEventTimeDefined && isClose(instance->time, instance->nextEventTime)) {
-//        M(counter)++;
-//        instance->nextEventTime += 1;
-//    }
-//
-//    if (M(counter) > 10) {
-//        logError(instance, "Variable \"counter\" cannot be incremented for values >= 10.");
-//        return Error;
-//    }
-//
-//    instance->valuesOfContinuousStatesChanged   = false;
-//    instance->nominalsOfContinuousStatesChanged = false;
-//    instance->terminateSimulation               = M(counter) >= 10;
-//    instance->nextEventTimeDefined              = true;
-//
-//    return OK;
-//}

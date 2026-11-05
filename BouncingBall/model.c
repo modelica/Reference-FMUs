@@ -193,8 +193,9 @@ Status updateDiscreteStates(
         *valuesOfContinuousStatesChanged = false;
     }
 
+    *discreteStatesNeedUpdate = false;
+    *terminateSimulation = false;
     *nominalsOfContinuousStatesChanged = false;
-    *terminateSimulation  = false;
     *nextEventTimeDefined = false;
     *nextEventTime = 0.0;
 

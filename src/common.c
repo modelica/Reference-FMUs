@@ -888,9 +888,11 @@ Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[]
 #endif
 
 #ifndef MAX_CONTINUOUS_STATES
-size_t getNumberOfContinuousStates(ModelInstance *instance) {
-    UNUSED(instance);
-    return 0;
+Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
+    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL2(nContinuousStates);
+    *nContinuousStates = 0;
+    return OK;
 }
 
 Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
@@ -923,9 +925,11 @@ Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
 #endif
 
 #ifndef MAX_EVENT_INDICATORS
-size_t getNumberOfEventIndicators(ModelInstance *instance) {
-    UNUSED(instance);
-    return 0;
+Status getNumberOfEventIndicators(ModelInstance* instance, size_t* nEventIndicators) {
+    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL2(nEventIndicators);
+    *nEventIndicators = 0;
+    return OK;
 }
 
 Status getEventIndicators(ModelInstance *instance, double z[], size_t nz) {

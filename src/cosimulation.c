@@ -51,8 +51,7 @@ Status doFixedStep(ModelInstance *instance, bool* stateEvent, bool* timeEvent) {
 #endif
 
     // time event
-    // TODO:
-    // *timeEvent = instance->nextEventTimeDefined && instance->time >= instance->nextEventTime;
+    *timeEvent = instance->nextEventTimeDefined && instance->time >= instance->nextEventTime;
 
     bool earlyReturnRequested;
     double earlyReturnTime;
@@ -84,11 +83,11 @@ Status doStep(
     double* lastSuccessfulTime) {
     UNUSED(noSetFMUStatePriorToCurrentPoint);
 
-    //if (!isClose(currentCommunicationPoint, instance->nextCommunicationPoint)) {
-    //    logError(instance, "Expected currentCommunicationPoint = %.16g but was %.16g.",
-    //        instance->nextCommunicationPoint, currentCommunicationPoint);
-    //    CALL(Error);
-    //}
+    if (!isClose(currentCommunicationPoint, instance->nextCommunicationPoint)) {
+        logError(instance, "Expected currentCommunicationPoint = %.16g but was %.16g.",
+            instance->nextCommunicationPoint, currentCommunicationPoint);
+        CALL(Error);
+    }
 
     if (communicationStepSize <= 0) {
         logError(instance, "Communication step size must be > 0 but was %.16g.", communicationStepSize);

@@ -42,6 +42,8 @@ struct ModelInstance {
     // Co-Simulation
     bool earlyReturnAllowed;
     bool eventModeUsed;
+    bool nextEventTimeDefined;
+    double nextEventTime;
     double nextCommunicationPoint;
 
     // solver

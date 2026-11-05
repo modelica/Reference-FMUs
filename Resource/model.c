@@ -117,16 +117,3 @@ Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], si
             return Error;
     }
 }
-
-Status eventUpdate(ModelInstance *instance) {
-    ASSERT_NOT_NULL2(instance);
-
-    instance->valuesOfContinuousStatesChanged   = false;
-    instance->nominalsOfContinuousStatesChanged = false;
-    instance->terminateSimulation               = false;
-    instance->nextEventTimeDefined              = false;
-
-    instance->isDirtyValues = true;
-
-    return OK;
-}
