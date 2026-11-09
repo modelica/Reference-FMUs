@@ -47,10 +47,10 @@ struct ModelInstance {
     double nextCommunicationPoint;
 
     // solver
-#if MAX_EVENT_INDICATORS > 0
+#if N_EVENT_INDICATORS > 0
     size_t nz;
-    double z[MAX_EVENT_INDICATORS];
-    double prez[MAX_EVENT_INDICATORS];
+    double z[N_EVENT_INDICATORS];
+    double prez[N_EVENT_INDICATORS];
 #endif
 
 #if N_CONTINUOUS_STATES > 0

@@ -179,7 +179,7 @@ static Status wasm_do_step(
                 if (status != OK) {
                     return wasm_apply_status(S, status);
                 }
-#if MAX_EVENT_INDICATORS > 0
+#if N_EVENT_INDICATORS > 0
                 status = getEventIndicators(S, S->prez, S->nz);
                 if (status != OK) {
                     return wasm_apply_status(S, status);

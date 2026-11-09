@@ -33,7 +33,7 @@ Status doFixedStep(ModelInstance *instance, bool* stateEvent, bool* timeEvent) {
     // state event
     *stateEvent = false;
 
-#if MAX_EVENT_INDICATORS > 0
+#if N_EVENT_INDICATORS > 0
     if (instance->nz > 0) {
 
         CALL(getEventIndicators(instance, instance->z, instance->nz));
@@ -161,7 +161,7 @@ Status doStep(
                     &nextEventTimeDefined,
                     &nextEventTime
                 );
-#if MAX_EVENT_INDICATORS > 0
+#if N_EVENT_INDICATORS > 0
                 CALL(getEventIndicators(instance, instance->prez, instance->nz));
 #endif
             }

@@ -277,7 +277,7 @@ Status configurate(ModelInstance *instance) {
 
     (void)instance;
 
-#ifdef MAX_EVENT_INDICATORS
+#ifdef N_EVENT_INDICATORS
     CALL(getNumberOfEventIndicators(instance, &instance->nz));
     CALL(getEventIndicators(instance, instance->prez, instance->nz));
 #endif
@@ -933,7 +933,7 @@ Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousS
 #endif
 #endif
 
-#ifndef MAX_EVENT_INDICATORS
+#ifndef N_EVENT_INDICATORS
 Status getNumberOfEventIndicators(ModelInstance* instance, size_t* nEventIndicators) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(nEventIndicators);
@@ -951,7 +951,7 @@ Status getEventIndicators(ModelInstance *instance, double z[], size_t nz) {
 Status getNumberOfEventIndicators(ModelInstance* instance, size_t* nEventIndicators) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(nEventIndicators);
-    *nEventIndicators = MAX_EVENT_INDICATORS;
+    *nEventIndicators = N_EVENT_INDICATORS;
     return OK;
 }
 #endif
@@ -1038,7 +1038,7 @@ Status setFMUState(ModelInstance *instance, void* FMUState) {
     instance->eventModeUsed = s->eventModeUsed;
     instance->nextCommunicationPoint = s->nextCommunicationPoint;
 
-#if MAX_EVENT_INDICATORS > 0
+#if N_EVENT_INDICATORS > 0
     instance->nz = s->nz;
     memcpy(instance->z, s->z, s->nz * sizeof(double));
     memcpy(instance->prez, s->prez, s->nz * sizeof(double));

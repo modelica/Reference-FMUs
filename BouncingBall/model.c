@@ -278,7 +278,7 @@ Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
 Status getEventIndicators(ModelInstance *instance, double z[], size_t nz) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(z);
-    ASSERT_SIZE_T(nz, MAX_EVENT_INDICATORS);
+    ASSERT_SIZE_T(nz, N_EVENT_INDICATORS);
 
     calculateValues(instance);
 
