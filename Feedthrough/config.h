@@ -25,7 +25,6 @@
 #define GET_BOOLEAN
 #define GET_STRING
 #define GET_BINARY
-#define GET_VARIABLE_SIZE
 
 #define SET_FLOAT32
 #define SET_FLOAT64

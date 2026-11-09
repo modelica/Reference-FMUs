@@ -16,7 +16,6 @@
 #define EVENT_UPDATE
 #define ACTIVATE_CLOCK
 #define GET_INT32
-#define GET_VARIABLE_SIZE
 #define SET_INT32
 #define GET_CLOCK
 #define GET_INTERVAL
