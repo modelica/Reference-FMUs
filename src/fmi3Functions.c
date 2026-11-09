@@ -29,6 +29,8 @@ static fmi3Status map_status(Status status) {
     }
 }
 
+#define CALL(s) if ((s) != OK) { return fmi3Discard; }
+
 #define GET_VARIABLES(T) \
     size_t index = 0; \
     for (size_t i = 0; i < nValueReferences; i++) { \
@@ -513,8 +515,6 @@ fmi3Status fmi3DeserializeFMUState(fmi3Instance instance,
     fmi3FMUState* FMUState) {
     return map_status(deserializeFMUState(instance, serializedState, size, FMUState));
 }
-
-#define CALL(s) if ((s) != OK) { return fmi3Error; }
 
 fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance,
     const fmi3ValueReference unknowns[],

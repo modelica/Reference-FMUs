@@ -1052,6 +1052,18 @@ Status setFMUState(ModelInstance *instance, void* FMUState) {
     return OK;
 }
 
+Status freeFMUState(ModelInstance* instance, void* FMUState) {
+    // TODO
+    return Discard;
+}
+
+Status serializedFMUStateSize(ModelInstance* instance, void* FMUState, size_t* size) {
+    UNUSED(instance);
+    UNUSED(FMUState);
+    *size = sizeof(ModelInstance);
+    return OK;
+}
+
 Status serializeFMUState(
     ModelInstance *instance,
     void*  FMUState,

@@ -219,8 +219,10 @@ Status setDebugLogging(ModelInstance *instance, bool loggingOn, size_t nCategori
 void logEvent(ModelInstance *instance, const char *message, ...);
 void logError(ModelInstance *instance, const char *message, ...);
 
+Status freeFMUState(ModelInstance* instance, void* FMUState);
 Status getFMUState(ModelInstance *instance, void** FMUState);
 Status setFMUState(ModelInstance *instance, void* FMUState);
+Status serializedFMUStateSize(ModelInstance* instance, void* FMUState, size_t* size);
 Status serializeFMUState(
     ModelInstance *instance,
     void* FMUState,
