@@ -76,6 +76,49 @@ Status calculateValues(ModelInstance *instance) {
     return OK;
 }
 
+Status getVariableSize(ModelInstance* instance, ValueReference vr, size_t* size) {
+    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL2(size);
+
+    switch (vr) {
+    case vr_time:
+        *size = 1;
+        break;
+    case vr_m:
+    case vr_n:
+    case vr_r:
+        *size = 1;
+        break;
+    case vr_A:
+        *size = (size_t)(M(n) * M(n));
+        break;
+    case vr_B:
+        *size = (size_t)(M(m) * M(n));
+        break;
+    case vr_C:
+        *size = (size_t)(M(r) * M(n));
+        break;
+    case vr_D:
+        *size = (size_t)(M(r) * M(m));
+        break;
+    case vr_x0:
+    case vr_x:
+    case vr_der_x:
+        *size = (size_t)M(n);
+        break;
+    case vr_u:
+        *size = (size_t)M(m);
+        break;
+    case vr_y:
+        *size = (size_t)M(r);
+        break;
+    default:
+        logError(instance, "Unknown value reference: %u.", vr);
+        return Error;
+    }
+    return OK;
+}
+
 Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(values);

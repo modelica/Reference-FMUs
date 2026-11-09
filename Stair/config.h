@@ -9,6 +9,7 @@
 #define MODEL_EXCHANGE
 
 #define GET_INT32
+#define GET_VARIABLE_SIZE
 #define SET_INT32
 
 #define EVENT_UPDATE

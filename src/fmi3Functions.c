@@ -514,39 +514,7 @@ fmi3Status fmi3DeserializeFMUState(fmi3Instance instance,
     return map_status(deserializeFMUState(instance, serializedState, size, FMUState));
 }
 
-//static size_t valueReferenceElementIndex(const fmi3ValueReference valueReferences[], size_t position) {
-//    size_t index = 0;
-//    for (size_t k = 0; k < position; k++) {
-//        if (valueReferences[k] == valueReferences[position]) {
-//            index++;
-//        }
-//    }
-//    return index;
-//}
-
-Status get_size(ModelInstance* instance, ValueReference vr, size_t* size) {
-    switch (vr) {
-    case vr_x:
-        *size = M(n);
-        break;
-    case vr_der_x:
-        *size = M(n);
-        break;
-    default:
-        return Error;
-    }
-    return OK;
-}
-
 #define CALL(s) if ((s) != OK) { return fmi3Error; }
-
-#define GET_IDX(array, index, size) \
-    ({ \
-        if ((index) >= (size)) { \
-            return fmi3Error; \
-        } \
-        (array)[index]; \
-    })
 
 fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance,
     const fmi3ValueReference unknowns[],
@@ -565,7 +533,7 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance,
         const ValueReference unknown = (ValueReference)unknowns[i];
 
         size_t unknownSize = 0;
-        CALL(get_size(instance, unknowns[i], &unknownSize));
+        CALL(getVariableSize(instance, (ValueReference)unknowns[i], &unknownSize));
 
         for (size_t ii = 0; ii < unknownSize; ii++) {
 
@@ -577,7 +545,7 @@ fmi3Status fmi3GetDirectionalDerivative(fmi3Instance instance,
                 const ValueReference known = (ValueReference)knowns[j];
 
                 size_t knownSize = 0;
-                CALL(get_size(instance, knowns[j], &knownSize));
+                CALL(getVariableSize(instance, (ValueReference)knowns[j], &knownSize));
 
                 for (size_t jj = 0; jj < knownSize; jj++) {
 

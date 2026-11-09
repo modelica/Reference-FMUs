@@ -725,6 +725,15 @@ void logError(ModelInstance *instance, const char *message, ...) {
     return Error; \
 } while (false)
 
+#ifndef GET_VARIABLE_SIZE
+Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size) {
+    UNUSED(vr);
+    UNUSED(size);
+    logError(instance, "Getting variable size is not allowed.");
+    return Error;
+}
+#endif
+
 #ifndef GET_FLOAT32
 Status getFloat32(ModelInstance *instance, ValueReference vr, float values[], size_t nValues, size_t* index) {
     GET_NOT_ALLOWED("Float32");

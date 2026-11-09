@@ -13,6 +13,7 @@
 #define MODEL_EXCHANGE
 
 #define SET_FLOAT64
+#define GET_VARIABLE_SIZE
 #define GET_UINT64
 #define SET_UINT64
 #define GET_PARTIAL_DERIVATIVE

@@ -9,6 +9,7 @@
 #define MODEL_EXCHANGE
 
 #define GET_INT32
+#define GET_VARIABLE_SIZE
 
 #define FIXED_SOLVER_STEP 1
 #define DEFAULT_STOP_TIME 1

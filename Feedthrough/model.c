@@ -106,6 +106,19 @@ Status calculateValues(ModelInstance *instance) {
     return OK;
 }
 
+Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size) {
+    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL2(size);
+
+    if ((unsigned)vr <= (unsigned)vr_Enumeration_output) {
+        *size = 1;
+        return OK;
+    }
+
+    logError(instance, "Unknown value reference: %u.", vr);
+    return Error;
+}
+
 Status getFloat32(ModelInstance *instance, ValueReference vr, float values[], size_t nValues, size_t* index) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(values);

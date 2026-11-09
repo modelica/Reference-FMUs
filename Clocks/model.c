@@ -142,6 +142,32 @@ Status calculateValues(ModelInstance *instance) {
     return OK;
 }
 
+Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size) {
+    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL2(size);
+
+    switch (vr) {
+    case vr_time:
+    case vr_inClock1:
+    case vr_inClock2:
+    case vr_inClock3:
+    case vr_outClock1:
+    case vr_outClock:
+    case vr_inClock1Ticks:
+    case vr_inClock2Ticks:
+    case vr_inClock3Ticks:
+    case vr_totalInClockTicks:
+    case vr_result2:
+    case vr_input2:
+    case vr_output3:
+        *size = 1;
+        return OK;
+    default:
+        logError(instance, "Unknown value reference: %u.", vr);
+        return Error;
+    }
+}
+
 Status eventUpdate(ModelInstance *instance) {
     UNUSED(instance);
     return OK;
