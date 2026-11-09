@@ -284,6 +284,23 @@ Status reset(ModelInstance *instance) {
     return setStartValues(instance);
 }
 
+#ifndef CONFIGURATE
+Status configurate(ModelInstance *instance) {
+
+#ifdef N_EVENT_INDICATORS
+    CALL(getNumberOfEventIndicators(instance, &instance->nz));
+    CALL(getEventIndicators(instance, instance->prez, instance->nz));
+#endif
+
+#ifdef N_CONTINUOUS_STATES
+    CALL(getNumberOfContinuousStates(instance, &instance->nx));
+#endif
+
+    (void)instance;
+    return OK;
+}
+#endif
+
 #define EPSILON (1.0e-5)
 
 static double fmiAbs(double v) {
@@ -416,6 +433,9 @@ Status enterConfigurationMode(ModelInstance *instance) {
             logError(instance, "enterConfigurationMode() may only be called in Instantiated and Clock Activation Mode");
         }
         break;
+    default:
+        logError(instance, "enterConfigurationMode() is not supported for this interface type");
+        return Discard;
     }
 
     return Discard;
@@ -439,11 +459,9 @@ Status exitConfigurationMode(ModelInstance *instance) {
     const Status status = configurate(instance);
 
     if (status == OK) {
-        switch (instance->state) {
-        case ConfigurationMode:
+        if (instance->state == ConfigurationMode) {
             instance->state = Instantiated;
-            break;
-        case ReconfigurationMode:
+        } else if (instance->state == ReconfigurationMode) {
             switch (instance->type) {
             case ModelExchange:
                 instance->state = EventMode;
@@ -454,8 +472,9 @@ Status exitConfigurationMode(ModelInstance *instance) {
             case ScheduledExecution:
                 instance->state = ClockActivationMode;
                 break;
+            default:
+                break;
             }
-            break;
         }
     }
 
@@ -483,14 +502,15 @@ Status exitInitializationMode(ModelInstance *instance) {
         return Discard;
     }
 
+    if (instance->isDirtyValues) {
+        CALL(calculateValues(instance));
+        instance->isDirtyValues = false;
+    }
+
+    CALL(configurate(instance));
+
     switch (instance->type) {
         case CoSimulation:
-#if defined(N_CONTINUOUS_STATES) || defined(CONFIGURATE)
-            CALL(getNumberOfContinuousStates(instance, &instance->nx));
-#endif
-#if defined(N_EVENT_INDICATORS) || defined(CONFIGURATE)
-            CALL(getNumberOfEventIndicators(instance, &instance->nz));
-#endif
             instance->state = instance->eventModeUsed ? EventMode : StepMode;
             break;
         case ModelExchange:
@@ -499,8 +519,11 @@ Status exitInitializationMode(ModelInstance *instance) {
         case ScheduledExecution:
             instance->state = ClockActivationMode;
             break;
+        default:
+            logError(instance, "exitInitializationMode() is not supported for this interface type");
+            return Error;
     }
-    
+
     return OK;
 }
 

@@ -271,11 +271,6 @@ fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean loggingOn, size_t nC
 }
 
 fmi2Status fmi2GetReal(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
-    //size_t index = 0;
-    //for (size_t i = 0; i < nvr; i++) {
-    //    CALL(getFloat64(c, vr[i], value, nvr, &index)); \
-    //}
-    //return fmi2OK;
     GET_VARIABLES(Float64);
 }
 
@@ -416,7 +411,7 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
     ));
 }
 
-/* Inquire slave status */
+#if 0 /* used when fmi2Get*Status TODO is implemented */
 static Status getStatus(char* fname, ModelInstance* S, const fmi2StatusKind s) {
 
     switch(s) {
@@ -440,6 +435,7 @@ static Status getStatus(char* fname, ModelInstance* S, const fmi2StatusKind s) {
 
     return Discard;
 }
+#endif
 
 fmi2Status fmi2GetStatus(fmi2Component c, const fmi2StatusKind s, fmi2Status *value) {
     UNUSED(c);

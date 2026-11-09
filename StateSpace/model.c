@@ -77,7 +77,13 @@ Status calculateValues(ModelInstance *instance) {
 }
 
 Status configurate(ModelInstance* instance) {
-    UNUSED(instance);
+    ASSERT_NOT_NULL2(instance);
+#ifdef N_CONTINUOUS_STATES
+    Status status = getNumberOfContinuousStates(instance, &instance->nx);
+    if (status != OK) {
+        return status;
+    }
+#endif
     return OK;
 }
 

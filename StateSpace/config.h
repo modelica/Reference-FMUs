@@ -12,6 +12,9 @@
 
 #define CONFIGURATE
 
+#define N_CONTINUOUS_STATES N_MAX
+#define VARIABLE_NX
+
 #define SET_FLOAT64
 #define GET_UINT64
 #define SET_UINT64
