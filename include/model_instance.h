@@ -53,10 +53,10 @@ struct ModelInstance {
     double prez[MAX_EVENT_INDICATORS];
 #endif
 
-#if MAX_CONTINUOUS_STATES > 0
+#if N_CONTINUOUS_STATES > 0
     size_t nx;
-    double x[MAX_CONTINUOUS_STATES];
-    double dx[MAX_CONTINUOUS_STATES];
+    double x[N_CONTINUOUS_STATES];
+    double dx[N_CONTINUOUS_STATES];
 #endif
 
 };

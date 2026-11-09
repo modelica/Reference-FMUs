@@ -282,7 +282,7 @@ Status configurate(ModelInstance *instance) {
     CALL(getEventIndicators(instance, instance->prez, instance->nz));
 #endif
 
-#ifdef MAX_CONTINUOUS_STATES
+#ifdef N_CONTINUOUS_STATES
     CALL(getNumberOfContinuousStates(instance, &instance->nx));
 #endif
 
@@ -887,7 +887,7 @@ Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[]
 }
 #endif
 
-#ifndef MAX_CONTINUOUS_STATES
+#ifndef N_CONTINUOUS_STATES
 Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(nContinuousStates);
@@ -927,7 +927,7 @@ Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
 Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(nContinuousStates);
-    *nContinuousStates = MAX_CONTINUOUS_STATES;
+    *nContinuousStates = N_CONTINUOUS_STATES;
     return OK;
 }
 #endif
@@ -1044,7 +1044,7 @@ Status setFMUState(ModelInstance *instance, void* FMUState) {
     memcpy(instance->prez, s->prez, s->nz * sizeof(double));
 #endif
 
-#if MAX_CONTINUOUS_STATES > 0
+#if N_CONTINUOUS_STATES > 0
     instance->nx = s->nx;
     memcpy(instance->x, s->x, s->nx * sizeof(double));
     memcpy(instance->dx, s->dx, s->nx * sizeof(double));

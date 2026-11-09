@@ -212,7 +212,7 @@ Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, siz
 Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(x);
-    ASSERT_SIZE_T(nx, MAX_CONTINUOUS_STATES);
+    ASSERT_SIZE_T(nx, N_CONTINUOUS_STATES);
 
     calculateValues(instance);
 
@@ -225,7 +225,7 @@ Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
 Status getNominalsOfContinuousStates(ModelInstance *instance, double nominals[], size_t nx) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(nominals);
-    ASSERT_SIZE_T(nx, MAX_CONTINUOUS_STATES);
+    ASSERT_SIZE_T(nx, N_CONTINUOUS_STATES);
 
     calculateValues(instance);
 
@@ -238,7 +238,7 @@ Status getNominalsOfContinuousStates(ModelInstance *instance, double nominals[],
 Status setContinuousStates(ModelInstance *instance, const double x[], size_t nx) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(x);
-    ASSERT_SIZE_T(nx, MAX_CONTINUOUS_STATES);
+    ASSERT_SIZE_T(nx, N_CONTINUOUS_STATES);
 
     M(y1) = x[0];
     M(y2) = x[1];
@@ -251,7 +251,7 @@ Status setContinuousStates(ModelInstance *instance, const double x[], size_t nx)
 Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(dx);
-    ASSERT_SIZE_T(nx, MAX_CONTINUOUS_STATES);
+    ASSERT_SIZE_T(nx, N_CONTINUOUS_STATES);
 
     calculateValues(instance);
 

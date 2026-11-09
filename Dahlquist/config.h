@@ -8,7 +8,7 @@
 #define CO_SIMULATION
 #define MODEL_EXCHANGE
 
-#define MAX_CONTINUOUS_STATES 1
+#define N_CONTINUOUS_STATES 1
 
 #define SET_FLOAT64
 

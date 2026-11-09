@@ -11,7 +11,7 @@
 
 Status doFixedStep(ModelInstance *instance, bool* stateEvent, bool* timeEvent) {
 
-#if MAX_CONTINUOUS_STATES > 0
+#if N_CONTINUOUS_STATES > 0
     if (instance->nx > 0) {
 
         CALL(getContinuousStates(instance, instance->x, instance->nx));
