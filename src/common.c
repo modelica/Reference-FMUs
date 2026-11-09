@@ -485,6 +485,12 @@ Status exitInitializationMode(ModelInstance *instance) {
 
     switch (instance->type) {
         case CoSimulation:
+#if defined(N_CONTINUOUS_STATES) || defined(CONFIGURATE)
+            CALL(getNumberOfContinuousStates(instance, &instance->nx));
+#endif
+#if defined(N_EVENT_INDICATORS) || defined(CONFIGURATE)
+            CALL(getNumberOfEventIndicators(instance, &instance->nz));
+#endif
             instance->state = instance->eventModeUsed ? EventMode : StepMode;
             break;
         case ModelExchange:
