@@ -273,22 +273,6 @@ static Status s_reallocate(ModelInstance *instance, void** memory, size_t size) 
     return OK;
 }
 
-Status configurate(ModelInstance *instance) {
-
-    (void)instance;
-
-#ifdef N_EVENT_INDICATORS
-    CALL(getNumberOfEventIndicators(instance, &instance->nz));
-    CALL(getEventIndicators(instance, instance->prez, instance->nz));
-#endif
-
-#ifdef N_CONTINUOUS_STATES
-    CALL(getNumberOfContinuousStates(instance, &instance->nx));
-#endif
-
-    return OK;
-}
-
 Status reset(ModelInstance *instance) {
     instance->state = Instantiated;
     instance->startTime = 0.0;
@@ -394,6 +378,7 @@ Status setupExperiment(
 }
 
 Status enterConfigurationMode(ModelInstance *instance) {
+#ifdef CONFIGURATE
     switch (instance->type) {
     case ModelExchange:
         switch (instance->state) {
@@ -434,10 +419,14 @@ Status enterConfigurationMode(ModelInstance *instance) {
     }
 
     return Discard;
+#else
+    logError(instance, "enterConfigurationMode() is not supported");
+    return Discard;
+#endif
 }
 
 Status exitConfigurationMode(ModelInstance *instance) {
-
+#ifdef CONFIGURATE
     switch (instance->state) {
     case ConfigurationMode:
     case ReconfigurationMode:
@@ -471,6 +460,10 @@ Status exitConfigurationMode(ModelInstance *instance) {
     }
 
     return status;
+#else
+    logError(instance, "exitConfigurationMode() is not supported");
+    return Discard;
+#endif
 }
 
 Status enterInitializationMode(ModelInstance *instance) {
@@ -490,23 +483,19 @@ Status exitInitializationMode(ModelInstance *instance) {
         return Discard;
     }
 
-    const Status status = configurate(instance);
-
-    if (status == OK) {
-        switch (instance->type) {
-            case CoSimulation:
-                instance->state = instance->eventModeUsed ? EventMode : StepMode;
-                break;
-            case ModelExchange:
-                instance->state = EventMode;
-                break;
-            case ScheduledExecution:
-                instance->state = ClockActivationMode;
-                break;
-        }
+    switch (instance->type) {
+        case CoSimulation:
+            instance->state = instance->eventModeUsed ? EventMode : StepMode;
+            break;
+        case ModelExchange:
+            instance->state = EventMode;
+            break;
+        case ScheduledExecution:
+            instance->state = ClockActivationMode;
+            break;
     }
     
-    return status;
+    return OK;
 }
 
 Status enterEventMode(ModelInstance *instance) {
@@ -887,7 +876,16 @@ Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[]
 }
 #endif
 
-#ifndef N_CONTINUOUS_STATES
+#ifndef CONFIGURATE
+
+#ifdef N_CONTINUOUS_STATES
+Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
+    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL2(nContinuousStates);
+    *nContinuousStates = N_CONTINUOUS_STATES;
+    return OK;
+}
+#else
 Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(nContinuousStates);
@@ -922,18 +920,16 @@ Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
     ASSERT_SIZE_T(nx, 0);
     return OK;
 }
-#else
-#ifndef VARIABLE_NX
-Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
+#endif // N_CONTINUOUS_STATES
+
+#ifdef N_EVENT_INDICATORS
+Status getNumberOfEventIndicators(ModelInstance* instance, size_t* nEventIndicators) {
     ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(nContinuousStates);
-    *nContinuousStates = N_CONTINUOUS_STATES;
+    ASSERT_NOT_NULL2(nEventIndicators);
+    *nEventIndicators = N_EVENT_INDICATORS;
     return OK;
 }
-#endif
-#endif
-
-#ifndef N_EVENT_INDICATORS
+#else
 Status getNumberOfEventIndicators(ModelInstance* instance, size_t* nEventIndicators) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(nEventIndicators);
@@ -947,14 +943,9 @@ Status getEventIndicators(ModelInstance *instance, double z[], size_t nz) {
     ASSERT_SIZE_T(nz, 0);
     return OK;
 }
-#else
-Status getNumberOfEventIndicators(ModelInstance* instance, size_t* nEventIndicators) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(nEventIndicators);
-    *nEventIndicators = N_EVENT_INDICATORS;
-    return OK;
-}
-#endif
+#endif // N_EVENT_INDICATORS
+
+#endif // CONFIGURATE
 
 #ifndef GET_PARTIAL_DERIVATIVE
 Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double* partialDerivative) {
@@ -1038,13 +1029,13 @@ Status setFMUState(ModelInstance *instance, void* FMUState) {
     instance->eventModeUsed = s->eventModeUsed;
     instance->nextCommunicationPoint = s->nextCommunicationPoint;
 
-#if N_EVENT_INDICATORS > 0
+#if MAX_EVENT_INDICATORS > 0
     instance->nz = s->nz;
     memcpy(instance->z, s->z, s->nz * sizeof(double));
     memcpy(instance->prez, s->prez, s->nz * sizeof(double));
 #endif
 
-#if N_CONTINUOUS_STATES > 0
+#if MAX_CONTINUOUS_STATES > 0
     instance->nx = s->nx;
     memcpy(instance->x, s->x, s->nx * sizeof(double));
     memcpy(instance->dx, s->dx, s->nx * sizeof(double));

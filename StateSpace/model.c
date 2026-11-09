@@ -76,6 +76,11 @@ Status calculateValues(ModelInstance *instance) {
     return OK;
 }
 
+Status configurate(ModelInstance* instance) {
+    // nothing to do
+    return OK;
+}
+
 Status getVariableSize(ModelInstance* instance, ValueReference vr, size_t* size) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(size);
@@ -480,5 +485,19 @@ Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, siz
         }
     }
 
+    return OK;
+}
+
+Status getNumberOfEventIndicators(ModelInstance* instance, size_t* nEventIndicators) {
+    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL2(nEventIndicators);
+    *nEventIndicators = 0;
+    return OK;
+}
+
+Status getEventIndicators(ModelInstance* instance, double z[], size_t nz) {
+    ASSERT_NOT_NULL2(instance);
+    UNUSED(z);
+    ASSERT_SIZE_T(nz, 0);
     return OK;
 }
