@@ -34,9 +34,9 @@ jobs:
           - name: aarch64-darwin
             image: macos-15
             arch: aarch64
-          # - name: wasm32-wasip2
-          #   image: ubuntu-22.04
-          #   arch: x86_64
+          - name: wasm32-wasip2
+            image: ubuntu-22.04
+            arch: x86_64
     runs-on: ${{ matrix.image }}
     needs: lint-files
     steps:

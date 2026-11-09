@@ -112,104 +112,6 @@ static Status wasm_set_float64(
     return OK;
 }
 
-static Status wasm_do_step(
-    ModelInstance *S,
-    double currentCommunicationPoint,
-    double communicationStepSize,
-    bool *eventHandlingNeeded,
-    bool *terminateSimulation,
-    bool *earlyReturn,
-    double *lastSuccessfulTime)
-{
-    if (!isClose(currentCommunicationPoint, S->nextCommunicationPoint)) {
-        logError(S, "Expected currentCommunicationPoint = %.16g but was %.16g.",
-            S->nextCommunicationPoint, currentCommunicationPoint);
-        return wasm_apply_status(S, Error);
-    }
-    if (communicationStepSize <= 0) {
-        logError(S, "Communication step size must be > 0 but was %.16g.", communicationStepSize);
-        return wasm_apply_status(S, Error);
-    }
-
-    const double nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
-    if (nextCommunicationPoint > S->stopTime && !isClose(nextCommunicationPoint, S->stopTime)) {
-        logError(S, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
-            currentCommunicationPoint, communicationStepSize, S->stopTime);
-        return wasm_apply_status(S, Error);
-    }
-
-    bool nextCommunicationPointReached = false;
-    *eventHandlingNeeded = false;
-    *terminateSimulation = false;
-    *earlyReturn = false;
-
-    while (true) {
-        const double nextSolverStepTime = S->time + FIXED_SOLVER_STEP;
-        nextCommunicationPointReached =
-            nextSolverStepTime > nextCommunicationPoint
-            && !isClose(nextSolverStepTime, nextCommunicationPoint);
-
-        if (nextCommunicationPointReached || (*eventHandlingNeeded && S->earlyReturnAllowed)) {
-            break;
-        }
-
-#ifdef EVENT_UPDATE
-        if (*eventHandlingNeeded) {
-            Status status = eventUpdate(S);
-            if (status != OK) {
-                return wasm_apply_status(S, status);
-            }
-            *eventHandlingNeeded = false;
-        }
-#endif
-
-        bool stateEvent = false;
-        bool timeEvent = false;
-        Status status = doFixedStep(S, &stateEvent, &timeEvent);
-        if (status != OK) {
-            return wasm_apply_status(S, status);
-        }
-
-#ifdef EVENT_UPDATE
-        if (stateEvent || timeEvent) {
-            if (S->eventModeUsed) {
-                *eventHandlingNeeded = true;
-            } else {
-                status = eventUpdate(S);
-                if (status != OK) {
-                    return wasm_apply_status(S, status);
-                }
-#if N_EVENT_INDICATORS > 0
-                status = getEventIndicators(S, S->prez, S->nz);
-                if (status != OK) {
-                    return wasm_apply_status(S, status);
-                }
-#endif
-            }
-            if (S->earlyReturnAllowed) {
-                break;
-            }
-        }
-#endif
-
-        if (S->terminateSimulation) {
-            break;
-        }
-    }
-
-    *terminateSimulation = S->terminateSimulation;
-    *earlyReturn = S->earlyReturnAllowed && !nextCommunicationPointReached;
-    *lastSuccessfulTime = S->time;
-
-    if (nextCommunicationPointReached) {
-        S->nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
-    } else {
-        S->nextCommunicationPoint = S->time;
-    }
-
-    return OK;
-}
-
 static char *wit_string_to_c(const co_simulation_fmu_string_t *s) {
     if (!s || !s->ptr) {
         return NULL;
@@ -413,13 +315,24 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_enter_initializatio
     double *maybe_stop_time)
 {
     ModelInstance *instance = wasm_comp(self);
-    (void)maybe_tolerance;
-    instance->startTime = start_time;
-    instance->stopTime = maybe_stop_time ? *maybe_stop_time : INFINITY;
-    instance->time = start_time;
-    instance->nextCommunicationPoint = start_time;
-    instance->state = InitializationMode;
-    return map_status(OK);
+    const bool toleranceDefined = maybe_tolerance != NULL;
+    const double tolerance = toleranceDefined ? *maybe_tolerance : 0.0;
+    const bool stopTimeDefined = maybe_stop_time != NULL;
+    const double stopTime = stopTimeDefined ? *maybe_stop_time : 0.0;
+
+    Status status = setupExperiment(
+        instance,
+        toleranceDefined,
+        tolerance,
+        start_time,
+        stopTimeDefined,
+        stopTime);
+    if (status != OK) {
+        return map_status(wasm_apply_status(instance, status));
+    }
+
+    status = enterInitializationMode(instance);
+    return map_status(wasm_apply_status(instance, status));
 }
 
 exports_fmi_fmi3_co_simulation_status_t
@@ -427,15 +340,7 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_exit_initialization
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
 {
     ModelInstance *instance = wasm_comp(self);
-    Status status = OK;
-    if (instance->isDirtyValues) {
-        status = calculateValues(instance);
-        instance->isDirtyValues = false;
-    }
-    if (status == OK) {
-        instance->state = instance->eventModeUsed ? EventMode : StepMode;
-        status = configurate(instance);
-    }
+    Status status = exitInitializationMode(instance);
     return map_status(wasm_apply_status(instance, status));
 }
 
@@ -444,8 +349,8 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_enter_event_mode(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
 {
     ModelInstance *instance = wasm_comp(self);
-    instance->state = EventMode;
-    return map_status(OK);
+    Status status = enterEventMode(instance);
+    return map_status(wasm_apply_status(instance, status));
 }
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_update_discrete_states(
@@ -454,23 +359,37 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_update_discret
     exports_fmi_fmi3_co_simulation_status_t *err)
 {
     ModelInstance *instance = wasm_comp(self);
+    bool discreteStatesNeedUpdate = false;
+    bool terminateSimulation = false;
+    bool nominalsOfContinuousStatesChanged = false;
+    bool valuesOfContinuousStatesChanged = false;
+    bool nextEventTimeDefined = false;
+    double nextEventTime = 0.0;
+
 #ifdef EVENT_UPDATE
-    Status st = eventUpdate(instance);
+    Status st = updateDiscreteStates(
+        instance,
+        &discreteStatesNeedUpdate,
+        &terminateSimulation,
+        &nominalsOfContinuousStatesChanged,
+        &valuesOfContinuousStatesChanged,
+        &nextEventTimeDefined,
+        &nextEventTime);
     if (st != OK && st != Warning) {
         *err = map_status(wasm_apply_status(instance, st));
         return false;
     }
 #else
     Status st = OK;
+    (void)st;
 #endif
 
-    ok->new_discrete_states_needed = instance->newDiscreteStatesNeeded;
-    ok->terminate_simulation = instance->terminateSimulation;
-    ok->nominals_of_continuous_states_changed = instance->nominalsOfContinuousStatesChanged;
-    ok->values_of_continuous_states_changed = instance->valuesOfContinuousStatesChanged;
-    ok->next_event_time_defined = instance->nextEventTimeDefined;
-    ok->next_event_time = instance->nextEventTime;
-    (void)st;
+    ok->new_discrete_states_needed = discreteStatesNeedUpdate;
+    ok->terminate_simulation = terminateSimulation;
+    ok->nominals_of_continuous_states_changed = nominalsOfContinuousStatesChanged;
+    ok->values_of_continuous_states_changed = valuesOfContinuousStatesChanged;
+    ok->next_event_time_defined = nextEventTimeDefined;
+    ok->next_event_time = nextEventTime;
     return true;
 }
 
@@ -478,8 +397,9 @@ exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_terminate(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
 {
-    wasm_comp(self)->state = Terminated;
-    return map_status(OK);
+    ModelInstance *instance = wasm_comp(self);
+    Status status = terminate(instance);
+    return map_status(wasm_apply_status(instance, status));
 }
 
 exports_fmi_fmi3_co_simulation_status_t
@@ -495,8 +415,8 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_enter_configuration
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
 {
     ModelInstance *instance = wasm_comp(self);
-    instance->state = (instance->state == Instantiated) ? ConfigurationMode : ReconfigurationMode;
-    return map_status(OK);
+    Status status = enterConfigurationMode(instance);
+    return map_status(wasm_apply_status(instance, status));
 }
 
 exports_fmi_fmi3_co_simulation_status_t
@@ -504,12 +424,8 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_exit_configuration_
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
 {
     ModelInstance *instance = wasm_comp(self);
-    if (instance->state == ConfigurationMode) {
-        instance->state = Instantiated;
-    } else {
-        instance->state = StepMode;
-    }
-    return map_status(OK);
+    Status status = exitConfigurationMode(instance);
+    return map_status(wasm_apply_status(instance, status));
 }
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_float64(
@@ -659,14 +575,176 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_fmu_state(
     return map_status(wasm_apply_status(instance, st));
 }
 
-static size_t valueReferenceElementIndex(const exports_fmi_fmi3_co_simulation_value_reference_t *valueReferences, size_t position) {
-    size_t index = 0;
-    for (size_t k = 0; k < position; k++) {
-        if (valueReferences[k] == valueReferences[position]) {
-            index++;
+static Status wasm_get_directional_derivative(
+    ModelInstance *instance,
+    const ValueReference unknowns[],
+    size_t nUnknowns,
+    const ValueReference knowns[],
+    size_t nKnowns,
+    const double seeds[],
+    size_t nSeeds,
+    double sensitivities[],
+    size_t nSensitivities)
+{
+    size_t sensitivityIndex = 0;
+
+    for (size_t i = 0; i < nUnknowns; i++) {
+        const ValueReference unknown = unknowns[i];
+
+        size_t unknownSize = 0;
+        Status status = getVariableSize(instance, unknown, &unknownSize);
+        if (status != OK) {
+            return status;
+        }
+
+        for (size_t ii = 0; ii < unknownSize; ii++) {
+            double sensitivity = 0.0;
+            size_t seedIndex = 0;
+
+            for (size_t j = 0; j < nKnowns; j++) {
+                const ValueReference known = knowns[j];
+
+                size_t knownSize = 0;
+                status = getVariableSize(instance, known, &knownSize);
+                if (status != OK) {
+                    return status;
+                }
+
+                for (size_t jj = 0; jj < knownSize; jj++) {
+                    if (seedIndex >= nSeeds) {
+                        logError(instance, "Expected nSeeds > %zu", nSeeds);
+                        return Error;
+                    }
+
+                    const double seed = seeds[seedIndex++];
+                    double partialDerivative = 0.0;
+
+                    status = getPartialDerivative(
+                        instance,
+                        unknown,
+                        ii,
+                        known,
+                        jj,
+                        &partialDerivative);
+                    if (status != OK) {
+                        return status;
+                    }
+
+                    sensitivity += partialDerivative * seed;
+                }
+            }
+
+            if (sensitivityIndex >= nSensitivities) {
+                logError(instance, "Expected nSensitivities > %zu", nSensitivities);
+                return Error;
+            }
+
+            sensitivities[sensitivityIndex++] = sensitivity;
         }
     }
-    return index;
+
+    return OK;
+}
+
+static Status wasm_get_adjoint_derivative(
+    ModelInstance *instance,
+    const ValueReference unknowns[],
+    size_t nUnknowns,
+    const ValueReference knowns[],
+    size_t nKnowns,
+    const double seeds[],
+    size_t nSeeds,
+    double sensitivities[],
+    size_t nSensitivities)
+{
+    size_t nUnknownElements = 0;
+    for (size_t i = 0; i < nUnknowns; i++) {
+        size_t unknownSize = 0;
+        Status status = getVariableSize(instance, unknowns[i], &unknownSize);
+        if (status != OK) {
+            return status;
+        }
+        nUnknownElements += unknownSize;
+    }
+
+    size_t nKnownElements = 0;
+    for (size_t j = 0; j < nKnowns; j++) {
+        size_t knownSize = 0;
+        Status status = getVariableSize(instance, knowns[j], &knownSize);
+        if (status != OK) {
+            return status;
+        }
+        nKnownElements += knownSize;
+    }
+
+    if (nSeeds < nUnknownElements) {
+        logError(instance, "Expected nSeeds >= %zu", nUnknownElements);
+        return Error;
+    }
+
+    if (nSensitivities < nKnownElements) {
+        logError(instance, "Expected nSensitivities >= %zu", nKnownElements);
+        return Error;
+    }
+
+    size_t sensitivityIndex = 0;
+
+    for (size_t j = 0; j < nKnowns; j++) {
+        const ValueReference known = knowns[j];
+
+        size_t knownSize = 0;
+        Status status = getVariableSize(instance, known, &knownSize);
+        if (status != OK) {
+            return status;
+        }
+
+        for (size_t jj = 0; jj < knownSize; jj++) {
+            double s = 0.0;
+            size_t seedIndex = 0;
+
+            for (size_t i = 0; i < nUnknowns; i++) {
+                const ValueReference unknown = unknowns[i];
+
+                size_t unknownSize = 0;
+                status = getVariableSize(instance, unknown, &unknownSize);
+                if (status != OK) {
+                    return status;
+                }
+
+                for (size_t ii = 0; ii < unknownSize; ii++) {
+                    if (seedIndex >= nSeeds) {
+                        logError(instance, "Expected nSeeds > %zu", nSeeds);
+                        return Error;
+                    }
+
+                    const double seedValue = seeds[seedIndex++];
+                    double partialDerivative = 0.0;
+
+                    status = getPartialDerivative(
+                        instance,
+                        unknown,
+                        ii,
+                        known,
+                        jj,
+                        &partialDerivative);
+                    if (status != OK) {
+                        return status;
+                    }
+
+                    s += partialDerivative * seedValue;
+                }
+            }
+
+            if (sensitivityIndex >= nSensitivities) {
+                logError(instance, "Expected nSensitivities > %zu", nSensitivities);
+                return Error;
+            }
+
+            sensitivities[sensitivityIndex++] = s;
+        }
+    }
+
+    return OK;
 }
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_directional_derivative(
@@ -677,34 +755,42 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_directiona
     co_simulation_fmu_list_f64_t *ret,
     exports_fmi_fmi3_co_simulation_status_t *err)
 {
-    size_t n = unknowns->len;
-    double *buf = (double *)calloc(n, sizeof(double));
+    ModelInstance *instance = wasm_comp(self);
+    size_t nUnknownElements = 0;
+    for (size_t i = 0; i < unknowns->len; i++) {
+        size_t size = 0;
+        Status st = getVariableSize(instance, (ValueReference)unknowns->ptr[i], &size);
+        if (st != OK) {
+            *err = map_status(wasm_apply_status(instance, st));
+            return false;
+        }
+        nUnknownElements += size;
+    }
+
+    double *buf = (double *)calloc(nUnknownElements, sizeof(double));
     if (!buf) {
         *err = FMI_FMI3_TYPES_STATUS_ERROR;
         return false;
     }
-    ModelInstance *instance = wasm_comp(self);
-    for (size_t i = 0; i < n; i++) {
-        buf[i] = 0.0;
-        for (size_t j = 0; j < knowns->len; j++) {
-            double partialDerivative = 0.0;
-            Status st = getPartialDerivative(
-                instance,
-                (ValueReference)unknowns->ptr[i],
-                valueReferenceElementIndex(unknowns->ptr, i),
-                (ValueReference)knowns->ptr[j],
-                valueReferenceElementIndex(knowns->ptr, j),
-                &partialDerivative);
-            if (st != OK) {
-                free(buf);
-                *err = map_status(wasm_apply_status(instance, st));
-                return false;
-            }
-            buf[i] += partialDerivative * seed->ptr[j];
-        }
+
+    Status st = wasm_get_directional_derivative(
+        instance,
+        unknowns->ptr,
+        unknowns->len,
+        knowns->ptr,
+        knowns->len,
+        seed->ptr,
+        seed->len,
+        buf,
+        nUnknownElements);
+    if (st != OK && st != Warning) {
+        free(buf);
+        *err = map_status(wasm_apply_status(instance, st));
+        return false;
     }
+
     ret->ptr = buf;
-    ret->len = n;
+    ret->len = nUnknownElements;
     return true;
 }
 
@@ -716,34 +802,42 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_adjoint_de
     co_simulation_fmu_list_f64_t *ret,
     exports_fmi_fmi3_co_simulation_status_t *err)
 {
-    size_t n = knowns->len;
-    double *buf = (double *)calloc(n, sizeof(double));
+    ModelInstance *instance = wasm_comp(self);
+    size_t nKnownElements = 0;
+    for (size_t j = 0; j < knowns->len; j++) {
+        size_t size = 0;
+        Status st = getVariableSize(instance, (ValueReference)knowns->ptr[j], &size);
+        if (st != OK) {
+            *err = map_status(wasm_apply_status(instance, st));
+            return false;
+        }
+        nKnownElements += size;
+    }
+
+    double *buf = (double *)calloc(nKnownElements, sizeof(double));
     if (!buf) {
         *err = FMI_FMI3_TYPES_STATUS_ERROR;
         return false;
     }
-    ModelInstance *instance = wasm_comp(self);
-    for (size_t i = 0; i < n; i++) {
-        buf[i] = 0.0;
-        for (size_t j = 0; j < unknowns->len; j++) {
-            double partialDerivative = 0.0;
-            Status st = getPartialDerivative(
-                instance,
-                (ValueReference)unknowns->ptr[j],
-                valueReferenceElementIndex(unknowns->ptr, j),
-                (ValueReference)knowns->ptr[i],
-                valueReferenceElementIndex(knowns->ptr, i),
-                &partialDerivative);
-            if (st != OK) {
-                free(buf);
-                *err = map_status(wasm_apply_status(instance, st));
-                return false;
-            }
-            buf[i] += partialDerivative * seed->ptr[j];
-        }
+
+    Status st = wasm_get_adjoint_derivative(
+        instance,
+        unknowns->ptr,
+        unknowns->len,
+        knowns->ptr,
+        knowns->len,
+        seed->ptr,
+        seed->len,
+        buf,
+        nKnownElements);
+    if (st != OK && st != Warning) {
+        free(buf);
+        *err = map_status(wasm_apply_status(instance, st));
+        return false;
     }
+
     ret->ptr = buf;
-    ret->len = n;
+    ret->len = nKnownElements;
     return true;
 }
 
@@ -876,18 +970,17 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_do_step(
     exports_fmi_fmi3_co_simulation_do_step_result_t *ret,
     exports_fmi_fmi3_co_simulation_status_t *err)
 {
-    (void)no_set_fmu_state_prior_to_current_point;
-
     ModelInstance *instance = wasm_comp(self);
     bool eventHandlingNeeded = false;
     bool terminateSimulation = false;
     bool earlyReturn = false;
     double lastSuccessfulTime = 0.0;
 
-    Status st = wasm_do_step(
+    Status st = doStep(
         instance,
         current_communication_point,
         communication_step_size,
+        no_set_fmu_state_prior_to_current_point,
         &eventHandlingNeeded,
         &terminateSimulation,
         &earlyReturn,
@@ -917,6 +1010,7 @@ exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_enter_step_mode(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
 {
-    wasm_comp(self)->state = StepMode;
-    return map_status(OK);
+    ModelInstance *instance = wasm_comp(self);
+    Status status = enterStepMode(instance);
+    return map_status(wasm_apply_status(instance, status));
 }
