@@ -61,10 +61,22 @@ do { \
     return fmi2OK;
 
 #define GET_BOOLEAN_VARIABLES \
-    return fmi2Error;
+do { \
+    UNUSED(c); \
+    UNUSED(vr); \
+    UNUSED(nvr); \
+    UNUSED(value); \
+    return fmi2Error; \
+} while (false)
 
 #define SET_BOOLEAN_VARIABLES \
-    return fmi2Error;
+do { \
+    UNUSED(c); \
+    UNUSED(vr); \
+    UNUSED(nvr); \
+    UNUSED(value); \
+    return fmi2Error; \
+} while (false)
 
 #ifndef DT_EVENT_DETECT
 #define DT_EVENT_DETECT 1e-10
@@ -339,6 +351,7 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReferenc
 /* Simulating the slave */
 fmi2Status fmi2SetRealInputDerivatives(fmi2Component c, const fmi2ValueReference vr[], size_t nvr,
                                      const fmi2Integer order[], const fmi2Real value[]) {
+    UNUSED(c);
     UNUSED(vr);
     UNUSED(nvr);
     UNUSED(order);
@@ -423,11 +436,16 @@ static Status getStatus(char* fname, ModelInstance* S, const fmi2StatusKind s) {
 }
 
 fmi2Status fmi2GetStatus(fmi2Component c, const fmi2StatusKind s, fmi2Status *value) {
-    // TODO
+    UNUSED(c);
+    UNUSED(s);
+    UNUSED(value);
     return fmi2Discard;
 }
 
 fmi2Status fmi2GetRealStatus(fmi2Component c, const fmi2StatusKind s, fmi2Real *value) {
+    UNUSED(c);
+    UNUSED(s);
+    UNUSED(value);
     //BEGIN_FUNCTION(GetRealStatus);
 
     //if (s == fmi2LastSuccessfulTime) {
@@ -443,11 +461,16 @@ fmi2Status fmi2GetRealStatus(fmi2Component c, const fmi2StatusKind s, fmi2Real *
 }
 
 fmi2Status fmi2GetIntegerStatus(fmi2Component c, const fmi2StatusKind s, fmi2Integer *value) {
-    // TODO
+    UNUSED(c);
+    UNUSED(s);
+    UNUSED(value);
     return fmi2Discard;
 }
 
 fmi2Status fmi2GetBooleanStatus(fmi2Component c, const fmi2StatusKind s, fmi2Boolean *value) {
+    UNUSED(c);
+    UNUSED(s);
+    UNUSED(value);
     //BEGIN_FUNCTION(GetBooleanStatus);
 
     //if (s == fmi2Terminated) {
@@ -464,7 +487,9 @@ fmi2Status fmi2GetBooleanStatus(fmi2Component c, const fmi2StatusKind s, fmi2Boo
 }
 
 fmi2Status fmi2GetStringStatus(fmi2Component c, const fmi2StatusKind s, fmi2String *value) {
-    // TODO
+    UNUSED(c);
+    UNUSED(s);
+    UNUSED(value);
     return fmi2Discard;
 }
 

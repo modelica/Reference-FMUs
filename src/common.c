@@ -1035,13 +1035,13 @@ Status setFMUState(ModelInstance *instance, void* FMUState) {
     instance->eventModeUsed = s->eventModeUsed;
     instance->nextCommunicationPoint = s->nextCommunicationPoint;
 
-#if MAX_EVENT_INDICATORS > 0
+#if N_EVENT_INDICATORS > 0
     instance->nz = s->nz;
     memcpy(instance->z, s->z, s->nz * sizeof(double));
     memcpy(instance->prez, s->prez, s->nz * sizeof(double));
 #endif
 
-#if MAX_CONTINUOUS_STATES > 0
+#if N_CONTINUOUS_STATES > 0
     instance->nx = s->nx;
     memcpy(instance->x, s->x, s->nx * sizeof(double));
     memcpy(instance->dx, s->dx, s->nx * sizeof(double));
@@ -1053,6 +1053,8 @@ Status setFMUState(ModelInstance *instance, void* FMUState) {
 }
 
 Status freeFMUState(ModelInstance* instance, void* FMUState) {
+    UNUSED(instance);
+    UNUSED(FMUState);
     // TODO
     return Discard;
 }

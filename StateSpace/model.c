@@ -77,7 +77,7 @@ Status calculateValues(ModelInstance *instance) {
 }
 
 Status configurate(ModelInstance* instance) {
-    // nothing to do
+    UNUSED(instance);
     return OK;
 }
 
