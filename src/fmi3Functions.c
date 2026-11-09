@@ -606,6 +606,16 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
         nKnownElements += knownSize;
     }
 
+    if (nSeed < nUnknownElements) {
+        logError(instance, "Expected nSeed >= %zu", nUnknownElements);
+        return fmi3Error;
+    }
+
+    if (nSensitivity < nKnownElements) {
+        logError(instance, "Expected nSensitivity >= %zu", nKnownElements);
+        return fmi3Error;
+    }
+
     size_t sensitivityIndex = 0;
 
     for (size_t j = 0; j < nKnowns; j++) {
@@ -648,6 +658,11 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
 
                     s += partialDerivative * seedValue;
                 }
+            }
+
+            if (sensitivityIndex >= nSensitivity) {
+                logError(instance, "Expected nSensitivity > %zu", nSensitivity);
+                return fmi3Error;
             }
 
             sensitivity[sensitivityIndex++] = s;
