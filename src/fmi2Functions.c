@@ -220,7 +220,13 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
 
 fmi2Status fmi2SetupExperiment(fmi2Component c, fmi2Boolean toleranceDefined, fmi2Real tolerance,
                             fmi2Real startTime, fmi2Boolean stopTimeDefined, fmi2Real stopTime) {
-    return map_status(setupExperiment(c, toleranceDefined, tolerance, startTime, stopTimeDefined, stopTime));
+    return map_status(setupExperiment(
+        c,
+        toleranceDefined != fmi2False,
+        tolerance,
+        startTime,
+        stopTimeDefined != fmi2False,
+        stopTime));
 }
 
 fmi2Status fmi2EnterInitializationMode(fmi2Component c) {
@@ -261,7 +267,7 @@ const char* fmi2GetTypesPlatform(void) {
 // ---------------------------------------------------------------------------
 
 fmi2Status fmi2SetDebugLogging(fmi2Component c, fmi2Boolean loggingOn, size_t nCategories, const fmi2String categories[]) {
-    return map_status(setDebugLogging(c, loggingOn, nCategories, categories));
+    return map_status(setDebugLogging(c, loggingOn != fmi2False, nCategories, categories));
 }
 
 fmi2Status fmi2GetReal(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Real value[]) {
@@ -318,11 +324,11 @@ fmi2Status fmi2SerializedFMUstateSize(fmi2Component c, fmi2FMUstate FMUstate, si
 }
 
 fmi2Status fmi2SerializeFMUstate(fmi2Component c, fmi2FMUstate FMUstate, fmi2Byte serializedState[], size_t size) {
-    return map_status(serializeFMUState(c, FMUstate, serializedState, size));
+    return map_status(serializeFMUState(c, FMUstate, (uint8_t *)(void *)serializedState, size));
 }
 
 fmi2Status fmi2DeSerializeFMUstate(fmi2Component c, const fmi2Byte serializedState[], size_t size, fmi2FMUstate* FMUstate) {
-    return map_status(deserializeFMUState(c, serializedState, size, FMUstate));
+    return map_status(deserializeFMUState(c, (const uint8_t *)(const void *)serializedState, size, (void **)FMUstate));
 }
 
 fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReference vUnknown_ref[], size_t nUnknown,
@@ -402,7 +408,7 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
         c,
         currentCommunicationPoint,
         communicationStepSize,
-        noSetFMUStatePriorToCurrentPoint,
+        noSetFMUStatePriorToCurrentPoint != fmi2False,
         &eventHandlingNeeded,
         &terminateSimulation,
         &earlyReturn,
@@ -520,11 +526,11 @@ fmi2Status fmi2NewDiscreteStates(fmi2Component c, fmi2EventInfo *eventInfo) {
         &nextEventTime
     );
 
-    eventInfo->newDiscreteStatesNeeded = discreteStatesNeedUpdate;
-    eventInfo->terminateSimulation = terminateSimulation;
-    eventInfo->nominalsOfContinuousStatesChanged = nominalsOfContinuousStatesChanged;
-    eventInfo->valuesOfContinuousStatesChanged = valuesOfContinuousStatesChanged;
-    eventInfo->nextEventTimeDefined = nextEventTimeDefined;
+    eventInfo->newDiscreteStatesNeeded = discreteStatesNeedUpdate ? fmi2True : fmi2False;
+    eventInfo->terminateSimulation = terminateSimulation ? fmi2True : fmi2False;
+    eventInfo->nominalsOfContinuousStatesChanged = nominalsOfContinuousStatesChanged ? fmi2True : fmi2False;
+    eventInfo->valuesOfContinuousStatesChanged = valuesOfContinuousStatesChanged ? fmi2True : fmi2False;
+    eventInfo->nextEventTimeDefined = nextEventTimeDefined ? fmi2True : fmi2False;
     eventInfo->nextEventTime = nextEventTime;
 
     return map_status(status);
@@ -541,7 +547,23 @@ fmi2Status fmi2EnterContinuousTimeMode(fmi2Component c) {
 
 fmi2Status fmi2CompletedIntegratorStep(fmi2Component c, fmi2Boolean noSetFMUStatePriorToCurrentPoint,
                                      fmi2Boolean *enterEventMode, fmi2Boolean *terminateSimulation) {
-    return map_status(completedIntegratorStep(c, noSetFMUStatePriorToCurrentPoint, enterEventMode, terminateSimulation));
+    bool enterEvent = false;
+    bool terminate = false;
+
+    const Status status = completedIntegratorStep(
+        c,
+        noSetFMUStatePriorToCurrentPoint != fmi2False,
+        &enterEvent,
+        &terminate);
+
+    if (enterEventMode) {
+        *enterEventMode = enterEvent ? fmi2True : fmi2False;
+    }
+    if (terminateSimulation) {
+        *terminateSimulation = terminate ? fmi2True : fmi2False;
+    }
+
+    return map_status(status);
 }
 
 /* Providing independent variables and re-initialization of caching */
