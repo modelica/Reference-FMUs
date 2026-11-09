@@ -39,7 +39,7 @@ Status setStartValues(ModelInstance *instance) {
 Status calculateValues(ModelInstance *instance) {
     ASSERT_NOT_NULL2(instance);
 
-    // der(x) = Ax + Bu
+    // der(x) = A * x + B * u
     for (size_t i = 0; i < M(n); i++) {
 
         M(der_x)[i] = 0;
@@ -50,13 +50,12 @@ Status calculateValues(ModelInstance *instance) {
     }
 
     for (size_t i = 0; i < M(n); i++) {
-
         for (size_t j = 0; j < M(m); j++) {
             M(der_x)[i] += M(B)[i][j] * M(u)[j];
         }
     }
 
-    // y = Cx + Du
+    // y = C * x + D * u
     for (size_t i = 0; i < M(r); i++) {
 
         M(y)[i] = 0;
@@ -67,7 +66,6 @@ Status calculateValues(ModelInstance *instance) {
     }
 
     for (size_t i = 0; i < M(r); i++) {
-
         for (size_t j = 0; j < M(m); j++) {
             M(y)[i] += M(D)[i][j] * M(u)[j];
         }
