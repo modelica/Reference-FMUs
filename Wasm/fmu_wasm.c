@@ -47,12 +47,8 @@ static Status wasm_apply_status(ModelInstance *instance, Status status) {
     if (status == Discard) {
         return status;
     }
-    if (status == Error) {
+    if (status == Error || status == Fatal) {
         instance->state = Terminated;
-        return status;
-    }
-    if (status == Fatal) {
-        instance->state = StartAndEnd;
         return status;
     }
     return status;
