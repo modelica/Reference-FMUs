@@ -320,49 +320,6 @@ bool isClose(double a, double b) {
     return fmiAbs(a - b) <= EPSILON * fmiMax(fmiAbs(a), fmiAbs(b));
 }
 
-bool invalidNumber(ModelInstance *instance, const char *f, const char *arg, size_t actual, size_t expected) {
-
-    if (actual != expected) {
-        instance->state = Terminated;
-        logError(instance, "%s: Invalid argument %s = %d. Expected %d.", f, arg, actual, expected);
-        return true;
-    }
-
-    return false;
-}
-
-bool invalidState(ModelInstance *instance, const char *f, int statesExpected) {
-
-    UNUSED(f);
-    UNUSED(statesExpected);
-
-    if (!instance) {
-        return true;
-    }
-
-    // TODO: add missing states and check state
-    return false;
-
-//    if (!(instance->state & statesExpected)) {
-//        instance->state = modelError;
-//        logError(instance, "%s: Illegal call sequence.", f);
-//        return true;
-//    }
-//
-//    return false;
-}
-
-bool nullPointer(ModelInstance *instance, const char *f, const char *arg, const void *p) {
-
-    if (!p) {
-        instance->state = Terminated;
-        logError(instance, "%s: Invalid argument %s = NULL.", f, arg);
-        return true;
-    }
-
-    return false;
-}
-
 Status setupExperiment(
     ModelInstance *instance,
     bool toleranceDefined,
@@ -1098,12 +1055,10 @@ Status serializeFMUState(
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(FMUState);
     ASSERT_NOT_NULL2(serializedState);
-
-    if (invalidNumber(instance, "serializeFMUState", "size", size, sizeof(ModelInstance))) {
-        return Error;
-    }
+    ASSERT_SIZE_T(size, sizeof(ModelInstance));
 
     memcpy(serializedState, FMUState, size);
+
     return OK;
 }
 
@@ -1115,11 +1070,7 @@ Status deserializeFMUState(
 ) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(serializedState);
-    ASSERT_NOT_NULL2(FMUState);
-
-    if (invalidNumber(instance, "deserializeFMUState", "size", size, sizeof(ModelInstance))) {
-        return Error;
-    }
+    ASSERT_SIZE_T(size, sizeof(ModelInstance));
 
     if (*FMUState == NULL) {
         *FMUState = calloc(1, sizeof(ModelInstance));
@@ -1130,5 +1081,6 @@ Status deserializeFMUState(
     }
 
     memcpy(*FMUState, serializedState, size);
+
     return OK;
 }

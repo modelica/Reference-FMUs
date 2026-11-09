@@ -606,14 +606,6 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
         nKnownElements += knownSize;
     }
 
-    if (invalidNumber((ModelInstance *)instance, "fmi3GetAdjointDerivative", "nSeed", nSeed, nUnknownElements)) {
-        return fmi3Error;
-    }
-
-    if (invalidNumber((ModelInstance *)instance, "fmi3GetAdjointDerivative", "nSensitivity", nSensitivity, nKnownElements)) {
-        return fmi3Error;
-    }
-
     size_t sensitivityIndex = 0;
 
     for (size_t j = 0; j < nKnowns; j++) {
