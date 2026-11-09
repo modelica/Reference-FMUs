@@ -1,4 +1,5 @@
 # build artifacts
+.agent-scripts/
 __pycache__
 .cache
 .idea/
