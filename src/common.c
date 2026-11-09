@@ -282,7 +282,7 @@ Status configurate(ModelInstance *instance) {
     CALL(getEventIndicators(instance, instance->prez, instance->nz));
 #endif
 
-#if MAX_CONTINUOUS_STATES > 0
+#ifdef MAX_CONTINUOUS_STATES
     CALL(getNumberOfContinuousStates(instance, &instance->nx));
 #endif
 
@@ -922,6 +922,15 @@ Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
     ASSERT_SIZE_T(nx, 0);
     return OK;
 }
+#else
+#ifndef VARIABLE_NX
+Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
+    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL2(nContinuousStates);
+    *nContinuousStates = MAX_CONTINUOUS_STATES;
+    return OK;
+}
+#endif
 #endif
 
 #ifndef MAX_EVENT_INDICATORS
@@ -936,6 +945,13 @@ Status getEventIndicators(ModelInstance *instance, double z[], size_t nz) {
     ASSERT_NOT_NULL2(instance);
     UNUSED(z);
     ASSERT_SIZE_T(nz, 0);
+    return OK;
+}
+#else
+Status getNumberOfEventIndicators(ModelInstance* instance, size_t* nEventIndicators) {
+    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL2(nEventIndicators);
+    *nEventIndicators = MAX_EVENT_INDICATORS;
     return OK;
 }
 #endif

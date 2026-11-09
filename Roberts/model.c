@@ -176,16 +176,6 @@ Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[
     return OK;
 }
 
-size_t getNumberOfContinuousStates(ModelInstance *instance) {
-    UNUSED(instance);
-    return MAX_CONTINUOUS_STATES;
-}
-
-size_t getNumberOfEventIndicators(ModelInstance *instance) {
-    UNUSED(instance);
-    return MAX_EVENT_INDICATORS;
-}
-
 Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double* partialDerivative) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(partialDerivative);

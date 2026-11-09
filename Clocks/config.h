@@ -13,7 +13,6 @@
 
 #define DEFAULT_STOP_TIME 3
 
-#define EVENT_UPDATE
 #define ACTIVATE_CLOCK
 #define GET_INT32
 #define SET_INT32

@@ -100,13 +100,6 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
     return OK;
 }
 
-Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(nContinuousStates);
-    *nContinuousStates = MAX_CONTINUOUS_STATES;
-    return OK;
-}
-
 Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(x);

@@ -117,11 +117,6 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
     return OK;
 }
 
-size_t getNumberOfContinuousStates(ModelInstance *instance) {
-    UNUSED(instance);
-    return MAX_CONTINUOUS_STATES;
-}
-
 Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(x);
@@ -193,17 +188,6 @@ Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, siz
     } else {
         *partialDerivative = 0;
     }
-
-    return OK;
-}
-
-Status eventUpdate(ModelInstance *instance) {
-    ASSERT_NOT_NULL2(instance);
-
-    instance->valuesOfContinuousStatesChanged   = false;
-    instance->nominalsOfContinuousStatesChanged = false;
-    instance->terminateSimulation               = false;
-    instance->nextEventTimeDefined              = false;
 
     return OK;
 }

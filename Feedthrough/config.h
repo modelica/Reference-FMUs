@@ -40,8 +40,6 @@
 #define SET_STRING
 #define SET_BINARY
 
-#define EVENT_UPDATE
-
 #define FIXED_SOLVER_STEP 0.1
 #define DEFAULT_STOP_TIME 2
 

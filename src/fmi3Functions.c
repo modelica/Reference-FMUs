@@ -592,37 +592,75 @@ fmi3Status fmi3GetAdjointDerivative(fmi3Instance instance,
     fmi3Float64 sensitivity[],
     size_t nSensitivity) {
 
-    if (invalidNumber((ModelInstance *)instance, "fmi3GetAdjointDerivative", "nSensitivity", nSensitivity, nKnowns)) {
+    size_t nUnknownElements = 0;
+    for (size_t i = 0; i < nUnknowns; i++) {
+        size_t unknownSize = 0;
+        CALL(getVariableSize(instance, (ValueReference)unknowns[i], &unknownSize));
+        nUnknownElements += unknownSize;
+    }
+
+    size_t nKnownElements = 0;
+    for (size_t j = 0; j < nKnowns; j++) {
+        size_t knownSize = 0;
+        CALL(getVariableSize(instance, (ValueReference)knowns[j], &knownSize));
+        nKnownElements += knownSize;
+    }
+
+    if (invalidNumber((ModelInstance *)instance, "fmi3GetAdjointDerivative", "nSeed", nSeed, nUnknownElements)) {
         return fmi3Error;
     }
 
-    if (invalidNumber((ModelInstance *)instance, "fmi3GetAdjointDerivative", "nSeed", nSeed, nUnknowns)) {
+    if (invalidNumber((ModelInstance *)instance, "fmi3GetAdjointDerivative", "nSensitivity", nSensitivity, nKnownElements)) {
         return fmi3Error;
     }
 
-    //for (size_t i = 0; i < nKnowns; i++) {
+    size_t sensitivityIndex = 0;
 
-    //    sensitivity[i] = 0;
-    //    
-    //    for (size_t j = 0; j < nUnknowns; j++) {
-    //        double partialDerivative = 0;
-    //        
-    //        fmi3Status result = map_status(getPartialDerivative(
-    //            instance,
-    //            (ValueReference)unknowns[j],
-    //            valueReferenceElementIndex(unknowns, j),
-    //            (ValueReference)knowns[i],
-    //            valueReferenceElementIndex(knowns, i),
-    //            &partialDerivative
-    //        ));
+    for (size_t j = 0; j < nKnowns; j++) {
 
-    //        if (result != fmi3OK) {
-    //            return result;
-    //        }
+        const ValueReference known = (ValueReference)knowns[j];
 
-    //        sensitivity[i] += partialDerivative * seed[j];
-    //    }
-    //}
+        size_t knownSize = 0;
+        CALL(getVariableSize(instance, (ValueReference)knowns[j], &knownSize));
+
+        for (size_t jj = 0; jj < knownSize; jj++) {
+
+            double s = 0.0;
+            size_t seedIndex = 0;
+
+            for (size_t i = 0; i < nUnknowns; i++) {
+
+                const ValueReference unknown = (ValueReference)unknowns[i];
+
+                size_t unknownSize = 0;
+                CALL(getVariableSize(instance, (ValueReference)unknowns[i], &unknownSize));
+
+                for (size_t ii = 0; ii < unknownSize; ii++) {
+
+                    if (seedIndex >= nSeed) {
+                        logError(instance, "Expected nSeed > %zu", nSeed);
+                        return fmi3Error;
+                    }
+
+                    const double seedValue = seed[seedIndex++];
+
+                    double partialDerivative = 0.0;
+
+                    CALL(getPartialDerivative(instance,
+                        unknown,
+                        ii,
+                        known,
+                        jj,
+                        &partialDerivative)
+                    );
+
+                    s += partialDerivative * seedValue;
+                }
+            }
+
+            sensitivity[sensitivityIndex++] = s;
+        }
+    }
 
     return fmi3OK;
 }

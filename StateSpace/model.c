@@ -345,6 +345,7 @@ Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t valu
 
 Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
     ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL2(nContinuousStates);
     *nContinuousStates = (size_t)M(n);
     return OK;
 }

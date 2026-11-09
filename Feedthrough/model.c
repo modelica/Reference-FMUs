@@ -823,16 +823,3 @@ Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[]
 
     return OK;
 }
-
-Status eventUpdate(ModelInstance *instance) {
-    ASSERT_NOT_NULL2(instance);
-
-    instance->valuesOfContinuousStatesChanged   = false;
-    instance->nominalsOfContinuousStatesChanged = false;
-    instance->terminateSimulation               = false;
-    instance->nextEventTimeDefined              = false;
-
-    instance->isDirtyValues = true;
-
-    return OK;
-}

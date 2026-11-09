@@ -223,18 +223,6 @@ Status updateDiscreteStates(
     return OK;
 }
 
-Status getNumberOfEventIndicators(ModelInstance *instance, size_t* nEventIndicators) {
-    UNUSED(instance);
-    *nEventIndicators = MAX_EVENT_INDICATORS;
-    return OK;
-}
-
-Status getNumberOfContinuousStates(ModelInstance *instance, size_t* nContinuousStates) {
-    UNUSED(instance);
-    *nContinuousStates = MAX_CONTINUOUS_STATES;
-    return OK;
-}
-
 Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(x);
