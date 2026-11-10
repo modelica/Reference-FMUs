@@ -202,18 +202,23 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
     }
 }
 
-Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues, size_t *index) {
-
-    ASSERT_NVALUES(1);
+Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_input2:
-        M(input2) = values[(*index)++];
-        return OK;
+        M(input2) = values[0];
+        break;
     default:
         logError(instance, "Set Int32 is not allowed for value reference %u.", vr);
         return Discard;
     }
+
+    instance->isDirtyValues = true;
+
+    return OK;
 }
 
 Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues) {

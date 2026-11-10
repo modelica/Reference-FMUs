@@ -128,15 +128,20 @@ static Status getNValues(
     if (nValueReferences > 0) {                                                                                        \
         ASSERT_NOT_NULL(valueReferences);                                                                              \
     }                                                                                                                  \
+    ASSERT_NVALUES;                                                                                                    \
     if (nValues > 0) {                                                                                                 \
         ASSERT_NOT_NULL(values);                                                                                       \
     }                                                                                                                  \
-    size_t index = 0;                                                                                                  \
+    size_t j = 0;                                                                                                      \
     for (size_t i = 0; i < nValueReferences; i++) {                                                                    \
-        fmi3Status result = map_status(set##T(instance, (ValueReference)valueReferences[i], values, nValues, &index)); \
+        const ValueReference vr = (ValueReference)valueReferences[i];                                                  \
+        size_t size = 0;                                                                                               \
+        CALL(getVariableSize(instance, vr, &size));                                                                    \
+        fmi3Status result = map_status(set##T(instance, vr, &values[j], size));                                        \
         if (result != fmi3OK) {                                                                                        \
             return result;                                                                                             \
         }                                                                                                              \
+        j += size;                                                                                                     \
     }                                                                                                                  \
     return fmi3OK;
 
@@ -532,12 +537,16 @@ fmi3Status fmi3SetBinary(fmi3Instance instance,
                          const size_t valueSizes[],
                          const fmi3Binary values[],
                          size_t nValues) {
-    size_t index = 0;
+    if (nValueReferences > 0) {
+        ASSERT_NOT_NULL(valueReferences);
+    }
+    ASSERT_NVALUES;
+    if (nValues > 0) {
+        ASSERT_NOT_NULL(valueSizes);
+        ASSERT_NOT_NULL(values);
+    }
     for (size_t i = 0; i < nValueReferences; i++) {
-        fmi3Status result = map_status(setBinary(instance, (ValueReference)valueReferences[i], valueSizes, (const char *const *)values, nValues, &index));
-        if (result != fmi3OK) {
-            return result;
-        }
+        CALL(setBinary(instance, (ValueReference)valueReferences[i], &valueSizes[i], (const char *const *)&values[i], 1));
     }
     return fmi3OK;
 }
@@ -548,10 +557,7 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
                         const fmi3Clock values[]) {
     for (size_t i = 0; i < nValueReferences; i++) {
         if (values[i]) {
-            fmi3Status result = map_status(activateClock(instance, (ValueReference)valueReferences[i]));
-            if (result != fmi3OK) {
-                return result;
-            }
+            CALL(activateClock(instance, (ValueReference)valueReferences[i]));
         }
     }
     return fmi3OK;

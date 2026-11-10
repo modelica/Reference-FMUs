@@ -142,19 +142,19 @@ Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], siz
 Status getString(ModelInstance *instance, ValueReference vr, const char *values[], size_t nValues);
 Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], const char *values[], size_t nValues);
 
-Status setFloat32(ModelInstance *instance, ValueReference vr, const float values[], size_t nValues, size_t *index);
-Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t *index);
-Status setInt8(ModelInstance *instance, ValueReference vr, const int8_t values[], size_t nValues, size_t *index);
-Status setUInt8(ModelInstance *instance, ValueReference vr, const uint8_t values[], size_t nValues, size_t *index);
-Status setInt16(ModelInstance *instance, ValueReference vr, const int16_t values[], size_t nValues, size_t *index);
-Status setUInt16(ModelInstance *instance, ValueReference vr, const uint16_t values[], size_t nValues, size_t *index);
-Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues, size_t *index);
-Status setUInt32(ModelInstance *instance, ValueReference vr, const uint32_t values[], size_t nValues, size_t *index);
-Status setInt64(ModelInstance *instance, ValueReference vr, const int64_t values[], size_t nValues, size_t *index);
-Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t values[], size_t nValues, size_t *index);
-Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[], size_t nValues, size_t *index);
-Status setString(ModelInstance *instance, ValueReference vr, const char *const values[], size_t nValues, size_t *index);
-Status setBinary(ModelInstance *instance, ValueReference vr, const size_t sizes[], const char *const values[], size_t nValues, size_t *index);
+Status setFloat32(ModelInstance *instance, ValueReference vr, const float values[], size_t nValues);
+Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues);
+Status setInt8(ModelInstance *instance, ValueReference vr, const int8_t values[], size_t nValues);
+Status setUInt8(ModelInstance *instance, ValueReference vr, const uint8_t values[], size_t nValues);
+Status setInt16(ModelInstance *instance, ValueReference vr, const int16_t values[], size_t nValues);
+Status setUInt16(ModelInstance *instance, ValueReference vr, const uint16_t values[], size_t nValues);
+Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues);
+Status setUInt32(ModelInstance *instance, ValueReference vr, const uint32_t values[], size_t nValues);
+Status setInt64(ModelInstance *instance, ValueReference vr, const int64_t values[], size_t nValues);
+Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t values[], size_t nValues);
+Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[], size_t nValues);
+Status setString(ModelInstance *instance, ValueReference vr, const char *const values[], size_t nValues);
+Status setBinary(ModelInstance *instance, ValueReference vr, const size_t sizes[], const char *const values[], size_t nValues);
 
 Status activateClock(ModelInstance *instance, ValueReference vr);
 Status getClock(ModelInstance *instance, ValueReference vr, bool *value);

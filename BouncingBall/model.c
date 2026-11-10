@@ -84,13 +84,12 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
     }
 }
 
-Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t *index) {
+Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
-
     case vr_h:
         if (instance->state != Instantiated &&
             instance->state != InitializationMode &&
@@ -99,10 +98,8 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
             logError(instance, "Variable \"h\" can only be set in Instantiated Mode, Initialization Mode, Continuous Time Mode, and Event Mode.");
             return Discard;
         }
-        ASSERT_NVALUES(1);
-        M(h) = values[(*index)++];
+        M(h) = values[0];
         break;
-
     case vr_v:
         if (instance->state != Instantiated &&
             instance->state != InitializationMode &&
@@ -111,10 +108,8 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
             logError(instance, "Variable \"v\" can only be set in Instantiated Mode, Initialization Mode, Continuous Time Mode, and Event Mode.");
             return Discard;
         }
-        ASSERT_NVALUES(1);
-        M(v) = values[(*index)++];
+        M(v) = values[0];
         break;
-
     case vr_g:
         if (instance->type == ModelExchange &&
             instance->state != Instantiated &&
@@ -122,10 +117,8 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
             logError(instance, "Variable g can only be set after instantiation or in initialization mode.");
             return Discard;
         }
-        ASSERT_NVALUES(1);
-        M(g) = values[(*index)++];
+        M(g) = values[0];
         break;
-
     case vr_e:
         if (instance->type == ModelExchange &&
             instance->state != Instantiated &&
@@ -134,19 +127,16 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
             logError(instance, "Variable e can only be set after instantiation, in initialization mode or event mode.");
             return Discard;
         }
-        ASSERT_NVALUES(1);
-        if (values[*index] < E_MIN || values[*index] > E_MAX) {
+        if (values[0] < E_MIN || values[0] > E_MAX) {
             logError(instance, "Variable \"e\" must be in the range [%g, %g] but was %g.",
-                     E_MIN, E_MAX, values[*index]);
+                     E_MIN, E_MAX, values[0]);
             return Discard;
         }
-        M(e) = values[(*index)++];
+        M(e) = values[0];
         break;
-
     case vr_v_min:
         logError(instance, "Variable v_min (value reference %u) is constant and cannot be set.", vr_v_min);
         return Discard;
-
     default:
         logError(instance, "Unexpected value reference: %u.", vr);
         return Discard;

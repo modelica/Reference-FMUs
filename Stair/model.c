@@ -66,10 +66,10 @@ Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], si
     }
 }
 
-Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues, size_t *index) {
+Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_counter:
@@ -77,15 +77,12 @@ Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values
             logError(instance, "Variable \"counter\" can only be set in Instantiated and Intialization Mode.");
             return Discard;
         }
-
-        ASSERT_NVALUES(1);
-        if (values[*index] > COUNTER_MAX) {
+        if (values[0] > COUNTER_MAX) {
             logError(instance, "Variable \"counter\" must be at most %d but was %d.",
-                     COUNTER_MAX, values[*index]);
+                     COUNTER_MAX, values[0]);
             return Discard;
         }
-        M(counter) = values[(*index)++];
-
+        M(counter) = values[0];
         break;
     default:
         logError(instance, "Set Int32 is not allowed for value reference %u.", vr);

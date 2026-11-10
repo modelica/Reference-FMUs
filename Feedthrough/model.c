@@ -419,15 +419,14 @@ Status getString(ModelInstance *instance, ValueReference vr, const char *values[
     }
 }
 
-Status setFloat32(ModelInstance *instance, ValueReference vr, const float values[], size_t nValues, size_t *index) {
+Status setFloat32(ModelInstance *instance, ValueReference vr, const float values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_Float32_continuous_input:
-        ASSERT_NVALUES(1);
-        M(Float32_continuous_input) = values[(*index)++];
+        M(Float32_continuous_input) = values[0];
         break;
     case vr_Float32_discrete_input:
         if (instance->type == ModelExchange &&
@@ -437,8 +436,7 @@ Status setFloat32(ModelInstance *instance, ValueReference vr, const float values
             logError(instance, "Variable Float32_discrete_input can only be set in after instantiation, in Initialization Mode, and in Event Mode.");
             return Discard;
         }
-        ASSERT_NVALUES(1);
-        M(Float32_discrete_input) = values[(*index)++];
+        M(Float32_discrete_input) = values[0];
         break;
     default:
         logError(instance, "Set Float32 is not allowed for value reference %u.", vr);
@@ -450,13 +448,12 @@ Status setFloat32(ModelInstance *instance, ValueReference vr, const float values
     return OK;
 }
 
-Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t *index) {
+Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
-
     case vr_Float64_fixed_parameter:
         if (instance->type == ModelExchange &&
             instance->state != Instantiated &&
@@ -464,10 +461,8 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
             logError(instance, "Variable Float64_fixed_parameter can only be set after instantiation or in initialization mode.");
             return Discard;
         }
-        ASSERT_NVALUES(1);
-        M(Float64_fixed_parameter) = values[(*index)++];
+        M(Float64_fixed_parameter) = values[0];
         break;
-
     case vr_Float64_tunable_parameter:
         if (instance->type == ModelExchange &&
             instance->state != Instantiated &&
@@ -476,15 +471,11 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
             logError(instance, "Variable Float64_tunable_parameter can only be set after instantiation, in initialization mode or event mode.");
             return Discard;
         }
-        ASSERT_NVALUES(1);
-        M(Float64_tunable_parameter) = values[(*index)++];
+        M(Float64_tunable_parameter) = values[0];
         break;
-
     case vr_Float64_continuous_input:
-        ASSERT_NVALUES(1);
-        M(Float64_continuous_input) = values[(*index)++];
+        M(Float64_continuous_input) = values[0];
         break;
-
     case vr_Float64_discrete_input:
         if (instance->type == ModelExchange &&
             instance->state != Instantiated &&
@@ -493,10 +484,8 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
             logError(instance, "Variable Float64_discrete_input can only be set after instantiation, in initialization mode or event mode.");
             return Discard;
         }
-        ASSERT_NVALUES(1);
-        M(Float64_discrete_input) = values[(*index)++];
+        M(Float64_discrete_input) = values[0];
         break;
-
     default:
         logError(instance, "Set Float64 is not allowed for value reference %u.", vr);
         return Discard;
@@ -507,15 +496,14 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
     return OK;
 }
 
-Status setInt8(ModelInstance *instance, ValueReference vr, const int8_t values[], size_t nValues, size_t *index) {
+Status setInt8(ModelInstance *instance, ValueReference vr, const int8_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_Int8_input:
-        ASSERT_NVALUES(1);
-        M(Int8_input) = values[(*index)++];
+        M(Int8_input) = values[0];
         break;
     default:
         logError(instance, "Set Int8 is not allowed for value reference %u.", vr);
@@ -527,15 +515,14 @@ Status setInt8(ModelInstance *instance, ValueReference vr, const int8_t values[]
     return OK;
 }
 
-Status setUInt8(ModelInstance *instance, ValueReference vr, const uint8_t values[], size_t nValues, size_t *index) {
+Status setUInt8(ModelInstance *instance, ValueReference vr, const uint8_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_UInt8_input:
-        ASSERT_NVALUES(1);
-        M(UInt8_input) = values[(*index)++];
+        M(UInt8_input) = values[0];
         break;
     default:
         logError(instance, "Set UInt8 is not allowed for value reference %u.", vr);
@@ -547,15 +534,14 @@ Status setUInt8(ModelInstance *instance, ValueReference vr, const uint8_t values
     return OK;
 }
 
-Status setInt16(ModelInstance *instance, ValueReference vr, const int16_t values[], size_t nValues, size_t *index) {
+Status setInt16(ModelInstance *instance, ValueReference vr, const int16_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_Int16_input:
-        ASSERT_NVALUES(1);
-        M(Int16_input) = values[(*index)++];
+        M(Int16_input) = values[0];
         break;
     default:
         logError(instance, "Set Int16 is not allowed for value reference %u.", vr);
@@ -567,15 +553,14 @@ Status setInt16(ModelInstance *instance, ValueReference vr, const int16_t values
     return OK;
 }
 
-Status setUInt16(ModelInstance *instance, ValueReference vr, const uint16_t values[], size_t nValues, size_t *index) {
+Status setUInt16(ModelInstance *instance, ValueReference vr, const uint16_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_UInt16_input:
-        ASSERT_NVALUES(1);
-        M(UInt16_input) = values[(*index)++];
+        M(UInt16_input) = values[0];
         break;
     default:
         logError(instance, "Set UInt16 is not allowed for value reference %u.", vr);
@@ -587,24 +572,22 @@ Status setUInt16(ModelInstance *instance, ValueReference vr, const uint16_t valu
     return OK;
 }
 
-Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues, size_t *index) {
+Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_Int32_input:
-        ASSERT_NVALUES(1);
-        M(Int32_input) = values[(*index)++];
+        M(Int32_input) = values[0];
         break;
 #if FMI_VERSION == 2
     case vr_Enumeration_input:
-        if (values[*index] != Option1 && values[*index] != Option2) {
-            logError(instance, "%d is not a legal value for Enumeration_input.", values[*index]);
+        if (values[0] != Option1 && values[0] != Option2) {
+            logError(instance, "%d is not a legal value for Enumeration_input.", values[0]);
             return Discard;
         }
-        ASSERT_NVALUES(1);
-        M(Enumeration_input) = values[(*index)++];
+        M(Enumeration_input) = values[0];
         break;
 #endif
     default:
@@ -617,15 +600,14 @@ Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values
     return OK;
 }
 
-Status setUInt32(ModelInstance *instance, ValueReference vr, const uint32_t values[], size_t nValues, size_t *index) {
+Status setUInt32(ModelInstance *instance, ValueReference vr, const uint32_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_UInt32_input:
-        ASSERT_NVALUES(1);
-        M(UInt32_input) = values[(*index)++];
+        M(UInt32_input) = values[0];
         break;
     default:
         logError(instance, "Set UInt32 is not allowed for value reference %u.", vr);
@@ -637,24 +619,22 @@ Status setUInt32(ModelInstance *instance, ValueReference vr, const uint32_t valu
     return OK;
 }
 
-Status setInt64(ModelInstance *instance, ValueReference vr, const int64_t values[], size_t nValues, size_t *index) {
+Status setInt64(ModelInstance *instance, ValueReference vr, const int64_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_Int64_input:
-        ASSERT_NVALUES(1);
-        M(Int64_input) = values[(*index)++];
+        M(Int64_input) = values[0];
         break;
 #if FMI_VERSION == 3
     case vr_Enumeration_input:
-        if (values[*index] != Option1 && values[*index] != Option2) {
-            logError(instance, "%llu is not a legal value for Enumeration_input.", values[*index]);
+        if (values[0] != Option1 && values[0] != Option2) {
+            logError(instance, "%llu is not a legal value for Enumeration_input.", values[0]);
             return Discard;
         }
-        ASSERT_NVALUES(1);
-        M(Enumeration_input) = values[(*index)++];
+        M(Enumeration_input) = values[0];
         break;
 #endif
     default:
@@ -667,15 +647,14 @@ Status setInt64(ModelInstance *instance, ValueReference vr, const int64_t values
     return OK;
 }
 
-Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t values[], size_t nValues, size_t *index) {
+Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_UInt64_input:
-        ASSERT_NVALUES(1);
-        M(UInt64_input) = values[(*index)++];
+        M(UInt64_input) = values[0];
         break;
     default:
         logError(instance, "Set UInt64 is not allowed for value reference %u.", vr);
@@ -687,19 +666,17 @@ Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t valu
     return OK;
 }
 
-Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[], size_t nValues, size_t *index) {
+Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_Boolean_input:
-        ASSERT_NVALUES(1);
-        M(Boolean_input) = values[(*index)++];
+        M(Boolean_input) = values[0];
         break;
     case vr_Boolean_output:
-        ASSERT_NVALUES(1);
-        M(Boolean_output) = values[(*index)++];
+        M(Boolean_output) = values[0];
         break;
     default:
         logError(instance, "Set Boolean is not allowed for value reference %u.", vr);
@@ -711,19 +688,18 @@ Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[
     return OK;
 }
 
-Status setString(ModelInstance *instance, ValueReference vr, const char *const values[], size_t nValues, size_t *index) {
+Status setString(ModelInstance *instance, ValueReference vr, const char *const values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_String_input:
-        if (strlen(values[*index]) >= STRING_MAX_LEN) {
+        if (strlen(values[0]) >= STRING_MAX_LEN) {
             logError(instance, "Max. string length is %d bytes.", STRING_MAX_LEN);
             return Discard;
         }
-        ASSERT_NVALUES(1);
-        strcpy(M(String_input), values[(*index)++]);
+        strcpy(M(String_input), values[0]);
         break;
     default:
         logError(instance, "Set String is not allowed for value reference %u.", vr);
@@ -735,21 +711,20 @@ Status setString(ModelInstance *instance, ValueReference vr, const char *const v
     return OK;
 }
 
-Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[], const char *const values[], size_t nValues, size_t *index) {
+Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[], const char *const values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(size);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_Binary_input:
-        if (size[*index] > BINARY_MAX_LEN) {
+        if (size[0] > BINARY_MAX_LEN) {
             logError(instance, "Max. binary size is %d bytes.", BINARY_MAX_LEN);
             return Discard;
         }
-        ASSERT_NVALUES(1);
-        M(Binary_input_size) = size[*index];
-        memcpy((void *)M(Binary_input), values[(*index)++], M(Binary_input_size));
+        M(Binary_input_size) = size[0];
+        memcpy((void *)M(Binary_input), values[0], M(Binary_input_size));
         break;
     default:
         logError(instance, "Set Binary is not allowed for value reference %u.", vr);

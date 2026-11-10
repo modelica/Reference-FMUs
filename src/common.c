@@ -785,85 +785,84 @@ Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], con
         UNUSED(vr);                                          \
         UNUSED(values);                                      \
         UNUSED(nValues);                                     \
-        UNUSED(index);                                       \
         logError(instance, "Setting " t " is not allowed."); \
         return Discard;                                      \
     } while (false)
 
 #ifndef SET_FLOAT32
-Status setFloat32(ModelInstance *instance, ValueReference vr, const float values[], size_t nValues, size_t *index) {
+Status setFloat32(ModelInstance *instance, ValueReference vr, const float values[], size_t nValues) {
     SET_NOT_ALLOWED("Float32");
 }
 #endif
 
 #ifndef SET_FLOAT64
-Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t *index) {
+Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues) {
     SET_NOT_ALLOWED("Float64");
 }
 #endif
 
 #ifndef SET_INT8
-Status setInt8(ModelInstance *instance, ValueReference vr, const int8_t values[], size_t nValues, size_t *index) {
+Status setInt8(ModelInstance *instance, ValueReference vr, const int8_t values[], size_t nValues) {
     SET_NOT_ALLOWED("Int8");
 }
 #endif
 
 #ifndef SET_UINT8
-Status setUInt8(ModelInstance *instance, ValueReference vr, const uint8_t values[], size_t nValues, size_t *index) {
+Status setUInt8(ModelInstance *instance, ValueReference vr, const uint8_t values[], size_t nValues) {
     SET_NOT_ALLOWED("UInt8");
 }
 #endif
 
 #ifndef SET_INT16
-Status setInt16(ModelInstance *instance, ValueReference vr, const int16_t values[], size_t nValues, size_t *index) {
+Status setInt16(ModelInstance *instance, ValueReference vr, const int16_t values[], size_t nValues) {
     SET_NOT_ALLOWED("Int16");
 }
 #endif
 
 #ifndef SET_UINT16
-Status setUInt16(ModelInstance *instance, ValueReference vr, const uint16_t values[], size_t nValues, size_t *index) {
+Status setUInt16(ModelInstance *instance, ValueReference vr, const uint16_t values[], size_t nValues) {
     SET_NOT_ALLOWED("UInt16");
 }
 #endif
 
 #ifndef SET_INT32
-Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues, size_t *index) {
+Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues) {
     SET_NOT_ALLOWED("Int32");
 }
 #endif
 
 #ifndef SET_UINT32
-Status setUInt32(ModelInstance *instance, ValueReference vr, const uint32_t values[], size_t nValues, size_t *index) {
+Status setUInt32(ModelInstance *instance, ValueReference vr, const uint32_t values[], size_t nValues) {
     SET_NOT_ALLOWED("UInt32");
 }
 #endif
 
 #ifndef SET_INT64
-Status setInt64(ModelInstance *instance, ValueReference vr, const int64_t values[], size_t nValues, size_t *index) {
+Status setInt64(ModelInstance *instance, ValueReference vr, const int64_t values[], size_t nValues) {
     SET_NOT_ALLOWED("Int64");
 }
 #endif
 
 #ifndef SET_UINT64
-Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t values[], size_t nValues, size_t *index) {
+Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t values[], size_t nValues) {
     SET_NOT_ALLOWED("UInt64");
 }
 #endif
 
 #ifndef SET_BOOLEAN
-Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[], size_t nValues, size_t *index) {
+Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[], size_t nValues) {
     SET_NOT_ALLOWED("Boolean");
 }
 #endif
 
 #ifndef SET_STRING
-Status setString(ModelInstance *instance, ValueReference vr, const char *const values[], size_t nValues, size_t *index) {
+Status setString(ModelInstance *instance, ValueReference vr, const char *const values[], size_t nValues) {
     SET_NOT_ALLOWED("String");
 }
 #endif
 
 #ifndef SET_BINARY
-Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[], const char *const values[], size_t nValues, size_t *index) {
+Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[], const char *const values[], size_t nValues) {
     UNUSED(size);
     SET_NOT_ALLOWED("Binary");
 }

@@ -69,15 +69,14 @@ static fmi2Status map_status(Status status) {
     }                                               \
     return fmi2OK;
 
-#define SET_VARIABLES(T)                            \
-    if (nvr > 0) {                                  \
-        ASSERT_NOT_NULL(vr);                        \
-        ASSERT_NOT_NULL(value);                     \
-    }                                               \
-    size_t index = 0;                               \
-    for (size_t i = 0; i < nvr; i++) {              \
-        CALL(set##T(c, vr[i], value, nvr, &index)); \
-    }                                               \
+#define SET_VARIABLES(T)                                  \
+    if (nvr > 0) {                                        \
+        ASSERT_NOT_NULL(vr);                              \
+        ASSERT_NOT_NULL(value);                           \
+    }                                                     \
+    for (size_t i = 0; i < nvr; i++) {                    \
+        CALL(set##T(c, vr[i], &value[i], 1));              \
+    }                                                     \
     return fmi2OK;
 
 // ---------------------------------------------------------------------------
@@ -306,8 +305,7 @@ fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
     }
     for (size_t i = 0; i < nvr; i++) {
         const bool b = value[i] != fmi2False;
-        size_t index = 0;
-        CALL(setBoolean(c, vr[i], &b, 1, &index));
+        CALL(setBoolean(c, vr[i], &b, 1));
     }
     return fmi2OK;
 }

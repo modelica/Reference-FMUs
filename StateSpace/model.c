@@ -215,73 +215,53 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
     }
 }
 
-Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t *index) {
+Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
 
     switch (vr) {
-    case vr_A:
-        ASSERT_NVALUES((size_t)(M(n) * M(n)));
-        for (size_t i = 0; i < M(n); i++) {
-            for (size_t j = 0; j < M(n); j++) {
-                M(A)
-                [i][j] = values[(*index)++];
-            }
-        }
+    case vr_A: {
+        const size_t size = (size_t)(M(n) * M(n));
+        ASSERT_SIZE_T(nValues, size);
+        memcpy(M(A), values, size);
         break;
-    case vr_B:
-        ASSERT_NVALUES((size_t)(M(n) * M(m)));
-        for (size_t i = 0; i < M(n); i++) {
-            for (size_t j = 0; j < M(m); j++) {
-                M(B)
-                [i][j] = values[(*index)++];
-            }
-        }
+    }
+    case vr_B: {
+        const size_t size = (size_t)(M(m) * M(n));
+        ASSERT_SIZE_T(nValues, size);
+        memcpy(M(B), values, size);
         break;
-    case vr_C:
-        ASSERT_NVALUES((size_t)(M(r) * M(n)));
-        for (size_t i = 0; i < M(r); i++) {
-            for (size_t j = 0; j < M(n); j++) {
-                M(C)
-                [i][j] = values[(*index)++];
-            }
-        }
+    }
+    case vr_C: {
+        const size_t size = (size_t)(M(r) * M(n));
+        ASSERT_SIZE_T(nValues, size);
+        memcpy(M(C), values, size);
         break;
-    case vr_D:
-        ASSERT_NVALUES((size_t)(M(r) * M(m)));
-        for (size_t i = 0; i < M(r); i++) {
-            for (size_t j = 0; j < M(m); j++) {
-                M(D)
-                [i][j] = values[(*index)++];
-            }
-        }
+    }
+    case vr_D: {
+        const size_t size = (size_t)(M(r) * M(m));
+        ASSERT_SIZE_T(nValues, size);
+        memcpy(M(D), values, size);
         break;
-    case vr_x0:
-        ASSERT_NVALUES((size_t)M(n));
-        for (size_t i = 0; i < M(n); i++) {
-            M(x0)
-            [i] = values[(*index)++];
-        }
+    }
+    case vr_x0: {
+        const size_t size = (size_t)(M(n));
+        ASSERT_SIZE_T(nValues, size);
+        memcpy(M(x0), values, size);
         break;
-    case vr_u:
-        ASSERT_NVALUES((size_t)M(m));
-        for (size_t i = 0; i < M(m); i++) {
-            M(u)
-            [i] = values[(*index)++];
-        }
+    }
+    case vr_u: {
+        const size_t size = (size_t)(M(m));
+        ASSERT_SIZE_T(nValues, size);
+        memcpy(M(u), values, size);
         break;
-    case vr_x:
-        if (instance->state != ContinuousTimeMode && instance->state != EventMode) {
-            logError(instance, "Variable \"x\" can only be set in Continuous Time Mode and Event Mode.");
-            return Discard;
-        }
-        ASSERT_NVALUES((size_t)M(n));
-        for (size_t i = 0; i < M(n); i++) {
-            M(x)
-            [i] = values[(*index)++];
-        }
+    }
+    case vr_x: {
+        const size_t size = (size_t)(M(n));
+        ASSERT_SIZE_T(nValues, size);
+        memcpy(M(x), values, size);
         break;
+    }
     default:
         logError(instance, "Set Float64 is not allowed for value reference %u.", vr);
         return Discard;
@@ -313,42 +293,36 @@ Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], 
     }
 }
 
-Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t values[], size_t nValues, size_t *index) {
+Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     if (instance->state != ConfigurationMode && instance->state != ReconfigurationMode) {
         logError(instance, "Structural variables can only be set in Configuration Mode or Reconfiguration Mode.");
         return Discard;
     }
 
-    uint64_t v;
+    const uint64_t v = values[0];
 
     switch (vr) {
     case vr_m:
-        ASSERT_NVALUES(1);
-        v = values[(*index)++];
         if (v > M_MAX) {
-            logError(instance, "Variable m must not be greater than " xstr(M_MAX) ".");
+            logError(instance, "Variable 'm' must not be greater than " xstr(M_MAX) ".");
             return Discard;
         }
         M(m) = v;
         break;
     case vr_n:
-        ASSERT_NVALUES(1);
-        v = values[(*index)++];
         if (v > N_MAX) {
-            logError(instance, "Variable n must not be greater than " xstr(N_MAX) ".");
+            logError(instance, "Variable 'n' must not be greater than " xstr(N_MAX) ".");
             return Discard;
         }
         M(n) = v;
         break;
     case vr_r:
-        ASSERT_NVALUES(1);
-        v = values[(*index)++];
         if (v > R_MAX) {
-            logError(instance, "Variable r must not be greater than " xstr(R_MAX) ".");
+            logError(instance, "Variable 'r' must not be greater than " xstr(R_MAX) ".");
             return Discard;
         }
         M(r) = v;

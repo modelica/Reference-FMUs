@@ -59,15 +59,21 @@ static Status wasm_apply_status(ModelInstance *instance, Status status) {
         if (n == 0) {                                                                            \
             return OK;                                                                           \
         }                                                                                        \
-        size_t index = 0;                                                                        \
+        size_t j = 0;                                                                            \
         for (size_t i = 0; i < n; i++) {                                                         \
-            Status status = get##MODEL_SUFFIX(instance, value_references[i], values, n, &index); \
+            size_t size = 0;                                                                     \
+            Status status = getVariableSize(instance, value_references[i], &size);               \
             if (status != OK) {                                                                  \
                 return wasm_apply_status(instance, status);                                      \
             }                                                                                    \
+            status = get##MODEL_SUFFIX(instance, value_references[i], &values[j], size);         \
+            if (status != OK) {                                                                  \
+                return wasm_apply_status(instance, status);                                      \
+            }                                                                                    \
+            j += size;                                                                           \
         }                                                                                        \
-        if (index != n) {                                                                        \
-            logError(instance, "Expected nValues = %zu but was %zu.", n, index);                 \
+        if (j != n) {                                                                            \
+            logError(instance, "Expected nValues = %zu but was %zu.", n, j);                       \
             return wasm_apply_status(instance, Discard);                                         \
         }                                                                                        \
         return OK;                                                                               \
@@ -82,15 +88,21 @@ static Status wasm_apply_status(ModelInstance *instance, Status status) {
         if (n == 0) {                                                                            \
             return OK;                                                                           \
         }                                                                                        \
-        size_t index = 0;                                                                        \
+        size_t j = 0;                                                                            \
         for (size_t i = 0; i < n; i++) {                                                         \
-            Status status = set##MODEL_SUFFIX(instance, value_references[i], values, n, &index); \
+            size_t size = 0;                                                                     \
+            Status status = getVariableSize(instance, value_references[i], &size);               \
             if (status != OK) {                                                                  \
                 return wasm_apply_status(instance, status);                                      \
             }                                                                                    \
+            status = set##MODEL_SUFFIX(instance, value_references[i], &values[j], size);          \
+            if (status != OK) {                                                                  \
+                return wasm_apply_status(instance, status);                                      \
+            }                                                                                    \
+            j += size;                                                                           \
         }                                                                                        \
-        if (index != n) {                                                                        \
-            logError(instance, "Expected nValues = %zu but was %zu.", n, index);                 \
+        if (j != n) {                                                                            \
+            logError(instance, "Expected nValues = %zu but was %zu.", n, j);                      \
             return wasm_apply_status(instance, Discard);                                         \
         }                                                                                        \
         return OK;                                                                               \

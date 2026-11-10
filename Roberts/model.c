@@ -104,23 +104,20 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
     }
 }
 
-Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t *index) {
+Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_y1:
-        ASSERT_NVALUES(1);
-        M(y1) = values[(*index)++];
+        M(y1) = values[0];
         break;
     case vr_y2:
-        ASSERT_NVALUES(1);
-        M(y2) = values[(*index)++];
+        M(y2) = values[0];
         break;
     case vr_y3:
-        ASSERT_NVALUES(1);
-        M(y3) = values[(*index)++];
+        M(y3) = values[0];
         break;
     default:
         logError(instance, "Unexpected value reference: %u.", vr);
@@ -149,15 +146,18 @@ Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], siz
     }    
 }
 
-Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[], size_t nValues, size_t *index) {
+Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_dae:
-        ASSERT_NVALUES(1);
-        M(dae) = values[(*index)++];
+        if (instance->state != ConfigurationMode && instance->state != ReconfigurationMode) {
+            logError(instance, "Variable 'dae' may only be set in Configuration Mode and Reconfiguration Mode.");
+            return Discard;
+        }
+        M(dae) = values[0];
         break;
     default:
         logError(instance, "Set Boolean is not allowed for value reference %u.", vr);
