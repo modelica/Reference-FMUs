@@ -1,3 +1,4 @@
+#include <memory.h>
 #include "config.h"
 #include "model_impl.h"
 
@@ -143,80 +144,71 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
     return OK;
 }
 
-Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t *index) {
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_time:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = instance->time;
+        ASSERT_SIZE_T(nValues, 1);
+        values[0] = instance->time;
         return OK;
-    case vr_A:
-        ASSERT_NVALUES((size_t)(M(n) * M(n)));
-        for (size_t i = 0; i < M(n); i++) {
-            for (size_t j = 0; j < M(n); j++) {
-                values[(*index)++] = M(A)[i][j];
-            }
-        }
+    case vr_A: {
+        const size_t size = (size_t)(M(n) * M(n));
+        ASSERT_SIZE_T(nValues, size);
+        memcpy(values, M(A), size);
         return OK;
-    case vr_B:
-        ASSERT_NVALUES((size_t)(M(m) * M(n)));
-        for (size_t i = 0; i < M(m); i++) {
-            for (size_t j = 0; j < M(n); j++) {
-                values[(*index)++] = M(B)[i][j];
-            }
-        }
+    }
+    case vr_B: {
+        const size_t size = (size_t)(M(m) * M(n));
+        ASSERT_SIZE_T(nValues, size);
+        memcpy(values, M(B), size);
         return OK;
-    case vr_C:
-        ASSERT_NVALUES((size_t)(M(r) * M(n)));
-        for (size_t i = 0; i < M(r); i++) {
-            for (size_t j = 0; j < M(n); j++) {
-                values[(*index)++] = M(C)[i][j];
-            }
-        }
+    }
+    case vr_C: {
+        const size_t size = (size_t)(M(r) * M(n));
+        ASSERT_SIZE_T(nValues, size);
+        memcpy(values, M(C), size);
         return OK;
-    case vr_D:
-        ASSERT_NVALUES((size_t)(M(r) * M(m)));
-        for (size_t i = 0; i < M(r); i++) {
-            for (size_t j = 0; j < M(m); j++) {
-                values[(*index)++] = M(D)[i][j];
-            }
-        }
+    }
+    case vr_D: {
+        const size_t size = (size_t)(M(r) * M(m));
+        ASSERT_SIZE_T(nValues, size);
+        memcpy(values, M(D), size);
         return OK;
-    case vr_x0:
-        ASSERT_NVALUES((size_t)M(n));
-        for (size_t i = 0; i < M(n); i++) {
-            values[(*index)++] = M(x0)[i];
-        }
+    }
+    case vr_x0: {
+        const size_t size = (size_t)(M(n));
+        ASSERT_SIZE_T(nValues, size);
+        memcpy(values, M(x0), size);
         return OK;
-    case vr_u:
-        ASSERT_NVALUES((size_t)M(m));
-        for (size_t i = 0; i < M(m); i++) {
-            values[(*index)++] = M(u)[i];
-        }
+    }
+    case vr_u: {
+        const size_t size = (size_t)(M(m));
+        ASSERT_SIZE_T(nValues, size);
+        memcpy(values, M(u), size);
         return OK;
-    case vr_y:
-        ASSERT_NVALUES((size_t)M(r));
-        for (size_t i = 0; i < M(r); i++) {
-            values[(*index)++] = M(y)[i];
-        }
+    }
+    case vr_y: {
+        const size_t size = (size_t)(M(r));
+        ASSERT_SIZE_T(nValues, size);
+        memcpy(values, M(y), size);
         return OK;
-    case vr_x:
-        ASSERT_NVALUES((size_t)M(n));
-        for (size_t i = 0; i < M(n); i++) {
-            values[(*index)++] = M(x)[i];
-        }
+    }
+    case vr_x: {
+        const size_t size = (size_t)(M(n));
+        ASSERT_SIZE_T(nValues, size);
+        memcpy(values, M(x), size);
         return OK;
-    case vr_der_x:
-        ASSERT_NVALUES((size_t)M(n));
-        for (size_t i = 0; i < M(n); i++) {
-            values[(*index)++] = M(der_x)[i];
-        }
+    }
+    case vr_der_x: {
+        const size_t size = (size_t)(M(n));
+        ASSERT_SIZE_T(nValues, size);
+        memcpy(values, M(der_x), size);
         return OK;
+    }
     default:
         logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
         return Discard;
@@ -300,23 +292,20 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
     return OK;
 }
 
-Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], size_t nValues, size_t *index) {
+Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_m:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(m);
+        values[0] = M(m);
         return OK;
     case vr_n:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(n);
+        values[0] = M(n);
         return OK;
     case vr_r:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(r);
+        values[0] = M(r);
         return OK;
     default:
         logError(instance, "Get UInt64 is not allowed for value reference %u.", vr);

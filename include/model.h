@@ -128,21 +128,19 @@ Status calculateValues(ModelInstance *instance);
 
 Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size);
 
-Status getFloat32(ModelInstance *instance, ValueReference vr, float values[], size_t nValues, size_t *index);
-
+Status getFloat32(ModelInstance *instance, ValueReference vr, float values[], size_t nValues);
 Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues);
-
-Status getInt8(ModelInstance *instance, ValueReference vr, int8_t values[], size_t nValues, size_t *index);
-Status getUInt8(ModelInstance *instance, ValueReference vr, uint8_t values[], size_t nValues, size_t *index);
-Status getInt16(ModelInstance *instance, ValueReference vr, int16_t values[], size_t nValues, size_t *index);
-Status getUInt16(ModelInstance *instance, ValueReference vr, uint16_t values[], size_t nValues, size_t *index);
-Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues, size_t *index);
-Status getUInt32(ModelInstance *instance, ValueReference vr, uint32_t values[], size_t nValues, size_t *index);
-Status getInt64(ModelInstance *instance, ValueReference vr, int64_t values[], size_t nValues, size_t *index);
-Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], size_t nValues, size_t *index);
-Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], size_t nValues, size_t *index);
-Status getString(ModelInstance *instance, ValueReference vr, const char *values[], size_t nValues, size_t *index);
-Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], const char *values[], size_t nValues, size_t *index);
+Status getInt8(ModelInstance *instance, ValueReference vr, int8_t values[], size_t nValues);
+Status getUInt8(ModelInstance *instance, ValueReference vr, uint8_t values[], size_t nValues);
+Status getInt16(ModelInstance *instance, ValueReference vr, int16_t values[], size_t nValues);
+Status getUInt16(ModelInstance *instance, ValueReference vr, uint16_t values[], size_t nValues);
+Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues);
+Status getUInt32(ModelInstance *instance, ValueReference vr, uint32_t values[], size_t nValues);
+Status getInt64(ModelInstance *instance, ValueReference vr, int64_t values[], size_t nValues);
+Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], size_t nValues);
+Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], size_t nValues);
+Status getString(ModelInstance *instance, ValueReference vr, const char *values[], size_t nValues);
+Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], const char *values[], size_t nValues);
 
 Status setFloat32(ModelInstance *instance, ValueReference vr, const float values[], size_t nValues, size_t *index);
 Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t *index);

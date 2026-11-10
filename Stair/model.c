@@ -32,17 +32,16 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
     }
 }
 
-Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t *index) {
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_time:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = instance->time;
+        values[0] = instance->time;
         return OK;
     default:
         logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
@@ -50,17 +49,16 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
     }
 }
 
-Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues, size_t *index) {
+Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_counter:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(counter);
+        values[0] = M(counter);
         return OK;
     default:
         logError(instance, "Get Int32 is not allowed for value reference %u.", vr);

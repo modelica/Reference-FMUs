@@ -51,7 +51,6 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
 }
 
 Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues) {
-
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
     ASSERT_SIZE_T(nValues, 1);

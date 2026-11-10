@@ -30,6 +30,36 @@ static fmi3Status map_status(Status status) {
     }
 }
 
+static Status getNValues(
+    ModelInstance *instance,
+    const ValueReference valueReferences[],
+    size_t nValueReferences,
+    size_t *nValues) {
+
+    if (nValueReferences > 0 && !valueReferences) {
+        logError(instance, "Argument valueReferences must not be NULL");
+        return Discard;
+    }
+
+    if (!nValues) {
+        logError(instance, "Argument nValues must not be NULL");
+        return Discard;
+    }
+
+    *nValues = 0;
+
+    for (size_t i = 0; i < nValueReferences; i++) {
+        const ValueReference vr = (ValueReference)valueReferences[i];
+        size_t size = 0;
+        if (getVariableSize(instance, vr, &size) != OK) {
+            return Discard;
+        }
+        *nValues += size;
+    }
+
+    return OK;
+}
+
 // "stringification" macros
 #define xstr(s) str(s)
 #define str(s) #s
@@ -61,20 +91,37 @@ static fmi3Status map_status(Status status) {
         return fmi3Discard;                                                                         \
     }
 
+//#define GET_VARIABLES(T)                                                                                               \
+//    if (nValueReferences > 0) {                                                                                        \
+//        ASSERT_NOT_NULL(valueReferences);                                                                              \
+//    }                                                                                                                  \
+//    if (nValues > 0) {                                                                                                 \
+//        ASSERT_NOT_NULL(values);                                                                                       \
+//    }                                                                                                                  \
+//    size_t index = 0;                                                                                                  \
+//    for (size_t i = 0; i < nValueReferences; i++) {                                                                    \
+//        fmi3Status result = map_status(get##T(instance, (ValueReference)valueReferences[i], values, nValues, &index)); \
+//        if (result != fmi3OK) {                                                                                        \
+//            return result;                                                                                             \
+//        }                                                                                                              \
+//    }                                                                                                                  \
+//    return fmi3OK;
 #define GET_VARIABLES(T)                                                                                               \
-    if (nValueReferences > 0) {                                                                                        \
-        ASSERT_NOT_NULL(valueReferences);                                                                              \
-    }                                                                                                                  \
-    if (nValues > 0) {                                                                                                 \
-        ASSERT_NOT_NULL(values);                                                                                       \
-    }                                                                                                                  \
-    size_t index = 0;                                                                                                  \
-    for (size_t i = 0; i < nValueReferences; i++) {                                                                    \
-        fmi3Status result = map_status(get##T(instance, (ValueReference)valueReferences[i], values, nValues, &index)); \
-        if (result != fmi3OK) {                                                                                        \
-            return result;                                                                                             \
-        }                                                                                                              \
-    }                                                                                                                  \
+    if (nValueReferences > 0) { \
+        ASSERT_NOT_NULL(valueReferences); \
+    } \
+    ASSERT_NVALUES; \
+    if (nValues > 0) { \
+        ASSERT_NOT_NULL(values); \
+    } \
+    size_t j = 0; \
+    for (size_t i = 0; i < nValueReferences; i++) { \
+        const ValueReference vr = (ValueReference)valueReferences[i]; \
+        size_t size = 0; \
+        CALL(getVariableSize(instance, vr, &size)); \
+        CALL(get ## T(instance, (ValueReference)valueReferences[i], &values[j], size)); \
+        j += size; \
+    } \
     return fmi3OK;
 
 #define SET_VARIABLES(T)                                                                                               \
@@ -242,36 +289,6 @@ fmi3Status fmi3GetFloat32(fmi3Instance instance,
     GET_VARIABLES(Float32);
 }
 
-static Status getNValues(
-    ModelInstance* instance,
-    const ValueReference valueReferences[],
-    size_t nValueReferences,
-    size_t* nValues) {
-
-    if (nValueReferences > 0 && !valueReferences) {
-        logError(instance, "Argument valueReferences must not be NULL");
-        return Discard;
-    }
-
-    if (!nValues) {
-        logError(instance, "Argument nValues must not be NULL");
-        return Discard;
-    }
-    
-    *nValues = 0;
-    
-    for (size_t i = 0; i < nValueReferences; i++) {
-        const ValueReference vr = (ValueReference)valueReferences[i];
-        size_t size = 0;
-        if (getVariableSize(instance, vr, &size) != OK) {
-            return Discard;
-        }
-        *nValues += size;
-    }
-    
-    return OK;
-}
-
 fmi3Status fmi3GetFloat64(fmi3Instance instance,
                           const fmi3ValueReference valueReferences[],
                           size_t nValueReferences,
@@ -391,9 +408,8 @@ fmi3Status fmi3GetBinary(fmi3Instance instance,
                          size_t valueSizes[],
                          fmi3Binary values[],
                          size_t nValues) {
-    size_t index = 0;
     for (size_t i = 0; i < nValueReferences; i++) {
-        fmi3Status result = map_status(getBinary(instance, (ValueReference)valueReferences[i], valueSizes, (const char **)values, nValues, &index));
+        fmi3Status result = map_status(getBinary(instance, (ValueReference)valueReferences[i], valueSizes, (const char **)values, nValues));
         if (result != fmi3OK) {
             return result;
         }

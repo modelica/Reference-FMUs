@@ -64,9 +64,8 @@ static fmi2Status map_status(Status status) {
         ASSERT_NOT_NULL(vr);                        \
         ASSERT_NOT_NULL(value);                     \
     }                                               \
-    size_t index = 0;                               \
     for (size_t i = 0; i < nvr; i++) {              \
-        CALL(get##T(c, vr[i], value, nvr, &index)); \
+        CALL(get##T(c, vr[i], value, 1)); \
     }                                               \
     return fmi2OK;
 
@@ -282,8 +281,7 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
     }
     for (size_t i = 0; i < nvr; i++) {
         bool b = false;
-        size_t index = 0;
-        CALL(getBoolean(c, vr[i], &b, 1, &index));
+        CALL(getBoolean(c, vr[i], &b, 1));
         value[i] = b ? fmi2True : fmi2False;
     }
     return fmi2OK;

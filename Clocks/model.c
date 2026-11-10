@@ -187,13 +187,14 @@ Status activateClock(ModelInstance *instance, ValueReference vr) {
     return OK;
 }
 
-Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t *index) {
-
-    ASSERT_NVALUES(1);
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_time:
-        values[(*index)++] = instance->time;
+        values[0] = instance->time;
         return OK;
     default:
         logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
@@ -215,31 +216,32 @@ Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values
     }
 }
 
-Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues, size_t *index) {
-
-    ASSERT_NVALUES(1);
+Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_inClock1Ticks:
-        values[(*index)++] = M(inClock1Ticks);
+        values[0] = M(inClock1Ticks);
         return OK;
     case vr_inClock2Ticks:
-        values[(*index)++] = M(inClock2Ticks);
+        values[0] = M(inClock2Ticks);
         return OK;
     case vr_inClock3Ticks:
-        values[(*index)++] = M(inClock3Ticks);
+        values[0] = M(inClock3Ticks);
         return OK;
     case vr_totalInClockTicks:
-        values[(*index)++] = M(totalInClockTicks);
+        values[0] = M(totalInClockTicks);
         return OK;
     case vr_result2:
-        values[(*index)++] = M(result2);
+        values[0] = M(result2);
         return OK;
     case vr_input2:
-        values[(*index)++] = M(input2);
+        values[0] = M(input2);
         return OK;
     case vr_output3:
-        values[(*index)++] = M(output3);
+        values[0] = M(output3);
         return OK;
     default:
         logError(instance, "Get Int32 is not allowed for value reference %u.", vr);
@@ -248,7 +250,6 @@ Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], si
 }
 
 Status getClock(ModelInstance *instance, ValueReference vr, bool *value) {
-
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(value);
 

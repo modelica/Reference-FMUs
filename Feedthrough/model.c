@@ -119,367 +119,304 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
     return Discard;
 }
 
-Status getFloat32(ModelInstance *instance, ValueReference vr, float values[], size_t nValues, size_t *index) {
+Status getFloat32(ModelInstance *instance, ValueReference vr, float values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_Float32_continuous_input:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Float32_continuous_input);
-        break;
+        values[0] = M(Float32_continuous_input);
+        return OK;
     case vr_Float32_continuous_output:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Float32_continuous_output);
-        break;
+        values[0] = M(Float32_continuous_output);
+        return OK;
     case vr_Float32_discrete_input:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Float32_discrete_input);
-        break;
+        values[0] = M(Float32_discrete_input);
+        return OK;
     case vr_Float32_discrete_output:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Float32_discrete_output);
-        break;
+        values[0] = M(Float32_discrete_output);
+        return OK;
     default:
         logError(instance, "Get Float32 is not allowed for value reference %u.", vr);
         return Discard;
     }
-
-    return OK;
 }
 
-Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t *index) {
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_time:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = instance->time;
-        break;
+        values[0] = instance->time;
+        return OK;
     case vr_Float64_fixed_parameter:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Float64_fixed_parameter);
-        break;
+        values[0] = M(Float64_fixed_parameter);
+        return OK;
     case vr_Float64_tunable_parameter:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Float64_tunable_parameter);
-        break;
+        values[0] = M(Float64_tunable_parameter);
+        return OK;
     case vr_Float64_continuous_input:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Float64_continuous_input);
-        break;
+        values[0] = M(Float64_continuous_input);
+        return OK;
     case vr_Float64_continuous_output:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Float64_continuous_output);
-        break;
+        values[0] = M(Float64_continuous_output);
+        return OK;
     case vr_Float64_discrete_input:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Float64_discrete_input);
-        break;
+        values[0] = M(Float64_discrete_input);
+        return OK;
     case vr_Float64_discrete_output:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Float64_discrete_output);
-        break;
+        values[0] = M(Float64_discrete_output);
+        return OK;
     default:
         logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
         return Discard;
     }
-
-    return OK;
 }
 
-Status getInt8(ModelInstance *instance, ValueReference vr, int8_t values[], size_t nValues, size_t *index) {
+Status getInt8(ModelInstance *instance, ValueReference vr, int8_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_Int8_input:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Int8_input);
-        break;
+        values[0] = M(Int8_input);
+        return OK;
     case vr_Int8_output:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Int8_output);
-        break;
+        values[0] = M(Int8_output);
+        return OK;
     default:
         logError(instance, "Get Int8 is not allowed for value reference %u.", vr);
         return Discard;
     }
-
-    return OK;
 }
 
-Status getUInt8(ModelInstance *instance, ValueReference vr, uint8_t values[], size_t nValues, size_t *index) {
+Status getUInt8(ModelInstance *instance, ValueReference vr, uint8_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_UInt8_input:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(UInt8_input);
-        break;
+        values[0] = M(UInt8_input);
+        return OK;
     case vr_UInt8_output:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(UInt8_output);
-        break;
+        values[0] = M(UInt8_output);
+        return OK;
     default:
         logError(instance, "Get UInt8 is not allowed for value reference %u.", vr);
         return Discard;
     }
-
-    return OK;
 }
 
-Status getInt16(ModelInstance *instance, ValueReference vr, int16_t values[], size_t nValues, size_t *index) {
+Status getInt16(ModelInstance *instance, ValueReference vr, int16_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_Int16_input:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Int16_input);
-        break;
+        values[0] = M(Int16_input);
+        return OK;
     case vr_Int16_output:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Int16_output);
-        break;
+        values[0] = M(Int16_output);
+        return OK;
     default:
         logError(instance, "Get Int16 is not allowed for value reference %u.", vr);
         return Discard;
     }
-
-    return OK;
 }
 
-Status getUInt16(ModelInstance *instance, ValueReference vr, uint16_t values[], size_t nValues, size_t *index) {
+Status getUInt16(ModelInstance *instance, ValueReference vr, uint16_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_UInt16_input:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(UInt16_input);
-        break;
+        values[0] = M(UInt16_input);
+        return OK;
     case vr_UInt16_output:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(UInt16_output);
-        break;
+        values[0] = M(UInt16_output);
+        return OK;
     default:
         logError(instance, "Get UInt16 is not allowed for value reference %u.", vr);
         return Discard;
     }
-
-    return OK;
 }
 
-Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues, size_t *index) {
+Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_Int32_input:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Int32_input);
-        break;
+        values[0] = M(Int32_input);
+        return OK;
     case vr_Int32_output:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Int32_output);
-        break;
+        values[0] = M(Int32_output);
+        return OK;
 #if FMI_VERSION == 2
     case vr_Enumeration_input:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Enumeration_input);
-        break;
+        values[0] = M(Enumeration_input);
+        return OK;
     case vr_Enumeration_output:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Enumeration_output);
-        break;
+        values[0] = M(Enumeration_output);
+        return OK;
 #endif
     default:
         logError(instance, "Get Int32 is not allowed for value reference %u.", vr);
         return Discard;
     }
-
-    return OK;
 }
 
-Status getUInt32(ModelInstance *instance, ValueReference vr, uint32_t values[], size_t nValues, size_t *index) {
+Status getUInt32(ModelInstance *instance, ValueReference vr, uint32_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_UInt32_input:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(UInt32_input);
-        break;
+        values[0] = M(UInt32_input);
+        return OK;
     case vr_UInt32_output:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(UInt32_output);
-        break;
+        values[0] = M(UInt32_output);
+        return OK;
     default:
         logError(instance, "Get UInt32 is not allowed for value reference %u.", vr);
         return Discard;
     }
-
-    return OK;
 }
 
-Status getInt64(ModelInstance *instance, ValueReference vr, int64_t values[], size_t nValues, size_t *index) {
+Status getInt64(ModelInstance *instance, ValueReference vr, int64_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_Int64_input:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Int64_input);
-        break;
+        values[0] = M(Int64_input);
+        return OK;
     case vr_Int64_output:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Int64_output);
-        break;
+        values[0] = M(Int64_output);
+        return OK;
 #if FMI_VERSION == 3
     case vr_Enumeration_input:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Enumeration_input);
-        break;
+        values[0] = M(Enumeration_input);
+        return OK;
     case vr_Enumeration_output:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Enumeration_output);
-        break;
+        values[0] = M(Enumeration_output);
+        return OK;
 #endif
     default:
         logError(instance, "Get Int64 is not allowed for value reference %u.", vr);
         return Discard;
     }
-
-    return OK;
 }
 
-Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], size_t nValues, size_t *index) {
+Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_UInt64_input:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(UInt64_input);
-        break;
+        values[0] = M(UInt64_input);
+        return OK;
     case vr_UInt64_output:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(UInt64_output);
-        break;
+        values[0] = M(UInt64_output);
+        return OK;
     default:
         logError(instance, "Get UInt64 is not allowed for value reference %u.", vr);
         return Discard;
     }
-
-    return OK;
 }
 
-Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], size_t nValues, size_t *index) {
+Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_Boolean_input:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Boolean_input);
-        break;
+        values[0] = M(Boolean_input);
+        return OK;
     case vr_Boolean_output:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(Boolean_output);
-        break;
+        values[0] = M(Boolean_output);
+        return OK;
     default:
         logError(instance, "Get Boolean is not allowed for value reference %u.", vr);
         return Discard;
     }
-
-    return OK;
 }
 
-Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], const char *values[], size_t nValues, size_t *index) {
+Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], const char *values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(sizes);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_Binary_input:
-        ASSERT_NVALUES(1);
-        values[*index] = M(Binary_input);
-        sizes[(*index)++] = M(Binary_input_size);
-        break;
+        values[0] = M(Binary_input);
+        sizes[0] = M(Binary_input_size);
+        return OK;
     case vr_Binary_output:
-        ASSERT_NVALUES(1);
-        values[*index] = M(Binary_output);
-        sizes[(*index)++] = M(Binary_output_size);
-        break;
+        values[0] = M(Binary_output);
+        sizes[0] = M(Binary_output_size);
+        return OK;
     default:
         logError(instance, "Get Binary is not allowed for value reference %u.", vr);
         return Discard;
     }
-
-    return OK;
 }
 
-Status getString(ModelInstance *instance, ValueReference vr, const char *values[], size_t nValues, size_t *index) {
+Status getString(ModelInstance *instance, ValueReference vr, const char *values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_String_input:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(String_input);
-        break;
+        values[0] = M(String_input);
+        return OK;
     case vr_String_output:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(String_output);
-        break;
+        values[0] = M(String_output);
+        return OK;
     default:
         logError(instance, "Get String is not allowed for value reference %u.", vr);
         return Discard;
     }
-
-    return OK;
 }
 
 Status setFloat32(ModelInstance *instance, ValueReference vr, const float values[], size_t nValues, size_t *index) {

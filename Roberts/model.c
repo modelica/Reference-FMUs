@@ -63,49 +63,40 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
     }
 }
 
-Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t *index) {
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_time:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = instance->time;
+        values[0] = instance->time;
         return OK;
     case vr_y1:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(y1);
+        values[0] = M(y1);
         return OK;
     case vr_der_y1:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(der_y1);
+        values[0] = M(der_y1);
         return OK;
     case vr_y2:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(y2);
+        values[0] = M(y2);
         return OK;
     case vr_der_y2:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(der_y2);
+        values[0] = M(der_y2);
         return OK;
     case vr_y3:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(y3);
+        values[0] = M(y3);
         return OK;
     case vr_r:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(r);
+        values[0] = M(r);
         return OK;
     case vr_g1:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(g1);
+        values[0] = M(g1);
         return OK;
     case vr_g2:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(g2);
+        values[0] = M(g2);
         return OK;
     default:
         logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
@@ -141,24 +132,21 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
     return OK;
 }
 
-Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], size_t nValues, size_t *index) {
+Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
-    ASSERT_NOT_NULL(index);
+    ASSERT_SIZE_T(nValues, 1);
 
     calculateValues(instance);
 
     switch (vr) {
     case vr_dae:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(dae);
-        break;
+        values[0] = M(dae);
+        return OK;
     default:
         logError(instance, "Get Boolean is not allowed for value reference %u.", vr);
         return Discard;
-    }
-
-    return OK;
+    }    
 }
 
 Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[], size_t nValues, size_t *index) {

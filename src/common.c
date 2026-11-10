@@ -703,79 +703,78 @@ void logError(ModelInstance *instance, const char *message, ...) {
         UNUSED(vr);                                          \
         UNUSED(values);                                      \
         UNUSED(nValues);                                     \
-        UNUSED(index);                                       \
         logError(instance, "Getting " t " is not allowed."); \
         return Discard;                                      \
     } while (false)
 
 #ifndef GET_FLOAT32
-Status getFloat32(ModelInstance *instance, ValueReference vr, float values[], size_t nValues, size_t *index) {
+Status getFloat32(ModelInstance *instance, ValueReference vr, float values[], size_t nValues) {
     GET_NOT_ALLOWED("Float32");
 }
 #endif
 
 #ifndef GET_INT8
-Status getInt8(ModelInstance *instance, ValueReference vr, int8_t values[], size_t nValues, size_t *index) {
+Status getInt8(ModelInstance *instance, ValueReference vr, int8_t values[], size_t nValues) {
     GET_NOT_ALLOWED("Int8");
 }
 #endif
 
 #ifndef GET_UINT8
-Status getUInt8(ModelInstance *instance, ValueReference vr, uint8_t values[], size_t nValues, size_t *index) {
+Status getUInt8(ModelInstance *instance, ValueReference vr, uint8_t values[], size_t nValues) {
     GET_NOT_ALLOWED("UInt8");
 }
 #endif
 
 #ifndef GET_INT16
-Status getInt16(ModelInstance *instance, ValueReference vr, int16_t values[], size_t nValues, size_t *index) {
+Status getInt16(ModelInstance *instance, ValueReference vr, int16_t values[], size_t nValues) {
     GET_NOT_ALLOWED("Int16");
 }
 #endif
 
 #ifndef GET_UINT16
-Status getUInt16(ModelInstance *instance, ValueReference vr, uint16_t values[], size_t nValues, size_t *index) {
+Status getUInt16(ModelInstance *instance, ValueReference vr, uint16_t values[], size_t nValues) {
     GET_NOT_ALLOWED("UInt16");
 }
 #endif
 
 #ifndef GET_INT32
-Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues, size_t *index) {
+Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues) {
     GET_NOT_ALLOWED("Int32");
 }
 #endif
 
 #ifndef GET_UINT32
-Status getUInt32(ModelInstance *instance, ValueReference vr, uint32_t values[], size_t nValues, size_t *index) {
+Status getUInt32(ModelInstance *instance, ValueReference vr, uint32_t values[], size_t nValues) {
     GET_NOT_ALLOWED("UInt32");
 }
 #endif
 
 #ifndef GET_INT64
-Status getInt64(ModelInstance *instance, ValueReference vr, int64_t values[], size_t nValues, size_t *index) {
+Status getInt64(ModelInstance *instance, ValueReference vr, int64_t values[], size_t nValues) {
     GET_NOT_ALLOWED("Int64");
 }
 #endif
 
 #ifndef GET_UINT64
-Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], size_t nValues, size_t *index) {
+Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], size_t nValues) {
     GET_NOT_ALLOWED("UInt64");
 }
 #endif
 
 #ifndef GET_BOOLEAN
-Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], size_t nValues, size_t *index) {
+Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], size_t nValues) {
     GET_NOT_ALLOWED("Boolean");
 }
 #endif
 
 #ifndef GET_STRING
-Status getString(ModelInstance *instance, ValueReference vr, const char *values[], size_t nValues, size_t *index) {
+Status getString(ModelInstance *instance, ValueReference vr, const char *values[], size_t nValues) {
     GET_NOT_ALLOWED("String");
 }
 #endif
 
 #ifndef GET_BINARY
-Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], const char *values[], size_t nValues, size_t *index) {
+Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], const char *values[], size_t nValues) {
     UNUSED(sizes);
     GET_NOT_ALLOWED("Binary");
 }
