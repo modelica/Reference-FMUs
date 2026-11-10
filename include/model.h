@@ -40,11 +40,7 @@ typedef enum {
 
 typedef enum {
     OK,
-    Warning,
     Discard,
-    Error,
-    Fatal,
-    Pending
 } Status;
 
 #if FMI_VERSION < 3
@@ -55,7 +51,6 @@ typedef void (*loggerType) (void *componentEnvironment, int status, const char *
 
 typedef void (*lockPreemptionType)   (void);
 typedef void (*unlockPreemptionType) (void);
-
 
 typedef void (*intermediateUpdateType) (void *instanceEnvironment,
                                         double intermediateUpdateTime,
@@ -245,7 +240,7 @@ Status deserializeFMUState(
 #define ASSERT_NOT_NULL2(V) \
     if (!V) { \
         logError(instance, "Argument '" xstr(V) "' must not be NULL"); \
-        return Error; \
+        return Discard; \
     }
 
 // assert size of nValues for scalar variables
@@ -254,12 +249,12 @@ Status deserializeFMUState(
         const size_t expected_nValues = *index + (N); \
         if (expected_nValues > nValues) { \
             logError(instance, "Expected nValues >= %zu but was %zu.", expected_nValues, nValues); \
-            return Error; \
+            return Discard; \
         } \
     } while (0)
 
 #define ASSERT_SIZE_T(A, E) \
     if (A != E) { \
         logError(instance, "Expected " xstr(A) " = %zu but was %zu.", E, A); \
-        return Error; \
+        return Discard; \
     }

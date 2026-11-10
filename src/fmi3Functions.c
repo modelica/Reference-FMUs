@@ -31,6 +31,12 @@ static fmi3Status map_status(Status status) {
 
 #define CALL(s) if ((s) != OK) { return fmi3Discard; }
 
+#define NOT_IMPLEMENTED \
+do { \
+    logError((ModelInstance *)instance, "Function is not implemented."); \
+    return fmi3Discard; \
+} while (0)
+
 #define GET_VARIABLES(T) \
     size_t index = 0; \
     for (size_t i = 0; i < nValueReferences; i++) { \
@@ -50,12 +56,6 @@ static fmi3Status map_status(Status status) {
         } \
     } \
     return fmi3OK;
-
-#define NOT_IMPLEMENTED \
-do { \
-    logError((ModelInstance *)instance, "Function is not implemented."); \
-    return fmi3Error; \
-} while (0)
 
 /***************************************************
  Common Functions

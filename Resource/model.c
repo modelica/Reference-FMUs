@@ -24,15 +24,11 @@ Status setStartValues(ModelInstance *instance) {
 
 Status calculateValues(ModelInstance *instance) {
     ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL2(instance->resourceLocation);
 
     FILE *file = NULL;
     char path[MAX_PATH_LENGTH] = "";
     char c = '\0';
-
-    if (!instance->resourceLocation) {
-        logError(instance, "Resource location must not be NULL.");
-        return Error;
-    }
 
 #ifdef _WIN32
 
@@ -40,9 +36,9 @@ Status calculateValues(ModelInstance *instance) {
     path[MAX_PATH_LENGTH - 1] = '\0';
 
 #if FMI_VERSION == 2
-    if (!PathAppendA(path, "y.txt")) return Error;
+    if (!PathAppendA(path, "y.txt")) return Discard;
 #else
-    if (!strncat(path, "y.txt", MAX_PATH_LENGTH)) return Error;
+    if (!strncat(path, "y.txt", MAX_PATH_LENGTH)) return Discard;
 #endif
 
 #else
@@ -63,7 +59,7 @@ Status calculateValues(ModelInstance *instance) {
 
     if (!file) {
         logError(instance, "Failed to open resource file %s.", path);
-        return Error;
+        return Discard;
     }
 
     // read the first character
@@ -91,7 +87,7 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
         return OK;
     default:
         logError(instance, "Unknown value reference: %u.", vr);
-        return Error;
+        return Discard;
     }
 }
 
@@ -109,7 +105,7 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
         return OK;
     default:
         logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
-        return Error;
+        return Discard;
     }
 }
 
@@ -128,6 +124,6 @@ Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], si
             return OK;
         default:
             logError(instance, "Get Int32 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 }

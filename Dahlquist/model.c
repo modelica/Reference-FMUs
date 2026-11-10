@@ -36,7 +36,7 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
         return OK;
     default:
         logError(instance, "Unknown value reference: %u.", vr);
-        return Error;
+        return Discard;
     }
 }
 
@@ -66,7 +66,7 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
             return OK;
         default:
             logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 }
 
@@ -85,14 +85,14 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
                 instance->state != Instantiated &&
                 instance->state != InitializationMode) {
                 logError(instance, "Variable k can only be set after instantiation or in initialization mode.");
-                return Error;
+                return Discard;
             }
             ASSERT_NVALUES(1);
             M(k) = values[(*index)++];
             break;
         default:
             logError(instance, "Set Float64 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     instance->isDirtyValues = true;

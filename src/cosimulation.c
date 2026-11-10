@@ -86,12 +86,12 @@ Status doStep(
     if (!isClose(currentCommunicationPoint, instance->nextCommunicationPoint)) {
         logError(instance, "Expected currentCommunicationPoint = %.16g but was %.16g.",
             instance->nextCommunicationPoint, currentCommunicationPoint);
-        CALL(Error);
+        return Discard;
     }
 
     if (communicationStepSize <= 0) {
         logError(instance, "Communication step size must be > 0 but was %.16g.", communicationStepSize);
-        CALL(Error);
+        return Discard;
     }
 
     const double nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
@@ -102,7 +102,7 @@ Status doStep(
         ) {
         logError(instance, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
             currentCommunicationPoint, communicationStepSize, instance->stopTime);
-        CALL(Error);
+        return Discard;
     }
 
     bool nextCommunicationPointReached;
@@ -177,7 +177,6 @@ Status doStep(
         }
     }
 
-    //*terminateSimulation = instance->terminateSimulation;
     *earlyReturn = instance->earlyReturnAllowed && !nextCommunicationPointReached;
     *lastSuccessfulTime = instance->time;
 

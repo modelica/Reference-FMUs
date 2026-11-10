@@ -36,8 +36,6 @@ static fmi2Status map_status(Status status) {
     }
 }
 
-#define CALL(s) if ((s) != OK) { return fmi2Discard; }
-
 #define ASSERT_NOT_NULL(p) \
 do { \
     if (!p) { \
@@ -45,6 +43,14 @@ do { \
         return fmi2Discard; \
     } \
 } while (false)
+
+#define CALL(s) if ((s) != OK) { return fmi2Discard; }
+
+#define NOT_IMPLEMENTED \
+do { \
+    logError(c, "Function is not implemented."); \
+    return fmi2Discard; \
+} while (0)
 
 #define GET_VARIABLES(T) \
     if (nvr > 0) { \
@@ -366,16 +372,18 @@ fmi2Status fmi2SetRealInputDerivatives(fmi2Component c, const fmi2ValueReference
     UNUSED(nvr);
     UNUSED(order);
     UNUSED(value);
-
-    // TODO: log message
-
-    return fmi2Discard;
+    NOT_IMPLEMENTED;
 }
 
 fmi2Status fmi2GetRealOutputDerivatives(fmi2Component c, const fmi2ValueReference vr[], size_t nvr,
                                       const fmi2Integer order[], fmi2Real value[]) {
 
 #ifdef GET_OUTPUT_DERIVATIVE
+    if (nvr > 0) {
+        ASSERT_NOT_NULL(order);
+        ASSERT_NOT_NULL(value);
+    }
+
     for (size_t i = 0; i < nvr; i++) {
         CALL(getOutputDerivative(c, vr[i], order[i], &value[i]));
     }
@@ -386,18 +394,12 @@ fmi2Status fmi2GetRealOutputDerivatives(fmi2Component c, const fmi2ValueReferenc
     UNUSED(nvr);
     UNUSED(order);
     UNUSED(value);
-
-    logError(c, "fmi2GetRealOutputDerivatives: ignoring function call."
-        " This model cannot compute derivatives of outputs: MaxOutputDerivativeOrder=\"0\"");
-
-    return fmi2Discard;
+    NOT_IMPLEMENTED;
 #endif
 }
 
 fmi2Status fmi2CancelStep(fmi2Component c) {
-    logError(c, "fmi2CancelStep: Can be called when fmi2DoStep returned fmi2Pending."
-        " This is not the case.");
-    return fmi2Discard;
+    NOT_IMPLEMENTED;
 }
 
 fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
@@ -420,88 +422,39 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
     ));
 }
 
-#if 0 /* used when fmi2Get*Status TODO is implemented */
-static Status getStatus(char* fname, ModelInstance* S, const fmi2StatusKind s) {
-
-    switch(s) {
-    case fmi2DoStepStatus: logError(S,
-        "%s: Can be called with fmi2DoStepStatus when fmi2DoStep returned fmi2Pending."
-        " This is not the case.", fname);
-        break;
-    case fmi2PendingStatus: logError(S,
-        "%s: Can be called with fmi2PendingStatus when fmi2DoStep returned fmi2Pending."
-        " This is not the case.", fname);
-        break;
-    case fmi2LastSuccessfulTime: logError(S,
-        "%s: Can be called with fmi2LastSuccessfulTime when fmi2DoStep returned fmi2Discard."
-        " This is not the case.", fname);
-        break;
-    case fmi2Terminated: logError(S,
-        "%s: Can be called with fmi2Terminated when fmi2DoStep returned fmi2Discard."
-        " This is not the case.", fname);
-        break;
-    }
-
-    return Discard;
-}
-#endif
-
 fmi2Status fmi2GetStatus(fmi2Component c, const fmi2StatusKind s, fmi2Status *value) {
     UNUSED(c);
     UNUSED(s);
     UNUSED(value);
-    return fmi2Discard;
+    NOT_IMPLEMENTED;
 }
 
 fmi2Status fmi2GetRealStatus(fmi2Component c, const fmi2StatusKind s, fmi2Real *value) {
     UNUSED(c);
     UNUSED(s);
     UNUSED(value);
-    //BEGIN_FUNCTION(GetRealStatus);
-
-    //if (s == fmi2LastSuccessfulTime) {
-    //    *value = S->time;
-    //    goto TERMINATE;
-    //}
-
-    //CALL(getStatus("fmi2GetRealStatus", c, s));
-
-    //END_FUNCTION();
-    // TODO
-    return fmi2Discard;
+    NOT_IMPLEMENTED;
 }
 
 fmi2Status fmi2GetIntegerStatus(fmi2Component c, const fmi2StatusKind s, fmi2Integer *value) {
     UNUSED(c);
     UNUSED(s);
     UNUSED(value);
-    return fmi2Discard;
+    NOT_IMPLEMENTED;
 }
 
 fmi2Status fmi2GetBooleanStatus(fmi2Component c, const fmi2StatusKind s, fmi2Boolean *value) {
     UNUSED(c);
     UNUSED(s);
     UNUSED(value);
-    //BEGIN_FUNCTION(GetBooleanStatus);
-
-    //if (s == fmi2Terminated) {
-    //    *value = S->terminateSimulation;
-    //    goto TERMINATE;
-    //}
-
-    //CALL(getStatus("fmi2GetBooleanStatus", c, s));
-
-    //END_FUNCTION();
-    
-    // TODO
-    return fmi2Discard;
+    NOT_IMPLEMENTED;
 }
 
 fmi2Status fmi2GetStringStatus(fmi2Component c, const fmi2StatusKind s, fmi2String *value) {
     UNUSED(c);
     UNUSED(s);
     UNUSED(value);
-    return fmi2Discard;
+    NOT_IMPLEMENTED;
 }
 
 // ---------------------------------------------------------------------------
@@ -541,7 +494,15 @@ fmi2Status fmi2NewDiscreteStates(fmi2Component c, fmi2EventInfo *eventInfo) {
     return map_status(status);
 #else
     UNUSED(c);
-    UNUSED(eventInfo);
+    ASSERT_NOT_NULL(eventInfo);
+
+    eventInfo->newDiscreteStatesNeeded = fmi2False;
+    eventInfo->terminateSimulation = fmi2False;
+    eventInfo->nominalsOfContinuousStatesChanged = fmi2False;
+    eventInfo->valuesOfContinuousStatesChanged = fmi2False;
+    eventInfo->nextEventTimeDefined = fmi2False;
+    eventInfo->nextEventTime = 0.0;
+
     return fmi2OK;
 #endif
 }
@@ -555,20 +516,21 @@ fmi2Status fmi2CompletedIntegratorStep(fmi2Component c, fmi2Boolean noSetFMUStat
     bool _enterEventMode = false;
     bool _terminateSimulation = false;
 
-    const Status status = completedIntegratorStep(
+    CALL(completedIntegratorStep(
         c,
         noSetFMUStatePriorToCurrentPoint != fmi2False,
         &_enterEventMode,
-        &_terminateSimulation);
+        &_terminateSimulation));
 
     if (enterEventMode) {
         *enterEventMode = _enterEventMode ? fmi2True : fmi2False;
     }
+
     if (terminateSimulation) {
         *terminateSimulation = _terminateSimulation ? fmi2True : fmi2False;
     }
 
-    return map_status(status);
+    return fmi2OK;
 }
 
 /* Providing independent variables and re-initialization of caching */

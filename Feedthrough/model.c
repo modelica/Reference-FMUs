@@ -116,7 +116,7 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
     }
 
     logError(instance, "Unknown value reference: %u.", vr);
-    return Error;
+    return Discard;
 }
 
 Status getFloat32(ModelInstance *instance, ValueReference vr, float values[], size_t nValues, size_t* index) {
@@ -145,7 +145,7 @@ Status getFloat32(ModelInstance *instance, ValueReference vr, float values[], si
             break;
         default:
             logError(instance, "Get Float32 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     return OK;
@@ -189,7 +189,7 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
             break;
         default:
             logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     return OK;
@@ -213,7 +213,7 @@ Status getInt8(ModelInstance *instance, ValueReference vr, int8_t values[], size
             break;
         default:
             logError(instance, "Get Int8 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     return OK;
@@ -237,7 +237,7 @@ Status getUInt8(ModelInstance *instance, ValueReference vr, uint8_t values[], si
             break;
         default:
             logError(instance, "Get UInt8 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     return OK;
@@ -261,7 +261,7 @@ Status getInt16(ModelInstance *instance, ValueReference vr, int16_t values[], si
             break;
         default:
             logError(instance, "Get Int16 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     return OK;
@@ -285,7 +285,7 @@ Status getUInt16(ModelInstance *instance, ValueReference vr, uint16_t values[], 
             break;
         default:
             logError(instance, "Get UInt16 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     return OK;
@@ -319,7 +319,7 @@ Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], si
 #endif
         default:
             logError(instance, "Get Int32 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     return OK;
@@ -343,7 +343,7 @@ Status getUInt32(ModelInstance *instance, ValueReference vr, uint32_t values[], 
             break;
         default:
             logError(instance, "Get UInt32 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     return OK;
@@ -377,7 +377,7 @@ Status getInt64(ModelInstance *instance, ValueReference vr, int64_t values[], si
 #endif
         default:
             logError(instance, "Get Int64 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     return OK;
@@ -401,7 +401,7 @@ Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], 
             break;
         default:
             logError(instance, "Get UInt64 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     return OK;
@@ -425,7 +425,7 @@ Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], siz
             break;
         default:
             logError(instance, "Get Boolean is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     return OK;
@@ -452,7 +452,7 @@ Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], con
             break;
         default:
             logError(instance, "Get Binary is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     return OK;
@@ -476,7 +476,7 @@ Status getString(ModelInstance *instance, ValueReference vr, const char* values[
             break;
         default:
             logError(instance, "Get String is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     return OK;
@@ -498,14 +498,14 @@ Status setFloat32(ModelInstance *instance, ValueReference vr, const float values
                 instance->state != InitializationMode &&
                 instance->state != EventMode) {
                 logError(instance, "Variable Float32_discrete_input can only be set in after instantiation, in Initialization Mode, and in Event Mode.");
-                return Error;
+                return Discard;
             }
             ASSERT_NVALUES(1);
             M(Float32_discrete_input) = values[(*index)++];
             break;
         default:
             logError(instance, "Set Float32 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -525,7 +525,7 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
                 instance->state != Instantiated &&
                 instance->state != InitializationMode) {
                 logError(instance, "Variable Float64_fixed_parameter can only be set after instantiation or in initialization mode.");
-                return Error;
+                return Discard;
             }
             ASSERT_NVALUES(1);
             M(Float64_fixed_parameter) = values[(*index)++];
@@ -537,7 +537,7 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
                 instance->state != InitializationMode &&
                 instance->state != EventMode) {
                 logError(instance, "Variable Float64_tunable_parameter can only be set after instantiation, in initialization mode or event mode.");
-                return Error;
+                return Discard;
             }
             ASSERT_NVALUES(1);
             M(Float64_tunable_parameter) = values[(*index)++];
@@ -554,7 +554,7 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
                 instance->state != InitializationMode &&
                 instance->state != EventMode) {
                 logError(instance, "Variable Float64_discrete_input can only be set after instantiation, in initialization mode or event mode.");
-                return Error;
+                return Discard;
             }
             ASSERT_NVALUES(1);
             M(Float64_discrete_input) = values[(*index)++];
@@ -562,7 +562,7 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
 
         default:
             logError(instance, "Set Float64 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -582,7 +582,7 @@ Status setInt8(ModelInstance *instance, ValueReference vr, const int8_t values[]
             break;
         default:
             logError(instance, "Set Int8 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -602,7 +602,7 @@ Status setUInt8(ModelInstance *instance, ValueReference vr, const uint8_t values
             break;
         default:
             logError(instance, "Set UInt8 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -622,7 +622,7 @@ Status setInt16(ModelInstance *instance, ValueReference vr, const int16_t values
             break;
         default:
             logError(instance, "Set Int16 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -642,7 +642,7 @@ Status setUInt16(ModelInstance *instance, ValueReference vr, const uint16_t valu
             break;
         default:
             logError(instance, "Set UInt16 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -664,7 +664,7 @@ Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values
         case vr_Enumeration_input:
             if (values[*index] != Option1 && values[*index] != Option2) {
                 logError(instance, "%d is not a legal value for Enumeration_input.", values[*index]);
-                return Error;
+                return Discard;
             }
             ASSERT_NVALUES(1);
             M(Enumeration_input) = values[(*index)++];
@@ -672,7 +672,7 @@ Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values
 #endif
         default:
             logError(instance, "Set Int32 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -692,7 +692,7 @@ Status setUInt32(ModelInstance *instance, ValueReference vr, const uint32_t valu
             break;
         default:
             logError(instance, "Set UInt32 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -714,7 +714,7 @@ Status setInt64(ModelInstance *instance, ValueReference vr, const int64_t values
         case vr_Enumeration_input:
             if (values[*index] != Option1 && values[*index] != Option2) {
                 logError(instance, "%llu is not a legal value for Enumeration_input.", values[*index]);
-                return Error;
+                return Discard;
             }
             ASSERT_NVALUES(1);
             M(Enumeration_input) = values[(*index)++];
@@ -722,7 +722,7 @@ Status setInt64(ModelInstance *instance, ValueReference vr, const int64_t values
 #endif
         default:
             logError(instance, "Set Int64 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -742,7 +742,7 @@ Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t valu
             break;
         default:
             logError(instance, "Set UInt64 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -766,7 +766,7 @@ Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[
             break;
         default:
             logError(instance, "Set Boolean is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -783,14 +783,14 @@ Status setString(ModelInstance *instance, ValueReference vr, const char *const v
         case vr_String_input:
             if (strlen(values[*index]) >= STRING_MAX_LEN) {
                 logError(instance, "Max. string length is %d bytes.", STRING_MAX_LEN);
-                return Error;
+                return Discard;
             }
             ASSERT_NVALUES(1);
             strcpy(M(String_input), values[(*index)++]);
             break;
         default:
             logError(instance, "Set String is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -808,7 +808,7 @@ Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[]
         case vr_Binary_input:
             if (size[*index] > BINARY_MAX_LEN) {
                 logError(instance, "Max. binary size is %d bytes.", BINARY_MAX_LEN);
-                return Error;
+                return Discard;
             }
             ASSERT_NVALUES(1);
             M(Binary_input_size) = size[*index];
@@ -816,7 +816,7 @@ Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[]
             break;
         default:
             logError(instance, "Set Binary is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     instance->isDirtyValues = true;

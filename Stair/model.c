@@ -28,7 +28,7 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
         return OK;
     default:
         logError(instance, "Unknown value reference: %u.", vr);
-        return Error;
+        return Discard;
     }
 }
 
@@ -46,7 +46,7 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
         return OK;
     default:
         logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
-        return Error;
+        return Discard;
     }
 }
 
@@ -64,7 +64,7 @@ Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], si
             return OK;
         default:
             logError(instance, "Get Int32 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 }
 
@@ -77,21 +77,21 @@ Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values
     case vr_counter:
         if (instance->state != Instantiated && instance->state != InitializationMode) {
             logError(instance, "Variable \"counter\" can only be set in Instantiated and Intialization Mode.");
-            return Error;
+            return Discard;
         }
 
         ASSERT_NVALUES(1);
         if (values[*index] > COUNTER_MAX) {
             logError(instance, "Variable \"counter\" must be at most %d but was %d.",
                 COUNTER_MAX, values[*index]);
-            return Error;
+            return Discard;
         }
         M(counter) = values[(*index)++];
 
         break;
     default:
         logError(instance, "Set Int32 is not allowed for value reference %u.", vr);
-        return Error;
+        return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -113,7 +113,7 @@ Status updateDiscreteStates(
         
         if (M(counter) > 10) {
             logError(instance, "Variable \"counter\" cannot be incremented for values > 10.");
-            return Error;
+            return Discard;
         }
     }
 

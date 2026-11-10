@@ -164,7 +164,7 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
         return OK;
     default:
         logError(instance, "Unknown value reference: %u.", vr);
-        return Error;
+        return Discard;
     }
 }
 
@@ -191,7 +191,7 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
         return OK;
     default:
         logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
-        return Error;
+        return Discard;
     }
 }
 
@@ -205,7 +205,7 @@ Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values
         return OK;
     default:
         logError(instance, "Set Int32 is not allowed for value reference %u.", vr);
-        return Error;
+        return Discard;
     }
 }
 
@@ -237,7 +237,7 @@ Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], si
         return OK;
     default:
         logError(instance, "Get Int32 is not allowed for value reference %u.", vr);
-        return Error;
+        return Discard;
     }
 }
 
@@ -253,7 +253,7 @@ Status getClock(ModelInstance *instance, ValueReference vr, bool* value) {
         return OK;
     default:
         logError(instance, "Get Clock is not allowed for value reference %u.", vr);
-        return Error;
+        return Discard;
     }
 }
 
@@ -268,7 +268,7 @@ Status getInterval(ModelInstance *instance, ValueReference vr, double* interval,
         return OK;
     default:
         logError(instance, "Get Interval is not allowed for value reference %u.", vr);
-        return Error;
+        return Discard;
     }
 }
 
@@ -286,6 +286,6 @@ Status activateModelPartition(ModelInstance *instance, ValueReference vr, double
             return OK;
         default:
             logError(instance, "Activate model partition is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 }

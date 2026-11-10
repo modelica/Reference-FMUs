@@ -125,7 +125,7 @@ Status getVariableSize(ModelInstance* instance, ValueReference vr, size_t* size)
         break;
     default:
         logError(instance, "Unknown value reference: %u.", vr);
-        return Error;
+        return Discard;
     }
     return OK;
 }
@@ -206,7 +206,7 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
             return OK;
         default:
             logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 }
 
@@ -263,7 +263,7 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
     case vr_x:
         if (instance->state != ContinuousTimeMode && instance->state != EventMode) {
             logError(instance, "Variable \"x\" can only be set in Continuous Time Mode and Event Mode.");
-            return Error;
+            return Discard;
         }
         ASSERT_NVALUES((size_t)M(n));
         for (size_t i = 0; i < M(n); i++) {
@@ -272,7 +272,7 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
         break;
     default:
         logError(instance, "Set Float64 is not allowed for value reference %u.", vr);
-        return Error;
+        return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -300,7 +300,7 @@ Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], 
             return OK;
         default:
             logError(instance, "Get UInt64 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 }
 
@@ -311,7 +311,7 @@ Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t valu
 
     if (instance->state != ConfigurationMode && instance->state != ReconfigurationMode) {
         logError(instance, "Structural variables can only be set in Configuration Mode or Reconfiguration Mode.");
-        return Error;
+        return Discard;
     }
 
     uint64_t v;
@@ -322,7 +322,7 @@ Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t valu
             v = values[(*index)++];
             if (v > M_MAX) {
                 logError(instance, "Variable m must not be greater than " xstr(M_MAX) ".");
-                return Error;
+                return Discard;
             }
             M(m) = v;
             break;
@@ -331,7 +331,7 @@ Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t valu
             v = values[(*index)++];
             if (v > N_MAX) {
                 logError(instance, "Variable n must not be greater than " xstr(N_MAX) ".");
-                return Error;
+                return Discard;
             }
             M(n) = v;
             break;
@@ -340,13 +340,13 @@ Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t valu
             v = values[(*index)++];
             if (v > R_MAX) {
                 logError(instance, "Variable r must not be greater than " xstr(R_MAX) ".");
-                return Error;
+                return Discard;
             }
             M(r) = v;
             break;
         default:
             logError(instance, "Set UInt64 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -367,7 +367,7 @@ Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
 
     if (nx != M(n)) {
         logError(instance, "Expected nx=%zu but was %zu.", M(n), nx);
-        return Error;
+        return Discard;
     }
 
     for (size_t i = 0; i < M(n); i++) {
@@ -383,7 +383,7 @@ Status getNominalsOfContinuousStates(ModelInstance *instance, double nominals[],
 
     if (nx != M(n)) {
         logError(instance, "Expected nx=%zu but was %zu.", M(n), nx);
-        return Error;
+        return Discard;
     }
 
     for (size_t i = 0; i < M(n); i++) {
@@ -399,7 +399,7 @@ Status setContinuousStates(ModelInstance *instance, const double x[], size_t nx)
 
     if (nx != M(n)) {
         logError(instance, "Expected nx=%zu but was %zu.", M(n), nx);
-        return Error;
+        return Discard;
     }
 
     for (size_t i = 0; i < M(n); i++) {
@@ -417,7 +417,7 @@ Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
 
     if (nx != M(n)) {
         logError(instance, "Expected nx=%zu but was %zu.", M(n), nx);
-        return Error;
+        return Discard;
     }
 
     calculateValues(instance);
@@ -495,14 +495,14 @@ Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, siz
 }
 
 Status getNumberOfEventIndicators(ModelInstance* instance, size_t* nEventIndicators) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(nEventIndicators);
+    UNUSED(instance);
+    UNUSED(nEventIndicators);
     *nEventIndicators = 0;
     return OK;
 }
 
 Status getEventIndicators(ModelInstance* instance, double z[], size_t nz) {
-    ASSERT_NOT_NULL2(instance);
+    UNUSED(instance);
     UNUSED(z);
     ASSERT_SIZE_T(nz, 0);
     return OK;

@@ -16,7 +16,12 @@
 
 #define CALL(f) do { const Status status = f; if (status != OK) return status; } while (false)
 
-
+#define NOT_IMPLEMENTED \
+    do { \
+        logError(instance, "Function is not implemented."); \
+        return Discard; \
+    } while (0)
+    
 static bool resourceLocationEndsWithFileSeparator(const char *resourceLocation) {
 
     if (!resourceLocation) {
@@ -51,9 +56,9 @@ static ModelInstance *createModelInstanceImpl(
     if (!instanceName || strlen(instanceName) == 0) {
         if (cbLogger) {
 #if FMI_VERSION < 3
-            cbLogger(componentEnvironment, "?", Error, "error", "Missing instance name.");
+            cbLogger(componentEnvironment, "?", Discard, "error", "Missing instance name.");
 #else
-            cbLogger(componentEnvironment, Error, "error", "Missing instance name.");
+            cbLogger(componentEnvironment, Discard, "error", "Missing instance name.");
 #endif
         }
         return NULL;
@@ -62,9 +67,9 @@ static ModelInstance *createModelInstanceImpl(
     if (!instantiationToken || strlen(instantiationToken) == 0) {
         if (cbLogger) {
 #if FMI_VERSION < 3
-            cbLogger(componentEnvironment, instanceName, Error, "error", "Missing GUID.");
+            cbLogger(componentEnvironment, instanceName, Discard, "error", "Missing GUID.");
 #else
-            cbLogger(componentEnvironment, Error, "error", "Missing instantiationToken.");
+            cbLogger(componentEnvironment, Discard, "error", "Missing instantiationToken.");
 #endif
         }
         return NULL;
@@ -74,9 +79,9 @@ static ModelInstance *createModelInstanceImpl(
     if (strcmp(instantiationToken, INSTANTIATION_TOKEN)) {
         if (cbLogger) {
 #if FMI_VERSION < 3
-            cbLogger(componentEnvironment, instanceName, Error, "error", "Wrong GUID.");
+            cbLogger(componentEnvironment, instanceName, Discard, "error", "Wrong GUID.");
 #else
-            cbLogger(componentEnvironment, Error, "error", "Wrong instantiationToken.");
+            cbLogger(componentEnvironment, Discard, "error", "Wrong instantiationToken.");
 #endif
         }
         return NULL;
@@ -84,10 +89,10 @@ static ModelInstance *createModelInstanceImpl(
     if (resourceLocation && !resourceLocationEndsWithFileSeparator(resourceLocation)) {
         if (cbLogger) {
 #if FMI_VERSION < 3
-            cbLogger(componentEnvironment, instanceName, Error, "error",
+            cbLogger(componentEnvironment, instanceName, Discard, "error",
                 "resourceLocation must end with a file separator.");
 #else
-            cbLogger(componentEnvironment, Error, "error",
+            cbLogger(componentEnvironment, Discard, "error",
                 "resourceLocation must end with a file separator.");
 #endif
         }
@@ -162,9 +167,9 @@ ModelInstance *createCoSimulationInstance(
     if (eventModeUsed) {
         if (logger) {
 #if FMI_VERSION < 3
-            logger(componentEnvironment, instanceName, Error, "error", "Event Mode is not supported.");
+            logger(componentEnvironment, instanceName, Discard, "error", "Event Mode is not supported.");
 #else
-            logger(componentEnvironment, Error, "error", "Event Mode is not supported.");
+            logger(componentEnvironment, Discard, "error", "Event Mode is not supported.");
 #endif
         }
         return NULL;
@@ -265,7 +270,7 @@ static Status s_reallocate(ModelInstance *instance, void** memory, size_t size) 
 
     if (!temp) {
         logError(instance, "Failed to allocate memory.");
-        return Error;
+        return Discard;
     }
 
     *memory = temp;
@@ -328,8 +333,8 @@ Status setupExperiment(
     bool stopTimeDefined,
     double stopTime
 ) {
+    ASSERT_NOT_NULL2(instance);
 
-    // TODO: check instance != NULL
     if (instance->state != Instantiated) {
         logError(instance, "setupExperiment() may only be called in Instantiated Mode");
         return Discard;
@@ -337,7 +342,7 @@ Status setupExperiment(
 
     if (toleranceDefined) {
         logError(instance, "Relative tolerance is not supported.");
-        return Error;
+        return Discard;
     }
 
     UNUSED(tolerance);
@@ -478,7 +483,7 @@ Status exitInitializationMode(ModelInstance *instance) {
             break;
         default:
             logError(instance, "exitInitializationMode() is not supported for this interface type");
-            return Error;
+            return Discard;
     }
 
     return OK;
@@ -606,23 +611,19 @@ Status setDebugLogging(ModelInstance *instance, bool loggingOn, size_t nCategori
 
     if (nCategories > 0) {
 
-        if (categories == NULL) {
-            logError(instance, "Argument categories must not be NULL.");
-            return Error;
-        }
+        ASSERT_NOT_NULL2(categories);
 
         for (size_t i = 0; i < nCategories; i++) {
 
-            if (categories[i] == NULL) {
-                logError(instance, "Argument categories[%zu] must not be NULL.", i);
-                return Error;
-            } else if (strcmp(categories[i], "logEvents") == 0) {
+            ASSERT_NOT_NULL2(categories[i]);
+
+            if (strcmp(categories[i], "logEvents") == 0) {
                 instance->logEvents = loggingOn;
             } else if (strcmp(categories[i], "logStatusError") == 0) {
                 instance->logErrors = loggingOn;
             } else {
                 logError(instance, "Log categories[%zu] must be one of \"logEvents\" or \"logStatusError\" but was \"%s\".", i, categories[i]);
-                return Error;
+                return Discard;
             }
         }
 
@@ -638,7 +639,7 @@ Status setDebugLogging(ModelInstance *instance, bool loggingOn, size_t nCategori
 
 static void logMessage(ModelInstance *instance, int status, const char *category, const char *message, va_list args) {
 
-    if (!instance->logger) {
+    if (!instance || !instance->logger) {
         return;
     }
 
@@ -673,7 +674,9 @@ static void logMessage(ModelInstance *instance, int status, const char *category
 
 void logEvent(ModelInstance *instance, const char *message, ...) {
 
-    if (!instance || !instance->logEvents) return;
+    if (!instance || !instance->logEvents) {
+        return;
+    }
 
     va_list args;
     va_start(args, message);
@@ -687,7 +690,7 @@ void logError(ModelInstance *instance, const char *message, ...) {
 
     va_list args;
     va_start(args, message);
-    logMessage(instance, Error, "logStatusError", message, args);
+    logMessage(instance, Discard, "logStatusError", message, args);
     va_end(args);
 }
 
@@ -697,7 +700,7 @@ void logError(ModelInstance *instance, const char *message, ...) {
     UNUSED(nValues); \
     UNUSED(index); \
     logError(instance, "Getting " t " is not allowed.");\
-    return Error; \
+    return Discard; \
 } while (false)
 
 #ifndef GET_FLOAT32
@@ -721,7 +724,6 @@ Status getUInt8(ModelInstance *instance, ValueReference vr, uint8_t values[], si
 #ifndef GET_INT16
 Status getInt16(ModelInstance *instance, ValueReference vr, int16_t values[], size_t nValues, size_t *index) {
     GET_NOT_ALLOWED("Int16");
-
 }
 #endif
 
@@ -780,7 +782,7 @@ Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], con
     UNUSED(nValues); \
     UNUSED(index); \
     logError(instance, "Setting " t " is not allowed.");\
-    return Error; \
+    return Discard; \
 } while (false)
 
 #ifndef SET_FLOAT32
@@ -942,7 +944,7 @@ Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, siz
     UNUSED(knownIndex);
     UNUSED(partialDerivative);
     logError(instance, "Directional derivatives are not supported.");
-    return Error;
+    return Discard;
 }
 #endif
 
@@ -950,7 +952,7 @@ Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, siz
 Status activateClock(ModelInstance *instance, ValueReference vr) {
     UNUSED(instance);
     UNUSED(vr);
-    return Error;
+    NOT_IMPLEMENTED;
 }
 #endif
 
@@ -959,7 +961,7 @@ Status getClock(ModelInstance *instance, ValueReference vr, bool* value) {
     UNUSED(instance);
     UNUSED(vr);
     UNUSED(value);
-    return Error;
+    NOT_IMPLEMENTED;
 }
 #endif
 
@@ -969,7 +971,7 @@ Status getInterval(ModelInstance *instance, ValueReference vr, double* interval,
     UNUSED(vr);
     UNUSED(interval);
     UNUSED(qualifier);
-    return Error;
+    NOT_IMPLEMENTED;
 }
 #endif
 
@@ -978,16 +980,13 @@ Status activateModelPartition(ModelInstance *instance, ValueReference vr, double
     UNUSED(instance);
     UNUSED(vr);
     UNUSED(activationTime);
-    return Error;
+    NOT_IMPLEMENTED;
 }
 #endif
 
 Status getFMUState(ModelInstance *instance, void** FMUState) {
-
     CALL(s_reallocate(instance, FMUState, sizeof(ModelInstance)));
-
     memcpy(*FMUState, instance, sizeof(ModelInstance));
-
     return OK;
 }
 
@@ -1034,9 +1033,10 @@ Status setFMUState(ModelInstance *instance, void* FMUState) {
 
 Status freeFMUState(ModelInstance* instance, void* FMUState) {
     UNUSED(instance);
-    UNUSED(FMUState);
-    // TODO
-    return Discard;
+    if (FMUState) {
+        free(FMUState);
+    }
+    return OK;
 }
 
 Status serializedFMUStateSize(ModelInstance* instance, void* FMUState, size_t* size) {
@@ -1076,7 +1076,7 @@ Status deserializeFMUState(
         *FMUState = calloc(1, sizeof(ModelInstance));
         if (*FMUState == NULL) {
             logError(instance, "Failed to allocate memory for FMUState.");
-            return Error;
+            return Discard;
         }
     }
 

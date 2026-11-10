@@ -59,7 +59,7 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
         return OK;
     default:
         logError(instance, "Unknown value reference: %u.", vr);
-        return Error;
+        return Discard;
     }
 }
 
@@ -109,7 +109,7 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
             return OK;
         default:
             logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 }
 
@@ -133,7 +133,7 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
         break;
     default:
         logError(instance, "Unexpected value reference: %u.", vr);
-        return Error;
+        return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -155,7 +155,7 @@ Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], siz
         break;
     default:
         logError(instance, "Get Boolean is not allowed for value reference %u.", vr);
-        return Error;
+        return Discard;
     }
 
     return OK;
@@ -173,7 +173,7 @@ Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[
         break;
     default:
         logError(instance, "Set Boolean is not allowed for value reference %u.", vr);
-        return Error;
+        return Discard;
     }
 
     instance->isDirtyValues = true;

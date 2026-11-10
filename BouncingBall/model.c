@@ -47,7 +47,7 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
         return OK;
     default:
         logError(instance, "Unknown value reference: %u.", vr);
-        return Error;
+        return Discard;
     }
 }
 
@@ -87,7 +87,7 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
             return OK;
         default:
             logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
-            return Error;
+            return Discard;
     }
 }
 
@@ -104,7 +104,7 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
                 instance->state != ContinuousTimeMode &&
                 instance->state != EventMode) {
                 logError(instance, "Variable \"h\" can only be set in Instantiated Mode, Initialization Mode, Continuous Time Mode, and Event Mode.");
-                return Error;
+                return Discard;
             }
             ASSERT_NVALUES(1);
             M(h) = values[(*index)++];
@@ -116,7 +116,7 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
                 instance->state != ContinuousTimeMode &&
                 instance->state != EventMode) {
                 logError(instance, "Variable \"v\" can only be set in Instantiated Mode, Initialization Mode, Continuous Time Mode, and Event Mode.");
-                return Error;
+                return Discard;
             }
             ASSERT_NVALUES(1);
             M(v) = values[(*index)++];
@@ -127,7 +127,7 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
                 instance->state != Instantiated &&
                 instance->state != InitializationMode) {
                 logError(instance, "Variable g can only be set after instantiation or in initialization mode.");
-                return Error;
+                return Discard;
             }
             ASSERT_NVALUES(1);
             M(g) = values[(*index)++];
@@ -139,24 +139,24 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
                 instance->state != InitializationMode &&
                 instance->state != EventMode) {
                 logError(instance, "Variable e can only be set after instantiation, in initialization mode or event mode.");
-                return Error;
+                return Discard;
             }
             ASSERT_NVALUES(1);
             if (values[*index] < E_MIN || values[*index] > E_MAX) {
                 logError(instance, "Variable \"e\" must be in the range [%g, %g] but was %g.",
                     E_MIN, E_MAX, values[*index]);
-                return Error;
+                return Discard;
             }
             M(e) = values[(*index)++];
             break;
 
         case vr_v_min:
             logError(instance, "Variable v_min (value reference %u) is constant and cannot be set.", vr_v_min);
-            return Error;
+            return Discard;
 
         default:
             logError(instance, "Unexpected value reference: %u.", vr);
-            return Error;
+            return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -168,7 +168,7 @@ Status getOutputDerivative(ModelInstance *instance, ValueReference valueReferenc
     ASSERT_NOT_NULL2(instance);
     if (order != 1) {
         logError(instance, "The output derivative order %d for value reference %u is not available.", order, valueReference);
-        return Error;
+        return Discard;
     }
     ASSERT_NOT_NULL2(value);
 
@@ -183,7 +183,7 @@ Status getOutputDerivative(ModelInstance *instance, ValueReference valueReferenc
         return OK;
     default:
         logError(instance, "The output derivative for value reference %u is not available.", valueReference);
-        return Error;
+        return Discard;
     }
 }
 
