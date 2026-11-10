@@ -10,7 +10,6 @@
 
 #include "config.h"
 #include "model.h"
-#include "model_impl.h"
 #include "cosimulation.h"
 
 // C-code FMUs have functions names prefixed with MODEL_IDENTIFIER_.
@@ -29,6 +28,18 @@ static fmi3Status map_status(Status status) {
     }
 }
 
+// "stringification" macros
+#define xstr(s) str(s)
+#define str(s) #s
+
+#define ASSERT_NOT_NULL(p) \
+do { \
+    if (!p) { \
+        logError(instance, "Argument '" xstr(p) "' must not be NULL."); \
+        return fmi3Discard; \
+    } \
+} while (false)
+
 #define CALL(s) if ((s) != OK) { return fmi3Discard; }
 
 #define NOT_IMPLEMENTED \
@@ -38,6 +49,12 @@ do { \
 } while (0)
 
 #define GET_VARIABLES(T) \
+    if (nValueReferences > 0) { \
+        ASSERT_NOT_NULL(valueReferences); \
+    } \
+    if (nValues > 0) { \
+        ASSERT_NOT_NULL(values); \
+    } \
     size_t index = 0; \
     for (size_t i = 0; i < nValueReferences; i++) { \
         fmi3Status result = map_status(get ## T(instance, (ValueReference)valueReferences[i], values, nValues, &index)); \
@@ -48,6 +65,12 @@ do { \
     return fmi3OK;
 
 #define SET_VARIABLES(T) \
+    if (nValueReferences > 0) { \
+        ASSERT_NOT_NULL(valueReferences); \
+    } \
+    if (nValues > 0) { \
+        ASSERT_NOT_NULL(values); \
+    } \
     size_t index = 0; \
     for (size_t i = 0; i < nValueReferences; i++) { \
         fmi3Status result = map_status(set ## T(instance, (ValueReference)valueReferences[i], values, nValues, &index)); \

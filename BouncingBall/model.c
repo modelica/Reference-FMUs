@@ -10,7 +10,7 @@
 
 
 Status setStartValues(ModelInstance *instance) {
-    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL(instance);
 
     M(h) =  1;
     M(v) =  0;
@@ -23,7 +23,7 @@ Status setStartValues(ModelInstance *instance) {
 }
 
 Status calculateValues(ModelInstance *instance) {
-    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL(instance);
 
     instance->isDirtyValues = false;
 
@@ -31,8 +31,8 @@ Status calculateValues(ModelInstance *instance) {
 }
 
 Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(size);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(size);
 
     switch (vr) {
     case vr_time:
@@ -52,9 +52,9 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
 }
 
 Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(values);
-    ASSERT_NOT_NULL2(index);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_NOT_NULL(index);
 
     calculateValues(instance);
 
@@ -92,9 +92,9 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
 }
 
 Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(values);
-    ASSERT_NOT_NULL2(index);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_NOT_NULL(index);
 
     switch (vr) {
 
@@ -165,12 +165,12 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
 }
 
 Status getOutputDerivative(ModelInstance *instance, ValueReference valueReference, int order, double *value) {
-    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL(instance);
     if (order != 1) {
         logError(instance, "The output derivative order %d for value reference %u is not available.", order, valueReference);
         return Discard;
     }
-    ASSERT_NOT_NULL2(value);
+    ASSERT_NOT_NULL(value);
 
     calculateValues(instance);
 
@@ -224,8 +224,8 @@ Status updateDiscreteStates(
 }
 
 Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(x);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(x);
     ASSERT_SIZE_T(nx, N_CONTINUOUS_STATES);
 
     calculateValues(instance);
@@ -237,8 +237,8 @@ Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
 }
 
 Status getNominalsOfContinuousStates(ModelInstance *instance, double nominals[], size_t nx) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(nominals);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(nominals);
     ASSERT_SIZE_T(nx, N_CONTINUOUS_STATES);
 
     calculateValues(instance);
@@ -250,8 +250,8 @@ Status getNominalsOfContinuousStates(ModelInstance *instance, double nominals[],
 }
 
 Status setContinuousStates(ModelInstance *instance, const double x[], size_t nx) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(x);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(x);
     ASSERT_SIZE_T(nx, N_CONTINUOUS_STATES);
 
     M(h) = x[0];
@@ -263,8 +263,8 @@ Status setContinuousStates(ModelInstance *instance, const double x[], size_t nx)
 }
 
 Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(dx);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(dx);
     ASSERT_SIZE_T(nx, N_CONTINUOUS_STATES);
 
     calculateValues(instance);
@@ -276,8 +276,8 @@ Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
 }
 
 Status getEventIndicators(ModelInstance *instance, double z[], size_t nz) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(z);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(z);
     ASSERT_SIZE_T(nz, N_EVENT_INDICATORS);
 
     calculateValues(instance);

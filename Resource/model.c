@@ -13,7 +13,7 @@
 #define MAX_PATH_LENGTH 4096
 
 Status setStartValues(ModelInstance *instance) {
-    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL(instance);
 
     M(y) = 0;
 
@@ -23,8 +23,8 @@ Status setStartValues(ModelInstance *instance) {
 }
 
 Status calculateValues(ModelInstance *instance) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(instance->resourceLocation);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(instance->resourceLocation);
 
     FILE *file = NULL;
     char path[MAX_PATH_LENGTH] = "";
@@ -77,8 +77,8 @@ Status calculateValues(ModelInstance *instance) {
 }
 
 Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(size);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(size);
 
     switch (vr) {
     case vr_time:
@@ -92,9 +92,9 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
 }
 
 Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(values);
-    ASSERT_NOT_NULL2(index);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_NOT_NULL(index);
 
     calculateValues(instance);
 
@@ -111,9 +111,9 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
 
 
 Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(values);
-    ASSERT_NOT_NULL2(index);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_NOT_NULL(index);
 
     calculateValues(instance);
 

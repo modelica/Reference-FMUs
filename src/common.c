@@ -331,7 +331,7 @@ Status setupExperiment(
     bool stopTimeDefined,
     double stopTime
 ) {
-    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL(instance);
 
     if (instance->state != Instantiated) {
         logError(instance, "setupExperiment() may only be called in Instantiated Mode");
@@ -609,11 +609,11 @@ Status setDebugLogging(ModelInstance *instance, bool loggingOn, size_t nCategori
 
     if (nCategories > 0) {
 
-        ASSERT_NOT_NULL2(categories);
+        ASSERT_NOT_NULL(categories);
 
         for (size_t i = 0; i < nCategories; i++) {
 
-            ASSERT_NOT_NULL2(categories[i]);
+            ASSERT_NOT_NULL(categories[i]);
 
             if (strcmp(categories[i], "logEvents") == 0) {
                 instance->logEvents = loggingOn;
@@ -866,42 +866,42 @@ Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[]
 
 #ifdef N_CONTINUOUS_STATES
 Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(nContinuousStates);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(nContinuousStates);
     *nContinuousStates = N_CONTINUOUS_STATES;
     return OK;
 }
 #else
 Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(nContinuousStates);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(nContinuousStates);
     *nContinuousStates = 0;
     return OK;
 }
 
 Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
-    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL(instance);
     UNUSED(x);
     ASSERT_SIZE_T(nx, 0);
     return OK;
 }
 
 Status getNominalsOfContinuousStates(ModelInstance *instance, double nominals[], size_t nx) {
-    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL(instance);
     UNUSED(nominals);
     ASSERT_SIZE_T(nx, 0);
     return OK;
 }
 
 Status setContinuousStates(ModelInstance *instance, const double x[], size_t nx) {
-    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL(instance);
     UNUSED(x);
     ASSERT_SIZE_T(nx, 0);
     return OK;
 }
 
 Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
-    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL(instance);
     UNUSED(dx);
     ASSERT_SIZE_T(nx, 0);
     return OK;
@@ -910,21 +910,21 @@ Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
 
 #ifdef N_EVENT_INDICATORS
 Status getNumberOfEventIndicators(ModelInstance* instance, size_t* nEventIndicators) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(nEventIndicators);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(nEventIndicators);
     *nEventIndicators = N_EVENT_INDICATORS;
     return OK;
 }
 #else
 Status getNumberOfEventIndicators(ModelInstance* instance, size_t* nEventIndicators) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(nEventIndicators);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(nEventIndicators);
     *nEventIndicators = 0;
     return OK;
 }
 
 Status getEventIndicators(ModelInstance *instance, double z[], size_t nz) {
-    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL(instance);
     UNUSED(z);
     ASSERT_SIZE_T(nz, 0);
     return OK;
@@ -990,8 +990,8 @@ Status getFMUState(ModelInstance *instance, void** FMUState) {
 
 Status setFMUState(ModelInstance *instance, void* FMUState) {
 
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(FMUState);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(FMUState);
 
     ModelInstance* s = (ModelInstance*)FMUState;
 
@@ -1049,9 +1049,9 @@ Status serializeFMUState(
     uint8_t serializedState[],
     size_t size) {
 
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(FMUState);
-    ASSERT_NOT_NULL2(serializedState);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(FMUState);
+    ASSERT_NOT_NULL(serializedState);
     ASSERT_SIZE_T(size, sizeof(ModelInstance));
 
     memcpy(serializedState, FMUState, size);
@@ -1065,8 +1065,8 @@ Status deserializeFMUState(
     size_t size,
     void** FMUState
 ) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(serializedState);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(serializedState);
     ASSERT_SIZE_T(size, sizeof(ModelInstance));
 
     if (*FMUState == NULL) {

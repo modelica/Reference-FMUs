@@ -3,7 +3,7 @@
 
 
 Status setStartValues(ModelInstance *instance) {
-    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL(instance);
 
     M(m) = 3;
     M(n) = 3;
@@ -37,7 +37,7 @@ Status setStartValues(ModelInstance *instance) {
 }
 
 Status calculateValues(ModelInstance *instance) {
-    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL(instance);
 
     // der(x) = A * x + B * u
     for (size_t i = 0; i < M(n); i++) {
@@ -77,7 +77,7 @@ Status calculateValues(ModelInstance *instance) {
 }
 
 Status configurate(ModelInstance* instance) {
-    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL(instance);
 #ifdef N_CONTINUOUS_STATES
     Status status = getNumberOfContinuousStates(instance, &instance->nx);
     if (status != OK) {
@@ -88,8 +88,8 @@ Status configurate(ModelInstance* instance) {
 }
 
 Status getVariableSize(ModelInstance* instance, ValueReference vr, size_t* size) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(size);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(size);
 
     switch (vr) {
     case vr_time:
@@ -131,9 +131,9 @@ Status getVariableSize(ModelInstance* instance, ValueReference vr, size_t* size)
 }
 
 Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(values);
-    ASSERT_NOT_NULL2(index);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_NOT_NULL(index);
 
     calculateValues(instance);
 
@@ -211,9 +211,9 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
 }
 
 Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(values);
-    ASSERT_NOT_NULL2(index);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_NOT_NULL(index);
 
     switch (vr) {
     case vr_A:
@@ -281,9 +281,9 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
 }
 
 Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(values);
-    ASSERT_NOT_NULL2(index);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_NOT_NULL(index);
 
     switch (vr) {
         case vr_m:
@@ -305,9 +305,9 @@ Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], 
 }
 
 Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(values);
-    ASSERT_NOT_NULL2(index);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_NOT_NULL(index);
 
     if (instance->state != ConfigurationMode && instance->state != ReconfigurationMode) {
         logError(instance, "Structural variables can only be set in Configuration Mode or Reconfiguration Mode.");
@@ -355,15 +355,15 @@ Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t valu
 }
 
 Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(nContinuousStates);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(nContinuousStates);
     *nContinuousStates = (size_t)M(n);
     return OK;
 }
 
 Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(x);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(x);
 
     if (nx != M(n)) {
         logError(instance, "Expected nx=%zu but was %zu.", M(n), nx);
@@ -378,8 +378,8 @@ Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
 }
 
 Status getNominalsOfContinuousStates(ModelInstance *instance, double nominals[], size_t nx) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(nominals);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(nominals);
 
     if (nx != M(n)) {
         logError(instance, "Expected nx=%zu but was %zu.", M(n), nx);
@@ -394,8 +394,8 @@ Status getNominalsOfContinuousStates(ModelInstance *instance, double nominals[],
 }
 
 Status setContinuousStates(ModelInstance *instance, const double x[], size_t nx) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(x);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(x);
 
     if (nx != M(n)) {
         logError(instance, "Expected nx=%zu but was %zu.", M(n), nx);
@@ -412,8 +412,8 @@ Status setContinuousStates(ModelInstance *instance, const double x[], size_t nx)
 }
 
 Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(dx);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(dx);
 
     if (nx != M(n)) {
         logError(instance, "Expected nx=%zu but was %zu.", M(n), nx);
@@ -430,8 +430,8 @@ Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
 }
 
 Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double *partialDerivative) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(partialDerivative);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(partialDerivative);
 
     const size_t n = (size_t)M(n);
     const size_t m = (size_t)M(m);

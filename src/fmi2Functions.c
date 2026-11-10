@@ -16,9 +16,7 @@
 
 #include "config.h"
 #include "model.h"
-#include "model_impl.h"
 #include "cosimulation.h"
-
 
 // C-code FMUs have functions names prefixed with MODEL_IDENTIFIER_.
 // Define DISABLE_PREFIX to build a binary FMU.
@@ -35,6 +33,10 @@ static fmi2Status map_status(Status status) {
     default: return fmi2Discard;
     }
 }
+
+// "stringification" macros
+#define xstr(s) str(s)
+#define str(s) #s
 
 #define ASSERT_NOT_NULL(p) \
 do { \

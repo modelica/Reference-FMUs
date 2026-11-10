@@ -117,7 +117,7 @@ static void activateModelPartition3(ModelInstance *instance, double time) {
 }
 
 Status setStartValues(ModelInstance *instance) {
-    ASSERT_NOT_NULL2(instance);
+    ASSERT_NOT_NULL(instance);
 
     M(inClock3_interval)  = 0.0;
     M(inClock3_qualifier) = 0; // fmi3IntervalNotYetKnown
@@ -143,8 +143,8 @@ Status calculateValues(ModelInstance *instance) {
 }
 
 Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size) {
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(size);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(size);
 
     switch (vr) {
     case vr_time:
@@ -243,8 +243,8 @@ Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], si
 
 Status getClock(ModelInstance *instance, ValueReference vr, bool* value) {
 
-    ASSERT_NOT_NULL2(instance);
-    ASSERT_NOT_NULL2(value);
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(value);
 
     switch (vr) {
     case vr_outClock:

@@ -83,7 +83,7 @@ struct ModelInstance {
 #define xstr(s) str(s)
 #define str(s) #s
 
-#define ASSERT_NOT_NULL2(V) \
+#define ASSERT_NOT_NULL(V) \
     if (!V) { \
         logError(instance, "Argument '" xstr(V) "' must not be NULL"); \
         return Discard; \
