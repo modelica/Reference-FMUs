@@ -9,6 +9,8 @@
 #define CO_SIMULATION
 #define MODEL_EXCHANGE
 
+#define CONFIGURATE
+
 #define N_CONTINUOUS_STATES 2
 #define N_EVENT_INDICATORS 2
 

@@ -35,6 +35,11 @@ Status calculateValues(ModelInstance *instance) {
     return OK;
 }
 
+Status configurate(ModelInstance* instance) {
+    UNUSED(instance);
+    return OK;
+}
+
 Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(size);
@@ -209,6 +214,14 @@ Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, siz
     return OK;
 }
 
+Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
+    UNUSED(instance);
+    ASSERT_NOT_NULL2(nContinuousStates);
+    *nContinuousStates = N_CONTINUOUS_STATES;
+    return OK;
+}
+
+
 Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
     ASSERT_NOT_NULL2(instance);
     ASSERT_NOT_NULL2(x);
@@ -271,5 +284,11 @@ Status getEventIndicators(ModelInstance *instance, double z[], size_t nz) {
     z[0] = M(y1) - 0.0001;
     z[1] = M(y3) - 0.01;
 
+    return OK;
+}
+
+Status getNumberOfEventIndicators(ModelInstance* instance, size_t* nEventIndicators) {
+    UNUSED(instance);
+    *nEventIndicators = N_EVENT_INDICATORS;
     return OK;
 }
