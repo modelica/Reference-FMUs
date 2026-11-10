@@ -129,7 +129,9 @@ Status calculateValues(ModelInstance *instance);
 Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size);
 
 Status getFloat32(ModelInstance *instance, ValueReference vr, float values[], size_t nValues, size_t *index);
-Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t *index);
+
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues);
+
 Status getInt8(ModelInstance *instance, ValueReference vr, int8_t values[], size_t nValues, size_t *index);
 Status getUInt8(ModelInstance *instance, ValueReference vr, uint8_t values[], size_t nValues, size_t *index);
 Status getInt16(ModelInstance *instance, ValueReference vr, int16_t values[], size_t nValues, size_t *index);

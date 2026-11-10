@@ -53,6 +53,14 @@ static fmi3Status map_status(Status status) {
         return fmi3Discard;                                                  \
     } while (0)
 
+#define ASSERT_NVALUES                                                                              \
+    size_t expectedSize = 0;                                                                        \
+    CALL(getNValues(instance, (ValueReference *)valueReferences, nValueReferences, &expectedSize)); \
+    if (nValues != expectedSize) {                                                                  \
+        logError(instance, "Expected nValues=%zu but got %zu", nValues, expectedSize);              \
+        return fmi3Discard;                                                                         \
+    }
+
 #define GET_VARIABLES(T)                                                                                               \
     if (nValueReferences > 0) {                                                                                        \
         ASSERT_NOT_NULL(valueReferences);                                                                              \
@@ -234,12 +242,67 @@ fmi3Status fmi3GetFloat32(fmi3Instance instance,
     GET_VARIABLES(Float32);
 }
 
+static Status getNValues(
+    ModelInstance* instance,
+    const ValueReference valueReferences[],
+    size_t nValueReferences,
+    size_t* nValues) {
+
+    if (nValueReferences > 0 && !valueReferences) {
+        logError(instance, "Argument valueReferences must not be NULL");
+        return Discard;
+    }
+
+    if (!nValues) {
+        logError(instance, "Argument nValues must not be NULL");
+        return Discard;
+    }
+    
+    *nValues = 0;
+    
+    for (size_t i = 0; i < nValueReferences; i++) {
+        const ValueReference vr = (ValueReference)valueReferences[i];
+        size_t size = 0;
+        if (getVariableSize(instance, vr, &size) != OK) {
+            return Discard;
+        }
+        *nValues += size;
+    }
+    
+    return OK;
+}
+
 fmi3Status fmi3GetFloat64(fmi3Instance instance,
                           const fmi3ValueReference valueReferences[],
                           size_t nValueReferences,
                           fmi3Float64 values[],
                           size_t nValues) {
-    GET_VARIABLES(Float64);
+    
+    if (nValueReferences > 0) {
+        ASSERT_NOT_NULL(valueReferences);
+    }
+
+    ASSERT_NVALUES;
+
+    if (nValues > 0) {
+        ASSERT_NOT_NULL(values);
+    }
+    
+    size_t j = 0;
+    
+    for (size_t i = 0; i < nValueReferences; i++) {
+
+        const ValueReference vr = (ValueReference)valueReferences[i];
+        
+        size_t size = 0;
+        CALL(getVariableSize(instance, vr, &size));
+
+        CALL(getFloat64(instance, (ValueReference)valueReferences[i], &values[j], size));
+        
+        j += size;
+    }
+    
+    return fmi3OK;
 }
 
 fmi3Status fmi3GetInt8(fmi3Instance instance,
