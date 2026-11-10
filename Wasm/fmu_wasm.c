@@ -31,12 +31,12 @@ static ModelInstance *wasm_comp(exports_fmi_fmi3_co_simulation_borrow_co_simulat
 
 static exports_fmi_fmi3_co_simulation_status_t map_status(Status s) {
     switch (s) {
-        case OK:      return FMI_FMI3_TYPES_STATUS_OK;
-        case Warning: return FMI_FMI3_TYPES_STATUS_WARNING;
-        case Discard: return FMI_FMI3_TYPES_STATUS_DISCARD;
-        case Error:   return FMI_FMI3_TYPES_STATUS_ERROR;
-        case Fatal:   return FMI_FMI3_TYPES_STATUS_FATAL;
-        default:      return FMI_FMI3_TYPES_STATUS_ERROR;
+        case OK:
+            return FMI_FMI3_TYPES_STATUS_OK;
+        case Discard:
+            return FMI_FMI3_TYPES_STATUS_DISCARD;
+        default:
+            return FMI_FMI3_TYPES_STATUS_ERROR;
     }
 }
 
@@ -45,11 +45,7 @@ static Status wasm_apply_status(ModelInstance *instance, Status status) {
         return status;
     }
     if (status == Discard) {
-        return status;
-    }
-    if (status == Error || status == Fatal) {
         instance->state = Terminated;
-        return status;
     }
     return status;
 }
@@ -73,7 +69,7 @@ static Status wasm_apply_status(ModelInstance *instance, Status status) {
         }                                                                                       \
         if (index != n) {                                                                       \
             logError(instance, "Expected nValues = %zu but was %zu.", n, index);                 \
-            return wasm_apply_status(instance, Error);                                          \
+            return wasm_apply_status(instance, Discard);                                        \
         }                                                                                       \
         return OK;                                                                              \
     }
@@ -97,7 +93,7 @@ static Status wasm_apply_status(ModelInstance *instance, Status status) {
         }                                                                                              \
         if (index != n) {                                                                              \
             logError(instance, "Expected nValues = %zu but was %zu.", n, index);                      \
-            return wasm_apply_status(instance, Error);                                                 \
+            return wasm_apply_status(instance, Discard);                                               \
         }                                                                                              \
         return OK;                                                                                     \
     }
@@ -124,7 +120,7 @@ DEFINE_WASM_SET(Boolean, bool)
         }                                                                                        \
         ModelInstance *instance = wasm_comp(self);                                               \
         Status st = wasm_get_##model_suffix(instance, value_references->ptr, n, buf);           \
-        if (st != OK && st != Warning) {                                                         \
+        if (st != OK) {                                                         \
             free(buf);                                                                           \
             *err = map_status(wasm_apply_status(instance, st));                                   \
             return false;                                                                        \
@@ -410,7 +406,7 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_update_discret
         &valuesOfContinuousStatesChanged,
         &nextEventTimeDefined,
         &nextEventTime);
-    if (st != OK && st != Warning) {
+    if (st != OK) {
         *err = map_status(wasm_apply_status(instance, st));
         return false;
     }
@@ -526,7 +522,7 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_number_of_
     ModelInstance *instance = wasm_comp(self);
     (void)vr;
     logError(instance, "Function is not implemented.");
-    *err = map_status(wasm_apply_status(instance, Error));
+    *err = map_status(wasm_apply_status(instance, Discard));
     return false;
 }
 
@@ -540,7 +536,7 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_variable_d
     (void)dependent;
     (void)ret;
     logError(instance, "Function is not implemented.");
-    *err = map_status(wasm_apply_status(instance, Error));
+    *err = map_status(wasm_apply_status(instance, Discard));
     return false;
 }
 
@@ -552,7 +548,7 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_fmu_state(
     ModelInstance *instance = wasm_comp(self);
     void *state = NULL;
     Status st = getFMUState(instance, &state);
-    if (st != OK && st != Warning) {
+    if (st != OK) {
         *err = map_status(wasm_apply_status(instance, st));
         return false;
     }
@@ -610,7 +606,7 @@ static Status wasm_get_directional_derivative(
                 for (size_t jj = 0; jj < knownSize; jj++) {
                     if (seedIndex >= nSeeds) {
                         logError(instance, "Expected nSeeds > %zu", nSeeds);
-                        return Error;
+                        return Discard;
                     }
 
                     const double seed = seeds[seedIndex++];
@@ -633,7 +629,7 @@ static Status wasm_get_directional_derivative(
 
             if (sensitivityIndex >= nSensitivities) {
                 logError(instance, "Expected nSensitivities > %zu", nSensitivities);
-                return Error;
+                return Discard;
             }
 
             sensitivities[sensitivityIndex++] = sensitivity;
@@ -676,12 +672,12 @@ static Status wasm_get_adjoint_derivative(
 
     if (nSeeds < nUnknownElements) {
         logError(instance, "Expected nSeeds >= %zu", nUnknownElements);
-        return Error;
+        return Discard;
     }
 
     if (nSensitivities < nKnownElements) {
         logError(instance, "Expected nSensitivities >= %zu", nKnownElements);
-        return Error;
+        return Discard;
     }
 
     size_t sensitivityIndex = 0;
@@ -711,7 +707,7 @@ static Status wasm_get_adjoint_derivative(
                 for (size_t ii = 0; ii < unknownSize; ii++) {
                     if (seedIndex >= nSeeds) {
                         logError(instance, "Expected nSeeds > %zu", nSeeds);
-                        return Error;
+                        return Discard;
                     }
 
                     const double seedValue = seeds[seedIndex++];
@@ -734,7 +730,7 @@ static Status wasm_get_adjoint_derivative(
 
             if (sensitivityIndex >= nSensitivities) {
                 logError(instance, "Expected nSensitivities > %zu", nSensitivities);
-                return Error;
+                return Discard;
             }
 
             sensitivities[sensitivityIndex++] = s;
@@ -780,7 +776,7 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_directiona
         seed->len,
         buf,
         nUnknownElements);
-    if (st != OK && st != Warning) {
+    if (st != OK) {
         free(buf);
         *err = map_status(wasm_apply_status(instance, st));
         return false;
@@ -827,7 +823,7 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_adjoint_de
         seed->len,
         buf,
         nKnownElements);
-    if (st != OK && st != Warning) {
+    if (st != OK) {
         free(buf);
         *err = map_status(wasm_apply_status(instance, st));
         return false;
@@ -907,7 +903,7 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_evaluate_discrete_s
 {
     ModelInstance *instance = wasm_comp(self);
     logError(instance, "Function is not implemented.");
-    return map_status(wasm_apply_status(instance, Error));
+    return map_status(wasm_apply_status(instance, Discard));
 }
 
 exports_fmi_fmi3_co_simulation_status_t
@@ -942,7 +938,7 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_output_der
             (ValueReference)requests->ptr[i].f0,
             (int)requests->ptr[i].f1,
             &buf[i]);
-        if (st != OK && st != Warning) {
+        if (st != OK) {
             free(buf);
             *err = map_status(wasm_apply_status(instance, st));
             return false;
@@ -951,7 +947,7 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_output_der
 #else
     logError(instance, "Function is not implemented.");
     free(buf);
-    *err = map_status(wasm_apply_status(instance, Error));
+    *err = map_status(wasm_apply_status(instance, Discard));
     return false;
 #endif
     ret->ptr = buf;
@@ -991,7 +987,7 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_do_step(
         ret->early_return = earlyReturn;
         return false;
     }
-    if (st != OK && st != Warning) {
+    if (st != OK) {
         *err = map_status(wasm_apply_status(instance, st));
         return false;
     }
