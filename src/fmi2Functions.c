@@ -41,12 +41,16 @@ static fmi2Status map_status(Status status) {
 #define ASSERT_NOT_NULL(p) \
 do { \
     if (!p) { \
-        logError(S, "Argument %s must not be NULL.", xstr(p)); \
-        return fmi2Error; \
+        logError(c, "Argument '" xstr(p) "' must not be NULL."); \
+        return fmi2Discard; \
     } \
 } while (false)
 
 #define GET_VARIABLES(T) \
+    if (nvr > 0) { \
+        ASSERT_NOT_NULL(vr); \
+        ASSERT_NOT_NULL(value); \
+    } \
     size_t index = 0; \
     for (size_t i = 0; i < nvr; i++) { \
         CALL(get ## T(c, vr[i], value, nvr, &index)); \
@@ -54,15 +58,15 @@ do { \
     return fmi2OK;
 
 #define SET_VARIABLES(T) \
+    if (nvr > 0) { \
+        ASSERT_NOT_NULL(vr); \
+        ASSERT_NOT_NULL(value); \
+    } \
     size_t index = 0; \
     for (size_t i = 0; i < nvr; i++) { \
         CALL(set ## T(c, vr[i], value, nvr, &index)); \
     } \
     return fmi2OK;
-
-#ifndef DT_EVENT_DETECT
-#define DT_EVENT_DETECT 1e-10
-#endif
 
 // ---------------------------------------------------------------------------
 // FMI functions
@@ -228,7 +232,7 @@ fmi2Status fmi2Reset(fmi2Component c) {
 }
 
 void fmi2FreeInstance(fmi2Component c) {
-    freeModelInstance((ModelInstance*)c);
+    freeModelInstance(c);
 }
 
 // ---------------------------------------------------------------------------
@@ -261,6 +265,10 @@ fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
 }
 
 fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
+    if (nvr > 0) {
+        ASSERT_NOT_NULL(vr);
+        ASSERT_NOT_NULL(value);
+    }
     for (size_t i = 0; i < nvr; i++) {
         bool b = false;
         size_t index = 0;
@@ -283,6 +291,10 @@ fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
 }
 
 fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
+    if (nvr > 0) {
+        ASSERT_NOT_NULL(vr);
+        ASSERT_NOT_NULL(value);
+    }
     for (size_t i = 0; i < nvr; i++) {
         const bool b = value[i] != fmi2False;
         size_t index = 0;
@@ -322,20 +334,24 @@ fmi2Status fmi2DeSerializeFMUstate(fmi2Component c, const fmi2Byte serializedSta
 fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReference vUnknown_ref[], size_t nUnknown,
                                         const fmi2ValueReference vKnown_ref[] , size_t nKnown,
                                         const fmi2Real dvKnown[], fmi2Real dvUnknown[]) {
+    if (nUnknown > 0) {    
+        ASSERT_NOT_NULL(vUnknown_ref);
+        ASSERT_NOT_NULL(dvUnknown);
+    }
+
+    if (nKnown > 0) {
+        ASSERT_NOT_NULL(dvKnown);
+    }
+
     for (size_t i = 0; i < nUnknown; i++) {
-
         dvUnknown[i] = 0;
-        
         for (size_t j = 0; j < nKnown; j++) {
-
             double partialDerivative = 0.0;
-            
             CALL(getPartialDerivative(c, vUnknown_ref[i], 0, vKnown_ref[j], 0, &partialDerivative));
-            
             dvUnknown[i] += partialDerivative * dvKnown[j];
         }
     }
-    
+
     return fmi2OK;
 }
 
@@ -536,20 +552,20 @@ fmi2Status fmi2EnterContinuousTimeMode(fmi2Component c) {
 
 fmi2Status fmi2CompletedIntegratorStep(fmi2Component c, fmi2Boolean noSetFMUStatePriorToCurrentPoint,
                                      fmi2Boolean *enterEventMode, fmi2Boolean *terminateSimulation) {
-    bool enterEvent = false;
-    bool terminate = false;
+    bool _enterEventMode = false;
+    bool _terminateSimulation = false;
 
     const Status status = completedIntegratorStep(
         c,
         noSetFMUStatePriorToCurrentPoint != fmi2False,
-        &enterEvent,
-        &terminate);
+        &_enterEventMode,
+        &_terminateSimulation);
 
     if (enterEventMode) {
-        *enterEventMode = enterEvent ? fmi2True : fmi2False;
+        *enterEventMode = _enterEventMode ? fmi2True : fmi2False;
     }
     if (terminateSimulation) {
-        *terminateSimulation = terminate ? fmi2True : fmi2False;
+        *terminateSimulation = _terminateSimulation ? fmi2True : fmi2False;
     }
 
     return map_status(status);
