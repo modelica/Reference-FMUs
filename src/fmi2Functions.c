@@ -60,24 +60,6 @@ do { \
     } \
     return fmi2OK;
 
-#define GET_BOOLEAN_VARIABLES \
-do { \
-    UNUSED(c); \
-    UNUSED(vr); \
-    UNUSED(nvr); \
-    UNUSED(value); \
-    return fmi2Error; \
-} while (false)
-
-#define SET_BOOLEAN_VARIABLES \
-do { \
-    UNUSED(c); \
-    UNUSED(vr); \
-    UNUSED(nvr); \
-    UNUSED(value); \
-    return fmi2Error; \
-} while (false)
-
 #ifndef DT_EVENT_DETECT
 #define DT_EVENT_DETECT 1e-10
 #endif
@@ -279,7 +261,13 @@ fmi2Status fmi2GetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
 }
 
 fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2Boolean value[]) {
-    GET_BOOLEAN_VARIABLES;
+    for (size_t i = 0; i < nvr; i++) {
+        bool b = false;
+        size_t index = 0;
+        CALL(getBoolean(c, vr[i], &b, 1, &index));
+        value[i] = b ? fmi2True : fmi2False;
+    }
+    return fmi2OK;
 }
 
 fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
@@ -295,7 +283,12 @@ fmi2Status fmi2SetInteger(fmi2Component c, const fmi2ValueReference vr[], size_t
 }
 
 fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Boolean value[]) {
-    SET_BOOLEAN_VARIABLES;
+    for (size_t i = 0; i < nvr; i++) {
+        const bool b = value[i] != fmi2False;
+        size_t index = 0;
+        CALL(setBoolean(c, vr[i], &b, 1, &index));
+    }
+    return fmi2OK;
 }
 
 fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
