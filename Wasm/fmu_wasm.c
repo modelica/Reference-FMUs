@@ -54,59 +54,100 @@ static Status wasm_apply_status(ModelInstance *instance, Status status) {
     return status;
 }
 
-static Status wasm_get_float64(
-    ModelInstance *instance,
-    const ValueReference *value_references,
-    size_t n,
-    double values[])
-{
-    if (n == 0) {
-        return OK;
+#define DEFINE_WASM_GET(MODEL_SUFFIX, CTYPE)                                                    \
+    static Status wasm_get_##MODEL_SUFFIX(                                                      \
+        ModelInstance *instance,                                                                \
+        const ValueReference *value_references,                                                 \
+        size_t n,                                                                               \
+        CTYPE values[])                                                                         \
+    {                                                                                           \
+        if (n == 0) {                                                                           \
+            return OK;                                                                          \
+        }                                                                                       \
+        size_t index = 0;                                                                       \
+        for (size_t i = 0; i < n; i++) {                                                        \
+            Status status = get##MODEL_SUFFIX(instance, value_references[i], values, n, &index); \
+            if (status != OK) {                                                                 \
+                return wasm_apply_status(instance, status);                                     \
+            }                                                                                   \
+        }                                                                                       \
+        if (index != n) {                                                                       \
+            logError(instance, "Expected nValues = %zu but was %zu.", n, index);                 \
+            return wasm_apply_status(instance, Error);                                          \
+        }                                                                                       \
+        return OK;                                                                              \
     }
-    if (instance->isDirtyValues) {
-        Status status = calculateValues(instance);
-        if (status != OK) {
-            return wasm_apply_status(instance, status);
-        }
-        instance->isDirtyValues = false;
-    }
-    size_t index = 0;
-    for (size_t i = 0; i < n; i++) {
-        Status status = getFloat64(instance, value_references[i], values, n, &index);
-        if (status != OK) {
-            return wasm_apply_status(instance, status);
-        }
-    }
-    if (index != n) {
-        logError(instance, "Expected nValues = %zu but was %zu.", n, index);
-        return wasm_apply_status(instance, Error);
-    }
-    return OK;
-}
 
-static Status wasm_set_float64(
-    ModelInstance *instance,
-    const ValueReference *value_references,
-    size_t n,
-    const double values[])
-{
-    if (n == 0) {
-        return OK;
+#define DEFINE_WASM_SET(MODEL_SUFFIX, CTYPE)                                                         \
+    static Status wasm_set_##MODEL_SUFFIX(                                                             \
+        ModelInstance *instance,                                                                       \
+        const ValueReference *value_references,                                                        \
+        size_t n,                                                                                      \
+        const CTYPE values[])                                                                          \
+    {                                                                                                  \
+        if (n == 0) {                                                                                  \
+            return OK;                                                                                 \
+        }                                                                                              \
+        size_t index = 0;                                                                              \
+        for (size_t i = 0; i < n; i++) {                                                               \
+            Status status = set##MODEL_SUFFIX(instance, value_references[i], values, n, &index);        \
+            if (status != OK) {                                                                        \
+                return wasm_apply_status(instance, status);                                            \
+            }                                                                                          \
+        }                                                                                              \
+        if (index != n) {                                                                              \
+            logError(instance, "Expected nValues = %zu but was %zu.", n, index);                      \
+            return wasm_apply_status(instance, Error);                                                 \
+        }                                                                                              \
+        return OK;                                                                                     \
     }
-    size_t index = 0;
-    for (size_t i = 0; i < n; i++) {
-        Status status = setFloat64(instance, value_references[i], values, n, &index);
-        if (status != OK) {
-            return wasm_apply_status(instance, status);
-        }
+
+DEFINE_WASM_GET(Float64, double)
+DEFINE_WASM_SET(Float64, double)
+DEFINE_WASM_GET(Int32, int32_t)
+DEFINE_WASM_SET(Int32, int32_t)
+DEFINE_WASM_GET(Boolean, bool)
+DEFINE_WASM_SET(Boolean, bool)
+
+#define WASM_EXPORT_GET(export_name, model_suffix, list_type, c_type)                            \
+    bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_##export_name(         \
+        exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,                     \
+        exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,               \
+        co_simulation_fmu_list_##list_type##_t *ret,                                             \
+        exports_fmi_fmi3_co_simulation_status_t *err)                                            \
+    {                                                                                            \
+        size_t n = value_references->len;                                                        \
+        c_type *buf = (c_type *)calloc(n, sizeof(c_type));                                      \
+        if (!buf) {                                                                              \
+            *err = FMI_FMI3_TYPES_STATUS_ERROR;                                                  \
+            return false;                                                                        \
+        }                                                                                        \
+        ModelInstance *instance = wasm_comp(self);                                               \
+        Status st = wasm_get_##model_suffix(instance, value_references->ptr, n, buf);           \
+        if (st != OK && st != Warning) {                                                         \
+            free(buf);                                                                           \
+            *err = map_status(wasm_apply_status(instance, st));                                   \
+            return false;                                                                        \
+        }                                                                                        \
+        ret->ptr = buf;                                                                          \
+        ret->len = n;                                                                            \
+        return true;                                                                             \
     }
-    if (index != n) {
-        logError(instance, "Expected nValues = %zu but was %zu.", n, index);
-        return wasm_apply_status(instance, Error);
+
+#define WASM_EXPORT_SET(export_name, model_suffix, list_type)                                         \
+    exports_fmi_fmi3_co_simulation_status_t                                                         \
+    exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_##export_name(                   \
+        exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,                          \
+        exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,                    \
+        co_simulation_fmu_list_##list_type##_t *values)                                               \
+    {                                                                                                 \
+        if (value_references->len != values->len) {                                                   \
+            return FMI_FMI3_TYPES_STATUS_ERROR;                                                       \
+        }                                                                                             \
+        ModelInstance *instance = wasm_comp(self);                                                    \
+        Status st = wasm_set_##model_suffix(instance, value_references->ptr, values->len, values->ptr); \
+        return map_status(wasm_apply_status(instance, st));                                           \
     }
-    instance->isDirtyValues = true;
-    return OK;
-}
 
 static char *wit_string_to_c(const co_simulation_fmu_string_t *s) {
     if (!s || !s->ptr) {
@@ -226,7 +267,7 @@ bool exports_fmi_fmi3_co_simulation_static_co_simulation_instance_instantiate_co
         resource_location = resources;
     }
 
-    ModelInstance *instance = createModelInstance(
+    ModelInstance *instance = createCoSimulationInstance(
         wasm_log_message,
         wasm_intermediate_update,
         inst,
@@ -234,7 +275,8 @@ bool exports_fmi_fmi3_co_simulation_static_co_simulation_instance_instantiate_co
         token,
         resource_location,
         logging_on,
-        CoSimulation);
+        early_return_allowed,
+        event_mode_used);
 
     free(name);
     free(token);
@@ -245,9 +287,6 @@ bool exports_fmi_fmi3_co_simulation_static_co_simulation_instance_instantiate_co
         return false;
     }
 
-    instance->earlyReturnAllowed = early_return_allowed;
-    instance->eventModeUsed = event_mode_used;
-    instance->state = Instantiated;
     inst->comp = instance;
 
     *ret = exports_fmi_fmi3_co_simulation_co_simulation_instance_new(inst);
@@ -424,46 +463,12 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_exit_configuration_
     return map_status(wasm_apply_status(instance, status));
 }
 
-bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_float64(
-    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
-    co_simulation_fmu_list_f64_t *ret,
-    exports_fmi_fmi3_co_simulation_status_t *err)
-{
-    size_t n = value_references->len;
-    double *buf = (double *)calloc(n, sizeof(double));
-    if (!buf) {
-        *err = FMI_FMI3_TYPES_STATUS_ERROR;
-        return false;
-    }
-    ModelInstance *instance = wasm_comp(self);
-    Status st = wasm_get_float64(instance, value_references->ptr, n, buf);
-    if (st != OK && st != Warning) {
-        free(buf);
-        *err = map_status(st);
-        return false;
-    }
-    ret->ptr = buf;
-    ret->len = n;
-    return true;
-}
-
-exports_fmi_fmi3_co_simulation_status_t
-exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_float64(
-    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
-    co_simulation_fmu_list_f64_t *values)
-{
-    if (value_references->len != values->len) {
-        return FMI_FMI3_TYPES_STATUS_ERROR;
-    }
-    ModelInstance *instance = wasm_comp(self);
-    return map_status(wasm_set_float64(
-        instance,
-        value_references->ptr,
-        value_references->len,
-        values->ptr));
-}
+WASM_EXPORT_GET(float64, Float64, f64, double)
+WASM_EXPORT_GET(int32, Int32, s32, int32_t)
+WASM_EXPORT_GET(boolean, Boolean, bool, bool)
+WASM_EXPORT_SET(float64, Float64, f64)
+WASM_EXPORT_SET(int32, Int32, s32)
+WASM_EXPORT_SET(boolean, Boolean, bool)
 
 #define STUB_GET(T, list_type) \
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_##T( \
@@ -480,13 +485,11 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_##T( \
 STUB_GET(float32, f32)
 STUB_GET(int8, s8)
 STUB_GET(int16, s16)
-STUB_GET(int32, s32)
 STUB_GET(int64, s64)
 STUB_GET(uint8, u8)
 STUB_GET(uint16, u16)
 STUB_GET(uint32, u32)
 STUB_GET(uint64, u64)
-STUB_GET(boolean, bool)
 STUB_GET(string, string)
 STUB_GET(binary, list_u8)
 STUB_GET(clock, bool)
@@ -505,13 +508,11 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_##T( \
 STUB_SET(float32, f32)
 STUB_SET(int8, s8)
 STUB_SET(int16, s16)
-STUB_SET(int32, s32)
 STUB_SET(int64, s64)
 STUB_SET(uint8, u8)
 STUB_SET(uint16, u16)
 STUB_SET(uint32, u32)
 STUB_SET(uint64, u64)
-STUB_SET(boolean, bool)
 STUB_SET(string, string)
 STUB_SET(binary, list_u8)
 STUB_SET(clock, bool)
@@ -991,7 +992,7 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_do_step(
         return false;
     }
     if (st != OK && st != Warning) {
-        *err = map_status(st);
+        *err = map_status(wasm_apply_status(instance, st));
         return false;
     }
 
