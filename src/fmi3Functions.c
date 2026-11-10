@@ -91,21 +91,6 @@ static Status getNValues(
         return fmi3Discard;                                                                         \
     }
 
-//#define GET_VARIABLES(T)                                                                                               \
-//    if (nValueReferences > 0) {                                                                                        \
-//        ASSERT_NOT_NULL(valueReferences);                                                                              \
-//    }                                                                                                                  \
-//    if (nValues > 0) {                                                                                                 \
-//        ASSERT_NOT_NULL(values);                                                                                       \
-//    }                                                                                                                  \
-//    size_t index = 0;                                                                                                  \
-//    for (size_t i = 0; i < nValueReferences; i++) {                                                                    \
-//        fmi3Status result = map_status(get##T(instance, (ValueReference)valueReferences[i], values, nValues, &index)); \
-//        if (result != fmi3OK) {                                                                                        \
-//            return result;                                                                                             \
-//        }                                                                                                              \
-//    }                                                                                                                  \
-//    return fmi3OK;
 #define GET_VARIABLES(T)                                                                                               \
     if (nValueReferences > 0) { \
         ASSERT_NOT_NULL(valueReferences); \
