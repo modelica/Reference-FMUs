@@ -16,7 +16,7 @@
 
 #include "config.h"
 #include "model.h"
-#include "model_instance.h"
+#include "model_impl.h"
 #include "cosimulation.h"
 
 

@@ -1,4 +1,4 @@
-#include "model_instance.h"
+#include "model_impl.h"
 
 #define COUNTER_MAX 10
 
