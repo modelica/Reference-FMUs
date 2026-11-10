@@ -103,6 +103,7 @@ SET(HEADERS
     ${MODEL_NAME}/config.h
     include/cosimulation.h
     include/model.h
+    include/model_impl.h
 )
 
 if (${FMI_VERSION} EQUAL 2)

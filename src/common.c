@@ -109,7 +109,6 @@ static ModelInstance *createModelInstanceImpl(
         instance->unlockPreemption     = NULL;
         instance->instanceName         = strdup(instanceName);
         instance->resourceLocation     = resourceLocation ? strdup(resourceLocation) : NULL;
-        instance->status               = OK;
         instance->logEvents            = loggingOn;
         instance->logErrors            = true;
         instance->nSteps               = 0;
@@ -283,7 +282,6 @@ Status reset(ModelInstance *instance) {
     instance->startTime = 0.0;
     instance->time = 0.0;
     instance->nSteps = 0;
-    instance->status = OK;
     instance->isDirtyValues = true;
 
     return setStartValues(instance);
@@ -1000,7 +998,6 @@ Status setFMUState(ModelInstance *instance, void* FMUState) {
     instance->startTime = s->startTime;
     instance->stopTime = s->stopTime;
     instance->time = s->time;
-    instance->status = s->status;
     instance->state = s->state;
     instance->clocksTicked = s->clocksTicked;
 
