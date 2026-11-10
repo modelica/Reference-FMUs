@@ -36,9 +36,11 @@ Status calculateValues(ModelInstance *instance) {
     path[MAX_PATH_LENGTH - 1] = '\0';
 
 #if FMI_VERSION == 2
-    if (!PathAppendA(path, "y.txt")) return Discard;
+    if (!PathAppendA(path, "y.txt"))
+        return Discard;
 #else
-    if (!strncat(path, "y.txt", MAX_PATH_LENGTH)) return Discard;
+    if (!strncat(path, "y.txt", MAX_PATH_LENGTH))
+        return Discard;
 #endif
 
 #else
@@ -47,15 +49,15 @@ Status calculateValues(ModelInstance *instance) {
     path[MAX_PATH_LENGTH - 1] = '\0';
 
 #if FMI_VERSION == 2
-    strncat(path, "/y.txt", MAX_PATH_LENGTH-strlen(path)-1);
+    strncat(path, "/y.txt", MAX_PATH_LENGTH - strlen(path) - 1);
 #else
-    strncat(path, "y.txt", MAX_PATH_LENGTH-strlen(path)-1);
+    strncat(path, "y.txt", MAX_PATH_LENGTH - strlen(path) - 1);
 #endif
-    path[MAX_PATH_LENGTH-1] = 0;
+    path[MAX_PATH_LENGTH - 1] = 0;
 #endif
 
     // open the resource file
-    file = fopen (path, "r");
+    file = fopen(path, "r");
 
     if (!file) {
         logError(instance, "Failed to open resource file %s.", path);
@@ -91,7 +93,7 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
     }
 }
 
-Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t* index) {
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t *index) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
     ASSERT_NOT_NULL(index);
@@ -109,8 +111,7 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
     }
 }
 
-
-Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
+Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues, size_t *index) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
     ASSERT_NOT_NULL(index);
@@ -118,12 +119,12 @@ Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], si
     calculateValues(instance);
 
     switch (vr) {
-        case vr_y:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(y);
-            return OK;
-        default:
-            logError(instance, "Get Int32 is not allowed for value reference %u.", vr);
-            return Discard;
+    case vr_y:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(y);
+        return OK;
+    default:
+        logError(instance, "Get Int32 is not allowed for value reference %u.", vr);
+        return Discard;
     }
 }

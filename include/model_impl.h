@@ -73,7 +73,6 @@ struct ModelInstance {
     double x[N_CONTINUOUS_STATES];
     double dx[N_CONTINUOUS_STATES];
 #endif
-
 };
 
 // shorthand to access the variables
@@ -83,24 +82,24 @@ struct ModelInstance {
 #define xstr(s) str(s)
 #define str(s) #s
 
-#define ASSERT_NOT_NULL(V) \
-    if (!V) { \
+#define ASSERT_NOT_NULL(V)                                             \
+    if (!V) {                                                          \
         logError(instance, "Argument '" xstr(V) "' must not be NULL"); \
-        return Discard; \
+        return Discard;                                                \
     }
 
 // assert size of nValues for scalar variables
-#define ASSERT_NVALUES(N) \
-    do { \
-        const size_t expected_nValues = *index + (N); \
-        if (expected_nValues > nValues) { \
+#define ASSERT_NVALUES(N)                                                                          \
+    do {                                                                                           \
+        const size_t expected_nValues = *index + (N);                                              \
+        if (expected_nValues > nValues) {                                                          \
             logError(instance, "Expected nValues >= %zu but was %zu.", expected_nValues, nValues); \
-            return Discard; \
-        } \
+            return Discard;                                                                        \
+        }                                                                                          \
     } while (0)
 
-#define ASSERT_SIZE_T(A, E) \
-    if (A != E) { \
+#define ASSERT_SIZE_T(A, E)                                                  \
+    if (A != E) {                                                            \
         logError(instance, "Expected " xstr(A) " = %zu but was %zu.", E, A); \
-        return Discard; \
+        return Discard;                                                      \
     }

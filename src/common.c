@@ -1,5 +1,5 @@
-#include <stdlib.h>  // for calloc(), free()
-#include <float.h>   // for DBL_EPSILON
+#include <stdlib.h> // for calloc(), free()
+#include <float.h>  // for DBL_EPSILON
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -14,14 +14,19 @@
 #undef CALL
 #endif
 
-#define CALL(f) do { const Status status = f; if (status != OK) return status; } while (false)
+#define CALL(f)                  \
+    do {                         \
+        const Status status = f; \
+        if (status != OK)        \
+            return status;       \
+    } while (false)
 
-#define NOT_IMPLEMENTED \
-    do { \
+#define NOT_IMPLEMENTED                                     \
+    do {                                                    \
         logError(instance, "Function is not implemented."); \
-        return Discard; \
+        return Discard;                                     \
     } while (0)
-    
+
 static bool resourceLocationEndsWithFileSeparator(const char *resourceLocation) {
 
     if (!resourceLocation) {
@@ -75,7 +80,6 @@ static ModelInstance *createModelInstanceImpl(
         return NULL;
     }
 
-
     if (strcmp(instantiationToken, INSTANTIATION_TOKEN)) {
         if (cbLogger) {
 #if FMI_VERSION < 3
@@ -90,10 +94,10 @@ static ModelInstance *createModelInstanceImpl(
         if (cbLogger) {
 #if FMI_VERSION < 3
             cbLogger(componentEnvironment, instanceName, Discard, "error",
-                "resourceLocation must end with a file separator.");
+                     "resourceLocation must end with a file separator.");
 #else
             cbLogger(componentEnvironment, Discard, "error",
-                "resourceLocation must end with a file separator.");
+                     "resourceLocation must end with a file separator.");
 #endif
         }
         return NULL;
@@ -103,17 +107,17 @@ static ModelInstance *createModelInstanceImpl(
 
     if (instance) {
         instance->componentEnvironment = componentEnvironment;
-        instance->logger               = cbLogger;
-        instance->intermediateUpdate   = intermediateUpdate;
-        instance->lockPreemption       = NULL;
-        instance->unlockPreemption     = NULL;
-        instance->instanceName         = strdup(instanceName);
-        instance->resourceLocation     = resourceLocation ? strdup(resourceLocation) : NULL;
-        instance->logEvents            = loggingOn;
-        instance->logErrors            = true;
-        instance->nSteps               = 0;
-        instance->earlyReturnAllowed   = false;
-        instance->eventModeUsed        = false;
+        instance->logger = cbLogger;
+        instance->intermediateUpdate = intermediateUpdate;
+        instance->lockPreemption = NULL;
+        instance->unlockPreemption = NULL;
+        instance->instanceName = strdup(instanceName);
+        instance->resourceLocation = resourceLocation ? strdup(resourceLocation) : NULL;
+        instance->logEvents = loggingOn;
+        instance->logErrors = true;
+        instance->nSteps = 0;
+        instance->earlyReturnAllowed = false;
+        instance->eventModeUsed = false;
     }
 
     if (!instance || !instance->instanceName) {
@@ -187,7 +191,7 @@ ModelInstance *createCoSimulationInstance(
 
     if (instance) {
         instance->earlyReturnAllowed = earlyReturnAllowed;
-        instance->eventModeUsed      = eventModeUsed;
+        instance->eventModeUsed = eventModeUsed;
     }
 
     return instance;
@@ -215,8 +219,8 @@ ModelInstance *createScheduledExecutionInstance(
         ScheduledExecution);
 
     if (instance) {
-        instance->clockUpdate      = clockUpdate;
-        instance->lockPreemption   = lockPreemption;
+        instance->clockUpdate = clockUpdate;
+        instance->lockPreemption = lockPreemption;
         instance->unlockPreemption = unlockPreemption;
     }
 
@@ -246,16 +250,19 @@ ModelInstance *createModelInstance(
 
 void freeModelInstance(ModelInstance *instance) {
 
-    if (!instance) return;
+    if (!instance)
+        return;
 
-    if (instance->instanceName) free((void*)instance->instanceName);
+    if (instance->instanceName)
+        free((void *)instance->instanceName);
 
-    if (instance->resourceLocation) free((void*)instance->resourceLocation);
+    if (instance->resourceLocation)
+        free((void *)instance->resourceLocation);
 
     free(instance);
 }
 
-static Status s_reallocate(ModelInstance *instance, void** memory, size_t size) {
+static Status s_reallocate(ModelInstance *instance, void **memory, size_t size) {
 
     if (size == 0) {
         if (*memory) {
@@ -265,7 +272,7 @@ static Status s_reallocate(ModelInstance *instance, void** memory, size_t size) 
         return OK;
     }
 
-    void* temp = realloc(*memory, size);
+    void *temp = realloc(*memory, size);
 
     if (!temp) {
         logError(instance, "Failed to allocate memory.");
@@ -329,8 +336,7 @@ Status setupExperiment(
     double tolerance,
     double startTime,
     bool stopTimeDefined,
-    double stopTime
-) {
+    double stopTime) {
     ASSERT_NOT_NULL(instance);
 
     if (instance->state != Instantiated) {
@@ -470,18 +476,18 @@ Status exitInitializationMode(ModelInstance *instance) {
     CALL(configurate(instance));
 
     switch (instance->type) {
-        case CoSimulation:
-            instance->state = instance->eventModeUsed ? EventMode : StepMode;
-            break;
-        case ModelExchange:
-            instance->state = EventMode;
-            break;
-        case ScheduledExecution:
-            instance->state = ClockActivationMode;
-            break;
-        default:
-            logError(instance, "exitInitializationMode() is not supported for this interface type");
-            return Discard;
+    case CoSimulation:
+        instance->state = instance->eventModeUsed ? EventMode : StepMode;
+        break;
+    case ModelExchange:
+        instance->state = EventMode;
+        break;
+    case ScheduledExecution:
+        instance->state = ClockActivationMode;
+        break;
+    default:
+        logError(instance, "exitInitializationMode() is not supported for this interface type");
+        return Discard;
     }
 
     return OK;
@@ -489,24 +495,24 @@ Status exitInitializationMode(ModelInstance *instance) {
 
 Status enterEventMode(ModelInstance *instance) {
     switch (instance->type) {
-        case CoSimulation: 
-            if (instance->state != StepMode) {
-                logError(instance, "enterEventMode() may only be called in Step Mode");
-                return Discard;
-            } else if (!instance->eventModeUsed) {
-                logError(instance, "enterEventMode() may only be called if eventModeUsed is true");
-                return Discard;
-            }
-            break;
-        case ModelExchange: 
-            if (instance->state != ContinuousTimeMode) {
-                logError(instance, "enterEventMode() may only be called in Continuous Time Mode");
-                return Discard;
-            }
-            break;
-        case ScheduledExecution: 
-            logError(instance, "enterEventMode() may not be called in Scheduled Execution");
+    case CoSimulation:
+        if (instance->state != StepMode) {
+            logError(instance, "enterEventMode() may only be called in Step Mode");
             return Discard;
+        } else if (!instance->eventModeUsed) {
+            logError(instance, "enterEventMode() may only be called if eventModeUsed is true");
+            return Discard;
+        }
+        break;
+    case ModelExchange:
+        if (instance->state != ContinuousTimeMode) {
+            logError(instance, "enterEventMode() may only be called in Continuous Time Mode");
+            return Discard;
+        }
+        break;
+    case ScheduledExecution:
+        logError(instance, "enterEventMode() may not be called in Scheduled Execution");
+        return Discard;
     }
 
     instance->state = EventMode;
@@ -516,53 +522,53 @@ Status enterEventMode(ModelInstance *instance) {
 
 Status enterContinuousTimeMode(ModelInstance *instance) {
     switch (instance->type) {
-        case ModelExchange:
-            if (instance->state != EventMode) {
-                logError(instance, "enterContinuousTimeMode() may only be called in Event Mode");
-                return Discard;
-            }
-            instance->state = ContinuousTimeMode;
-            return OK;
-        default:
-            logError(instance, "enterContinuousTimeMode() is only allowed in Model Exchange");
+    case ModelExchange:
+        if (instance->state != EventMode) {
+            logError(instance, "enterContinuousTimeMode() may only be called in Event Mode");
             return Discard;
+        }
+        instance->state = ContinuousTimeMode;
+        return OK;
+    default:
+        logError(instance, "enterContinuousTimeMode() is only allowed in Model Exchange");
+        return Discard;
     }
 }
 
 Status terminate(ModelInstance *instance) {
     switch (instance->type) {
-        case CoSimulation: {
-            switch (instance->state) {
-            case StepMode:
-            case EventMode:
-                break;
-            default:
-                logError(instance, "terminate() may only be called in Step Mode and Event Mode");
-                return Discard;
-            }
+    case CoSimulation: {
+        switch (instance->state) {
+        case StepMode:
+        case EventMode:
             break;
+        default:
+            logError(instance, "terminate() may only be called in Step Mode and Event Mode");
+            return Discard;
         }
-        case ModelExchange: {
-            switch (instance->state) {
-            case ContinuousTimeMode:
-            case EventMode:
-                break;
-            default:
-                logError(instance, "terminate() may only be called in Continuous Time Mode and Event Mode");
-                return Discard;
-            }
+        break;
+    }
+    case ModelExchange: {
+        switch (instance->state) {
+        case ContinuousTimeMode:
+        case EventMode:
             break;
+        default:
+            logError(instance, "terminate() may only be called in Continuous Time Mode and Event Mode");
+            return Discard;
         }
-        case ScheduledExecution: {
-            switch (instance->state) {
-            case ClockActivationMode:
-                break;
-            default:
-                logError(instance, "terminate() may only be called in Clock Activation Mode");
-                return Discard;
-            }
+        break;
+    }
+    case ScheduledExecution: {
+        switch (instance->state) {
+        case ClockActivationMode:
             break;
+        default:
+            logError(instance, "terminate() may only be called in Clock Activation Mode");
+            return Discard;
         }
+        break;
+    }
     }
 
     instance->state = Terminated;
@@ -571,9 +577,9 @@ Status terminate(ModelInstance *instance) {
 }
 
 Status completedIntegratorStep(ModelInstance *instance,
-    bool  noSetFMUStatePriorToCurrentPoint,
-    bool* enterEventMode,
-    bool* terminateSimulation) {
+                               bool noSetFMUStatePriorToCurrentPoint,
+                               bool *enterEventMode,
+                               bool *terminateSimulation) {
     UNUSED(instance);
     UNUSED(noSetFMUStatePriorToCurrentPoint);
     UNUSED(enterEventMode);
@@ -605,7 +611,7 @@ Status enterStepMode(ModelInstance *instance) {
     return OK;
 }
 
-Status setDebugLogging(ModelInstance *instance, bool loggingOn, size_t nCategories, const char * const categories[]) {
+Status setDebugLogging(ModelInstance *instance, bool loggingOn, size_t nCategories, const char *const categories[]) {
 
     if (nCategories > 0) {
 
@@ -629,7 +635,6 @@ Status setDebugLogging(ModelInstance *instance, bool loggingOn, size_t nCategori
 
         instance->logEvents = loggingOn;
         instance->logErrors = loggingOn;
-
     }
 
     return OK;
@@ -684,7 +689,8 @@ void logEvent(ModelInstance *instance, const char *message, ...) {
 
 void logError(ModelInstance *instance, const char *message, ...) {
 
-    if (!instance || !instance->logErrors) return;
+    if (!instance || !instance->logErrors)
+        return;
 
     va_list args;
     va_start(args, message);
@@ -692,17 +698,18 @@ void logError(ModelInstance *instance, const char *message, ...) {
     va_end(args);
 }
 
-#define GET_NOT_ALLOWED(t) do { \
-    UNUSED(vr); \
-    UNUSED(values); \
-    UNUSED(nValues); \
-    UNUSED(index); \
-    logError(instance, "Getting " t " is not allowed.");\
-    return Discard; \
-} while (false)
+#define GET_NOT_ALLOWED(t)                                   \
+    do {                                                     \
+        UNUSED(vr);                                          \
+        UNUSED(values);                                      \
+        UNUSED(nValues);                                     \
+        UNUSED(index);                                       \
+        logError(instance, "Getting " t " is not allowed."); \
+        return Discard;                                      \
+    } while (false)
 
 #ifndef GET_FLOAT32
-Status getFloat32(ModelInstance *instance, ValueReference vr, float values[], size_t nValues, size_t* index) {
+Status getFloat32(ModelInstance *instance, ValueReference vr, float values[], size_t nValues, size_t *index) {
     GET_NOT_ALLOWED("Float32");
 }
 #endif
@@ -762,101 +769,102 @@ Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], siz
 #endif
 
 #ifndef GET_STRING
-Status getString(ModelInstance *instance, ValueReference vr, const char* values[], size_t nValues, size_t *index) {
+Status getString(ModelInstance *instance, ValueReference vr, const char *values[], size_t nValues, size_t *index) {
     GET_NOT_ALLOWED("String");
 }
 #endif
 
 #ifndef GET_BINARY
-Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], const char* values[], size_t nValues, size_t *index) {
+Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], const char *values[], size_t nValues, size_t *index) {
     UNUSED(sizes);
     GET_NOT_ALLOWED("Binary");
 }
 #endif
 
-#define SET_NOT_ALLOWED(t) do { \
-    UNUSED(vr); \
-    UNUSED(values); \
-    UNUSED(nValues); \
-    UNUSED(index); \
-    logError(instance, "Setting " t " is not allowed.");\
-    return Discard; \
-} while (false)
+#define SET_NOT_ALLOWED(t)                                   \
+    do {                                                     \
+        UNUSED(vr);                                          \
+        UNUSED(values);                                      \
+        UNUSED(nValues);                                     \
+        UNUSED(index);                                       \
+        logError(instance, "Setting " t " is not allowed."); \
+        return Discard;                                      \
+    } while (false)
 
 #ifndef SET_FLOAT32
-Status setFloat32(ModelInstance *instance, ValueReference vr, const float values[], size_t nValues, size_t* index) {
+Status setFloat32(ModelInstance *instance, ValueReference vr, const float values[], size_t nValues, size_t *index) {
     SET_NOT_ALLOWED("Float32");
 }
 #endif
 
 #ifndef SET_FLOAT64
-Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t* index) {
+Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t *index) {
     SET_NOT_ALLOWED("Float64");
 }
 #endif
 
 #ifndef SET_INT8
-Status setInt8(ModelInstance *instance, ValueReference vr, const int8_t values[], size_t nValues, size_t* index) {
+Status setInt8(ModelInstance *instance, ValueReference vr, const int8_t values[], size_t nValues, size_t *index) {
     SET_NOT_ALLOWED("Int8");
 }
 #endif
 
 #ifndef SET_UINT8
-Status setUInt8(ModelInstance *instance, ValueReference vr, const uint8_t values[], size_t nValues, size_t* index) {
+Status setUInt8(ModelInstance *instance, ValueReference vr, const uint8_t values[], size_t nValues, size_t *index) {
     SET_NOT_ALLOWED("UInt8");
 }
 #endif
 
 #ifndef SET_INT16
-Status setInt16(ModelInstance *instance, ValueReference vr, const int16_t values[], size_t nValues, size_t* index) {
+Status setInt16(ModelInstance *instance, ValueReference vr, const int16_t values[], size_t nValues, size_t *index) {
     SET_NOT_ALLOWED("Int16");
 }
 #endif
 
 #ifndef SET_UINT16
-Status setUInt16(ModelInstance *instance, ValueReference vr, const uint16_t values[], size_t nValues, size_t* index) {
+Status setUInt16(ModelInstance *instance, ValueReference vr, const uint16_t values[], size_t nValues, size_t *index) {
     SET_NOT_ALLOWED("UInt16");
 }
 #endif
 
 #ifndef SET_INT32
-Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues, size_t* index) {
+Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues, size_t *index) {
     SET_NOT_ALLOWED("Int32");
 }
 #endif
 
 #ifndef SET_UINT32
-Status setUInt32(ModelInstance *instance, ValueReference vr, const uint32_t values[], size_t nValues, size_t* index) {
+Status setUInt32(ModelInstance *instance, ValueReference vr, const uint32_t values[], size_t nValues, size_t *index) {
     SET_NOT_ALLOWED("UInt32");
 }
 #endif
 
 #ifndef SET_INT64
-Status setInt64(ModelInstance *instance, ValueReference vr, const int64_t values[], size_t nValues, size_t* index) {
+Status setInt64(ModelInstance *instance, ValueReference vr, const int64_t values[], size_t nValues, size_t *index) {
     SET_NOT_ALLOWED("Int64");
 }
 #endif
 
 #ifndef SET_UINT64
-Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t values[], size_t nValues, size_t* index) {
+Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t values[], size_t nValues, size_t *index) {
     SET_NOT_ALLOWED("UInt64");
 }
 #endif
 
 #ifndef SET_BOOLEAN
-Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[], size_t nValues, size_t* index) {
+Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[], size_t nValues, size_t *index) {
     SET_NOT_ALLOWED("Boolean");
 }
 #endif
 
 #ifndef SET_STRING
-Status setString(ModelInstance *instance, ValueReference vr, const char *const values[], size_t nValues, size_t* index) {
+Status setString(ModelInstance *instance, ValueReference vr, const char *const values[], size_t nValues, size_t *index) {
     SET_NOT_ALLOWED("String");
 }
 #endif
 
 #ifndef SET_BINARY
-Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[], const char *const values[], size_t nValues, size_t* index) {
+Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[], const char *const values[], size_t nValues, size_t *index) {
     UNUSED(size);
     SET_NOT_ALLOWED("Binary");
 }
@@ -865,14 +873,14 @@ Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[]
 #ifndef CONFIGURATE
 
 #ifdef N_CONTINUOUS_STATES
-Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
+Status getNumberOfContinuousStates(ModelInstance *instance, size_t *nContinuousStates) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(nContinuousStates);
     *nContinuousStates = N_CONTINUOUS_STATES;
     return OK;
 }
 #else
-Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
+Status getNumberOfContinuousStates(ModelInstance *instance, size_t *nContinuousStates) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(nContinuousStates);
     *nContinuousStates = 0;
@@ -909,14 +917,14 @@ Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
 #endif // N_CONTINUOUS_STATES
 
 #ifdef N_EVENT_INDICATORS
-Status getNumberOfEventIndicators(ModelInstance* instance, size_t* nEventIndicators) {
+Status getNumberOfEventIndicators(ModelInstance *instance, size_t *nEventIndicators) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(nEventIndicators);
     *nEventIndicators = N_EVENT_INDICATORS;
     return OK;
 }
 #else
-Status getNumberOfEventIndicators(ModelInstance* instance, size_t* nEventIndicators) {
+Status getNumberOfEventIndicators(ModelInstance *instance, size_t *nEventIndicators) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(nEventIndicators);
     *nEventIndicators = 0;
@@ -934,7 +942,7 @@ Status getEventIndicators(ModelInstance *instance, double z[], size_t nz) {
 #endif // CONFIGURATE
 
 #ifndef GET_PARTIAL_DERIVATIVE
-Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double* partialDerivative) {
+Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double *partialDerivative) {
     UNUSED(instance);
     UNUSED(unknown);
     UNUSED(unknownIndex);
@@ -955,7 +963,7 @@ Status activateClock(ModelInstance *instance, ValueReference vr) {
 #endif
 
 #ifndef GET_CLOCK
-Status getClock(ModelInstance *instance, ValueReference vr, bool* value) {
+Status getClock(ModelInstance *instance, ValueReference vr, bool *value) {
     UNUSED(instance);
     UNUSED(vr);
     UNUSED(value);
@@ -964,7 +972,7 @@ Status getClock(ModelInstance *instance, ValueReference vr, bool* value) {
 #endif
 
 #ifndef GET_INTERVAL
-Status getInterval(ModelInstance *instance, ValueReference vr, double* interval, int* qualifier) {
+Status getInterval(ModelInstance *instance, ValueReference vr, double *interval, int *qualifier) {
     UNUSED(instance);
     UNUSED(vr);
     UNUSED(interval);
@@ -982,18 +990,18 @@ Status activateModelPartition(ModelInstance *instance, ValueReference vr, double
 }
 #endif
 
-Status getFMUState(ModelInstance *instance, void** FMUState) {
+Status getFMUState(ModelInstance *instance, void **FMUState) {
     CALL(s_reallocate(instance, FMUState, sizeof(ModelInstance)));
     memcpy(*FMUState, instance, sizeof(ModelInstance));
     return OK;
 }
 
-Status setFMUState(ModelInstance *instance, void* FMUState) {
+Status setFMUState(ModelInstance *instance, void *FMUState) {
 
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(FMUState);
 
-    ModelInstance* s = (ModelInstance*)FMUState;
+    ModelInstance *s = (ModelInstance *)FMUState;
 
     instance->startTime = s->startTime;
     instance->stopTime = s->stopTime;
@@ -1003,7 +1011,7 @@ Status setFMUState(ModelInstance *instance, void* FMUState) {
 
     instance->isDirtyValues = s->isDirtyValues;
 
-    memcpy(& instance->modelData, & s->modelData, sizeof(ModelData));
+    memcpy(&instance->modelData, &s->modelData, sizeof(ModelData));
 
     instance->nSteps = s->nSteps;
 
@@ -1028,7 +1036,7 @@ Status setFMUState(ModelInstance *instance, void* FMUState) {
     return OK;
 }
 
-Status freeFMUState(ModelInstance* instance, void* FMUState) {
+Status freeFMUState(ModelInstance *instance, void *FMUState) {
     UNUSED(instance);
     if (FMUState) {
         free(FMUState);
@@ -1036,7 +1044,7 @@ Status freeFMUState(ModelInstance* instance, void* FMUState) {
     return OK;
 }
 
-Status serializedFMUStateSize(ModelInstance* instance, void* FMUState, size_t* size) {
+Status serializedFMUStateSize(ModelInstance *instance, void *FMUState, size_t *size) {
     UNUSED(instance);
     UNUSED(FMUState);
     *size = sizeof(ModelInstance);
@@ -1045,7 +1053,7 @@ Status serializedFMUStateSize(ModelInstance* instance, void* FMUState, size_t* s
 
 Status serializeFMUState(
     ModelInstance *instance,
-    void*  FMUState,
+    void *FMUState,
     uint8_t serializedState[],
     size_t size) {
 
@@ -1063,8 +1071,7 @@ Status deserializeFMUState(
     ModelInstance *instance,
     const uint8_t serializedState[],
     size_t size,
-    void** FMUState
-) {
+    void **FMUState) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(serializedState);
     ASSERT_SIZE_T(size, sizeof(ModelInstance));

@@ -159,7 +159,7 @@ typedef struct {
 
 } ModelData;
 
-extern const char* STRING_START;
-extern const char* BINARY_START;
+extern const char *STRING_START;
+extern const char *BINARY_START;
 
 #endif /* config_h */

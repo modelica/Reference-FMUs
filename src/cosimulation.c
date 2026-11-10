@@ -7,9 +7,14 @@
 #undef CALL
 #endif
 
-#define CALL(f) do { const Status status = f; if (status != OK) return status; } while (false)
+#define CALL(f)                  \
+    do {                         \
+        const Status status = f; \
+        if (status != OK)        \
+            return status;       \
+    } while (false)
 
-Status doFixedStep(ModelInstance *instance, bool* stateEvent, bool* timeEvent) {
+Status doFixedStep(ModelInstance *instance, bool *stateEvent, bool *timeEvent) {
 
 #if N_CONTINUOUS_STATES > 0
     if (instance->nx > 0) {
@@ -41,8 +46,8 @@ Status doFixedStep(ModelInstance *instance, bool* stateEvent, bool* timeEvent) {
         // check for zero-crossings
         for (size_t i = 0; i < instance->nz; i++) {
             *stateEvent |=
-                (instance->prez[i] <= 0 && instance->z[i] >  0) ||
-                (instance->prez[i] >  0 && instance->z[i] <= 0);
+                (instance->prez[i] <= 0 && instance->z[i] > 0) ||
+                (instance->prez[i] > 0 && instance->z[i] <= 0);
         }
 
         // remember the current event indicators
@@ -77,15 +82,15 @@ Status doStep(
     double currentCommunicationPoint,
     double communicationStepSize,
     bool noSetFMUStatePriorToCurrentPoint,
-    bool* eventHandlingNeeded,
-    bool* terminateSimulation,
-    bool* earlyReturn,
-    double* lastSuccessfulTime) {
+    bool *eventHandlingNeeded,
+    bool *terminateSimulation,
+    bool *earlyReturn,
+    double *lastSuccessfulTime) {
     UNUSED(noSetFMUStatePriorToCurrentPoint);
 
     if (!isClose(currentCommunicationPoint, instance->nextCommunicationPoint)) {
         logError(instance, "Expected currentCommunicationPoint = %.16g but was %.16g.",
-            instance->nextCommunicationPoint, currentCommunicationPoint);
+                 instance->nextCommunicationPoint, currentCommunicationPoint);
         return Discard;
     }
 
@@ -96,12 +101,9 @@ Status doStep(
 
     const double nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
 
-    if (instance->stopTimeDefined
-        && nextCommunicationPoint > instance->stopTime
-        && !isClose(nextCommunicationPoint, instance->stopTime)
-        ) {
+    if (instance->stopTimeDefined && nextCommunicationPoint > instance->stopTime && !isClose(nextCommunicationPoint, instance->stopTime)) {
         logError(instance, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
-            currentCommunicationPoint, communicationStepSize, instance->stopTime);
+                 currentCommunicationPoint, communicationStepSize, instance->stopTime);
         return Discard;
     }
 
@@ -135,8 +137,7 @@ Status doStep(
                 &nominalsOfContinuousStatesChanged,
                 &valuesOfContinuousStatesChanged,
                 &nextEventTimeDefined,
-                &nextEventTime
-            );
+                &nextEventTime);
         }
 #endif
 
@@ -150,8 +151,7 @@ Status doStep(
 
             if (instance->eventModeUsed) {
                 *eventHandlingNeeded = true;
-            }
-            else {
+            } else {
                 updateDiscreteStates(
                     instance,
                     eventHandlingNeeded,
@@ -159,8 +159,7 @@ Status doStep(
                     &nominalsOfContinuousStatesChanged,
                     &valuesOfContinuousStatesChanged,
                     &nextEventTimeDefined,
-                    &nextEventTime
-                );
+                    &nextEventTime);
 #if N_EVENT_INDICATORS > 0
                 CALL(getEventIndicators(instance, instance->prez, instance->nz));
 #endif
@@ -182,8 +181,7 @@ Status doStep(
 
     if (nextCommunicationPointReached) {
         instance->nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
-    }
-    else {
+    } else {
         instance->nextCommunicationPoint = instance->time;
     }
 

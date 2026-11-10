@@ -21,16 +21,18 @@
 // C-code FMUs have functions names prefixed with MODEL_IDENTIFIER_.
 // Define DISABLE_PREFIX to build a binary FMU.
 #ifndef DISABLE_PREFIX
-#define pasteA(a,b)     a ## b
-#define pasteB(a,b)    pasteA(a,b)
+#define pasteA(a, b) a##b
+#define pasteB(a, b) pasteA(a, b)
 #define FMI2_FUNCTION_PREFIX pasteB(MODEL_IDENTIFIER, _)
 #endif
 #include "fmi2Functions.h"
 
 static fmi2Status map_status(Status status) {
     switch (status) {
-    case OK: return fmi2OK;
-    default: return fmi2Discard;
+    case OK:
+        return fmi2OK;
+    default:
+        return fmi2Discard;
     }
 }
 
@@ -38,42 +40,45 @@ static fmi2Status map_status(Status status) {
 #define xstr(s) str(s)
 #define str(s) #s
 
-#define ASSERT_NOT_NULL(p) \
-do { \
-    if (!p) { \
-        logError(c, "Argument '" xstr(p) "' must not be NULL."); \
+#define ASSERT_NOT_NULL(p)                                           \
+    do {                                                             \
+        if (!p) {                                                    \
+            logError(c, "Argument '" xstr(p) "' must not be NULL."); \
+            return fmi2Discard;                                      \
+        }                                                            \
+    } while (false)
+
+#define CALL(s)             \
+    if ((s) != OK) {        \
         return fmi2Discard; \
-    } \
-} while (false)
+    }
 
-#define CALL(s) if ((s) != OK) { return fmi2Discard; }
+#define NOT_IMPLEMENTED                              \
+    do {                                             \
+        logError(c, "Function is not implemented."); \
+        return fmi2Discard;                          \
+    } while (0)
 
-#define NOT_IMPLEMENTED \
-do { \
-    logError(c, "Function is not implemented."); \
-    return fmi2Discard; \
-} while (0)
-
-#define GET_VARIABLES(T) \
-    if (nvr > 0) { \
-        ASSERT_NOT_NULL(vr); \
-        ASSERT_NOT_NULL(value); \
-    } \
-    size_t index = 0; \
-    for (size_t i = 0; i < nvr; i++) { \
-        CALL(get ## T(c, vr[i], value, nvr, &index)); \
-    } \
+#define GET_VARIABLES(T)                            \
+    if (nvr > 0) {                                  \
+        ASSERT_NOT_NULL(vr);                        \
+        ASSERT_NOT_NULL(value);                     \
+    }                                               \
+    size_t index = 0;                               \
+    for (size_t i = 0; i < nvr; i++) {              \
+        CALL(get##T(c, vr[i], value, nvr, &index)); \
+    }                                               \
     return fmi2OK;
 
-#define SET_VARIABLES(T) \
-    if (nvr > 0) { \
-        ASSERT_NOT_NULL(vr); \
-        ASSERT_NOT_NULL(value); \
-    } \
-    size_t index = 0; \
-    for (size_t i = 0; i < nvr; i++) { \
-        CALL(set ## T(c, vr[i], value, nvr, &index)); \
-    } \
+#define SET_VARIABLES(T)                            \
+    if (nvr > 0) {                                  \
+        ASSERT_NOT_NULL(vr);                        \
+        ASSERT_NOT_NULL(value);                     \
+    }                                               \
+    size_t index = 0;                               \
+    for (size_t i = 0; i < nvr; i++) {              \
+        CALL(set##T(c, vr[i], value, nvr, &index)); \
+    }                                               \
     return fmi2OK;
 
 // ---------------------------------------------------------------------------
@@ -83,7 +88,7 @@ do { \
 static void percentDecodePath(char *path) {
     char *src = path;
     char *dst = path;
-    char hex[3] = { '\0', '\0', '\0' };
+    char hex[3] = {'\0', '\0', '\0'};
 
     while (*src) {
         if (*src == '%' && src[1] && src[2]) {
@@ -163,8 +168,8 @@ static bool fmi2ResourceLocationToPath(const char *resourceLocation, char *path,
 }
 
 fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2String fmuGUID,
-                            fmi2String fmuResourceLocation, const fmi2CallbackFunctions *functions,
-                            fmi2Boolean visible, fmi2Boolean loggingOn) {
+                              fmi2String fmuResourceLocation, const fmi2CallbackFunctions *functions,
+                              fmi2Boolean visible, fmi2Boolean loggingOn) {
 
     UNUSED(visible);
 
@@ -195,8 +200,7 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
             instanceName,
             fmuGUID,
             resourcePath,
-            loggingOn
-        );
+            loggingOn);
     } else {
         return createCoSimulationInstance(
             (loggerType)functions->logger,
@@ -207,13 +211,12 @@ fmi2Component fmi2Instantiate(fmi2String instanceName, fmi2Type fmuType, fmi2Str
             resourcePath,
             loggingOn,
             false,
-            false
-        );
+            false);
     }
 }
 
 fmi2Status fmi2SetupExperiment(fmi2Component c, fmi2Boolean toleranceDefined, fmi2Real tolerance,
-                            fmi2Real startTime, fmi2Boolean stopTimeDefined, fmi2Real stopTime) {
+                               fmi2Real startTime, fmi2Boolean stopTimeDefined, fmi2Real stopTime) {
     return map_status(setupExperiment(
         c,
         toleranceDefined != fmi2False,
@@ -247,11 +250,11 @@ void fmi2FreeInstance(fmi2Component c) {
 // FMI functions: class methods not depending of a specific model instance
 // ---------------------------------------------------------------------------
 
-const char* fmi2GetVersion(void) {
+const char *fmi2GetVersion(void) {
     return fmi2Version;
 }
 
-const char* fmi2GetTypesPlatform(void) {
+const char *fmi2GetTypesPlatform(void) {
     return fmi2TypesPlatform;
 }
 
@@ -286,11 +289,11 @@ fmi2Status fmi2GetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
     return fmi2OK;
 }
 
-fmi2Status fmi2GetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
+fmi2Status fmi2GetString(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, fmi2String value[]) {
     GET_VARIABLES(String);
 }
 
-fmi2Status fmi2SetReal (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
+fmi2Status fmi2SetReal(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2Real value[]) {
     SET_VARIABLES(Float64);
 }
 
@@ -311,11 +314,11 @@ fmi2Status fmi2SetBoolean(fmi2Component c, const fmi2ValueReference vr[], size_t
     return fmi2OK;
 }
 
-fmi2Status fmi2SetString (fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
+fmi2Status fmi2SetString(fmi2Component c, const fmi2ValueReference vr[], size_t nvr, const fmi2String value[]) {
     SET_VARIABLES(String);
 }
 
-fmi2Status fmi2GetFMUstate (fmi2Component c, fmi2FMUstate* FMUstate) {
+fmi2Status fmi2GetFMUstate(fmi2Component c, fmi2FMUstate *FMUstate) {
     return map_status(getFMUState(c, FMUstate));
 }
 
@@ -323,7 +326,7 @@ fmi2Status fmi2SetFMUstate(fmi2Component c, fmi2FMUstate FMUstate) {
     return map_status(setFMUState(c, FMUstate));
 }
 
-fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate* FMUstate) {
+fmi2Status fmi2FreeFMUstate(fmi2Component c, fmi2FMUstate *FMUstate) {
     return map_status(freeFMUState(c, FMUstate));
 }
 
@@ -335,14 +338,14 @@ fmi2Status fmi2SerializeFMUstate(fmi2Component c, fmi2FMUstate FMUstate, fmi2Byt
     return map_status(serializeFMUState(c, FMUstate, (uint8_t *)(void *)serializedState, size));
 }
 
-fmi2Status fmi2DeSerializeFMUstate(fmi2Component c, const fmi2Byte serializedState[], size_t size, fmi2FMUstate* FMUstate) {
+fmi2Status fmi2DeSerializeFMUstate(fmi2Component c, const fmi2Byte serializedState[], size_t size, fmi2FMUstate *FMUstate) {
     return map_status(deserializeFMUState(c, (const uint8_t *)(const void *)serializedState, size, (void **)FMUstate));
 }
 
 fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReference vUnknown_ref[], size_t nUnknown,
-                                        const fmi2ValueReference vKnown_ref[] , size_t nKnown,
+                                        const fmi2ValueReference vKnown_ref[], size_t nKnown,
                                         const fmi2Real dvKnown[], fmi2Real dvUnknown[]) {
-    if (nUnknown > 0) {    
+    if (nUnknown > 0) {
         ASSERT_NOT_NULL(vUnknown_ref);
         ASSERT_NOT_NULL(dvUnknown);
     }
@@ -368,7 +371,7 @@ fmi2Status fmi2GetDirectionalDerivative(fmi2Component c, const fmi2ValueReferenc
 // ---------------------------------------------------------------------------
 /* Simulating the slave */
 fmi2Status fmi2SetRealInputDerivatives(fmi2Component c, const fmi2ValueReference vr[], size_t nvr,
-                                     const fmi2Integer order[], const fmi2Real value[]) {
+                                       const fmi2Integer order[], const fmi2Real value[]) {
     UNUSED(c);
     UNUSED(vr);
     UNUSED(nvr);
@@ -378,7 +381,7 @@ fmi2Status fmi2SetRealInputDerivatives(fmi2Component c, const fmi2ValueReference
 }
 
 fmi2Status fmi2GetRealOutputDerivatives(fmi2Component c, const fmi2ValueReference vr[], size_t nvr,
-                                      const fmi2Integer order[], fmi2Real value[]) {
+                                        const fmi2Integer order[], fmi2Real value[]) {
 
 #ifdef GET_OUTPUT_DERIVATIVE
     if (nvr > 0) {
@@ -405,13 +408,13 @@ fmi2Status fmi2CancelStep(fmi2Component c) {
 }
 
 fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
-                    fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
-    
+                      fmi2Real communicationStepSize, fmi2Boolean noSetFMUStatePriorToCurrentPoint) {
+
     bool eventHandlingNeeded = false;
     bool terminateSimulation = false;
     bool earlyReturn = false;
     double lastSuccessfulTime = 0.0;
-    
+
     return map_status(doStep(
         c,
         currentCommunicationPoint,
@@ -420,8 +423,7 @@ fmi2Status fmi2DoStep(fmi2Component c, fmi2Real currentCommunicationPoint,
         &eventHandlingNeeded,
         &terminateSimulation,
         &earlyReturn,
-        &lastSuccessfulTime
-    ));
+        &lastSuccessfulTime));
 }
 
 fmi2Status fmi2GetStatus(fmi2Component c, const fmi2StatusKind s, fmi2Status *value) {
@@ -483,8 +485,7 @@ fmi2Status fmi2NewDiscreteStates(fmi2Component c, fmi2EventInfo *eventInfo) {
         &nominalsOfContinuousStatesChanged,
         &valuesOfContinuousStatesChanged,
         &nextEventTimeDefined,
-        &nextEventTime
-    );
+        &nextEventTime);
 
     eventInfo->newDiscreteStatesNeeded = discreteStatesNeedUpdate ? fmi2True : fmi2False;
     eventInfo->terminateSimulation = terminateSimulation ? fmi2True : fmi2False;
@@ -514,7 +515,7 @@ fmi2Status fmi2EnterContinuousTimeMode(fmi2Component c) {
 }
 
 fmi2Status fmi2CompletedIntegratorStep(fmi2Component c, fmi2Boolean noSetFMUStatePriorToCurrentPoint,
-                                     fmi2Boolean *enterEventMode, fmi2Boolean *terminateSimulation) {
+                                       fmi2Boolean *enterEventMode, fmi2Boolean *terminateSimulation) {
     bool _enterEventMode = false;
     bool _terminateSimulation = false;
 
@@ -540,7 +541,7 @@ fmi2Status fmi2SetTime(fmi2Component c, fmi2Real time) {
     return map_status(setTime(c, time));
 }
 
-fmi2Status fmi2SetContinuousStates(fmi2Component c, const fmi2Real x[], size_t nx){
+fmi2Status fmi2SetContinuousStates(fmi2Component c, const fmi2Real x[], size_t nx) {
     return map_status(setContinuousStates(c, x, nx));
 }
 

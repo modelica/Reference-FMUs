@@ -8,9 +8,9 @@
 Status setStartValues(ModelInstance *instance) {
     ASSERT_NOT_NULL(instance);
 
-    M(y1)  = 1.0;
-    M(y2)  = 0.0;
-    M(y3)  = 0.0;
+    M(y1) = 1.0;
+    M(y2) = 0.0;
+    M(y3) = 0.0;
     M(dae) = false;
 
     instance->isDirtyValues = true;
@@ -26,7 +26,7 @@ Status calculateValues(ModelInstance *instance) {
     }
 
     M(der_y1) = (-0.04) * M(y1) + 1e4 * M(y2) * M(y3);
-    M(der_y2) =  (0.04) * M(y1) - 1e4 * M(y2) * M(y3) - 3e7 * M(y2) * M(y2);
+    M(der_y2) = (0.04) * M(y1) - 1e4 * M(y2) * M(y3) - 3e7 * M(y2) * M(y2);
 
     M(r) = M(y1) + M(y2) + M(y3) - 1.0;
 
@@ -35,7 +35,7 @@ Status calculateValues(ModelInstance *instance) {
     return OK;
 }
 
-Status configurate(ModelInstance* instance) {
+Status configurate(ModelInstance *instance) {
     UNUSED(instance);
     return OK;
 }
@@ -63,7 +63,7 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
     }
 }
 
-Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t* index) {
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t *index) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
     ASSERT_NOT_NULL(index);
@@ -71,49 +71,49 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
     calculateValues(instance);
 
     switch (vr) {
-        case vr_time:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = instance->time;
-            return OK;
-        case vr_y1:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(y1);
-            return OK;
-        case vr_der_y1:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(der_y1);
-            return OK;
-        case vr_y2:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(y2);
-            return OK;
-        case vr_der_y2:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(der_y2);
-            return OK;
-        case vr_y3:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(y3);
-            return OK;
-        case vr_r:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(r);
-            return OK;
-        case vr_g1:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(g1);
-            return OK;
-        case vr_g2:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(g2);
-            return OK;
-        default:
-            logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
-            return Discard;
+    case vr_time:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = instance->time;
+        return OK;
+    case vr_y1:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(y1);
+        return OK;
+    case vr_der_y1:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(der_y1);
+        return OK;
+    case vr_y2:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(y2);
+        return OK;
+    case vr_der_y2:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(der_y2);
+        return OK;
+    case vr_y3:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(y3);
+        return OK;
+    case vr_r:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(r);
+        return OK;
+    case vr_g1:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(g1);
+        return OK;
+    case vr_g2:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(g2);
+        return OK;
+    default:
+        logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
+        return Discard;
     }
 }
 
-Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t* index) {
+Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t *index) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
     ASSERT_NOT_NULL(index);
@@ -141,7 +141,7 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
     return OK;
 }
 
-Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], size_t nValues, size_t* index) {
+Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], size_t nValues, size_t *index) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
     ASSERT_NOT_NULL(index);
@@ -161,7 +161,7 @@ Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], siz
     return OK;
 }
 
-Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[], size_t nValues, size_t* index) {
+Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[], size_t nValues, size_t *index) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
     ASSERT_NOT_NULL(index);
@@ -181,7 +181,7 @@ Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[
     return OK;
 }
 
-Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double* partialDerivative) {
+Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double *partialDerivative) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(partialDerivative);
     UNUSED(unknownIndex);
@@ -214,13 +214,12 @@ Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, siz
     return OK;
 }
 
-Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
+Status getNumberOfContinuousStates(ModelInstance *instance, size_t *nContinuousStates) {
     UNUSED(instance);
     ASSERT_NOT_NULL(nContinuousStates);
     *nContinuousStates = N_CONTINUOUS_STATES;
     return OK;
 }
-
 
 Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
     ASSERT_NOT_NULL(instance);
@@ -287,7 +286,7 @@ Status getEventIndicators(ModelInstance *instance, double z[], size_t nz) {
     return OK;
 }
 
-Status getNumberOfEventIndicators(ModelInstance* instance, size_t* nEventIndicators) {
+Status getNumberOfEventIndicators(ModelInstance *instance, size_t *nEventIndicators) {
     UNUSED(instance);
     *nEventIndicators = N_EVENT_INDICATORS;
     return OK;

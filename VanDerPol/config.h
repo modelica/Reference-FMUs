@@ -18,7 +18,12 @@
 #define DEFAULT_STOP_TIME 20
 
 typedef enum {
-    vr_time, vr_x0, vr_der_x0, vr_x1, vr_der_x1, vr_mu
+    vr_time,
+    vr_x0,
+    vr_der_x0,
+    vr_x1,
+    vr_der_x1,
+    vr_mu
 } ValueReference;
 
 typedef struct {

@@ -1,7 +1,6 @@
 #include "config.h"
 #include "model_impl.h"
 
-
 Status setStartValues(ModelInstance *instance) {
     ASSERT_NOT_NULL(instance);
 
@@ -44,7 +43,7 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
     }
 }
 
-Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t* index) {
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t *index) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
     ASSERT_NOT_NULL(index);
@@ -52,64 +51,64 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
     calculateValues(instance);
 
     switch (vr) {
-        case vr_time:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = instance->time;
-            return OK;
-        case vr_x0:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(x0);
-            return OK;
-        case vr_der_x0 :
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(der_x0);
-            return OK;
-        case vr_x1:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(x1);
-            return OK;
-        case vr_der_x1:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(der_x1);
-            return OK;
-        case vr_mu:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(mu);
-            return OK;
-        default:
-            logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
-            return Discard;
+    case vr_time:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = instance->time;
+        return OK;
+    case vr_x0:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(x0);
+        return OK;
+    case vr_der_x0:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(der_x0);
+        return OK;
+    case vr_x1:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(x1);
+        return OK;
+    case vr_der_x1:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(der_x1);
+        return OK;
+    case vr_mu:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(mu);
+        return OK;
+    default:
+        logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
+        return Discard;
     }
 }
 
-Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t* index) {
+Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t *index) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
     ASSERT_NOT_NULL(index);
 
     switch (vr) {
-        case vr_x0:
-            ASSERT_NVALUES(1);
-            M(x0) = values[(*index)++];
-            break;
-        case vr_x1:
-            ASSERT_NVALUES(1);
-            M(x1) = values[(*index)++];
-            break;
-        case vr_mu:
-            if (instance->type == ModelExchange &&
-                instance->state != Instantiated &&
-                instance->state != InitializationMode &&
-                instance->state != EventMode) {
-                logError(instance, "Variable mu can only be set after instantiation, in initialization mode or event mode.");
-                return Discard;
-            }
-            ASSERT_NVALUES(1);
-            M(mu) = values[(*index)++];
-            break;
-        default:
-            logError(instance, "Set Float64 is not allowed for value reference %u.", vr);
+    case vr_x0:
+        ASSERT_NVALUES(1);
+        M(x0) = values[(*index)++];
+        break;
+    case vr_x1:
+        ASSERT_NVALUES(1);
+        M(x1) = values[(*index)++];
+        break;
+    case vr_mu:
+        if (instance->type == ModelExchange &&
+            instance->state != Instantiated &&
+            instance->state != InitializationMode &&
+            instance->state != EventMode) {
+            logError(instance, "Variable mu can only be set after instantiation, in initialization mode or event mode.");
             return Discard;
+        }
+        ASSERT_NVALUES(1);
+        M(mu) = values[(*index)++];
+        break;
+    default:
+        logError(instance, "Set Float64 is not allowed for value reference %u.", vr);
+        return Discard;
     }
 
     instance->isDirtyValues = true;

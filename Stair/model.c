@@ -5,7 +5,7 @@
 Status setStartValues(ModelInstance *instance) {
     M(counter) = 1;
 
-    instance->nextEventTime        = 1;
+    instance->nextEventTime = 1;
     instance->nextEventTimeDefined = true;
 
     return OK;
@@ -32,7 +32,7 @@ Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size)
     }
 }
 
-Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t* index) {
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t *index) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
     ASSERT_NOT_NULL(index);
@@ -50,7 +50,7 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
     }
 }
 
-Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
+Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues, size_t *index) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
     ASSERT_NOT_NULL(index);
@@ -58,17 +58,17 @@ Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], si
     calculateValues(instance);
 
     switch (vr) {
-        case vr_counter:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(counter);
-            return OK;
-        default:
-            logError(instance, "Get Int32 is not allowed for value reference %u.", vr);
-            return Discard;
+    case vr_counter:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(counter);
+        return OK;
+    default:
+        logError(instance, "Get Int32 is not allowed for value reference %u.", vr);
+        return Discard;
     }
 }
 
-Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues, size_t* index) {
+Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues, size_t *index) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
     ASSERT_NOT_NULL(index);
@@ -83,7 +83,7 @@ Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values
         ASSERT_NVALUES(1);
         if (values[*index] > COUNTER_MAX) {
             logError(instance, "Variable \"counter\" must be at most %d but was %d.",
-                COUNTER_MAX, values[*index]);
+                     COUNTER_MAX, values[*index]);
             return Discard;
         }
         M(counter) = values[(*index)++];
@@ -100,17 +100,17 @@ Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values
 }
 
 Status updateDiscreteStates(
-    ModelInstance* instance,
-    bool* discreteStatesNeedUpdate,
-    bool* terminateSimulation,
-    bool* nominalsOfContinuousStatesChanged,
-    bool* valuesOfContinuousStatesChanged,
-    bool* nextEventTimeDefined,
-    double* nextEventTime
-) {
+    ModelInstance *instance,
+    bool *discreteStatesNeedUpdate,
+    bool *terminateSimulation,
+    bool *nominalsOfContinuousStatesChanged,
+    bool *valuesOfContinuousStatesChanged,
+    bool *nextEventTimeDefined,
+    double *nextEventTime) {
     if (isClose(instance->time, (double)M(counter)) || instance->time > M(counter)) {
-        M(counter)++;
-        
+        M(counter)
+        ++;
+
         if (M(counter) > 10) {
             logError(instance, "Variable \"counter\" cannot be incremented for values > 10.");
             return Discard;

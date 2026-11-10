@@ -1,7 +1,6 @@
 #include "config.h"
 #include "model_impl.h"
 
-
 Status setStartValues(ModelInstance *instance) {
     ASSERT_NOT_NULL(instance);
 
@@ -11,24 +10,32 @@ Status setStartValues(ModelInstance *instance) {
 
     // identity matrix
     for (int i = 0; i < M_MAX; i++)
-    for (int j = 0; j < N_MAX; j++) {
-        M(A)[i][j] = i == j ? 1 : 0;
-        M(B)[i][j] = i == j ? 1 : 0;
-        M(C)[i][j] = i == j ? 1 : 0;
-        M(D)[i][j] = i == j ? 1 : 0;
-    }
+        for (int j = 0; j < N_MAX; j++) {
+            M(A)
+            [i][j] = i == j ? 1 : 0;
+            M(B)
+            [i][j] = i == j ? 1 : 0;
+            M(C)
+            [i][j] = i == j ? 1 : 0;
+            M(D)
+            [i][j] = i == j ? 1 : 0;
+        }
 
     for (int i = 0; i < M_MAX; i++) {
-        M(u)[i] = i + 1;
+        M(u)
+        [i] = i + 1;
     }
 
     for (int i = 0; i < N_MAX; i++) {
-        M(y)[i] = 0;
+        M(y)
+        [i] = 0;
     }
 
     for (int i = 0; i < N_MAX; i++) {
-        M(x)[i] = M(x0)[i];
-        M(x)[i] = 0;
+        M(x)
+        [i] = M(x0)[i];
+        M(x)
+        [i] = 0;
     }
 
     instance->isDirtyValues = true;
@@ -42,32 +49,38 @@ Status calculateValues(ModelInstance *instance) {
     // der(x) = A * x + B * u
     for (size_t i = 0; i < M(n); i++) {
 
-        M(der_x)[i] = 0;
+        M(der_x)
+        [i] = 0;
 
         for (size_t j = 0; j < M(n); j++) {
-            M(der_x)[i] += M(A)[i][j] * M(x)[j];
+            M(der_x)
+            [i] += M(A)[i][j] * M(x)[j];
         }
     }
 
     for (size_t i = 0; i < M(n); i++) {
         for (size_t j = 0; j < M(m); j++) {
-            M(der_x)[i] += M(B)[i][j] * M(u)[j];
+            M(der_x)
+            [i] += M(B)[i][j] * M(u)[j];
         }
     }
 
     // y = C * x + D * u
     for (size_t i = 0; i < M(r); i++) {
 
-        M(y)[i] = 0;
+        M(y)
+        [i] = 0;
 
         for (size_t j = 0; j < M(n); j++) {
-            M(y)[i] += M(C)[i][j] * M(x)[j];
+            M(y)
+            [i] += M(C)[i][j] * M(x)[j];
         }
     }
 
     for (size_t i = 0; i < M(r); i++) {
         for (size_t j = 0; j < M(m); j++) {
-            M(y)[i] += M(D)[i][j] * M(u)[j];
+            M(y)
+            [i] += M(D)[i][j] * M(u)[j];
         }
     }
 
@@ -76,7 +89,7 @@ Status calculateValues(ModelInstance *instance) {
     return OK;
 }
 
-Status configurate(ModelInstance* instance) {
+Status configurate(ModelInstance *instance) {
     ASSERT_NOT_NULL(instance);
 #ifdef N_CONTINUOUS_STATES
     Status status = getNumberOfContinuousStates(instance, &instance->nx);
@@ -87,7 +100,7 @@ Status configurate(ModelInstance* instance) {
     return OK;
 }
 
-Status getVariableSize(ModelInstance* instance, ValueReference vr, size_t* size) {
+Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(size);
 
@@ -130,7 +143,7 @@ Status getVariableSize(ModelInstance* instance, ValueReference vr, size_t* size)
     return OK;
 }
 
-Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t* index) {
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t *index) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
     ASSERT_NOT_NULL(index);
@@ -138,79 +151,79 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
     calculateValues(instance);
 
     switch (vr) {
-        case vr_time:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = instance->time;
-            return OK;
-        case vr_A:
-            ASSERT_NVALUES((size_t)(M(n) * M(n)));
-            for (size_t i = 0; i < M(n); i++) {
-                for (size_t j = 0; j < M(n); j++) {
-                    values[(*index)++] = M(A)[i][j];
-                }
+    case vr_time:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = instance->time;
+        return OK;
+    case vr_A:
+        ASSERT_NVALUES((size_t)(M(n) * M(n)));
+        for (size_t i = 0; i < M(n); i++) {
+            for (size_t j = 0; j < M(n); j++) {
+                values[(*index)++] = M(A)[i][j];
             }
-            return OK;
-        case vr_B:
-            ASSERT_NVALUES((size_t)(M(m) * M(n)));
-            for (size_t i = 0; i < M(m); i++) {
-                for (size_t j = 0; j < M(n); j++) {
-                    values[(*index)++] = M(B)[i][j];
-                }
+        }
+        return OK;
+    case vr_B:
+        ASSERT_NVALUES((size_t)(M(m) * M(n)));
+        for (size_t i = 0; i < M(m); i++) {
+            for (size_t j = 0; j < M(n); j++) {
+                values[(*index)++] = M(B)[i][j];
             }
-            return OK;
-        case vr_C:
-            ASSERT_NVALUES((size_t)(M(r) * M(n)));
-            for (size_t i = 0; i < M(r); i++) {
-                for (size_t j = 0; j < M(n); j++) {
-                    values[(*index)++] = M(C)[i][j];
-                }
+        }
+        return OK;
+    case vr_C:
+        ASSERT_NVALUES((size_t)(M(r) * M(n)));
+        for (size_t i = 0; i < M(r); i++) {
+            for (size_t j = 0; j < M(n); j++) {
+                values[(*index)++] = M(C)[i][j];
             }
-            return OK;
-        case vr_D:
-            ASSERT_NVALUES((size_t)(M(r) * M(m)));
-            for (size_t i = 0; i < M(r); i++) {
-                for (size_t j = 0; j < M(m); j++) {
-                    values[(*index)++] = M(D)[i][j];
-                }
+        }
+        return OK;
+    case vr_D:
+        ASSERT_NVALUES((size_t)(M(r) * M(m)));
+        for (size_t i = 0; i < M(r); i++) {
+            for (size_t j = 0; j < M(m); j++) {
+                values[(*index)++] = M(D)[i][j];
             }
-            return OK;
-        case vr_x0:
-            ASSERT_NVALUES((size_t)M(n));
-            for (size_t i = 0; i < M(n); i++) {
-                values[(*index)++] = M(x0)[i];
-            }
-            return OK;
-        case vr_u:
-            ASSERT_NVALUES((size_t)M(m));
-            for (size_t i = 0; i < M(m); i++) {
-                values[(*index)++] = M(u)[i];
-            }
-            return OK;
-        case vr_y:
-            ASSERT_NVALUES((size_t)M(r));
-            for (size_t i = 0; i < M(r); i++) {
-                values[(*index)++] = M(y)[i];
-            }
-            return OK;
-        case vr_x:
-            ASSERT_NVALUES((size_t)M(n));
-            for (size_t i = 0; i < M(n); i++) {
-                values[(*index)++] = M(x)[i];
-            }
-            return OK;
-        case vr_der_x:
-            ASSERT_NVALUES((size_t)M(n));
-            for (size_t i = 0; i < M(n); i++) {
-                values[(*index)++] = M(der_x)[i];
-            }
-            return OK;
-        default:
-            logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
-            return Discard;
+        }
+        return OK;
+    case vr_x0:
+        ASSERT_NVALUES((size_t)M(n));
+        for (size_t i = 0; i < M(n); i++) {
+            values[(*index)++] = M(x0)[i];
+        }
+        return OK;
+    case vr_u:
+        ASSERT_NVALUES((size_t)M(m));
+        for (size_t i = 0; i < M(m); i++) {
+            values[(*index)++] = M(u)[i];
+        }
+        return OK;
+    case vr_y:
+        ASSERT_NVALUES((size_t)M(r));
+        for (size_t i = 0; i < M(r); i++) {
+            values[(*index)++] = M(y)[i];
+        }
+        return OK;
+    case vr_x:
+        ASSERT_NVALUES((size_t)M(n));
+        for (size_t i = 0; i < M(n); i++) {
+            values[(*index)++] = M(x)[i];
+        }
+        return OK;
+    case vr_der_x:
+        ASSERT_NVALUES((size_t)M(n));
+        for (size_t i = 0; i < M(n); i++) {
+            values[(*index)++] = M(der_x)[i];
+        }
+        return OK;
+    default:
+        logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
+        return Discard;
     }
 }
 
-Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t* index) {
+Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues, size_t *index) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
     ASSERT_NOT_NULL(index);
@@ -220,7 +233,8 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
         ASSERT_NVALUES((size_t)(M(n) * M(n)));
         for (size_t i = 0; i < M(n); i++) {
             for (size_t j = 0; j < M(n); j++) {
-                M(A)[i][j] = values[(*index)++];
+                M(A)
+                [i][j] = values[(*index)++];
             }
         }
         break;
@@ -228,7 +242,8 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
         ASSERT_NVALUES((size_t)(M(n) * M(m)));
         for (size_t i = 0; i < M(n); i++) {
             for (size_t j = 0; j < M(m); j++) {
-                M(B)[i][j] = values[(*index)++];
+                M(B)
+                [i][j] = values[(*index)++];
             }
         }
         break;
@@ -236,7 +251,8 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
         ASSERT_NVALUES((size_t)(M(r) * M(n)));
         for (size_t i = 0; i < M(r); i++) {
             for (size_t j = 0; j < M(n); j++) {
-                M(C)[i][j] = values[(*index)++];
+                M(C)
+                [i][j] = values[(*index)++];
             }
         }
         break;
@@ -244,20 +260,23 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
         ASSERT_NVALUES((size_t)(M(r) * M(m)));
         for (size_t i = 0; i < M(r); i++) {
             for (size_t j = 0; j < M(m); j++) {
-                M(D)[i][j] = values[(*index)++];
+                M(D)
+                [i][j] = values[(*index)++];
             }
         }
         break;
     case vr_x0:
         ASSERT_NVALUES((size_t)M(n));
         for (size_t i = 0; i < M(n); i++) {
-            M(x0)[i] = values[(*index)++];
+            M(x0)
+            [i] = values[(*index)++];
         }
         break;
     case vr_u:
         ASSERT_NVALUES((size_t)M(m));
         for (size_t i = 0; i < M(m); i++) {
-            M(u)[i] = values[(*index)++];
+            M(u)
+            [i] = values[(*index)++];
         }
         break;
     case vr_x:
@@ -267,7 +286,8 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
         }
         ASSERT_NVALUES((size_t)M(n));
         for (size_t i = 0; i < M(n); i++) {
-            M(x)[i] = values[(*index)++];
+            M(x)
+            [i] = values[(*index)++];
         }
         break;
     default:
@@ -280,31 +300,31 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
     return OK;
 }
 
-Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], size_t nValues, size_t* index) {
+Status getUInt64(ModelInstance *instance, ValueReference vr, uint64_t values[], size_t nValues, size_t *index) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
     ASSERT_NOT_NULL(index);
 
     switch (vr) {
-        case vr_m:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(m);
-            return OK;
-        case vr_n:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(n);
-            return OK;
-        case vr_r:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(r);
-            return OK;
-        default:
-            logError(instance, "Get UInt64 is not allowed for value reference %u.", vr);
-            return Discard;
+    case vr_m:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(m);
+        return OK;
+    case vr_n:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(n);
+        return OK;
+    case vr_r:
+        ASSERT_NVALUES(1);
+        values[(*index)++] = M(r);
+        return OK;
+    default:
+        logError(instance, "Get UInt64 is not allowed for value reference %u.", vr);
+        return Discard;
     }
 }
 
-Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t values[], size_t nValues, size_t* index) {
+Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t values[], size_t nValues, size_t *index) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(values);
     ASSERT_NOT_NULL(index);
@@ -317,36 +337,36 @@ Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t valu
     uint64_t v;
 
     switch (vr) {
-        case vr_m:
-            ASSERT_NVALUES(1);
-            v = values[(*index)++];
-            if (v > M_MAX) {
-                logError(instance, "Variable m must not be greater than " xstr(M_MAX) ".");
-                return Discard;
-            }
-            M(m) = v;
-            break;
-        case vr_n:
-            ASSERT_NVALUES(1);
-            v = values[(*index)++];
-            if (v > N_MAX) {
-                logError(instance, "Variable n must not be greater than " xstr(N_MAX) ".");
-                return Discard;
-            }
-            M(n) = v;
-            break;
-        case vr_r:
-            ASSERT_NVALUES(1);
-            v = values[(*index)++];
-            if (v > R_MAX) {
-                logError(instance, "Variable r must not be greater than " xstr(R_MAX) ".");
-                return Discard;
-            }
-            M(r) = v;
-            break;
-        default:
-            logError(instance, "Set UInt64 is not allowed for value reference %u.", vr);
+    case vr_m:
+        ASSERT_NVALUES(1);
+        v = values[(*index)++];
+        if (v > M_MAX) {
+            logError(instance, "Variable m must not be greater than " xstr(M_MAX) ".");
             return Discard;
+        }
+        M(m) = v;
+        break;
+    case vr_n:
+        ASSERT_NVALUES(1);
+        v = values[(*index)++];
+        if (v > N_MAX) {
+            logError(instance, "Variable n must not be greater than " xstr(N_MAX) ".");
+            return Discard;
+        }
+        M(n) = v;
+        break;
+    case vr_r:
+        ASSERT_NVALUES(1);
+        v = values[(*index)++];
+        if (v > R_MAX) {
+            logError(instance, "Variable r must not be greater than " xstr(R_MAX) ".");
+            return Discard;
+        }
+        M(r) = v;
+        break;
+    default:
+        logError(instance, "Set UInt64 is not allowed for value reference %u.", vr);
+        return Discard;
     }
 
     instance->isDirtyValues = true;
@@ -354,7 +374,7 @@ Status setUInt64(ModelInstance *instance, ValueReference vr, const uint64_t valu
     return OK;
 }
 
-Status getNumberOfContinuousStates(ModelInstance* instance, size_t* nContinuousStates) {
+Status getNumberOfContinuousStates(ModelInstance *instance, size_t *nContinuousStates) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(nContinuousStates);
     *nContinuousStates = (size_t)M(n);
@@ -403,7 +423,8 @@ Status setContinuousStates(ModelInstance *instance, const double x[], size_t nx)
     }
 
     for (size_t i = 0; i < M(n); i++) {
-        M(x)[i] = x[i];
+        M(x)
+        [i] = x[i];
     }
 
     instance->isDirtyValues = true;
@@ -494,14 +515,14 @@ Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, siz
     return OK;
 }
 
-Status getNumberOfEventIndicators(ModelInstance* instance, size_t* nEventIndicators) {
+Status getNumberOfEventIndicators(ModelInstance *instance, size_t *nEventIndicators) {
     UNUSED(instance);
     UNUSED(nEventIndicators);
     *nEventIndicators = 0;
     return OK;
 }
 
-Status getEventIndicators(ModelInstance* instance, double z[], size_t nz) {
+Status getEventIndicators(ModelInstance *instance, double z[], size_t nz) {
     UNUSED(instance);
     UNUSED(z);
     ASSERT_SIZE_T(nz, 0);

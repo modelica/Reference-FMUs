@@ -28,12 +28,14 @@ static void activateModelPartition1(ModelInstance *instance, double time) {
     */
 
     // increment the counters
-    M(inClock1Ticks)++;
-    M(totalInClockTicks)++;
+    M(inClock1Ticks)
+    ++;
+    M(totalInClockTicks)
+    ++;
 
     // set countdown and output clocks
     if ((int)time == 4) {
-        M(inClock3_qualifier)= 2; // fmi3IntervalChanged
+        M(inClock3_qualifier) = 2; // fmi3IntervalChanged
         M(inClock3_interval) = 0.0;
     }
 
@@ -59,8 +61,10 @@ static void activateModelPartition2(ModelInstance *instance, double time) {
     }
 
     // increment the counters
-    M(inClock2Ticks)++;
-    M(totalInClockTicks)++;
+    M(inClock2Ticks)
+    ++;
+    M(totalInClockTicks)
+    ++;
 
     M(result2) += M(input2);
     M(input2) = 0;
@@ -89,7 +93,8 @@ static void activateModelPartition3(ModelInstance *instance, double time) {
     UNUSED(time);
 
     // increment the counters
-    M(inClock3Ticks)++;
+    M(inClock3Ticks)
+    ++;
 
     // This partition is supposed to consume a bit of time on a low prio ...
     unsigned long sum = 0;
@@ -104,7 +109,8 @@ static void activateModelPartition3(ModelInstance *instance, double time) {
         instance->lockPreemption();
     }
 
-    M(totalInClockTicks)++;
+    M(totalInClockTicks)
+    ++;
     M(outClock) = ((M(outClock) == false) && (M(totalInClockTicks) % 5 == 0));
 
     if (instance->unlockPreemption) {
@@ -119,16 +125,16 @@ static void activateModelPartition3(ModelInstance *instance, double time) {
 Status setStartValues(ModelInstance *instance) {
     ASSERT_NOT_NULL(instance);
 
-    M(inClock3_interval)  = 0.0;
+    M(inClock3_interval) = 0.0;
     M(inClock3_qualifier) = 0; // fmi3IntervalNotYetKnown
-    M(outClock)           = 0;
-    M(inClock1Ticks)      = 0;
-    M(inClock2Ticks)      = 0;
-    M(inClock3Ticks)      = 0;
-    M(totalInClockTicks)  = 0;
-    M(result2)            = 0;
-    M(input2)             = 0;
-    M(output3)            = 0;
+    M(outClock) = 0;
+    M(inClock1Ticks) = 0;
+    M(inClock2Ticks) = 0;
+    M(inClock3Ticks) = 0;
+    M(totalInClockTicks) = 0;
+    M(result2) = 0;
+    M(input2) = 0;
+    M(output3) = 0;
 
     instance->isDirtyValues = true;
 
@@ -181,7 +187,7 @@ Status activateClock(ModelInstance *instance, ValueReference vr) {
     return OK;
 }
 
-Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t* index) {
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues, size_t *index) {
 
     ASSERT_NVALUES(1);
 
@@ -195,7 +201,7 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
     }
 }
 
-Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues, size_t* index) {
+Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values[], size_t nValues, size_t *index) {
 
     ASSERT_NVALUES(1);
 
@@ -209,7 +215,7 @@ Status setInt32(ModelInstance *instance, ValueReference vr, const int32_t values
     }
 }
 
-Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
+Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues, size_t *index) {
 
     ASSERT_NVALUES(1);
 
@@ -241,7 +247,7 @@ Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], si
     }
 }
 
-Status getClock(ModelInstance *instance, ValueReference vr, bool* value) {
+Status getClock(ModelInstance *instance, ValueReference vr, bool *value) {
 
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(value);
@@ -257,13 +263,13 @@ Status getClock(ModelInstance *instance, ValueReference vr, bool* value) {
     }
 }
 
-Status getInterval(ModelInstance *instance, ValueReference vr, double* interval, int* qualifier) {
+Status getInterval(ModelInstance *instance, ValueReference vr, double *interval, int *qualifier) {
     switch (vr) {
     case vr_inClock3:
         *qualifier = M(inClock3_qualifier);
-        if (*qualifier == 2) {                  // fmi3IntervalChanged
+        if (*qualifier == 2) { // fmi3IntervalChanged
             *interval = M(inClock3_interval);
-            M(inClock3_qualifier) = 1;          // fmi3IntervalUnchanged
+            M(inClock3_qualifier) = 1; // fmi3IntervalUnchanged
         }
         return OK;
     default:
@@ -275,17 +281,17 @@ Status getInterval(ModelInstance *instance, ValueReference vr, double* interval,
 Status activateModelPartition(ModelInstance *instance, ValueReference vr, double activationTime) {
 
     switch (vr) {
-        case vr_inClock1:
-            activateModelPartition1(instance, activationTime);
-            return OK;
-        case vr_inClock2:
-            activateModelPartition2(instance, activationTime);
-            return OK;
-        case vr_inClock3:
-            activateModelPartition3(instance, activationTime);
-            return OK;
-        default:
-            logError(instance, "Activate model partition is not allowed for value reference %u.", vr);
-            return Discard;
+    case vr_inClock1:
+        activateModelPartition1(instance, activationTime);
+        return OK;
+    case vr_inClock2:
+        activateModelPartition2(instance, activationTime);
+        return OK;
+    case vr_inClock3:
+        activateModelPartition3(instance, activationTime);
+        return OK;
+    default:
+        logError(instance, "Activate model partition is not allowed for value reference %u.", vr);
+        return Discard;
     }
 }
