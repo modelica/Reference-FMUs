@@ -11,6 +11,7 @@
 #define MODEL_EXCHANGE
 
 #define CONFIGURATE
+#define MAX_CONTINUOUS_STATES 5 
 
 #define SET_FLOAT64
 #define GET_UINT64

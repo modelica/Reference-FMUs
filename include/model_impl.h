@@ -2,6 +2,14 @@
 
 #include "model.h"
 
+#ifdef N_EVENT_INDICATORS
+#define MAX_EVENT_INDICATORS N_EVENT_INDICATORS
+#endif
+
+#ifdef N_CONTINUOUS_STATES
+#define MAX_CONTINUOUS_STATES N_CONTINUOUS_STATES
+#endif
+
 typedef enum {
     Instantiated = 1 << 0,
     ConfigurationMode = 1 << 1,
@@ -62,16 +70,16 @@ struct ModelInstance {
     double nextCommunicationPoint;
 
     // solver
-#if N_EVENT_INDICATORS > 0
+#ifdef MAX_EVENT_INDICATORS
     size_t nz;
-    double z[N_EVENT_INDICATORS];
-    double prez[N_EVENT_INDICATORS];
+    double z[MAX_EVENT_INDICATORS];
+    double prez[MAX_EVENT_INDICATORS];
 #endif
 
-#if N_CONTINUOUS_STATES > 0
+#ifdef MAX_CONTINUOUS_STATES
     size_t nx;
-    double x[N_CONTINUOUS_STATES];
-    double dx[N_CONTINUOUS_STATES];
+    double x[MAX_CONTINUOUS_STATES];
+    double dx[MAX_CONTINUOUS_STATES];
 #endif
 };
 
