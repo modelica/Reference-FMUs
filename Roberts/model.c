@@ -1,175 +1,181 @@
 #include "config.h"
-#include "model.h"
+#include "model_impl.h"
 
 #define Y1_NOMINAL (1e-4)
 #define Y2_NOMINAL (1e-2)
 #define Y3_NOMINAL (1e-2)
 
-Status setStartValues(ModelInstance *comp) {
-    ASSERT_NOT_NULL2(comp);
+Status setStartValues(ModelInstance *instance) {
+    ASSERT_NOT_NULL(instance);
 
-    M(y1)  = 1.0;
-    M(y2)  = 0.0;
-    M(y3)  = 0.0;
+    M(y1) = 1.0;
+    M(y2) = 0.0;
+    M(y3) = 0.0;
     M(dae) = false;
 
-    comp->isDirtyValues = true;
+    instance->isDirtyValues = true;
 
     return OK;
 }
 
-Status calculateValues(ModelInstance *comp) {
-    ASSERT_NOT_NULL2(comp);
+Status calculateValues(ModelInstance *instance) {
+    ASSERT_NOT_NULL(instance);
 
     if (!M(dae)) {
         M(y3) = 1.0 - M(y1) - M(y2);
     }
 
     M(der_y1) = (-0.04) * M(y1) + 1e4 * M(y2) * M(y3);
-    M(der_y2) =  (0.04) * M(y1) - 1e4 * M(y2) * M(y3) - 3e7 * M(y2) * M(y2);
+    M(der_y2) = (0.04) * M(y1) - 1e4 * M(y2) * M(y3) - 3e7 * M(y2) * M(y2);
 
     M(r) = M(y1) + M(y2) + M(y3) - 1.0;
 
-    comp->isDirtyValues = false;
+    instance->isDirtyValues = false;
 
     return OK;
 }
 
-Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(comp);
-    ASSERT_NOT_NULL2(values);
-    ASSERT_NOT_NULL2(index);
+Status configurate(ModelInstance *instance) {
+    UNUSED(instance);
+    return OK;
+}
 
-    calculateValues(comp);
+Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(size);
 
     switch (vr) {
-        case vr_time:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = comp->time;
-            return OK;
-        case vr_y1:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(y1);
-            return OK;
-        case vr_der_y1:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(der_y1);
-            return OK;
-        case vr_y2:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(y2);
-            return OK;
-        case vr_der_y2:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(der_y2);
-            return OK;
-        case vr_y3:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(y3);
-            return OK;
-        case vr_r:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(r);
-            return OK;
-        case vr_g1:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(g1);
-            return OK;
-        case vr_g2:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(g2);
-            return OK;
-        default:
-            logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
-            return Error;
+    case vr_time:
+    case vr_dae:
+    case vr_y1:
+    case vr_der_y1:
+    case vr_y2:
+    case vr_der_y2:
+    case vr_y3:
+    case vr_r:
+    case vr_g1:
+    case vr_g2:
+        *size = 1;
+        return OK;
+    default:
+        logError(instance, "Unknown value reference: %u.", vr);
+        return Discard;
     }
 }
 
-Status setFloat64(ModelInstance* comp, ValueReference vr, const double values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(comp);
-    ASSERT_NOT_NULL2(values);
-    ASSERT_NOT_NULL2(index);
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_SIZE_T(nValues, 1);
+
+    calculateValues(instance);
+
+    switch (vr) {
+    case vr_time:
+        values[0] = instance->time;
+        return OK;
+    case vr_y1:
+        values[0] = M(y1);
+        return OK;
+    case vr_der_y1:
+        values[0] = M(der_y1);
+        return OK;
+    case vr_y2:
+        values[0] = M(y2);
+        return OK;
+    case vr_der_y2:
+        values[0] = M(der_y2);
+        return OK;
+    case vr_y3:
+        values[0] = M(y3);
+        return OK;
+    case vr_r:
+        values[0] = M(r);
+        return OK;
+    case vr_g1:
+        values[0] = M(g1);
+        return OK;
+    case vr_g2:
+        values[0] = M(g2);
+        return OK;
+    default:
+        logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
+        return Discard;
+    }
+}
+
+Status setFloat64(ModelInstance *instance, ValueReference vr, const double values[], size_t nValues) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_y1:
-        ASSERT_NVALUES(1);
-        M(y1) = values[(*index)++];
+        M(y1) = values[0];
         break;
     case vr_y2:
-        ASSERT_NVALUES(1);
-        M(y2) = values[(*index)++];
+        M(y2) = values[0];
         break;
     case vr_y3:
-        ASSERT_NVALUES(1);
-        M(y3) = values[(*index)++];
+        M(y3) = values[0];
         break;
     default:
-        logError(comp, "Unexpected value reference: %u.", vr);
-        return Error;
+        logError(instance, "Unexpected value reference: %u.", vr);
+        return Discard;
     }
 
-    comp->isDirtyValues = true;
+    instance->isDirtyValues = true;
 
     return OK;
 }
 
-Status getBoolean(ModelInstance* comp, ValueReference vr, bool values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(comp);
-    ASSERT_NOT_NULL2(values);
-    ASSERT_NOT_NULL2(index);
+Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], size_t nValues) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_SIZE_T(nValues, 1);
 
-    calculateValues(comp);
+    calculateValues(instance);
 
     switch (vr) {
     case vr_dae:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = M(dae);
-        break;
+        values[0] = M(dae);
+        return OK;
     default:
-        logError(comp, "Get Boolean is not allowed for value reference %u.", vr);
-        return Error;
-    }
-
-    return OK;
+        logError(instance, "Get Boolean is not allowed for value reference %u.", vr);
+        return Discard;
+    }    
 }
 
-Status setBoolean(ModelInstance* comp, ValueReference vr, const bool values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(comp);
-    ASSERT_NOT_NULL2(values);
-    ASSERT_NOT_NULL2(index);
+Status setBoolean(ModelInstance *instance, ValueReference vr, const bool values[], size_t nValues) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_SIZE_T(nValues, 1);
 
     switch (vr) {
     case vr_dae:
-        ASSERT_NVALUES(1);
-        M(dae) = values[(*index)++];
+        if (instance->state != ConfigurationMode && instance->state != ReconfigurationMode) {
+            logError(instance, "Variable 'dae' may only be set in Configuration Mode and Reconfiguration Mode.");
+            return Discard;
+        }
+        M(dae) = values[0];
         break;
     default:
-        logError(comp, "Set Boolean is not allowed for value reference %u.", vr);
-        return Error;
+        logError(instance, "Set Boolean is not allowed for value reference %u.", vr);
+        return Discard;
     }
 
-    comp->isDirtyValues = true;
+    instance->isDirtyValues = true;
 
     return OK;
 }
 
-size_t getNumberOfContinuousStates(ModelInstance* comp) {
-    UNUSED(comp);
-    return MAX_CONTINUOUS_STATES;
-}
-
-size_t getNumberOfEventIndicators(ModelInstance* comp) {
-    UNUSED(comp);
-    return MAX_EVENT_INDICATORS;
-}
-
-Status getPartialDerivative(ModelInstance* comp, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double* partialDerivative) {
-    ASSERT_NOT_NULL2(comp);
-    ASSERT_NOT_NULL2(partialDerivative);
+Status getPartialDerivative(ModelInstance *instance, ValueReference unknown, size_t unknownIndex, ValueReference known, size_t knownIndex, double *partialDerivative) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(partialDerivative);
     UNUSED(unknownIndex);
     UNUSED(knownIndex);
 
-    calculateValues(comp);
+    calculateValues(instance);
 
     if (unknown == vr_der_y1 && known == vr_y1) {
         *partialDerivative = -0.04;
@@ -196,12 +202,19 @@ Status getPartialDerivative(ModelInstance* comp, ValueReference unknown, size_t 
     return OK;
 }
 
-Status getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
-    ASSERT_NOT_NULL2(comp);
-    ASSERT_NOT_NULL2(x);
-    ASSERT_SIZE_T(nx, MAX_CONTINUOUS_STATES);
+Status getNumberOfContinuousStates(ModelInstance *instance, size_t *nContinuousStates) {
+    UNUSED(instance);
+    ASSERT_NOT_NULL(nContinuousStates);
+    *nContinuousStates = N_CONTINUOUS_STATES;
+    return OK;
+}
 
-    calculateValues(comp);
+Status getContinuousStates(ModelInstance *instance, double x[], size_t nx) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(x);
+    ASSERT_SIZE_T(nx, N_CONTINUOUS_STATES);
+
+    calculateValues(instance);
 
     x[0] = M(y1);
     x[1] = M(y2);
@@ -209,12 +222,12 @@ Status getContinuousStates(ModelInstance *comp, double x[], size_t nx) {
     return OK;
 }
 
-Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], size_t nx) {
-    ASSERT_NOT_NULL2(comp);
-    ASSERT_NOT_NULL2(nominals);
-    ASSERT_SIZE_T(nx, MAX_CONTINUOUS_STATES);
+Status getNominalsOfContinuousStates(ModelInstance *instance, double nominals[], size_t nx) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(nominals);
+    ASSERT_SIZE_T(nx, N_CONTINUOUS_STATES);
 
-    calculateValues(comp);
+    calculateValues(instance);
 
     nominals[0] = Y1_NOMINAL;
     nominals[1] = Y2_NOMINAL;
@@ -222,25 +235,25 @@ Status getNominalsOfContinuousStates(ModelInstance* comp, double nominals[], siz
     return OK;
 }
 
-Status setContinuousStates(ModelInstance *comp, const double x[], size_t nx) {
-    ASSERT_NOT_NULL2(comp);
-    ASSERT_NOT_NULL2(x);
-    ASSERT_SIZE_T(nx, MAX_CONTINUOUS_STATES);
+Status setContinuousStates(ModelInstance *instance, const double x[], size_t nx) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(x);
+    ASSERT_SIZE_T(nx, N_CONTINUOUS_STATES);
 
     M(y1) = x[0];
     M(y2) = x[1];
 
-    comp->isDirtyValues = true;
+    instance->isDirtyValues = true;
 
     return OK;
 }
 
-Status getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
-    ASSERT_NOT_NULL2(comp);
-    ASSERT_NOT_NULL2(dx);
-    ASSERT_SIZE_T(nx, MAX_CONTINUOUS_STATES);
+Status getDerivatives(ModelInstance *instance, double dx[], size_t nx) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(dx);
+    ASSERT_SIZE_T(nx, N_CONTINUOUS_STATES);
 
-    calculateValues(comp);
+    calculateValues(instance);
 
     dx[0] = M(der_y1);
     dx[1] = M(der_y2);
@@ -248,15 +261,21 @@ Status getDerivatives(ModelInstance *comp, double dx[], size_t nx) {
     return OK;
 }
 
-Status getEventIndicators(ModelInstance* comp, double z[], size_t nz) {
-    ASSERT_NOT_NULL2(comp);
-    ASSERT_NOT_NULL2(z);
-    ASSERT_SIZE_T(nz, MAX_EVENT_INDICATORS);
+Status getEventIndicators(ModelInstance *instance, double z[], size_t nz) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(z);
+    ASSERT_SIZE_T(nz, N_EVENT_INDICATORS);
 
-    calculateValues(comp);
+    calculateValues(instance);
 
     z[0] = M(y1) - 0.0001;
     z[1] = M(y3) - 0.01;
 
+    return OK;
+}
+
+Status getNumberOfEventIndicators(ModelInstance *instance, size_t *nEventIndicators) {
+    UNUSED(instance);
+    *nEventIndicators = N_EVENT_INDICATORS;
     return OK;
 }

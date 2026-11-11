@@ -18,3 +18,7 @@ cmake --build build-native --config Release
 ```
 
 **Wasm models:** BouncingBall, Dahlquist, Feedthrough, Resource, Stair, VanDerPol, Roberts, StateSpace (not Clocks).
+
+CI / release builds use `python build/build.py wasm32-wasip2` with `WASI_SDK_PATH` set (see `.github/workflows/build.yml`).
+
+The Wasm shim (`Wasm/fmu_wasm.c`) calls the same model layer as native FMUs (`src/common.c`, `src/cosimulation.c`, per-model `model.c`) for lifecycle, `doStep`, derivatives, and variable access (`float64`, `int32`, `boolean` where the model defines them). Other types remain unimplemented WIT stubs until needed.

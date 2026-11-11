@@ -77,10 +77,10 @@ message("FMI_PLATFORM: " ${FMI_PLATFORM})
 if (${FMI_VERSION} LESS 3)
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/all.c" "#define FMI_VERSION ${FMI_VERSION}
 
-#include \"fmi${FMI_VERSION}Functions.c\"
-#include \"model.c\"
 #include \"common.c\"
+#include \"model.c\"
 #include \"cosimulation.c\"
+#include \"fmi${FMI_VERSION}Functions.c\"
 ")
 endif ()
 
@@ -103,6 +103,7 @@ SET(HEADERS
     ${MODEL_NAME}/config.h
     include/cosimulation.h
     include/model.h
+    include/model_impl.h
 )
 
 if (${FMI_VERSION} EQUAL 2)
@@ -239,7 +240,7 @@ foreach (SOURCE_FILE config.h model.c)
 endforeach(SOURCE_FILE)
 
 # common headers
-foreach (SOURCE_FILE model.h cosimulation.h)
+foreach (SOURCE_FILE model.h model_impl.h cosimulation.h)
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
     "${CMAKE_CURRENT_SOURCE_DIR}/include/${SOURCE_FILE}"
     "${FMU_BUILD_DIR}/sources/${SOURCE_FILE}"

@@ -20,6 +20,7 @@ struct exports_fmi_fmi3_co_simulation_co_simulation_instance_t {
 #define FMI_VERSION 3
 #include "config.h"
 #include "model.h"
+#include "model_impl.h"
 #include "cosimulation.h"
 
 static const char WASM_FMI_VERSION[] = "3.0";
@@ -30,184 +31,127 @@ static ModelInstance *wasm_comp(exports_fmi_fmi3_co_simulation_borrow_co_simulat
 
 static exports_fmi_fmi3_co_simulation_status_t map_status(Status s) {
     switch (s) {
-        case OK:      return FMI_FMI3_TYPES_STATUS_OK;
-        case Warning: return FMI_FMI3_TYPES_STATUS_WARNING;
-        case Discard: return FMI_FMI3_TYPES_STATUS_DISCARD;
-        case Error:   return FMI_FMI3_TYPES_STATUS_ERROR;
-        case Fatal:   return FMI_FMI3_TYPES_STATUS_FATAL;
-        default:      return FMI_FMI3_TYPES_STATUS_ERROR;
+    case OK:
+        return FMI_FMI3_TYPES_STATUS_OK;
+    case Discard:
+        return FMI_FMI3_TYPES_STATUS_DISCARD;
+    default:
+        return FMI_FMI3_TYPES_STATUS_ERROR;
     }
 }
 
-static Status wasm_apply_status(ModelInstance *comp, Status status) {
-    if (!comp) {
+static Status wasm_apply_status(ModelInstance *instance, Status status) {
+    if (!instance) {
         return status;
     }
     if (status == Discard) {
-        return status;
-    }
-    if (status == Error) {
-        comp->state = Terminated;
-        return status;
-    }
-    if (status == Fatal) {
-        comp->state = StartAndEnd;
-        return status;
+        instance->state = Terminated;
     }
     return status;
 }
 
-static Status wasm_get_float64(
-    ModelInstance *comp,
-    const ValueReference *value_references,
-    size_t n,
-    double values[])
-{
-    if (n == 0) {
-        return OK;
-    }
-    if (comp->isDirtyValues) {
-        Status status = calculateValues(comp);
-        if (status != OK) {
-            return wasm_apply_status(comp, status);
-        }
-        comp->isDirtyValues = false;
-    }
-    size_t index = 0;
-    for (size_t i = 0; i < n; i++) {
-        Status status = getFloat64(comp, value_references[i], values, n, &index);
-        if (status != OK) {
-            return wasm_apply_status(comp, status);
-        }
-    }
-    if (index != n) {
-        logError(comp, "Expected nValues = %zu but was %zu.", n, index);
-        return wasm_apply_status(comp, Error);
-    }
-    return OK;
-}
-
-static Status wasm_set_float64(
-    ModelInstance *comp,
-    const ValueReference *value_references,
-    size_t n,
-    const double values[])
-{
-    if (n == 0) {
-        return OK;
-    }
-    size_t index = 0;
-    for (size_t i = 0; i < n; i++) {
-        Status status = setFloat64(comp, value_references[i], values, n, &index);
-        if (status != OK) {
-            return wasm_apply_status(comp, status);
-        }
-    }
-    if (index != n) {
-        logError(comp, "Expected nValues = %zu but was %zu.", n, index);
-        return wasm_apply_status(comp, Error);
-    }
-    comp->isDirtyValues = true;
-    return OK;
-}
-
-static Status wasm_do_step(
-    ModelInstance *S,
-    double currentCommunicationPoint,
-    double communicationStepSize,
-    bool *eventHandlingNeeded,
-    bool *terminateSimulation,
-    bool *earlyReturn,
-    double *lastSuccessfulTime)
-{
-    if (!isClose(currentCommunicationPoint, S->nextCommunicationPoint)) {
-        logError(S, "Expected currentCommunicationPoint = %.16g but was %.16g.",
-            S->nextCommunicationPoint, currentCommunicationPoint);
-        return wasm_apply_status(S, Error);
-    }
-    if (communicationStepSize <= 0) {
-        logError(S, "Communication step size must be > 0 but was %.16g.", communicationStepSize);
-        return wasm_apply_status(S, Error);
+#define DEFINE_WASM_GET(MODEL_SUFFIX, CTYPE)                                                     \
+    static Status wasm_get_##MODEL_SUFFIX(                                                       \
+        ModelInstance *instance,                                                                 \
+        const ValueReference *value_references,                                                  \
+        size_t n,                                                                                \
+        CTYPE values[]) {                                                                        \
+        if (n == 0) {                                                                            \
+            return OK;                                                                           \
+        }                                                                                        \
+        size_t j = 0;                                                                            \
+        for (size_t i = 0; i < n; i++) {                                                         \
+            size_t size = 0;                                                                     \
+            Status status = getVariableSize(instance, value_references[i], &size);               \
+            if (status != OK) {                                                                  \
+                return wasm_apply_status(instance, status);                                      \
+            }                                                                                    \
+            status = get##MODEL_SUFFIX(instance, value_references[i], &values[j], size);         \
+            if (status != OK) {                                                                  \
+                return wasm_apply_status(instance, status);                                      \
+            }                                                                                    \
+            j += size;                                                                           \
+        }                                                                                        \
+        if (j != n) {                                                                            \
+            logError(instance, "Expected nValues = %zu but was %zu.", n, j);                       \
+            return wasm_apply_status(instance, Discard);                                         \
+        }                                                                                        \
+        return OK;                                                                               \
     }
 
-    const double nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
-    if (nextCommunicationPoint > S->stopTime && !isClose(nextCommunicationPoint, S->stopTime)) {
-        logError(S, "At communication point %.16g a step size of %.16g was requested but stop time is %.16g.",
-            currentCommunicationPoint, communicationStepSize, S->stopTime);
-        return wasm_apply_status(S, Error);
+#define DEFINE_WASM_SET(MODEL_SUFFIX, CTYPE)                                                     \
+    static Status wasm_set_##MODEL_SUFFIX(                                                       \
+        ModelInstance *instance,                                                                 \
+        const ValueReference *value_references,                                                  \
+        size_t n,                                                                                \
+        const CTYPE values[]) {                                                                  \
+        if (n == 0) {                                                                            \
+            return OK;                                                                           \
+        }                                                                                        \
+        size_t j = 0;                                                                            \
+        for (size_t i = 0; i < n; i++) {                                                         \
+            size_t size = 0;                                                                     \
+            Status status = getVariableSize(instance, value_references[i], &size);               \
+            if (status != OK) {                                                                  \
+                return wasm_apply_status(instance, status);                                      \
+            }                                                                                    \
+            status = set##MODEL_SUFFIX(instance, value_references[i], &values[j], size);          \
+            if (status != OK) {                                                                  \
+                return wasm_apply_status(instance, status);                                      \
+            }                                                                                    \
+            j += size;                                                                           \
+        }                                                                                        \
+        if (j != n) {                                                                            \
+            logError(instance, "Expected nValues = %zu but was %zu.", n, j);                      \
+            return wasm_apply_status(instance, Discard);                                         \
+        }                                                                                        \
+        return OK;                                                                               \
     }
 
-    bool nextCommunicationPointReached = false;
-    *eventHandlingNeeded = false;
-    *terminateSimulation = false;
-    *earlyReturn = false;
+DEFINE_WASM_GET(Float64, double)
+DEFINE_WASM_SET(Float64, double)
+DEFINE_WASM_GET(Int32, int32_t)
+DEFINE_WASM_SET(Int32, int32_t)
+DEFINE_WASM_GET(Boolean, bool)
+DEFINE_WASM_SET(Boolean, bool)
 
-    while (true) {
-        const double nextSolverStepTime = S->time + FIXED_SOLVER_STEP;
-        nextCommunicationPointReached =
-            nextSolverStepTime > nextCommunicationPoint
-            && !isClose(nextSolverStepTime, nextCommunicationPoint);
-
-        if (nextCommunicationPointReached || (*eventHandlingNeeded && S->earlyReturnAllowed)) {
-            break;
-        }
-
-#ifdef EVENT_UPDATE
-        if (*eventHandlingNeeded) {
-            Status status = eventUpdate(S);
-            if (status != OK) {
-                return wasm_apply_status(S, status);
-            }
-            *eventHandlingNeeded = false;
-        }
-#endif
-
-        bool stateEvent = false;
-        bool timeEvent = false;
-        Status status = doFixedStep(S, &stateEvent, &timeEvent);
-        if (status != OK) {
-            return wasm_apply_status(S, status);
-        }
-
-#ifdef EVENT_UPDATE
-        if (stateEvent || timeEvent) {
-            if (S->eventModeUsed) {
-                *eventHandlingNeeded = true;
-            } else {
-                status = eventUpdate(S);
-                if (status != OK) {
-                    return wasm_apply_status(S, status);
-                }
-#if MAX_EVENT_INDICATORS > 0
-                status = getEventIndicators(S, S->prez, S->nz);
-                if (status != OK) {
-                    return wasm_apply_status(S, status);
-                }
-#endif
-            }
-            if (S->earlyReturnAllowed) {
-                break;
-            }
-        }
-#endif
-
-        if (S->terminateSimulation) {
-            break;
-        }
+#define WASM_EXPORT_GET(export_name, model_suffix, list_type, c_type)                    \
+    bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_##export_name( \
+        exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,             \
+        exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,         \
+        co_simulation_fmu_list_##list_type##_t *ret,                                     \
+        exports_fmi_fmi3_co_simulation_status_t *err) {                                  \
+        size_t n = value_references->len;                                                \
+        c_type *buf = (c_type *)calloc(n, sizeof(c_type));                               \
+        if (!buf) {                                                                      \
+            *err = FMI_FMI3_TYPES_STATUS_ERROR;                                          \
+            return false;                                                                \
+        }                                                                                \
+        ModelInstance *instance = wasm_comp(self);                                       \
+        Status st = wasm_get_##model_suffix(instance, value_references->ptr, n, buf);    \
+        if (st != OK) {                                                                  \
+            free(buf);                                                                   \
+            *err = map_status(wasm_apply_status(instance, st));                          \
+            return false;                                                                \
+        }                                                                                \
+        ret->ptr = buf;                                                                  \
+        ret->len = n;                                                                    \
+        return true;                                                                     \
     }
 
-    *terminateSimulation = S->terminateSimulation;
-    *earlyReturn = S->earlyReturnAllowed && !nextCommunicationPointReached;
-    *lastSuccessfulTime = S->time;
-
-    if (nextCommunicationPointReached) {
-        S->nextCommunicationPoint = currentCommunicationPoint + communicationStepSize;
-    } else {
-        S->nextCommunicationPoint = S->time;
+#define WASM_EXPORT_SET(export_name, model_suffix, list_type)                                           \
+    exports_fmi_fmi3_co_simulation_status_t                                                             \
+    exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_##export_name(                     \
+        exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,                            \
+        exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,                        \
+        co_simulation_fmu_list_##list_type##_t *values) {                                               \
+        if (value_references->len != values->len) {                                                     \
+            return FMI_FMI3_TYPES_STATUS_ERROR;                                                         \
+        }                                                                                               \
+        ModelInstance *instance = wasm_comp(self);                                                      \
+        Status st = wasm_set_##model_suffix(instance, value_references->ptr, values->len, values->ptr); \
+        return map_status(wasm_apply_status(instance, st));                                             \
     }
-
-    return OK;
-}
 
 static char *wit_string_to_c(const co_simulation_fmu_string_t *s) {
     if (!s || !s->ptr) {
@@ -226,17 +170,16 @@ static void wasm_log_message(
     void *instanceEnvironment,
     int status,
     const char *category,
-    const char *message)
-{
+    const char *message) {
     exports_fmi_fmi3_co_simulation_co_simulation_instance_t *wrap =
         (exports_fmi_fmi3_co_simulation_co_simulation_instance_t *)instanceEnvironment;
-    ModelInstance *comp = wrap ? (ModelInstance *)wrap->comp : NULL;
+    ModelInstance *instance = wrap ? (ModelInstance *)wrap->comp : NULL;
     co_simulation_fmu_string_t name;
     co_simulation_fmu_string_t cat;
     co_simulation_fmu_string_t msg;
 
-    if (comp && comp->instanceName) {
-        co_simulation_fmu_string_dup(&name, comp->instanceName);
+    if (instance && instance->instanceName) {
+        co_simulation_fmu_string_dup(&name, instance->instanceName);
     } else {
         co_simulation_fmu_string_dup(&name, "?");
     }
@@ -262,8 +205,7 @@ static void wasm_intermediate_update(
     bool intermediateStepFinished,
     bool canReturnEarly,
     bool *earlyReturnRequested,
-    double *earlyReturnTime)
-{
+    double *earlyReturnTime) {
     co_simulation_fmu_tuple2_bool_f64_t ret;
     fmi_fmi3_intermediate_update_callbacks_intermediate_update(
         intermediateUpdateTime,
@@ -300,8 +242,7 @@ bool exports_fmi_fmi3_co_simulation_static_co_simulation_instance_instantiate_co
     bool event_mode_used,
     bool early_return_allowed,
     exports_fmi_fmi3_co_simulation_list_value_reference_t *required_intermediate_variables,
-    exports_fmi_fmi3_co_simulation_own_co_simulation_instance_t *ret)
-{
+    exports_fmi_fmi3_co_simulation_own_co_simulation_instance_t *ret) {
     exports_fmi_fmi3_co_simulation_co_simulation_instance_t *inst =
         (exports_fmi_fmi3_co_simulation_co_simulation_instance_t *)calloc(1, sizeof(*inst));
     if (!inst) {
@@ -327,7 +268,7 @@ bool exports_fmi_fmi3_co_simulation_static_co_simulation_instance_instantiate_co
         resource_location = resources;
     }
 
-    ModelInstance *comp = createModelInstance(
+    ModelInstance *instance = createCoSimulationInstance(
         wasm_log_message,
         wasm_intermediate_update,
         inst,
@@ -335,29 +276,26 @@ bool exports_fmi_fmi3_co_simulation_static_co_simulation_instance_instantiate_co
         token,
         resource_location,
         logging_on,
-        CoSimulation);
+        early_return_allowed,
+        event_mode_used);
 
     free(name);
     free(token);
     free(resources);
 
-    if (!comp) {
+    if (!instance) {
         free(inst);
         return false;
     }
 
-    comp->earlyReturnAllowed = early_return_allowed;
-    comp->eventModeUsed = event_mode_used;
-    comp->state = Instantiated;
-    inst->comp = comp;
+    inst->comp = instance;
 
     *ret = exports_fmi_fmi3_co_simulation_co_simulation_instance_new(inst);
     return true;
 }
 
 void exports_fmi_fmi3_co_simulation_co_simulation_instance_destructor(
-    exports_fmi_fmi3_co_simulation_co_simulation_instance_t *rep)
-{
+    exports_fmi_fmi3_co_simulation_co_simulation_instance_t *rep) {
     if (!rep) {
         return;
     }
@@ -371,8 +309,7 @@ exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_debug_logging(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     bool logging_on,
-    co_simulation_fmu_list_string_t *categories)
-{
+    co_simulation_fmu_list_string_t *categories) {
     size_t n = categories ? categories->len : 0;
     const char **cat_ptrs = NULL;
     char **bufs = NULL;
@@ -409,196 +346,166 @@ exports_fmi_fmi3_co_simulation_method_co_simulation_instance_enter_initializatio
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     double *maybe_tolerance,
     double start_time,
-    double *maybe_stop_time)
-{
-    ModelInstance *comp = wasm_comp(self);
-    (void)maybe_tolerance;
-    comp->startTime = start_time;
-    comp->stopTime = maybe_stop_time ? *maybe_stop_time : INFINITY;
-    comp->time = start_time;
-    comp->nextCommunicationPoint = start_time;
-    comp->state = InitializationMode;
-    return map_status(OK);
+    double *maybe_stop_time) {
+    ModelInstance *instance = wasm_comp(self);
+    const bool toleranceDefined = maybe_tolerance != NULL;
+    const double tolerance = toleranceDefined ? *maybe_tolerance : 0.0;
+    const bool stopTimeDefined = maybe_stop_time != NULL;
+    const double stopTime = stopTimeDefined ? *maybe_stop_time : 0.0;
+
+    Status status = setupExperiment(
+        instance,
+        toleranceDefined,
+        tolerance,
+        start_time,
+        stopTimeDefined,
+        stopTime);
+    if (status != OK) {
+        return map_status(wasm_apply_status(instance, status));
+    }
+
+    status = enterInitializationMode(instance);
+    return map_status(wasm_apply_status(instance, status));
 }
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_exit_initialization_mode(
-    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
-{
-    ModelInstance *comp = wasm_comp(self);
-    Status status = OK;
-    if (comp->isDirtyValues) {
-        status = calculateValues(comp);
-        comp->isDirtyValues = false;
-    }
-    if (status == OK) {
-        comp->state = comp->eventModeUsed ? EventMode : StepMode;
-        status = configurate(comp);
-    }
-    return map_status(wasm_apply_status(comp, status));
+    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self) {
+    ModelInstance *instance = wasm_comp(self);
+    Status status = exitInitializationMode(instance);
+    return map_status(wasm_apply_status(instance, status));
 }
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_enter_event_mode(
-    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
-{
-    ModelInstance *comp = wasm_comp(self);
-    comp->state = EventMode;
-    return map_status(OK);
+    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self) {
+    ModelInstance *instance = wasm_comp(self);
+    Status status = enterEventMode(instance);
+    return map_status(wasm_apply_status(instance, status));
 }
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_update_discrete_states(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     exports_fmi_fmi3_co_simulation_discrete_states_info_t *ok,
-    exports_fmi_fmi3_co_simulation_status_t *err)
-{
-    ModelInstance *comp = wasm_comp(self);
+    exports_fmi_fmi3_co_simulation_status_t *err) {
+    ModelInstance *instance = wasm_comp(self);
+    bool discreteStatesNeedUpdate = false;
+    bool terminateSimulation = false;
+    bool nominalsOfContinuousStatesChanged = false;
+    bool valuesOfContinuousStatesChanged = false;
+    bool nextEventTimeDefined = false;
+    double nextEventTime = 0.0;
+
 #ifdef EVENT_UPDATE
-    Status st = eventUpdate(comp);
-    if (st != OK && st != Warning) {
-        *err = map_status(wasm_apply_status(comp, st));
+    Status st = updateDiscreteStates(
+        instance,
+        &discreteStatesNeedUpdate,
+        &terminateSimulation,
+        &nominalsOfContinuousStatesChanged,
+        &valuesOfContinuousStatesChanged,
+        &nextEventTimeDefined,
+        &nextEventTime);
+    if (st != OK) {
+        *err = map_status(wasm_apply_status(instance, st));
         return false;
     }
 #else
     Status st = OK;
+    (void)st;
 #endif
 
-    ok->new_discrete_states_needed = comp->newDiscreteStatesNeeded;
-    ok->terminate_simulation = comp->terminateSimulation;
-    ok->nominals_of_continuous_states_changed = comp->nominalsOfContinuousStatesChanged;
-    ok->values_of_continuous_states_changed = comp->valuesOfContinuousStatesChanged;
-    ok->next_event_time_defined = comp->nextEventTimeDefined;
-    ok->next_event_time = comp->nextEventTime;
-    (void)st;
+    ok->new_discrete_states_needed = discreteStatesNeedUpdate;
+    ok->terminate_simulation = terminateSimulation;
+    ok->nominals_of_continuous_states_changed = nominalsOfContinuousStatesChanged;
+    ok->values_of_continuous_states_changed = valuesOfContinuousStatesChanged;
+    ok->next_event_time_defined = nextEventTimeDefined;
+    ok->next_event_time = nextEventTime;
     return true;
 }
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_terminate(
-    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
-{
-    wasm_comp(self)->state = Terminated;
-    return map_status(OK);
+    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self) {
+    ModelInstance *instance = wasm_comp(self);
+    Status status = terminate(instance);
+    return map_status(wasm_apply_status(instance, status));
 }
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_reset(
-    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
-{
-    ModelInstance *comp = wasm_comp(self);
-    return map_status(wasm_apply_status(comp, reset(comp)));
+    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self) {
+    ModelInstance *instance = wasm_comp(self);
+    return map_status(wasm_apply_status(instance, reset(instance)));
 }
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_enter_configuration_mode(
-    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
-{
-    ModelInstance *comp = wasm_comp(self);
-    comp->state = (comp->state == Instantiated) ? ConfigurationMode : ReconfigurationMode;
-    return map_status(OK);
+    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self) {
+    ModelInstance *instance = wasm_comp(self);
+    Status status = enterConfigurationMode(instance);
+    return map_status(wasm_apply_status(instance, status));
 }
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_exit_configuration_mode(
-    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
-{
-    ModelInstance *comp = wasm_comp(self);
-    if (comp->state == ConfigurationMode) {
-        comp->state = Instantiated;
-    } else {
-        comp->state = StepMode;
-    }
-    return map_status(OK);
+    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self) {
+    ModelInstance *instance = wasm_comp(self);
+    Status status = exitConfigurationMode(instance);
+    return map_status(wasm_apply_status(instance, status));
 }
 
-bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_float64(
-    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
-    co_simulation_fmu_list_f64_t *ret,
-    exports_fmi_fmi3_co_simulation_status_t *err)
-{
-    size_t n = value_references->len;
-    double *buf = (double *)calloc(n, sizeof(double));
-    if (!buf) {
-        *err = FMI_FMI3_TYPES_STATUS_ERROR;
-        return false;
-    }
-    ModelInstance *comp = wasm_comp(self);
-    Status st = wasm_get_float64(comp, value_references->ptr, n, buf);
-    if (st != OK && st != Warning) {
-        free(buf);
-        *err = map_status(st);
-        return false;
-    }
-    ret->ptr = buf;
-    ret->len = n;
-    return true;
-}
+WASM_EXPORT_GET(float64, Float64, f64, double)
+WASM_EXPORT_GET(int32, Int32, s32, int32_t)
+WASM_EXPORT_GET(boolean, Boolean, bool, bool)
+WASM_EXPORT_SET(float64, Float64, f64)
+WASM_EXPORT_SET(int32, Int32, s32)
+WASM_EXPORT_SET(boolean, Boolean, bool)
 
-exports_fmi_fmi3_co_simulation_status_t
-exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_float64(
-    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
-    co_simulation_fmu_list_f64_t *values)
-{
-    if (value_references->len != values->len) {
-        return FMI_FMI3_TYPES_STATUS_ERROR;
+#define STUB_GET(T, list_type)                                                   \
+    bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_##T(   \
+        exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,     \
+        exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references, \
+        co_simulation_fmu_list_##list_type##_t *ret,                             \
+        exports_fmi_fmi3_co_simulation_status_t *err) {                          \
+        (void)self;                                                              \
+        (void)value_references;                                                  \
+        (void)ret;                                                               \
+        *err = FMI_FMI3_TYPES_STATUS_ERROR;                                      \
+        return false;                                                            \
     }
-    ModelInstance *comp = wasm_comp(self);
-    return map_status(wasm_set_float64(
-        comp,
-        value_references->ptr,
-        value_references->len,
-        values->ptr));
-}
-
-#define STUB_GET(T, list_type) \
-bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_##T( \
-    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self, \
-    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references, \
-    co_simulation_fmu_list_##list_type##_t *ret, \
-    exports_fmi_fmi3_co_simulation_status_t *err) \
-{ \
-    (void)self; (void)value_references; (void)ret; \
-    *err = FMI_FMI3_TYPES_STATUS_ERROR; \
-    return false; \
-}
 
 STUB_GET(float32, f32)
 STUB_GET(int8, s8)
 STUB_GET(int16, s16)
-STUB_GET(int32, s32)
 STUB_GET(int64, s64)
 STUB_GET(uint8, u8)
 STUB_GET(uint16, u16)
 STUB_GET(uint32, u32)
 STUB_GET(uint64, u64)
-STUB_GET(boolean, bool)
 STUB_GET(string, string)
 STUB_GET(binary, list_u8)
 STUB_GET(clock, bool)
 
-#define STUB_SET(T, list_type) \
-exports_fmi_fmi3_co_simulation_status_t \
-exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_##T( \
-    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self, \
-    exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references, \
-    co_simulation_fmu_list_##list_type##_t *values) \
-{ \
-    (void)self; (void)value_references; (void)values; \
-    return FMI_FMI3_TYPES_STATUS_ERROR; \
-}
+#define STUB_SET(T, list_type)                                                   \
+    exports_fmi_fmi3_co_simulation_status_t                                      \
+    exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_##T(        \
+        exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,     \
+        exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references, \
+        co_simulation_fmu_list_##list_type##_t *values) {                        \
+        (void)self;                                                              \
+        (void)value_references;                                                  \
+        (void)values;                                                            \
+        return FMI_FMI3_TYPES_STATUS_ERROR;                                      \
+    }
 
 STUB_SET(float32, f32)
 STUB_SET(int8, s8)
 STUB_SET(int16, s16)
-STUB_SET(int32, s32)
 STUB_SET(int64, s64)
 STUB_SET(uint8, u8)
 STUB_SET(uint16, u16)
 STUB_SET(uint32, u32)
 STUB_SET(uint64, u64)
-STUB_SET(boolean, bool)
 STUB_SET(string, string)
 STUB_SET(binary, list_u8)
 STUB_SET(clock, bool)
@@ -607,12 +514,11 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_number_of_
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     exports_fmi_fmi3_co_simulation_value_reference_t vr,
     uint64_t *ret,
-    exports_fmi_fmi3_co_simulation_status_t *err)
-{
-    ModelInstance *comp = wasm_comp(self);
+    exports_fmi_fmi3_co_simulation_status_t *err) {
+    ModelInstance *instance = wasm_comp(self);
     (void)vr;
-    logError(comp, "Function is not implemented.");
-    *err = map_status(wasm_apply_status(comp, Error));
+    logError(instance, "Function is not implemented.");
+    *err = map_status(wasm_apply_status(instance, Discard));
     return false;
 }
 
@@ -620,26 +526,24 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_variable_d
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     exports_fmi_fmi3_co_simulation_value_reference_t dependent,
     exports_fmi_fmi3_co_simulation_list_variable_dependency_t *ret,
-    exports_fmi_fmi3_co_simulation_status_t *err)
-{
-    ModelInstance *comp = wasm_comp(self);
+    exports_fmi_fmi3_co_simulation_status_t *err) {
+    ModelInstance *instance = wasm_comp(self);
     (void)dependent;
     (void)ret;
-    logError(comp, "Function is not implemented.");
-    *err = map_status(wasm_apply_status(comp, Error));
+    logError(instance, "Function is not implemented.");
+    *err = map_status(wasm_apply_status(instance, Discard));
     return false;
 }
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_fmu_state(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     exports_fmi_fmi3_co_simulation_fmu_state_t *ret,
-    exports_fmi_fmi3_co_simulation_status_t *err)
-{
-    ModelInstance *comp = wasm_comp(self);
+    exports_fmi_fmi3_co_simulation_status_t *err) {
+    ModelInstance *instance = wasm_comp(self);
     void *state = NULL;
-    Status st = getFMUState(comp, &state);
-    if (st != OK && st != Warning) {
-        *err = map_status(wasm_apply_status(comp, st));
+    Status st = getFMUState(instance, &state);
+    if (st != OK) {
+        *err = map_status(wasm_apply_status(instance, st));
         return false;
     }
 
@@ -651,21 +555,180 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_fmu_state(
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_fmu_state(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
-    exports_fmi_fmi3_co_simulation_fmu_state_t *state)
-{
-    ModelInstance *comp = wasm_comp(self);
-    Status st = setFMUState(comp, state->ptr);
-    return map_status(wasm_apply_status(comp, st));
+    exports_fmi_fmi3_co_simulation_fmu_state_t *state) {
+    ModelInstance *instance = wasm_comp(self);
+    Status st = setFMUState(instance, state->ptr);
+    return map_status(wasm_apply_status(instance, st));
 }
 
-static size_t valueReferenceElementIndex(const exports_fmi_fmi3_co_simulation_value_reference_t *valueReferences, size_t position) {
-    size_t index = 0;
-    for (size_t k = 0; k < position; k++) {
-        if (valueReferences[k] == valueReferences[position]) {
-            index++;
+static Status wasm_get_directional_derivative(
+    ModelInstance *instance,
+    const ValueReference unknowns[],
+    size_t nUnknowns,
+    const ValueReference knowns[],
+    size_t nKnowns,
+    const double seeds[],
+    size_t nSeeds,
+    double sensitivities[],
+    size_t nSensitivities) {
+    size_t sensitivityIndex = 0;
+
+    for (size_t i = 0; i < nUnknowns; i++) {
+        const ValueReference unknown = unknowns[i];
+
+        size_t unknownSize = 0;
+        Status status = getVariableSize(instance, unknown, &unknownSize);
+        if (status != OK) {
+            return status;
+        }
+
+        for (size_t ii = 0; ii < unknownSize; ii++) {
+            double sensitivity = 0.0;
+            size_t seedIndex = 0;
+
+            for (size_t j = 0; j < nKnowns; j++) {
+                const ValueReference known = knowns[j];
+
+                size_t knownSize = 0;
+                status = getVariableSize(instance, known, &knownSize);
+                if (status != OK) {
+                    return status;
+                }
+
+                for (size_t jj = 0; jj < knownSize; jj++) {
+                    if (seedIndex >= nSeeds) {
+                        logError(instance, "Expected nSeeds > %zu", nSeeds);
+                        return Discard;
+                    }
+
+                    const double seed = seeds[seedIndex++];
+                    double partialDerivative = 0.0;
+
+                    status = getPartialDerivative(
+                        instance,
+                        unknown,
+                        ii,
+                        known,
+                        jj,
+                        &partialDerivative);
+                    if (status != OK) {
+                        return status;
+                    }
+
+                    sensitivity += partialDerivative * seed;
+                }
+            }
+
+            if (sensitivityIndex >= nSensitivities) {
+                logError(instance, "Expected nSensitivities > %zu", nSensitivities);
+                return Discard;
+            }
+
+            sensitivities[sensitivityIndex++] = sensitivity;
         }
     }
-    return index;
+
+    return OK;
+}
+
+static Status wasm_get_adjoint_derivative(
+    ModelInstance *instance,
+    const ValueReference unknowns[],
+    size_t nUnknowns,
+    const ValueReference knowns[],
+    size_t nKnowns,
+    const double seeds[],
+    size_t nSeeds,
+    double sensitivities[],
+    size_t nSensitivities) {
+    size_t nUnknownElements = 0;
+    for (size_t i = 0; i < nUnknowns; i++) {
+        size_t unknownSize = 0;
+        Status status = getVariableSize(instance, unknowns[i], &unknownSize);
+        if (status != OK) {
+            return status;
+        }
+        nUnknownElements += unknownSize;
+    }
+
+    size_t nKnownElements = 0;
+    for (size_t j = 0; j < nKnowns; j++) {
+        size_t knownSize = 0;
+        Status status = getVariableSize(instance, knowns[j], &knownSize);
+        if (status != OK) {
+            return status;
+        }
+        nKnownElements += knownSize;
+    }
+
+    if (nSeeds < nUnknownElements) {
+        logError(instance, "Expected nSeeds >= %zu", nUnknownElements);
+        return Discard;
+    }
+
+    if (nSensitivities < nKnownElements) {
+        logError(instance, "Expected nSensitivities >= %zu", nKnownElements);
+        return Discard;
+    }
+
+    size_t sensitivityIndex = 0;
+
+    for (size_t j = 0; j < nKnowns; j++) {
+        const ValueReference known = knowns[j];
+
+        size_t knownSize = 0;
+        Status status = getVariableSize(instance, known, &knownSize);
+        if (status != OK) {
+            return status;
+        }
+
+        for (size_t jj = 0; jj < knownSize; jj++) {
+            double s = 0.0;
+            size_t seedIndex = 0;
+
+            for (size_t i = 0; i < nUnknowns; i++) {
+                const ValueReference unknown = unknowns[i];
+
+                size_t unknownSize = 0;
+                status = getVariableSize(instance, unknown, &unknownSize);
+                if (status != OK) {
+                    return status;
+                }
+
+                for (size_t ii = 0; ii < unknownSize; ii++) {
+                    if (seedIndex >= nSeeds) {
+                        logError(instance, "Expected nSeeds > %zu", nSeeds);
+                        return Discard;
+                    }
+
+                    const double seedValue = seeds[seedIndex++];
+                    double partialDerivative = 0.0;
+
+                    status = getPartialDerivative(
+                        instance,
+                        unknown,
+                        ii,
+                        known,
+                        jj,
+                        &partialDerivative);
+                    if (status != OK) {
+                        return status;
+                    }
+
+                    s += partialDerivative * seedValue;
+                }
+            }
+
+            if (sensitivityIndex >= nSensitivities) {
+                logError(instance, "Expected nSensitivities > %zu", nSensitivities);
+                return Discard;
+            }
+
+            sensitivities[sensitivityIndex++] = s;
+        }
+    }
+
+    return OK;
 }
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_directional_derivative(
@@ -674,36 +737,43 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_directiona
     exports_fmi_fmi3_co_simulation_list_value_reference_t *knowns,
     co_simulation_fmu_list_f64_t *seed,
     co_simulation_fmu_list_f64_t *ret,
-    exports_fmi_fmi3_co_simulation_status_t *err)
-{
-    size_t n = unknowns->len;
-    double *buf = (double *)calloc(n, sizeof(double));
+    exports_fmi_fmi3_co_simulation_status_t *err) {
+    ModelInstance *instance = wasm_comp(self);
+    size_t nUnknownElements = 0;
+    for (size_t i = 0; i < unknowns->len; i++) {
+        size_t size = 0;
+        Status st = getVariableSize(instance, (ValueReference)unknowns->ptr[i], &size);
+        if (st != OK) {
+            *err = map_status(wasm_apply_status(instance, st));
+            return false;
+        }
+        nUnknownElements += size;
+    }
+
+    double *buf = (double *)calloc(nUnknownElements, sizeof(double));
     if (!buf) {
         *err = FMI_FMI3_TYPES_STATUS_ERROR;
         return false;
     }
-    ModelInstance *comp = wasm_comp(self);
-    for (size_t i = 0; i < n; i++) {
-        buf[i] = 0.0;
-        for (size_t j = 0; j < knowns->len; j++) {
-            double partialDerivative = 0.0;
-            Status st = getPartialDerivative(
-                comp,
-                (ValueReference)unknowns->ptr[i],
-                valueReferenceElementIndex(unknowns->ptr, i),
-                (ValueReference)knowns->ptr[j],
-                valueReferenceElementIndex(knowns->ptr, j),
-                &partialDerivative);
-            if (st != OK) {
-                free(buf);
-                *err = map_status(wasm_apply_status(comp, st));
-                return false;
-            }
-            buf[i] += partialDerivative * seed->ptr[j];
-        }
+
+    Status st = wasm_get_directional_derivative(
+        instance,
+        unknowns->ptr,
+        unknowns->len,
+        knowns->ptr,
+        knowns->len,
+        seed->ptr,
+        seed->len,
+        buf,
+        nUnknownElements);
+    if (st != OK) {
+        free(buf);
+        *err = map_status(wasm_apply_status(instance, st));
+        return false;
     }
+
     ret->ptr = buf;
-    ret->len = n;
+    ret->len = nUnknownElements;
     return true;
 }
 
@@ -713,117 +783,163 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_adjoint_de
     exports_fmi_fmi3_co_simulation_list_value_reference_t *knowns,
     co_simulation_fmu_list_f64_t *seed,
     co_simulation_fmu_list_f64_t *ret,
-    exports_fmi_fmi3_co_simulation_status_t *err)
-{
-    size_t n = knowns->len;
-    double *buf = (double *)calloc(n, sizeof(double));
+    exports_fmi_fmi3_co_simulation_status_t *err) {
+    ModelInstance *instance = wasm_comp(self);
+    size_t nKnownElements = 0;
+    for (size_t j = 0; j < knowns->len; j++) {
+        size_t size = 0;
+        Status st = getVariableSize(instance, (ValueReference)knowns->ptr[j], &size);
+        if (st != OK) {
+            *err = map_status(wasm_apply_status(instance, st));
+            return false;
+        }
+        nKnownElements += size;
+    }
+
+    double *buf = (double *)calloc(nKnownElements, sizeof(double));
     if (!buf) {
         *err = FMI_FMI3_TYPES_STATUS_ERROR;
         return false;
     }
-    ModelInstance *comp = wasm_comp(self);
-    for (size_t i = 0; i < n; i++) {
-        buf[i] = 0.0;
-        for (size_t j = 0; j < unknowns->len; j++) {
-            double partialDerivative = 0.0;
-            Status st = getPartialDerivative(
-                comp,
-                (ValueReference)unknowns->ptr[j],
-                valueReferenceElementIndex(unknowns->ptr, j),
-                (ValueReference)knowns->ptr[i],
-                valueReferenceElementIndex(knowns->ptr, i),
-                &partialDerivative);
-            if (st != OK) {
-                free(buf);
-                *err = map_status(wasm_apply_status(comp, st));
-                return false;
-            }
-            buf[i] += partialDerivative * seed->ptr[j];
-        }
+
+    Status st = wasm_get_adjoint_derivative(
+        instance,
+        unknowns->ptr,
+        unknowns->len,
+        knowns->ptr,
+        knowns->len,
+        seed->ptr,
+        seed->len,
+        buf,
+        nKnownElements);
+    if (st != OK) {
+        free(buf);
+        *err = map_status(wasm_apply_status(instance, st));
+        return false;
     }
+
     ret->ptr = buf;
-    ret->len = n;
+    ret->len = nKnownElements;
     return true;
 }
 
-#define STUB_GET_INTERVAL(name) \
-bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_##name( \
-    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self, \
-    exports_fmi_fmi3_co_simulation_list_value_reference_t *vrs, void *ret, \
-    exports_fmi_fmi3_co_simulation_status_t *err) \
-{ (void)self;(void)vrs;(void)ret; *err=FMI_FMI3_TYPES_STATUS_ERROR; return false; }
+#define STUB_GET_INTERVAL(name)                                                \
+    bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_##name(  \
+        exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,   \
+        exports_fmi_fmi3_co_simulation_list_value_reference_t *vrs, void *ret, \
+        exports_fmi_fmi3_co_simulation_status_t *err) {                        \
+        (void)self;                                                            \
+        (void)vrs;                                                             \
+        (void)ret;                                                             \
+        *err = FMI_FMI3_TYPES_STATUS_ERROR;                                    \
+        return false;                                                          \
+    }
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_interval_decimal(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
     exports_fmi_fmi3_co_simulation_list_tuple2_f64_interval_qualifier_t *ret,
-    exports_fmi_fmi3_co_simulation_status_t *err)
-{ (void)self;(void)value_references;(void)ret; *err=FMI_FMI3_TYPES_STATUS_ERROR; return false; }
+    exports_fmi_fmi3_co_simulation_status_t *err) {
+    (void)self;
+    (void)value_references;
+    (void)ret;
+    *err = FMI_FMI3_TYPES_STATUS_ERROR;
+    return false;
+}
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_interval_fraction(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
     exports_fmi_fmi3_co_simulation_list_tuple2_interval_fraction_interval_qualifier_t *ret,
-    exports_fmi_fmi3_co_simulation_status_t *err)
-{ (void)self;(void)value_references;(void)ret; *err=FMI_FMI3_TYPES_STATUS_ERROR; return false; }
+    exports_fmi_fmi3_co_simulation_status_t *err) {
+    (void)self;
+    (void)value_references;
+    (void)ret;
+    *err = FMI_FMI3_TYPES_STATUS_ERROR;
+    return false;
+}
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_shift_decimal(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
     co_simulation_fmu_list_f64_t *ret,
-    exports_fmi_fmi3_co_simulation_status_t *err)
-{ (void)self;(void)value_references;(void)ret; *err=FMI_FMI3_TYPES_STATUS_ERROR; return false; }
+    exports_fmi_fmi3_co_simulation_status_t *err) {
+    (void)self;
+    (void)value_references;
+    (void)ret;
+    *err = FMI_FMI3_TYPES_STATUS_ERROR;
+    return false;
+}
 
 bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_shift_fraction(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
     exports_fmi_fmi3_co_simulation_list_interval_fraction_t *ret,
-    exports_fmi_fmi3_co_simulation_status_t *err)
-{ (void)self;(void)value_references;(void)ret; *err=FMI_FMI3_TYPES_STATUS_ERROR; return false; }
+    exports_fmi_fmi3_co_simulation_status_t *err) {
+    (void)self;
+    (void)value_references;
+    (void)ret;
+    *err = FMI_FMI3_TYPES_STATUS_ERROR;
+    return false;
+}
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_interval_decimal(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
-    co_simulation_fmu_list_f64_t *intervals)
-{ (void)self;(void)value_references;(void)intervals; return FMI_FMI3_TYPES_STATUS_ERROR; }
+    co_simulation_fmu_list_f64_t *intervals) {
+    (void)self;
+    (void)value_references;
+    (void)intervals;
+    return FMI_FMI3_TYPES_STATUS_ERROR;
+}
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_interval_fraction(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
-    exports_fmi_fmi3_co_simulation_list_interval_fraction_t *intervals)
-{ (void)self;(void)value_references;(void)intervals; return FMI_FMI3_TYPES_STATUS_ERROR; }
+    exports_fmi_fmi3_co_simulation_list_interval_fraction_t *intervals) {
+    (void)self;
+    (void)value_references;
+    (void)intervals;
+    return FMI_FMI3_TYPES_STATUS_ERROR;
+}
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_shift_decimal(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
-    co_simulation_fmu_list_f64_t *shifts)
-{ (void)self;(void)value_references;(void)shifts; return FMI_FMI3_TYPES_STATUS_ERROR; }
+    co_simulation_fmu_list_f64_t *shifts) {
+    (void)self;
+    (void)value_references;
+    (void)shifts;
+    return FMI_FMI3_TYPES_STATUS_ERROR;
+}
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_shift_fraction(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     exports_fmi_fmi3_co_simulation_list_value_reference_t *value_references,
-    exports_fmi_fmi3_co_simulation_list_interval_fraction_t *shifts)
-{ (void)self;(void)value_references;(void)shifts; return FMI_FMI3_TYPES_STATUS_ERROR; }
+    exports_fmi_fmi3_co_simulation_list_interval_fraction_t *shifts) {
+    (void)self;
+    (void)value_references;
+    (void)shifts;
+    return FMI_FMI3_TYPES_STATUS_ERROR;
+}
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_evaluate_discrete_states(
-    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
-{
-    ModelInstance *comp = wasm_comp(self);
-    logError(comp, "Function is not implemented.");
-    return map_status(wasm_apply_status(comp, Error));
+    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self) {
+    ModelInstance *instance = wasm_comp(self);
+    logError(instance, "Function is not implemented.");
+    return map_status(wasm_apply_status(instance, Discard));
 }
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_set_input_derivatives(
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     exports_fmi_fmi3_co_simulation_list_tuple2_value_reference_u32_t *requests,
-    co_simulation_fmu_list_f64_t *values)
-{
+    co_simulation_fmu_list_f64_t *values) {
     (void)self;
     (void)requests;
     (void)values;
@@ -834,10 +950,9 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_output_der
     exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self,
     exports_fmi_fmi3_co_simulation_list_tuple2_value_reference_u32_t *requests,
     co_simulation_fmu_list_f64_t *ret,
-    exports_fmi_fmi3_co_simulation_status_t *err)
-{
+    exports_fmi_fmi3_co_simulation_status_t *err) {
     size_t n = requests->len;
-    ModelInstance *comp = wasm_comp(self);
+    ModelInstance *instance = wasm_comp(self);
     double *buf = calloc(n, sizeof(double));
     if (!buf) {
         *err = FMI_FMI3_TYPES_STATUS_ERROR;
@@ -846,20 +961,20 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_get_output_der
 #ifdef GET_OUTPUT_DERIVATIVE
     for (size_t i = 0; i < n; i++) {
         Status st = getOutputDerivative(
-            comp,
+            instance,
             (ValueReference)requests->ptr[i].f0,
             (int)requests->ptr[i].f1,
             &buf[i]);
-        if (st != OK && st != Warning) {
+        if (st != OK) {
             free(buf);
-            *err = map_status(wasm_apply_status(comp, st));
+            *err = map_status(wasm_apply_status(instance, st));
             return false;
         }
     }
 #else
-    logError(comp, "Function is not implemented.");
+    logError(instance, "Function is not implemented.");
     free(buf);
-    *err = map_status(wasm_apply_status(comp, Error));
+    *err = map_status(wasm_apply_status(instance, Discard));
     return false;
 #endif
     ret->ptr = buf;
@@ -873,20 +988,18 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_do_step(
     double communication_step_size,
     bool no_set_fmu_state_prior_to_current_point,
     exports_fmi_fmi3_co_simulation_do_step_result_t *ret,
-    exports_fmi_fmi3_co_simulation_status_t *err)
-{
-    (void)no_set_fmu_state_prior_to_current_point;
-
-    ModelInstance *comp = wasm_comp(self);
+    exports_fmi_fmi3_co_simulation_status_t *err) {
+    ModelInstance *instance = wasm_comp(self);
     bool eventHandlingNeeded = false;
     bool terminateSimulation = false;
     bool earlyReturn = false;
     double lastSuccessfulTime = 0.0;
 
-    Status st = wasm_do_step(
-        comp,
+    Status st = doStep(
+        instance,
         current_communication_point,
         communication_step_size,
+        no_set_fmu_state_prior_to_current_point,
         &eventHandlingNeeded,
         &terminateSimulation,
         &earlyReturn,
@@ -900,8 +1013,8 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_do_step(
         ret->early_return = earlyReturn;
         return false;
     }
-    if (st != OK && st != Warning) {
-        *err = map_status(st);
+    if (st != OK) {
+        *err = map_status(wasm_apply_status(instance, st));
         return false;
     }
 
@@ -914,8 +1027,8 @@ bool exports_fmi_fmi3_co_simulation_method_co_simulation_instance_do_step(
 
 exports_fmi_fmi3_co_simulation_status_t
 exports_fmi_fmi3_co_simulation_method_co_simulation_instance_enter_step_mode(
-    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self)
-{
-    wasm_comp(self)->state = StepMode;
-    return map_status(OK);
+    exports_fmi_fmi3_co_simulation_borrow_co_simulation_instance_t self) {
+    ModelInstance *instance = wasm_comp(self);
+    Status status = enterStepMode(instance);
+    return map_status(wasm_apply_status(instance, status));
 }

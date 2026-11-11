@@ -13,7 +13,6 @@
 
 #define DEFAULT_STOP_TIME 3
 
-#define EVENT_UPDATE
 #define ACTIVATE_CLOCK
 #define GET_INT32
 #define SET_INT32
@@ -25,19 +24,19 @@
 #define FIXED_SOLVER_STEP 1
 
 typedef enum {
-    vr_time              = 0,
-    vr_inClock1          = 1001,
-    vr_inClock2          = 1002,
-    vr_inClock3          = 1003,
-    vr_outClock1         = 1004,
-    vr_outClock          = 1005,
-    vr_inClock1Ticks     = 2001,
-    vr_inClock2Ticks     = 2002,
-    vr_inClock3Ticks     = 2003,
+    vr_time = 0,
+    vr_inClock1 = 1001,
+    vr_inClock2 = 1002,
+    vr_inClock3 = 1003,
+    vr_outClock1 = 1004,
+    vr_outClock = 1005,
+    vr_inClock1Ticks = 2001,
+    vr_inClock2Ticks = 2002,
+    vr_inClock3Ticks = 2003,
     vr_totalInClockTicks = 2004,
-    vr_result2           = 2005,
-    vr_input2            = 2006,
-    vr_output3           = 2007,
+    vr_result2 = 2005,
+    vr_input2 = 2006,
+    vr_output3 = 2007,
 } ValueReference;
 
 typedef struct {
@@ -52,6 +51,5 @@ typedef struct {
     int input2;
     int output3;
 } ModelData;
-
 
 #endif /* config_h */

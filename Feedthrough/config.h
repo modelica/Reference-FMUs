@@ -40,8 +40,6 @@
 #define SET_STRING
 #define SET_BINARY
 
-#define EVENT_UPDATE
-
 #define FIXED_SOLVER_STEP 0.1
 #define DEFAULT_STOP_TIME 2
 
@@ -152,16 +150,16 @@ typedef struct {
     char String_output[STRING_MAX_LEN];
 
     size_t Binary_input_size;
-    char Binary_input[BINARY_MAX_LEN];
+    uint8_t Binary_input[BINARY_MAX_LEN];
     size_t Binary_output_size;
-    char Binary_output[BINARY_MAX_LEN];
+    uint8_t Binary_output[BINARY_MAX_LEN];
 
     Option Enumeration_input;
     Option Enumeration_output;
 
 } ModelData;
 
-extern const char* STRING_START;
-extern const char* BINARY_START;
+extern const char *STRING_START;
+extern const char *BINARY_START;
 
 #endif /* config_h */

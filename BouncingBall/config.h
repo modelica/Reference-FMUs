@@ -8,8 +8,8 @@
 #define CO_SIMULATION
 #define MODEL_EXCHANGE
 
-#define MAX_CONTINUOUS_STATES 2
-#define MAX_EVENT_INDICATORS 1
+#define N_CONTINUOUS_STATES 2
+#define N_EVENT_INDICATORS 1
 
 #define SET_FLOAT64
 #define GET_OUTPUT_DERIVATIVE
@@ -19,7 +19,14 @@
 #define DEFAULT_STOP_TIME 3
 
 typedef enum {
-    vr_time, vr_h, vr_der_h, vr_v, vr_der_v, vr_g, vr_e, vr_v_min
+    vr_time,
+    vr_h,
+    vr_der_h,
+    vr_v,
+    vr_der_v,
+    vr_g,
+    vr_e,
+    vr_v_min
 } ValueReference;
 
 typedef struct {

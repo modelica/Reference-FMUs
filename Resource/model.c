@@ -1,5 +1,5 @@
 #include "config.h"
-#include "model.h"
+#include "model_impl.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,58 +12,56 @@
 
 #define MAX_PATH_LENGTH 4096
 
-Status setStartValues(ModelInstance *comp) {
-    ASSERT_NOT_NULL2(comp);
+Status setStartValues(ModelInstance *instance) {
+    ASSERT_NOT_NULL(instance);
 
     M(y) = 0;
 
-    comp->isDirtyValues = true;
+    instance->isDirtyValues = true;
 
     return OK;
 }
 
-Status calculateValues(ModelInstance *comp) {
-    ASSERT_NOT_NULL2(comp);
+Status calculateValues(ModelInstance *instance) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(instance->resourceLocation);
 
     FILE *file = NULL;
     char path[MAX_PATH_LENGTH] = "";
     char c = '\0';
 
-    if (!comp->resourceLocation) {
-        logError(comp, "Resource location must not be NULL.");
-        return Error;
-    }
-
 #ifdef _WIN32
 
-    strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
+    strncpy(path, instance->resourceLocation, MAX_PATH_LENGTH);
     path[MAX_PATH_LENGTH - 1] = '\0';
 
 #if FMI_VERSION == 2
-    if (!PathAppendA(path, "y.txt")) return Error;
+    if (!PathAppendA(path, "y.txt"))
+        return Discard;
 #else
-    if (!strncat(path, "y.txt", MAX_PATH_LENGTH)) return Error;
+    if (!strncat(path, "y.txt", MAX_PATH_LENGTH))
+        return Discard;
 #endif
 
 #else
 
-    strncpy(path, comp->resourceLocation, MAX_PATH_LENGTH);
+    strncpy(path, instance->resourceLocation, MAX_PATH_LENGTH);
     path[MAX_PATH_LENGTH - 1] = '\0';
 
 #if FMI_VERSION == 2
-    strncat(path, "/y.txt", MAX_PATH_LENGTH-strlen(path)-1);
+    strncat(path, "/y.txt", MAX_PATH_LENGTH - strlen(path) - 1);
 #else
-    strncat(path, "y.txt", MAX_PATH_LENGTH-strlen(path)-1);
+    strncat(path, "y.txt", MAX_PATH_LENGTH - strlen(path) - 1);
 #endif
-    path[MAX_PATH_LENGTH-1] = 0;
+    path[MAX_PATH_LENGTH - 1] = 0;
 #endif
 
     // open the resource file
-    file = fopen (path, "r");
+    file = fopen(path, "r");
 
     if (!file) {
-        logError(comp, "Failed to open resource file %s.", path);
-        return Error;
+        logError(instance, "Failed to open resource file %s.", path);
+        return Discard;
     }
 
     // read the first character
@@ -75,58 +73,56 @@ Status calculateValues(ModelInstance *comp) {
     // close the file
     fclose(file);
 
-    comp->isDirtyValues = false;
+    instance->isDirtyValues = false;
 
     return OK;
 }
 
-
-Status getFloat64(ModelInstance* comp, ValueReference vr, double values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(comp);
-    ASSERT_NOT_NULL2(values);
-    ASSERT_NOT_NULL2(index);
-
-    calculateValues(comp);
+Status getVariableSize(ModelInstance *instance, ValueReference vr, size_t *size) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(size);
 
     switch (vr) {
     case vr_time:
-        ASSERT_NVALUES(1);
-        values[(*index)++] = comp->time;
+    case vr_y:
+        *size = 1;
         return OK;
     default:
-        logError(comp, "Get Float64 is not allowed for value reference %u.", vr);
-        return Error;
+        logError(instance, "Unknown value reference: %u.", vr);
+        return Discard;
     }
 }
 
+Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], size_t nValues) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_SIZE_T(nValues, 1);
 
-Status getInt32(ModelInstance* comp, ValueReference vr, int32_t values[], size_t nValues, size_t* index) {
-    ASSERT_NOT_NULL2(comp);
-    ASSERT_NOT_NULL2(values);
-    ASSERT_NOT_NULL2(index);
-
-    calculateValues(comp);
+    calculateValues(instance);
 
     switch (vr) {
-        case vr_y:
-            ASSERT_NVALUES(1);
-            values[(*index)++] = M(y);
-            return OK;
-        default:
-            logError(comp, "Get Int32 is not allowed for value reference %u.", vr);
-            return Error;
+    case vr_time:
+        values[0] = instance->time;
+        return OK;
+    default:
+        logError(instance, "Get Float64 is not allowed for value reference %u.", vr);
+        return Discard;
     }
 }
 
-Status eventUpdate(ModelInstance *comp) {
-    ASSERT_NOT_NULL2(comp);
+Status getInt32(ModelInstance *instance, ValueReference vr, int32_t values[], size_t nValues) {
+    ASSERT_NOT_NULL(instance);
+    ASSERT_NOT_NULL(values);
+    ASSERT_SIZE_T(nValues, 1);
 
-    comp->valuesOfContinuousStatesChanged   = false;
-    comp->nominalsOfContinuousStatesChanged = false;
-    comp->terminateSimulation               = false;
-    comp->nextEventTimeDefined              = false;
+    calculateValues(instance);
 
-    comp->isDirtyValues = true;
-
-    return OK;
+    switch (vr) {
+    case vr_y:
+        values[0] = M(y);
+        return OK;
+    default:
+        logError(instance, "Get Int32 is not allowed for value reference %u.", vr);
+        return Discard;
+    }
 }
