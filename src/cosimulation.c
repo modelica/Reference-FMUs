@@ -17,6 +17,8 @@
 Status doFixedStep(ModelInstance *instance, bool *stateEvent, bool *timeEvent) {
 
 #ifdef MAX_CONTINUOUS_STATES
+    CALL(getNumberOfContinuousStates(instance, &instance->nx));
+
     if (instance->nx > 0) {
 
         CALL(getContinuousStates(instance, instance->x, instance->nx));
@@ -39,6 +41,8 @@ Status doFixedStep(ModelInstance *instance, bool *stateEvent, bool *timeEvent) {
     *stateEvent = false;
 
 #if MAX_EVENT_INDICATORS
+    CALL(getNumberOfEventIndicators(instance, &instance->nz));
+
     if (instance->nz > 0) {
 
         CALL(getEventIndicators(instance, instance->z, instance->nz));
