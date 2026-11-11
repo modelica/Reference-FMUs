@@ -158,55 +158,55 @@ Status getFloat64(ModelInstance *instance, ValueReference vr, double values[], s
     case vr_A: {
         const size_t size = (size_t)(M(n) * M(n));
         ASSERT_SIZE_T(nValues, size);
-        memcpy(values, M(A), size);
+        memcpy(values, M(A), size * sizeof(double));
         return OK;
     }
     case vr_B: {
         const size_t size = (size_t)(M(m) * M(n));
         ASSERT_SIZE_T(nValues, size);
-        memcpy(values, M(B), size);
+        memcpy(values, M(B), size * sizeof(double));
         return OK;
     }
     case vr_C: {
         const size_t size = (size_t)(M(r) * M(n));
         ASSERT_SIZE_T(nValues, size);
-        memcpy(values, M(C), size);
+        memcpy(values, M(C), size * sizeof(double));
         return OK;
     }
     case vr_D: {
         const size_t size = (size_t)(M(r) * M(m));
         ASSERT_SIZE_T(nValues, size);
-        memcpy(values, M(D), size);
+        memcpy(values, M(D), size * sizeof(double));
         return OK;
     }
     case vr_x0: {
         const size_t size = (size_t)(M(n));
         ASSERT_SIZE_T(nValues, size);
-        memcpy(values, M(x0), size);
+        memcpy(values, M(x0), size * sizeof(double));
         return OK;
     }
     case vr_u: {
         const size_t size = (size_t)(M(m));
         ASSERT_SIZE_T(nValues, size);
-        memcpy(values, M(u), size);
+        memcpy(values, M(u), size * sizeof(double));
         return OK;
     }
     case vr_y: {
         const size_t size = (size_t)(M(r));
         ASSERT_SIZE_T(nValues, size);
-        memcpy(values, M(y), size);
+        memcpy(values, M(y), size * sizeof(double));
         return OK;
     }
     case vr_x: {
         const size_t size = (size_t)(M(n));
         ASSERT_SIZE_T(nValues, size);
-        memcpy(values, M(x), size);
+        memcpy(values, M(x), size * sizeof(double));
         return OK;
     }
     case vr_der_x: {
         const size_t size = (size_t)(M(n));
         ASSERT_SIZE_T(nValues, size);
-        memcpy(values, M(der_x), size);
+        memcpy(values, M(der_x), size * sizeof(double));
         return OK;
     }
     default:
@@ -223,43 +223,43 @@ Status setFloat64(ModelInstance *instance, ValueReference vr, const double value
     case vr_A: {
         const size_t size = (size_t)(M(n) * M(n));
         ASSERT_SIZE_T(nValues, size);
-        memcpy(M(A), values, size);
+        memcpy(M(A), values, size * sizeof(double));
         break;
     }
     case vr_B: {
         const size_t size = (size_t)(M(m) * M(n));
         ASSERT_SIZE_T(nValues, size);
-        memcpy(M(B), values, size);
+        memcpy(M(B), values, size * sizeof(double));
         break;
     }
     case vr_C: {
         const size_t size = (size_t)(M(r) * M(n));
         ASSERT_SIZE_T(nValues, size);
-        memcpy(M(C), values, size);
+        memcpy(M(C), values, size * sizeof(double));
         break;
     }
     case vr_D: {
         const size_t size = (size_t)(M(r) * M(m));
         ASSERT_SIZE_T(nValues, size);
-        memcpy(M(D), values, size);
+        memcpy(M(D), values, size * sizeof(double));
         break;
     }
     case vr_x0: {
         const size_t size = (size_t)(M(n));
         ASSERT_SIZE_T(nValues, size);
-        memcpy(M(x0), values, size);
+        memcpy(M(x0), values, size * sizeof(double));
         break;
     }
     case vr_u: {
         const size_t size = (size_t)(M(m));
         ASSERT_SIZE_T(nValues, size);
-        memcpy(M(u), values, size);
+        memcpy(M(u), values, size * sizeof(double));
         break;
     }
     case vr_x: {
         const size_t size = (size_t)(M(n));
         ASSERT_SIZE_T(nValues, size);
-        memcpy(M(x), values, size);
+        memcpy(M(x), values, size * sizeof(double));
         break;
     }
     default:
