@@ -130,6 +130,11 @@ def merge_fmus(version):
                 with zipfile.ZipFile(platform_fmu, 'r') as archive:
                     archive.extractall(path=tempdir)
 
+            license_path = tempdir / 'documentation' / 'licenses' / 'license.txt'
+            license_path.parent.mkdir(parents=True, exist_ok=True)
+            if not license_path.is_file():
+                shutil.copyfile(root / 'LICENSE.txt', license_path)
+
             if model_name in fmusim_args:
 
                 output_filename = root / f'dist-{fmpy.platform_tuple}' / version / f'{model_name}_ref.csv'

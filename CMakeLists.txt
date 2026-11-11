@@ -206,6 +206,16 @@ add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E 
 
 set(ARCHIVE_FILES "modelDescription.xml" "binaries" "sources")
 
+# documentation/licenses/license.txt
+add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E make_directory
+  "${FMU_BUILD_DIR}/documentation/licenses"
+)
+add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
+  "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt"
+  "${FMU_BUILD_DIR}/documentation/licenses/license.txt"
+)
+list(APPEND ARCHIVE_FILES "documentation")
+
 if(NOT "${MODEL_NAME}" STREQUAL "Clocks")
   # fmi-ls-ref.xml
   add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy
