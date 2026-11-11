@@ -4,6 +4,8 @@
   modelName="Stair"
   description="This model generates a stair signal using time events"
   generationTool="Reference FMUs (development build)"
+  license="BSD-2-Clause"
+  copyright="Modelica Association Project FMI"
   instantiationToken="{BD403596-3166-4232-ABC2-132BDF73E644}">
 
   <ModelExchange

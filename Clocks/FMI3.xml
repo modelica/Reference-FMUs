@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fmiModelDescription fmiVersion="3.0" modelName="Clocks" generationTool="Reference FMUs (development build)" instantiationToken="{C5F142BA-B849-42DA-B4A1-4745BFF3BE28}">
+<fmiModelDescription fmiVersion="3.0" modelName="Clocks" generationTool="Reference FMUs (development build)" license="BSD-2-Clause" copyright="Modelica Association Project FMI" instantiationToken="{C5F142BA-B849-42DA-B4A1-4745BFF3BE28}">
  <ScheduledExecution modelIdentifier="Clocks"/>
  <LogCategories>
   <Category name="logEvents" description="Log events"/>

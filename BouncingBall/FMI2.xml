@@ -4,6 +4,8 @@
   modelName="BouncingBall"
   description="This model calculates the trajectory, over time, of a ball dropped from a height of 1 m"
   generationTool="Reference FMUs (development build)"
+  license="BSD-2-Clause"
+  copyright="Modelica Association Project FMI"
   guid="{1AE5E10D-9521-4DE3-80B9-D0EAAA7D5AF1}"
   numberOfEventIndicators="1">
 

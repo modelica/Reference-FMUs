@@ -4,6 +4,8 @@
   modelName="StateSpace"
   description="This model implements a linear time-invariant (LTI) system"
   generationTool="Reference FMUs (development build)"
+  license="BSD-2-Clause"
+  copyright="Modelica Association Project FMI"
   instantiationToken="{D773325B-AB94-4630-BF85-643EB24FCB78}">
 
     <ModelExchange

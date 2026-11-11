@@ -4,6 +4,8 @@
   modelName="Feedthrough"
   description="A model to test different variable types, causalities, and variabilities"
   generationTool="Reference FMUs (development build)"
+  license="BSD-2-Clause"
+  copyright="Modelica Association Project FMI"
   guid="{37B954F1-CC86-4D8F-B97F-C7C36F6670D2}"
   numberOfEventIndicators="0">
 

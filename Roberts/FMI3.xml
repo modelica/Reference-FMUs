@@ -4,6 +4,8 @@
   modelName="Robertson Problem"
   description="A system of semi-explicit differential-algebraic equations (DAEs) due to Robertson"
   generationTool="Reference FMUs (development build)"
+  license="BSD-2-Clause"
+  copyright="Modelica Association Project FMI"
   instantiationToken="{1AE5E10D-9521-4DE3-80B9-D0EAAA7D5AF2}">
 
   <ModelExchange

@@ -4,6 +4,8 @@
   modelName="Van der Pol oscillator"
   description="This model implements the van der Pol oscillator"
   generationTool="Reference FMUs (development build)"
+  license="BSD-2-Clause"
+  copyright="Modelica Association Project FMI"
   instantiationToken="{BD403596-3166-4232-ABC2-132BDF73E644}">
 
   <ModelExchange

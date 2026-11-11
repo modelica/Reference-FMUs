@@ -4,6 +4,8 @@
   modelName="Dahlquist"
   description="This model implements the Dahlquist test equation"
   generationTool="Reference FMUs (development build)"
+  license="BSD-2-Clause"
+  copyright="Modelica Association Project FMI"
   instantiationToken="{221063D2-EF4A-45FE-B954-B5BFEEA9A59B}">
 
   <ModelExchange
