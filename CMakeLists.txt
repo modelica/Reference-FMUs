@@ -77,10 +77,10 @@ message("FMI_PLATFORM: " ${FMI_PLATFORM})
 if (${FMI_VERSION} LESS 3)
   file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/all.c" "#define FMI_VERSION ${FMI_VERSION}
 
-#include \"fmi${FMI_VERSION}Functions.c\"
-#include \"model.c\"
 #include \"common.c\"
+#include \"model.c\"
 #include \"cosimulation.c\"
+#include \"fmi${FMI_VERSION}Functions.c\"
 ")
 endif ()
 

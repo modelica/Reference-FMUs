@@ -40,6 +40,10 @@ static fmi2Status map_status(Status status) {
 #define xstr(s) str(s)
 #define str(s) #s
 
+#ifdef ASSERT_NOT_NULL
+#undef ASSERT_NOT_NULL
+#endif
+
 #define ASSERT_NOT_NULL(p)                                           \
     do {                                                             \
         if (!p) {                                                    \
@@ -52,6 +56,10 @@ static fmi2Status map_status(Status status) {
     if ((s) != OK) {        \
         return fmi2Discard; \
     }
+
+#ifdef NOT_IMPLEMENTED
+#undef NOT_IMPLEMENTED
+#endif
 
 #define NOT_IMPLEMENTED                              \
     do {                                             \
@@ -75,7 +83,7 @@ static fmi2Status map_status(Status status) {
         ASSERT_NOT_NULL(value);                           \
     }                                                     \
     for (size_t i = 0; i < nvr; i++) {                    \
-        CALL(set##T(c, vr[i], &value[i], 1));              \
+        CALL(set##T(c, vr[i], &value[i], 1));             \
     }                                                     \
     return fmi2OK;
 
