@@ -78,6 +78,8 @@ struct ModelInstance {
 // shorthand to access the variables
 #define M(v) (instance->modelData.v)
 
+#define UNUSED(x) (void)(x)
+
 // "stringification" macros
 #define xstr(s) str(s)
 #define str(s) #s

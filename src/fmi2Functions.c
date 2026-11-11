@@ -36,6 +36,12 @@ static fmi2Status map_status(Status status) {
     }
 }
 
+#ifdef UNUSED
+#undef UNUSED
+#endif
+
+#define UNUSED(x) (void)(x)
+
 // "stringification" macros
 #define xstr(s) str(s)
 #define str(s) #s
@@ -51,6 +57,10 @@ static fmi2Status map_status(Status status) {
             return fmi2Discard;                                      \
         }                                                            \
     } while (false)
+
+#ifdef CALL
+#undef CALL
+#endif
 
 #define CALL(s)             \
     if ((s) != OK) {        \

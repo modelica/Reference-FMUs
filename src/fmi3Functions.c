@@ -21,6 +21,8 @@
 #endif
 #include "fmi3Functions.h"
 
+#define UNUSED(x) (void)(x)
+
 static fmi3Status map_status(Status status) {
     switch (status) {
     case OK:
