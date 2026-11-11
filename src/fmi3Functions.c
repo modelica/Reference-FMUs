@@ -398,12 +398,27 @@ fmi3Status fmi3GetBinary(fmi3Instance instance,
                          size_t valueSizes[],
                          fmi3Binary values[],
                          size_t nValues) {
-    for (size_t i = 0; i < nValueReferences; i++) {
-        fmi3Status result = map_status(getBinary(instance, (ValueReference)valueReferences[i], valueSizes, (const char **)values, nValues));
-        if (result != fmi3OK) {
-            return result;
-        }
+    if (nValueReferences > 0) {
+        ASSERT_NOT_NULL(valueSizes);
+        ASSERT_NOT_NULL(valueReferences);
     }
+    
+    ASSERT_NVALUES;
+    
+    if (nValues > 0) {
+        ASSERT_NOT_NULL(values);
+    }
+    
+    size_t j = 0;
+    
+    for (size_t i = 0; i < nValueReferences; i++) {
+        const ValueReference vr = (ValueReference)valueReferences[i];
+        size_t size = 0;
+        CALL(getVariableSize(instance, vr, &size));
+        CALL(getBinary(instance, (ValueReference)valueReferences[i], &valueSizes[i], &values[j], size));
+        j += size;
+    }
+
     return fmi3OK;
 }
 
@@ -411,12 +426,18 @@ fmi3Status fmi3GetClock(fmi3Instance instance,
                         const fmi3ValueReference valueReferences[],
                         size_t nValueReferences,
                         fmi3Clock values[]) {
+    if (nValueReferences > 0) {
+        ASSERT_NOT_NULL(valueReferences);
+        ASSERT_NOT_NULL(values);
+    }
+
     for (size_t i = 0; i < nValueReferences; i++) {
         fmi3Status result = map_status(getClock(instance, (ValueReference)valueReferences[i], &values[i]));
         if (result != fmi3OK) {
             return result;
         }
     }
+
     return fmi3OK;
 }
 
@@ -523,16 +544,26 @@ fmi3Status fmi3SetBinary(fmi3Instance instance,
                          const fmi3Binary values[],
                          size_t nValues) {
     if (nValueReferences > 0) {
+        ASSERT_NOT_NULL(valueSizes);
         ASSERT_NOT_NULL(valueReferences);
     }
+
     ASSERT_NVALUES;
+
     if (nValues > 0) {
-        ASSERT_NOT_NULL(valueSizes);
         ASSERT_NOT_NULL(values);
     }
+
+    size_t j = 0;
+
     for (size_t i = 0; i < nValueReferences; i++) {
-        CALL(setBinary(instance, (ValueReference)valueReferences[i], &valueSizes[i], (const char *const *)&values[i], 1));
+        const ValueReference vr = (ValueReference)valueReferences[i];
+        size_t size = 0;
+        CALL(getVariableSize(instance, vr, &size));
+        CALL(setBinary(instance, (ValueReference)valueReferences[i], &valueSizes[i], &values[j], size));
+        j += size;
     }
+
     return fmi3OK;
 }
 
@@ -540,11 +571,18 @@ fmi3Status fmi3SetClock(fmi3Instance instance,
                         const fmi3ValueReference valueReferences[],
                         size_t nValueReferences,
                         const fmi3Clock values[]) {
+    if (nValueReferences > 0) {
+        ASSERT_NOT_NULL(valueReferences);
+        ASSERT_NOT_NULL(values);
+    }
+
     for (size_t i = 0; i < nValueReferences; i++) {
-        if (values[i]) {
-            CALL(activateClock(instance, (ValueReference)valueReferences[i]));
+        fmi3Status result = map_status(setClock(instance, (ValueReference)valueReferences[i], &values[i]));
+        if (result != fmi3OK) {
+            return result;
         }
     }
+
     return fmi3OK;
 }
 

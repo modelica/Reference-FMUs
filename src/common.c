@@ -774,7 +774,7 @@ Status getString(ModelInstance *instance, ValueReference vr, const char *values[
 #endif
 
 #ifndef GET_BINARY
-Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], const char *values[], size_t nValues) {
+Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], const uint8_t *values[], size_t nValues) {
     UNUSED(sizes);
     GET_NOT_ALLOWED("Binary");
 }
@@ -862,7 +862,7 @@ Status setString(ModelInstance *instance, ValueReference vr, const char *const v
 #endif
 
 #ifndef SET_BINARY
-Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[], const char *const values[], size_t nValues) {
+Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[], const uint8_t *const values[], size_t nValues) {
     UNUSED(size);
     SET_NOT_ALLOWED("Binary");
 }
@@ -962,6 +962,15 @@ Status activateClock(ModelInstance *instance, ValueReference vr) {
 
 #ifndef GET_CLOCK
 Status getClock(ModelInstance *instance, ValueReference vr, bool *value) {
+    UNUSED(instance);
+    UNUSED(vr);
+    UNUSED(value);
+    NOT_IMPLEMENTED;
+}
+#endif
+
+#ifndef SET_CLOCK
+Status setClock(ModelInstance *instance, ValueReference vr, const bool *value) {
     UNUSED(instance);
     UNUSED(vr);
     UNUSED(value);

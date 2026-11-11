@@ -150,9 +150,9 @@ typedef struct {
     char String_output[STRING_MAX_LEN];
 
     size_t Binary_input_size;
-    char Binary_input[BINARY_MAX_LEN];
+    uint8_t Binary_input[BINARY_MAX_LEN];
     size_t Binary_output_size;
-    char Binary_output[BINARY_MAX_LEN];
+    uint8_t Binary_output[BINARY_MAX_LEN];
 
     Option Enumeration_input;
     Option Enumeration_output;

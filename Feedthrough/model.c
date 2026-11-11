@@ -56,9 +56,9 @@ Status setStartValues(ModelInstance *instance) {
     strncpy(M(String_output), STRING_START, STRING_MAX_LEN);
 
     M(Binary_input_size) = strlen(BINARY_START);
-    strncpy(M(Binary_input), BINARY_START, BINARY_MAX_LEN);
+    memcpy(M(Binary_input), BINARY_START, M(Binary_input_size));
     M(Binary_output_size) = strlen(BINARY_START);
-    strncpy(M(Binary_output), BINARY_START, BINARY_MAX_LEN);
+    memcpy(M(Binary_output), BINARY_START, M(Binary_output_size));
 
     M(Enumeration_input) = Option1;
     M(Enumeration_output) = Option1;
@@ -376,7 +376,7 @@ Status getBoolean(ModelInstance *instance, ValueReference vr, bool values[], siz
     }
 }
 
-Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], const char *values[], size_t nValues) {
+Status getBinary(ModelInstance *instance, ValueReference vr, size_t sizes[], const uint8_t *values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(sizes);
     ASSERT_NOT_NULL(values);
@@ -711,7 +711,7 @@ Status setString(ModelInstance *instance, ValueReference vr, const char *const v
     return OK;
 }
 
-Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[], const char *const values[], size_t nValues) {
+Status setBinary(ModelInstance *instance, ValueReference vr, const size_t size[], const uint8_t *const values[], size_t nValues) {
     ASSERT_NOT_NULL(instance);
     ASSERT_NOT_NULL(size);
     ASSERT_NOT_NULL(values);
